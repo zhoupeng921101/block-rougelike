@@ -4,6 +4,11 @@
 只留命令与产物清单，格式怎么解、判据是什么、踩过什么坑写在这里。
 
 包：`tudouxiongdi.apk` → `Brotato_0.8.0.3/`。
+
+> APK 不在仓库里：它有 103 MiB，超过 GitHub 单文件 100 MiB 硬上限，且不便公开分发。
+> 要跑 `unpack` 请自备一份放到工作区根目录并命名 `tudouxiongdi.apk`；其余步骤读已入库的
+> 解包产物，用 `--skip=unpack` 即可，无需 APK。
+
 引擎 **Godot 3.5.1.stable**，GDScript，Android 导出。
 **全包无加密、无壳、无热更、无服务端下发**——和同库的 Balatro 一样，数值结论不用带
 「服务端可覆盖」的前提。

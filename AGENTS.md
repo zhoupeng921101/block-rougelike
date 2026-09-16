@@ -85,7 +85,7 @@ python 工具/balatro_report.py
 
 These install dependencies, preview the pipeline, regenerate from existing inputs, refresh selected tables, and rebuild the HTML report, respectively. Selected steps require existing upstream outputs. Run `config` before `text`, and `index` after table generation.
 
-Full extraction requires an APK: `python 工具/balatro_all.py --apk="D:\path\game.apk"`. Optional `--jadx` requires Java and the expected external jadx installation. No packaged application build or local game launch workflow is configured.
+Full extraction requires an APK, which is not committed (see the APK note below): `python 工具/balatro_all.py --apk="D:\path\game.apk"`. Optional `--jadx` requires Java and the expected external jadx installation. No packaged application build or local game launch workflow is configured.
 
 For Brotato, run from `Brotato_0.8.0.3/` (Python, plus Pillow for texture conversion):
 
@@ -97,7 +97,9 @@ python 工具/brotato_all.py --only=config,index
 
 The pipeline order is `unpack -> gdc -> text -> config -> builds -> loadouts -> index`. Selected steps require existing upstream outputs. Refresh affected build/loadout tables when their inputs change, then regenerate the index.
 
-Both source APKs live in the workspace root: `com.playstack.balatro.android.apk` and `tudouxiongdi.apk`. Each toolchain resolves its default APK from the script location, so no path configuration is needed. `brotato_all.py` only requires the APK when the plan actually includes `unpack`; `--skip=unpack` and `--dry` run without it. To extract a different APK, use `python 工具/brotato_unpack.py "D:\path\game.apk"`; do not assume the Balatro `--apk` flag works with `brotato_all.py`.
+**The source APKs are not in this repository.** They are gitignored (`*.apk`) because `tudouxiongdi.apk` is 103 MiB, past GitHub's 100 MiB per-file hard limit, and neither package is ours to redistribute. Supply your own copies and place them in the workspace root as `com.playstack.balatro.android.apk` and `tudouxiongdi.apk`; each toolchain resolves its default APK from the script location, so no path configuration is needed once they are there.
+
+Every pipeline step except `unpack` reads the extracted inputs that *are* committed, so a fresh clone can regenerate all tables without an APK. `brotato_all.py` only requires the APK when the plan actually includes `unpack`; `--skip=unpack` and `--dry` run without it. To extract a different APK, use `python 工具/brotato_unpack.py "D:\path\game.apk"`; do not assume the Balatro `--apk` flag works with `brotato_all.py`.
 
 ### Coding Style & Naming Conventions
 

@@ -5,6 +5,10 @@
 
 ## 包结构:没有壳
 
+> APK 不在仓库里（`.gitignore` 忽略 `*.apk`，且不便公开分发）。要跑 `unpack` 请自备一份
+> 放到工作区根目录，命名 `com.playstack.balatro.android.apk`；其余步骤读已入库的解包产物，
+> 无需 APK。
+
 `com.playstack.balatro.android.apk` 是 LÖVE(Love2D) 打的包，**不是 `.love` 容器、不是字节码、
 没有任何加密**。`assets/` 下就是原样的 `.lua` 源文件与 `resources/`，`zipfile` 直接读即可。
 `lib/arm64-v8a/liblove.so` 是引擎，`classes.dex` 是 Playstack 的 Java 壳（账号/成就/IAP/广告）。
