@@ -1,0 +1,609 @@
+<title>方块与倍率</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#f5f6f7; --card:#fffffe; --ink:#14171c; --ink2:#454c56; --ink3:#7b838f;
+  --rule:#dfe2e6; --rule2:#eceef0;
+  --chip:#1668b8;          /* Balatro 的筹码是蓝的 */
+  --mult:#cf4034;          /* 倍率是红的 */
+  --chip-soft:#e7f0fa; --mult-soft:#fbeae8;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#101317; --card:#171b21; --ink:#f2f4f6; --ink2:#b4bcc6; --ink3:#7e8792;
+  --rule:#272d35; --rule2:#1e242b;
+  --chip:#57a8f0; --mult:#f0685a; --chip-soft:#16283a; --mult-soft:#331d1b;
+}}
+:root[data-theme="dark"]{
+  --paper:#101317; --card:#171b21; --ink:#f2f4f6; --ink2:#b4bcc6; --ink3:#7e8792;
+  --rule:#272d35; --rule2:#1e242b;
+  --chip:#57a8f0; --mult:#f0685a; --chip-soft:#16283a; --mult-soft:#331d1b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC","Hiragino Sans GB",system-ui,sans-serif;
+  font-size:15px;line-height:1.85;-webkit-font-smoothing:antialiased}
+.wrap{display:grid;grid-template-columns:1fr;gap:0;max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:0 72px}
+@media(min-width:1080px){.wrap{grid-template-columns:212px minmax(0,1fr);gap:48px;padding-inline:32px}}
+
+/* ---------- 抬头 ---------- */
+header.mast{grid-column:1/-1;padding-block:56px 34px;border-bottom:2px solid var(--ink)}
+.kicker{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
+h1{font-family:"Noto Serif SC",Georgia,serif;font-weight:700;font-size:clamp(30px,5.4vw,46px);
+  line-height:1.25;margin:0 0 16px;text-wrap:balance;letter-spacing:-.01em}
+h1 em{font-style:normal;color:var(--mult)}
+.standfirst{max-width:62ch;color:var(--ink2);font-size:16px;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:22px;
+  font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;color:var(--ink3)}
+
+/* ---------- 关键数字 ---------- */
+.stats{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:1px;background:var(--rule);border:1px solid var(--rule);margin-block:28px 0}
+.stat{background:var(--card);padding:18px 16px}
+.stat b{display:block;font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;
+  font-size:24px;line-height:1.15;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat.c b{color:var(--chip)} .stat.m b{color:var(--mult)}
+.stat span{display:block;margin-top:7px;font-size:12px;color:var(--ink3);line-height:1.5}
+
+/* ---------- 目录 ---------- */
+nav.toc{display:none}
+@media(min-width:1080px){nav.toc{display:block;position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);
+  align-self:start;max-height:calc(100vh - 60px);overflow-y:auto;padding-block:20px 20px;font-size:12.5px}}
+nav.toc a{display:flex;gap:9px;padding:5px 0;color:var(--ink2);text-decoration:none;line-height:1.45;
+  border-left:2px solid transparent;padding-left:11px;margin-left:-13px}
+nav.toc a:hover{color:var(--mult);border-left-color:var(--mult)}
+nav.toc .tn{font-family:"Noto Serif SC",serif;color:var(--ink3);flex:none;width:1.1em}
+.toc-h{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
+
+/* ---------- 正文 ---------- */
+main{min-width:0;padding-block:12px 0}
+section{padding-block:4px 38px;border-bottom:1px solid var(--rule2)}
+section:last-child{border-bottom:0}
+h2{font-family:"Noto Serif SC",Georgia,serif;font-weight:700;font-size:clamp(21px,3vw,27px);
+  line-height:1.35;margin:34px 0 20px;display:flex;gap:14px;align-items:baseline;text-wrap:balance}
+h2 .eyebrow{font-size:.72em;color:var(--mult);flex:none;font-weight:500}
+h3{font-family:"Noto Serif SC",Georgia,serif;font-weight:500;font-size:17px;margin:34px 0 12px;
+  padding-bottom:7px;border-bottom:1px solid var(--rule);text-wrap:balance}
+p{margin:0 0 15px;max-width:68ch}
+ul,ol{margin:0 0 16px;padding-left:1.3em;max-width:68ch}
+li{margin-bottom:8px}
+strong{font-weight:600;color:var(--ink)}
+a{color:var(--chip)}
+blockquote{margin:20px 0;padding:13px 17px;background:var(--chip-soft);border-left:3px solid var(--chip);
+  color:var(--ink2);font-size:13.5px;max-width:68ch}
+code{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;font-size:.86em;
+  background:var(--rule2);padding:1px 5px;border-radius:3px;word-break:break-word}
+code.path{background:none;padding:0;color:var(--ink3);font-size:.84em}
+pre{background:var(--card);border:1px solid var(--rule);padding:16px;overflow-x:auto;margin:0 0 20px;
+  font-size:12.5px;line-height:1.7}
+pre code{background:none;padding:0;font-size:1em;color:var(--ink2)}
+
+/* ---------- 表格 ---------- */
+.tw{overflow-x:auto;margin:0 0 24px;border:1px solid var(--rule);background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:min(100%,460px);font-size:13px}
+th,td{padding:8px 13px;border-bottom:1px solid var(--rule2);vertical-align:top;line-height:1.6}
+thead th{background:var(--rule2);font-weight:600;font-size:11.5px;letter-spacing:.03em;
+  color:var(--ink2);white-space:nowrap;border-bottom:1px solid var(--rule)}
+tbody tr:last-child td{border-bottom:0}
+td{font-variant-numeric:tabular-nums}
+tbody tr:hover{background:var(--rule2)}
+
+/* ---------- 图 ---------- */
+.fig{margin:0 0 28px}
+.fig-scroll{overflow-x:auto;border:1px solid var(--rule);background:var(--card);padding:10px}
+.fig svg{display:block;width:100%;height:auto;min-width:620px}
+figcaption{margin-top:10px;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;
+  color:var(--ink3);line-height:1.6}
+
+footer{grid-column:1/-1;margin-top:44px;padding-top:22px;border-top:2px solid var(--ink);
+  font-size:12px;color:var(--ink3);line-height:1.75}
+footer b{color:var(--ink2);font-weight:600}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+:focus-visible{outline:2px solid var(--mult);outline-offset:2px}
+</style>
+<div class="wrap">
+<header class="mast">
+<div class="kicker">拆包分析 · Balatro 1.0.1o · PROD_mobile</div>
+<h1>方块与倍率：<em>一场写成乘式的军备竞赛</em></h1>
+<p class="standfirst">Balatro 把肉鸽的构筑成长压缩成了 <code>得分 = 筹码 × 倍率</code> 这一个指标，再让需求曲线以每个 Ante 约 2.1–2.5 倍的速度在后面追。这份报告拆的是：这套乘式是怎么把稀有度、槽位、经济、Boss 和注码全部串成一条线的。</p>
+<div class="meta"><span>37 个明文 Lua · 2.0MB</span><span>341 条内容条目</span><span>150 张小丑 / 16 个流派</span><span>无服务端下发</span></div>
+</header>
+<div class="stats"><div class="stat m"><b>2.08–2.53×</b><span>需求曲线每个 Ante 的增长，8 个 Ante 共 167–667 倍</span></div><div class="stat c"><b>5</b><span>小丑槽位——唯一的指数轴被它卡死</span></div><div class="stat m"><b>2 / 61</b><span>普通池里的 X 倍率卡；稀有池是 11 / 20</span></div><div class="stat c"><b>420</b><span>条倍增关系，分六类机制</span></div></div>
+<nav class="toc"><div class="toc-h">目录</div><a href="#s1"><span class="tn">零</span>一句话结论</a><a href="#s2"><span class="tn">一</span>局内结构：一局有多少个决策点</a><a href="#s3"><span class="tn">二</span>核心赛跑：需求曲线 vs 成长曲线</a><a href="#s4"><span class="tn">三</span>稀有度 = 杠杆等级（这次拆解最硬的一条横向结论）</a><a href="#s5"><span class="tn">四</span>流派聚类与倍增网络</a><a href="#s6"><span class="tn">五</span>随机性与玩家能动性：七种「掰弯 RNG」的工具</a><a href="#s7"><span class="tn">六</span>四组结构性张力</a><a href="#s8"><span class="tn">七</span>难度阶梯：数值墙与运营压力被刻意错开</a><a href="#s9"><span class="tn">八</span>元进程：三层解锁，但不给永久强度</a><a href="#s10"><span class="tn">九</span>实现层面对「可扩展性」的意义</a><a href="#s11"><span class="tn">十</span>几条可质疑 / 值得注意的设计点</a><a href="#s12"><span class="tn">·</span>附：这份分析用到的产物</a></nav>
+<main>
+<section id="s1">
+<h2><span class="eyebrow">零</span>一句话结论</h2>
+<p>Balatro 把肉鸽的「构筑成长」压缩成了一个<strong>可以写成乘式的单一指标</strong>—— <code>得分 = 筹码 × 倍率</code>——然后让需求曲线以每 Ante 约 2.1~2.5× 的速度追赶玩家， <strong>用「玩家的成长是乘法、系统的要求是指数」这场赛跑取代了传统肉鸽的战斗操作</strong>。 全部设计（稀有度、槽位、经济、Boss、注码）都是在调这场赛跑的参数。</p>
+</section>
+<section id="s2">
+<h2><span class="eyebrow">一</span>局内结构：一局有多少个决策点</h2>
+<p>一局标准流程（非无尽）：<strong>8 个 Ante × 3 个盲注 = 24 场战斗</strong>，每场之间夹一个商店。</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">决策点</th><th style="text-align:right">每局次数</th><th style="text-align:left">说明</th></tr></thead><tbody><tr><td style="text-align:left">选盲注 / 跳过</td><td style="text-align:right">16</td><td style="text-align:left">小盲、大盲可跳过换 Tag；<strong>Boss 不可跳</strong></td></tr><tr><td style="text-align:left">逛商店</td><td style="text-align:right">24</td><td style="text-align:left">买卡、买包、重摇、卖小丑</td></tr><tr><td style="text-align:left">买优惠券</td><td style="text-align:right">8</td><td style="text-align:left">每 Ante 刷新一张（<code>current_round.voucher</code>，<code class="path">源码/game.lua:2395</code>）</td></tr><tr><td style="text-align:left">开补充包后选牌</td><td style="text-align:right">不定</td><td style="text-align:left">每包 1~2 选</td></tr><tr><td style="text-align:left">出牌 / 弃牌</td><td style="text-align:right">≥24×7</td><td style="text-align:left">每场 4 出牌 + 3 弃牌</td></tr></tbody></table></div>
+<p><strong>结构上最值得注意的一条：跳过盲注是「用分数换资源」的唯一入口。</strong> <code>blind_choices = {Small, Big}</code>（<code class="path">源码/game.lua:2186</code>） 只列了小盲大盲，Boss 恒定必打。于是每个 Ante 的三场构成一个固定节奏：</p>
+<pre><code>小盲(可跳, ×1.0, $3)  →  大盲(可跳, ×1.5, $4)  →  Boss(必打, ×2.0, $5, 带规则压制)</code></pre>
+<p>跳过小盲/大盲 = 放弃 $3~4 奖励与一次商店，换一个 Tag。 这个取舍在 <strong>Ante 1 被刻意削弱</strong>：24 个 Tag 里 9 个锁 <code>min_ante = 2</code>， 其中 4 个是收益最高的「跳过换超级包」类（标准/流星/小丑/空灵）， Ante 1 只剩 Boss 标签与吊饰标签可跳。<strong>开局强制你老老实实打满三场</strong>， 从 Ante 2 起才开放「跳过流」这条路线。</p>
+</section>
+<section id="s3">
+<h2><span class="eyebrow">二</span>核心赛跑：需求曲线 vs 成长曲线</h2>
+<h3>2.1 系统的要求</h3>
+<p>以 Boss 盲注（<code>mult = 2</code>）为准，按 4 次出牌均摊建模：</p>
+<div class="tw"><table><thead><tr><th style="text-align:right">Ante</th><th style="text-align:left">Boss 目标 (scaling1 / 2 / 3)</th><th style="text-align:left">每手需求(均摊)</th><th style="text-align:left">相对 A1 小盲(300)</th></tr></thead><tbody><tr><td style="text-align:right">1</td><td style="text-align:left">600 / 600 / 600</td><td style="text-align:left">150</td><td style="text-align:left">2×</td></tr><tr><td style="text-align:right">2</td><td style="text-align:left">1,600 / 1,800 / 2,000</td><td style="text-align:left">400~500</td><td style="text-align:left">5~7×</td></tr><tr><td style="text-align:right">4</td><td style="text-align:left">10,000 / 16,000 / 18,000</td><td style="text-align:left">2,500~4,500</td><td style="text-align:left">33~60×</td></tr><tr><td style="text-align:right">6</td><td style="text-align:left">40,000 / 72,000 / 120,000</td><td style="text-align:left">10,000~30,000</td><td style="text-align:left">133~400×</td></tr><tr><td style="text-align:right">8</td><td style="text-align:left"><strong>100,000 / 200,000 / 400,000</strong></td><td style="text-align:left">25,000~100,000</td><td style="text-align:left"><strong>333 / 667 / 1,333×</strong></td></tr></tbody></table></div>
+<p>平均每 Ante <strong>2.08× / 2.29× / 2.53×</strong>。 无尽模式（Ante 9 起走 <code>(1.6+(0.75e)^(1+0.2e))^e</code> 公式）直接脱缰： 110,000 → 560,000 → 720 万 → 3 亿 → 470 亿 → 29 万亿。 <strong>Ante 12 附近是数学上的硬墙</strong>，不是平衡失误，是刻意的「无尽即倒计时」。</p>
+<h3>2.2 玩家的三条成长轴</h3>
+<p>得分结算链（<code class="path">源码/card.lua</code>）实际形如：</p>
+<pre><code>得分 = ( 牌型筹码 + Σ牌面筹码 + Σ小丑筹码 ) × ( 牌型倍率 + Σ小丑倍率 ) × Π(X倍率)
+       └──────── 轴A：加法 ────────┘   └──── 轴B：加法 ────┘   └─ 轴C：乘法 ─┘</code></pre>
+<p><strong>轴 A 与轴 B 各自线性增长，但它们相乘 → 二次增长。轴 C 是唯一的指数项。</strong> 这是整个游戏的设计骨架。星球牌把轴 A 和轴 B 同时抬起来，所以它的实际贡献是二次的：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">牌型</th><th style="text-align:right">Lv1 得分</th><th style="text-align:right">Lv10</th><th style="text-align:right">Lv20</th><th style="text-align:right">Lv1→Lv20 倍数</th></tr></thead><tbody><tr><td style="text-align:left">高牌</td><td style="text-align:right">5</td><td style="text-align:right">950</td><td style="text-align:right">3,900</td><td style="text-align:right"><strong>780×</strong></td></tr><tr><td style="text-align:left">一对</td><td style="text-align:right">20</td><td style="text-align:right">1,595</td><td style="text-align:right">6,195</td><td style="text-align:right">310×</td></tr><tr><td style="text-align:left">葫芦</td><td style="text-align:right">160</td><td style="text-align:right">5,830</td><td style="text-align:right">21,630</td><td style="text-align:right">135×</td></tr><tr><td style="text-align:left">同花顺</td><td style="text-align:right">800</td><td style="text-align:right">20,240</td><td style="text-align:right">72,240</td><td style="text-align:right">90×</td></tr></tbody></table></div>
+<p><strong>低阶牌型的相对成长远高于高阶</strong>——高牌升 20 级涨 780 倍，同花顺只涨 90 倍。 这就是「高牌流 / 一对流」在高 Ante 成立的数学来源，也是 <code>c_fool</code>、望远镜、天文台这类「围绕单一牌型堆叠」的流派能存在的前提。 代价是高阶牌型的<strong>绝对值</strong>始终领先（Lv20 同花顺 72,240 vs 高牌 3,900）， 所以两条路线不是替代关系，而是「窄而深」对「宽而浅」。</p>
+<h3>2.3 为什么必须走轴 C</h3>
+<p>单靠轴 A×B，把葫芦升到 Lv10（5,830）再加满牌面筹码，一手大约 7,000 分上下， ×4 手 ≈ 28,000 —— <strong>刚好过 Ante 6 的 scaling1（40,000）就到顶了</strong>。 要打 Ante 8 的 100,000（更别说紫金注的 400,000），必须乘上轴 C。</p>
+<p>而轴 C 被<strong>小丑槽位</strong>卡死：初始 5 个槽（<code>joker_slot = 5</code>， <code class="path">源码/functions/misc_functions.lua:1853</code>）。 于是整局的战略问题收敛成一句话：<strong>这 5 个槽里放几个 X 倍率？</strong></p>
+<p>这也解释了两个看似不相关的数字：</p>
+<ul><li><strong>负片版本（+1 小丑槽）掉率只有 0.3%</strong> —— 它是唯一能突破轴 C 上限的东西</li><li><strong>传奇小丑 5 张全部不进普通池</strong>，只能由「灵魂」幽灵牌产出</li></ul>
+<h3>2.4 对照图：需求曲线 vs 四种构筑</h3>
+<figure class="fig"><div class="fig-scroll"><svg id="fig1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 824" font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Microsoft YaHei&quot;,&quot;PingFang SC&quot;,&quot;Noto Sans CJK SC&quot;,sans-serif">
+<style>#fig1{--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--ink3:#8a8984;--grid:#e8e7e3;--band:#dedcd6;--bandtxt:#6b6a65;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--crit:#c02d2d;--rule:#9a9994;}
+@media (prefers-color-scheme:dark){#fig1{--surface:#1a1a19;--ink:#fff;--ink2:#c3c2b7;--ink3:#8f8e86;--grid:#2e2e2c;--band:#333330;--bandtxt:#a5a49b;
+--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--crit:#e66767;--rule:#6d6c66;}}#fig1 .bg{fill:var(--surface)}#fig1 .ttl{fill:var(--ink);font-size:19px;font-weight:650}#fig1 .sub{fill:var(--ink2);font-size:12.5px}#fig1 .ax{fill:var(--ink2);font-size:11.5px}#fig1 .axm{fill:var(--ink3);font-size:11px}#fig1 .lbl{font-size:12.5px;font-weight:600}#fig1 .note{fill:var(--ink3);font-size:11px}#fig1 .halo{paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}#fig1 .gl{stroke:var(--grid);stroke-width:1}#fig1 .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}#fig1 .mk{stroke:var(--surface);stroke-width:2}</style>
+<rect class="bg" x="0" y="0" width="960" height="824"/>
+<text class="ttl" x="78" y="38">盲注需求曲线 vs 四种构筑的成长曲线</text>
+<text class="sub" x="78" y="60">Balatro 1.0.1o · 以 Boss 盲注(×2)为准 · 每 Ante 按 4 次出牌满打建模 · 纵轴为对数刻度</text>
+<text class="sub" x="78" y="78">灰带 = 白注到金注的需求区间；线跌入灰带即该注码下打不过去</text>
+<text class="lbl" x="78" y="102" fill="var(--ink)">① 每场 Boss 盲注的得分能力（绝对值）</text>
+<line class="gl" x1="78" y1="434.8" x2="810" y2="434.8"/>
+<text class="axm" x="68" y="438.8" text-anchor="end">1k</text>
+<line class="gl" x1="78" y1="329.2" x2="810" y2="329.2"/>
+<text class="axm" x="68" y="333.2" text-anchor="end">10k</text>
+<line class="gl" x1="78" y1="223.6" x2="810" y2="223.6"/>
+<text class="axm" x="68" y="227.6" text-anchor="end">100k</text>
+<line class="gl" x1="78" y1="118.0" x2="810" y2="118.0"/>
+<text class="axm" x="68" y="122.0" text-anchor="end">1M</text>
+<path d="M 78.0 458.2 L 182.6 403.0 L 287.1 349.7 L 391.7 302.2 L 496.3 255.4 L 600.9 215.2 L 705.4 187.4 L 810.0 160.0 L 810.0 223.6 L 705.4 240.0 L 600.9 265.6 L 496.3 293.0 L 391.7 329.2 L 287.1 371.2 L 182.6 413.2 L 78.0 458.2 Z" fill="var(--band)" opacity="0.72"/>
+<path class="ln" d="M 78.0 458.2 L 182.6 413.2 L 287.1 371.2 L 391.7 329.2 L 496.3 293.0 L 600.9 265.6 L 705.4 240.0 L 810.0 223.6" stroke="var(--rule)" stroke-dasharray="5 4" stroke-width="1.6"/>
+<path class="ln" d="M 78.0 458.2 L 182.6 403.0 L 287.1 349.7 L 391.7 302.2 L 496.3 255.4 L 600.9 215.2 L 705.4 187.4 L 810.0 160.0" stroke="var(--rule)" stroke-dasharray="5 4" stroke-width="1.6"/>
+<line x1="182.6" y1="397.0" x2="182.6" y2="384.0" stroke="var(--rule)" stroke-width="1"/>
+<text class="axm halo" x="182.6" y="379.0" text-anchor="middle" fill="var(--bandtxt)">紫/金注需求(上沿)</text>
+<line x1="308.1" y1="365.2" x2="308.1" y2="379.2" stroke="var(--rule)" stroke-width="1"/>
+<text class="axm halo" x="308.1" y="391.2" text-anchor="middle" fill="var(--bandtxt)">白/红注需求(下沿)</text>
+<path class="ln" d="M 78.0 423.5 L 182.6 423.5 L 287.1 423.5 L 391.7 423.5 L 496.3 423.5 L 600.9 423.5 L 705.4 423.5 L 810.0 423.5" stroke="var(--s1)"/>
+<circle class="mk" cx="78.0" cy="423.5" r="4.2" fill="var(--s1)"/>
+<circle class="mk" cx="182.6" cy="423.5" r="4.2" fill="var(--s1)"/>
+<circle class="mk" cx="287.1" cy="423.5" r="4.2" fill="var(--s1)"/>
+<circle class="mk" cx="391.7" cy="423.5" r="4.2" fill="var(--s1)"/>
+<circle class="mk" cx="496.3" cy="423.5" r="4.2" fill="var(--s1)"/>
+<circle class="mk" cx="600.9" cy="423.5" r="4.2" fill="var(--s1)"/>
+<circle class="mk" cx="705.4" cy="423.5" r="4.2" fill="var(--s1)"/>
+<circle class="mk" cx="810.0" cy="423.5" r="4.2" fill="var(--s1)"/>
+<text class="lbl" x="823.0" y="427.5" fill="var(--s1)">A 裸奔基线</text>
+<text class="axm" x="823.0" y="442.5">1k</text>
+<path class="ln" d="M 78.0 367.7 L 182.6 334.2 L 287.1 310.0 L 391.7 290.9 L 496.3 275.2 L 600.9 275.2 L 705.4 275.2 L 810.0 275.2" stroke="var(--s2)"/>
+<circle class="mk" cx="78.0" cy="367.7" r="4.2" fill="var(--s2)"/>
+<circle class="mk" cx="182.6" cy="334.2" r="4.2" fill="var(--s2)"/>
+<circle class="mk" cx="287.1" cy="310.0" r="4.2" fill="var(--s2)"/>
+<circle class="mk" cx="391.7" cy="290.9" r="4.2" fill="var(--s2)"/>
+<circle class="mk" cx="496.3" cy="275.2" r="4.2" fill="var(--s2)"/>
+<circle class="mk" cx="600.9" cy="275.2" r="4.2" fill="var(--s2)"/>
+<circle class="mk" cx="705.4" cy="275.2" r="4.2" fill="var(--s2)"/>
+<circle class="mk" cx="810.0" cy="275.2" r="4.2" fill="var(--s2)"/>
+<text class="lbl" x="823.0" y="279.2" fill="var(--s2)">B 纯加法流</text>
+<text class="axm" x="823.0" y="294.2">32k</text>
+<path class="ln" d="M 78.0 367.7 L 182.6 310.2 L 287.1 275.3 L 391.7 261.9 L 496.3 250.2 L 600.9 239.8 L 705.4 230.5 L 810.0 222.1" stroke="var(--s3)"/>
+<circle class="mk" cx="78.0" cy="367.7" r="4.2" fill="var(--s3)"/>
+<circle class="mk" cx="182.6" cy="310.2" r="4.2" fill="var(--s3)"/>
+<circle class="mk" cx="287.1" cy="275.3" r="4.2" fill="var(--s3)"/>
+<circle class="mk" cx="391.7" cy="261.9" r="4.2" fill="var(--s3)"/>
+<circle class="mk" cx="496.3" cy="250.2" r="4.2" fill="var(--s3)"/>
+<circle class="mk" cx="600.9" cy="239.8" r="4.2" fill="var(--s3)"/>
+<circle class="mk" cx="705.4" cy="230.5" r="4.2" fill="var(--s3)"/>
+<circle class="mk" cx="810.0" cy="222.1" r="4.2" fill="var(--s3)"/>
+<text class="lbl" x="823.0" y="222.1" fill="var(--s3)">C 二次流 · 星球</text>
+<text class="axm" x="823.0" y="237.1">103k</text>
+<path class="ln" d="M 78.0 367.7 L 182.6 321.4 L 287.1 310.2 L 391.7 268.5 L 496.3 259.4 L 600.9 200.9 L 705.4 143.0 L 810.0 136.0" stroke="var(--s4)"/>
+<circle class="mk" cx="78.0" cy="367.7" r="4.2" fill="var(--s4)"/>
+<circle class="mk" cx="182.6" cy="321.4" r="4.2" fill="var(--s4)"/>
+<circle class="mk" cx="287.1" cy="310.2" r="4.2" fill="var(--s4)"/>
+<circle class="mk" cx="391.7" cy="268.5" r="4.2" fill="var(--s4)"/>
+<circle class="mk" cx="496.3" cy="259.4" r="4.2" fill="var(--s4)"/>
+<circle class="mk" cx="600.9" cy="200.9" r="4.2" fill="var(--s4)"/>
+<circle class="mk" cx="705.4" cy="143.0" r="4.2" fill="var(--s4)"/>
+<circle class="mk" cx="810.0" cy="136.0" r="4.2" fill="var(--s4)"/>
+<text class="lbl" x="823.0" y="144.0" fill="var(--s4)">D 指数流 · X倍率</text>
+<text class="axm" x="823.0" y="159.0">675k</text>
+<g stroke="var(--crit)" stroke-width="2.4" stroke-linecap="round"><line x1="176.6" y1="417.5" x2="188.6" y2="429.5"/><line x1="188.6" y1="417.5" x2="176.6" y2="429.5"/></g>
+<text class="axm halo" x="182.6" y="448.5" text-anchor="middle" fill="var(--crit)">白注挂</text>
+<g stroke="var(--crit)" stroke-width="2.4" stroke-linecap="round"><line x1="594.9" y1="269.2" x2="606.9" y2="281.2"/><line x1="606.9" y1="269.2" x2="594.9" y2="281.2"/></g>
+<text class="axm halo" x="600.9" y="300.2" text-anchor="middle" fill="var(--crit)">白注挂</text>
+<text class="ax" x="78.0" y="512" text-anchor="middle">Ante 1</text>
+<text class="ax" x="182.6" y="512" text-anchor="middle">Ante 2</text>
+<text class="ax" x="287.1" y="512" text-anchor="middle">Ante 3</text>
+<text class="ax" x="391.7" y="512" text-anchor="middle">Ante 4</text>
+<text class="ax" x="496.3" y="512" text-anchor="middle">Ante 5</text>
+<text class="ax" x="600.9" y="512" text-anchor="middle">Ante 6</text>
+<text class="ax" x="705.4" y="512" text-anchor="middle">Ante 7</text>
+<text class="ax" x="810.0" y="512" text-anchor="middle">Ante 8</text>
+<text class="lbl" x="78" y="550" fill="var(--ink)">② 相对白注需求的余量（能力 ÷ 白注 Boss 目标，1.0 = 刚好打过）</text>
+<line class="gl" x1="78" y1="566.0" x2="810" y2="566.0"/>
+<text class="axm" x="68" y="570.0" text-anchor="end">10×</text>
+<line class="gl" x1="78" y1="618.7" x2="810" y2="618.7"/>
+<text class="axm" x="68" y="622.7" text-anchor="end">1.0×</text>
+<line class="gl" x1="78" y1="671.3" x2="810" y2="671.3"/>
+<text class="axm" x="68" y="675.3" text-anchor="end">0.1×</text>
+<line class="gl" x1="78" y1="724.0" x2="810" y2="724.0"/>
+<text class="axm" x="68" y="728.0" text-anchor="end">0.01×</text>
+<line x1="78" y1="618.7" x2="810" y2="618.7" stroke="var(--crit)" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text class="axm halo" x="391.7" y="610.7" text-anchor="middle" fill="var(--crit)">生死线 1.0×</text>
+<path class="ln" d="M 78.0 601.3 L 182.6 623.8 L 287.1 644.7 L 391.7 665.7 L 496.3 683.7 L 600.9 697.4 L 705.4 710.2 L 810.0 718.4" stroke="var(--s1)"/>
+<circle class="mk" cx="78.0" cy="601.3" r="3.6" fill="var(--s1)"/>
+<circle class="mk" cx="182.6" cy="623.8" r="3.6" fill="var(--s1)"/>
+<circle class="mk" cx="287.1" cy="644.7" r="3.6" fill="var(--s1)"/>
+<circle class="mk" cx="391.7" cy="665.7" r="3.6" fill="var(--s1)"/>
+<circle class="mk" cx="496.3" cy="683.7" r="3.6" fill="var(--s1)"/>
+<circle class="mk" cx="600.9" cy="697.4" r="3.6" fill="var(--s1)"/>
+<circle class="mk" cx="705.4" cy="710.2" r="3.6" fill="var(--s1)"/>
+<circle class="mk" cx="810.0" cy="718.4" r="3.6" fill="var(--s1)"/>
+<text class="lbl" x="822.0" y="722.4" fill="var(--s1)">A</text>
+<text class="axm" x="834.0" y="722.4">0.01×</text>
+<path class="ln" d="M 78.0 573.5 L 182.6 579.3 L 287.1 588.1 L 391.7 599.6 L 496.3 609.8 L 600.9 623.4 L 705.4 636.2 L 810.0 644.4" stroke="var(--s2)"/>
+<circle class="mk" cx="78.0" cy="573.5" r="3.6" fill="var(--s2)"/>
+<circle class="mk" cx="182.6" cy="579.3" r="3.6" fill="var(--s2)"/>
+<circle class="mk" cx="287.1" cy="588.1" r="3.6" fill="var(--s2)"/>
+<circle class="mk" cx="391.7" cy="599.6" r="3.6" fill="var(--s2)"/>
+<circle class="mk" cx="496.3" cy="609.8" r="3.6" fill="var(--s2)"/>
+<circle class="mk" cx="600.9" cy="623.4" r="3.6" fill="var(--s2)"/>
+<circle class="mk" cx="705.4" cy="636.2" r="3.6" fill="var(--s2)"/>
+<circle class="mk" cx="810.0" cy="644.4" r="3.6" fill="var(--s2)"/>
+<text class="lbl" x="822.0" y="648.4" fill="var(--s2)">B</text>
+<text class="axm" x="834.0" y="648.4">0.32×</text>
+<path class="ln" d="M 78.0 573.5 L 182.6 567.3 L 287.1 570.8 L 391.7 585.1 L 496.3 597.3 L 600.9 605.8 L 705.4 614.0 L 810.0 617.9" stroke="var(--s3)"/>
+<circle class="mk" cx="78.0" cy="573.5" r="3.6" fill="var(--s3)"/>
+<circle class="mk" cx="182.6" cy="567.3" r="3.6" fill="var(--s3)"/>
+<circle class="mk" cx="287.1" cy="570.8" r="3.6" fill="var(--s3)"/>
+<circle class="mk" cx="391.7" cy="585.1" r="3.6" fill="var(--s3)"/>
+<circle class="mk" cx="496.3" cy="597.3" r="3.6" fill="var(--s3)"/>
+<circle class="mk" cx="600.9" cy="605.8" r="3.6" fill="var(--s3)"/>
+<circle class="mk" cx="705.4" cy="614.0" r="3.6" fill="var(--s3)"/>
+<circle class="mk" cx="810.0" cy="617.9" r="3.6" fill="var(--s3)"/>
+<text class="lbl" x="822.0" y="621.9" fill="var(--s3)">C</text>
+<text class="axm" x="834.0" y="621.9">1.03×</text>
+<path class="ln" d="M 78.0 573.5 L 182.6 572.9 L 287.1 588.3 L 391.7 588.4 L 496.3 601.9 L 600.9 586.4 L 705.4 570.3 L 810.0 575.0" stroke="var(--s4)"/>
+<circle class="mk" cx="78.0" cy="573.5" r="3.6" fill="var(--s4)"/>
+<circle class="mk" cx="182.6" cy="572.9" r="3.6" fill="var(--s4)"/>
+<circle class="mk" cx="287.1" cy="588.3" r="3.6" fill="var(--s4)"/>
+<circle class="mk" cx="391.7" cy="588.4" r="3.6" fill="var(--s4)"/>
+<circle class="mk" cx="496.3" cy="601.9" r="3.6" fill="var(--s4)"/>
+<circle class="mk" cx="600.9" cy="586.4" r="3.6" fill="var(--s4)"/>
+<circle class="mk" cx="705.4" cy="570.3" r="3.6" fill="var(--s4)"/>
+<circle class="mk" cx="810.0" cy="575.0" r="3.6" fill="var(--s4)"/>
+<text class="lbl" x="822.0" y="579.0" fill="var(--s4)">D</text>
+<text class="axm" x="834.0" y="579.0">6.75×</text>
+<text class="ax" x="78.0" y="746" text-anchor="middle">Ante 1</text>
+<text class="ax" x="182.6" y="746" text-anchor="middle">Ante 2</text>
+<text class="ax" x="287.1" y="746" text-anchor="middle">Ante 3</text>
+<text class="ax" x="391.7" y="746" text-anchor="middle">Ante 4</text>
+<text class="ax" x="496.3" y="746" text-anchor="middle">Ante 5</text>
+<text class="ax" x="600.9" y="746" text-anchor="middle">Ante 6</text>
+<text class="ax" x="705.4" y="746" text-anchor="middle">Ante 7</text>
+<text class="ax" x="810.0" y="746" text-anchor="middle">Ante 8</text>
+<text class="axm halo" x="496.3" y="588.9" text-anchor="middle" fill="var(--s4)">D 的中期低谷</text>
+<text class="note" x="78" y="794">构筑口径 — A：无小丑无星球。B：每 Ante +1 张普通加法小丑(+40 筹码/+5 倍率)，满 5 槽封顶，牌型不升级。C：主力牌型每 Ante 升 2 级 + 3 张加法小丑。</text>
+<text class="note" x="78" y="810">D：牌型每 Ante 升 1 级 + 2 张加法小丑 + X2/X3/X3 分别于 Ante 4/6/7 到位。三者同取葫芦，5 张计分牌面值按 40 筹码计。需求出自 get_blind_amount 写死的前 8 个 Ante。</text>
+</svg></div><figcaption>图 1 · 需求曲线与四种构筑成长曲线对照</figcaption></figure>
+<p>图由 <code>工具/balatro_curve.py</code> 生成，数据口径见图下脚注。四种构筑原型：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left"></th><th style="text-align:left">构筑</th><th style="text-align:left">口径</th></tr></thead><tbody><tr><td style="text-align:left"><strong>A</strong></td><td style="text-align:left">裸奔基线</td><td style="text-align:left">无小丑、无星球，永远打 Lv1 葫芦</td></tr><tr><td style="text-align:left"><strong>B</strong></td><td style="text-align:left">纯加法流</td><td style="text-align:left">每 Ante 进 1 张普通加法小丑（+40 筹码 / +5 倍率），满 5 槽封顶，牌型不升级</td></tr><tr><td style="text-align:left"><strong>C</strong></td><td style="text-align:left">二次流（星球）</td><td style="text-align:left">主力牌型每 Ante 升 2 级 + 3 张加法小丑</td></tr><tr><td style="text-align:left"><strong>D</strong></td><td style="text-align:left">指数流（X倍率）</td><td style="text-align:left">牌型每 Ante 升 1 级 + 2 张加法小丑 + X2/X3/X3 分别于 Ante 4/6/7 到位</td></tr></tbody></table></div>
+<p><strong>数据表</strong>（每场 Boss 盲注，4 次出牌满打；需求 = 该 Ante 基数 ×2）：</p>
+<div class="tw"><table><thead><tr><th style="text-align:right">Ante</th><th style="text-align:right">需求 白/红</th><th style="text-align:right">需求 绿~蓝</th><th style="text-align:right">需求 紫/金</th><th style="text-align:right">A 裸奔</th><th style="text-align:right">B 加法</th><th style="text-align:right">C 二次</th><th style="text-align:right">D 指数</th></tr></thead><tbody><tr><td style="text-align:right">1</td><td style="text-align:right">600</td><td style="text-align:right">600</td><td style="text-align:right">600</td><td style="text-align:right">1,280</td><td style="text-align:right">4,320</td><td style="text-align:right">4,320</td><td style="text-align:right">4,320</td></tr><tr><td style="text-align:right">2</td><td style="text-align:right">1,600</td><td style="text-align:right">1,800</td><td style="text-align:right">2,000</td><td style="text-align:right">1,280</td><td style="text-align:right">8,960</td><td style="text-align:right">15,120</td><td style="text-align:right">11,840</td></tr><tr><td style="text-align:right">3</td><td style="text-align:right">4,000</td><td style="text-align:right">5,200</td><td style="text-align:right">6,400</td><td style="text-align:right">1,280</td><td style="text-align:right">15,200</td><td style="text-align:right">32,400</td><td style="text-align:right">15,120</td></tr><tr><td style="text-align:right">4</td><td style="text-align:right">10,000</td><td style="text-align:right">16,000</td><td style="text-align:right">18,000</td><td style="text-align:right">1,280</td><td style="text-align:right">23,040</td><td style="text-align:right">43,400</td><td style="text-align:right">37,600</td></tr><tr><td style="text-align:right">5</td><td style="text-align:right">22,000</td><td style="text-align:right">40,000</td><td style="text-align:right">50,000</td><td style="text-align:right">1,280</td><td style="text-align:right">32,480</td><td style="text-align:right">56,000</td><td style="text-align:right">45,760</td></tr><tr><td style="text-align:right">6</td><td style="text-align:right">40,000</td><td style="text-align:right">72,000</td><td style="text-align:right">120,000</td><td style="text-align:right">1,280</td><td style="text-align:right">32,480</td><td style="text-align:right">70,200</td><td style="text-align:right">164,160</td></tr><tr><td style="text-align:right">7</td><td style="text-align:right">70,000</td><td style="text-align:right">120,000</td><td style="text-align:right">220,000</td><td style="text-align:right">1,280</td><td style="text-align:right">32,480</td><td style="text-align:right">86,000</td><td style="text-align:right">580,320</td></tr><tr><td style="text-align:right">8</td><td style="text-align:right">100,000</td><td style="text-align:right">200,000</td><td style="text-align:right">400,000</td><td style="text-align:right">1,280</td><td style="text-align:right">32,480</td><td style="text-align:right"><strong>103,400</strong></td><td style="text-align:right"><strong>675,360</strong></td></tr></tbody></table></div>
+<p><strong>在哪个 Ante 被追上</strong>：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">构筑</th><th style="text-align:left">白/红注</th><th style="text-align:left">绿~蓝注</th><th style="text-align:left">紫/金注</th></tr></thead><tbody><tr><td style="text-align:left">A 裸奔</td><td style="text-align:left">Ante 2 挂</td><td style="text-align:left">Ante 2 挂</td><td style="text-align:left">Ante 2 挂</td></tr><tr><td style="text-align:left">B 纯加法流</td><td style="text-align:left">Ante 6 挂</td><td style="text-align:left">Ante 5 挂</td><td style="text-align:left">Ante 5 挂</td></tr><tr><td style="text-align:left">C 二次流</td><td style="text-align:left"><strong>通关</strong>（余量 1.03×）</td><td style="text-align:left">Ante 6 挂</td><td style="text-align:left">Ante 6 挂</td></tr><tr><td style="text-align:left">D 指数流</td><td style="text-align:left"><strong>通关</strong></td><td style="text-align:left"><strong>通关</strong></td><td style="text-align:left">Ante 5 挂</td></tr></tbody></table></div>
+<p>三条读得出来的结论：</p>
+<ol><li><strong>纯加法流在 Ante 5~6 必然撞墙。</strong> 5 个槽位一填满，B 就变成一条水平线（32,480）， 而需求还在每 Ante ×2 往上走。<strong>槽位上限把加法轴变成了硬天花板</strong>—— 这是 Balatro 里「不升牌型只堆小丑」打不过去的确切原因。</li><li><strong>二次流刚好卡在白注通关线上（余量 1.03×）。</strong> 这个数字巧合得不像巧合： 星球流是设计上留给白注玩家的「无 X 倍率也能通关」路径，但<strong>一点冗余都不给</strong>， 往上一档（绿注 200,000）立刻在 Ante 6 挂掉。</li><li><strong>指数流有一个中期低谷（Ante 3~5）。</strong> D 为了给 X 倍率留槽位，前期牌型等级和 加法小丑都少于 C，于是在 X 倍率到位前（Ante 4 之前）反而比 C 弱， Ante 5 余量只有 2.08×，在紫/金注直接挂。<strong>这就是玩家体感里「转型期最容易死」的那一段</strong>—— 它不是运气问题，是构筑路线本身的结构性凹陷。X 倍率一旦成型（Ante 6 起）就立刻反超两个数量级。</li></ol>
+<p>第三条也反过来解释了第六节 6.4 的贴纸设计：高注码在 Ante 4~7 撒永恒/易腐/租赁， 打的正是指数流最脆弱的这个窗口。</p>
+</section>
+<section id="s4">
+<h2><span class="eyebrow">三</span>稀有度 = 杠杆等级（这次拆解最硬的一条横向结论）</h2>
+<p>把 150 张小丑按「提供哪条轴」分类，与稀有度交叉（一张可多标）：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">稀有度</th><th style="text-align:right">张数</th><th style="text-align:right">+倍率(轴B)</th><th style="text-align:right"><strong>X倍率(轴C)</strong></th><th style="text-align:right">+筹码(轴A)</th><th style="text-align:right">经济</th><th style="text-align:right">功能</th></tr></thead><tbody><tr><td style="text-align:left">1-普通</td><td style="text-align:right">61</td><td style="text-align:right"><strong>27</strong></td><td style="text-align:right"><strong>2</strong></td><td style="text-align:right">14</td><td style="text-align:right">10</td><td style="text-align:right">10</td></tr><tr><td style="text-align:left">2-罕见</td><td style="text-align:right">64</td><td style="text-align:right">7</td><td style="text-align:right">18</td><td style="text-align:right">6</td><td style="text-align:right">10</td><td style="text-align:right">21</td></tr><tr><td style="text-align:left">3-稀有</td><td style="text-align:right">20</td><td style="text-align:right">1</td><td style="text-align:right"><strong>11</strong></td><td style="text-align:right">2</td><td style="text-align:right">1</td><td style="text-align:right">5</td></tr><tr><td style="text-align:left">4-传奇</td><td style="text-align:right">5</td><td style="text-align:right">0</td><td style="text-align:right">3</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">2</td></tr><tr><td style="text-align:left"><strong>合计</strong></td><td style="text-align:right">150</td><td style="text-align:right">35</td><td style="text-align:right"><strong>34</strong></td><td style="text-align:right">22</td><td style="text-align:right">21</td><td style="text-align:right">38</td></tr></tbody></table></div>
+<p>趋势极其干净：</p>
+<ul><li><strong>普通池 61 张里只有 2 张 X 倍率</strong>（卡文迪什 X3、照片 X2），且两张都带条件或自毁</li><li><strong>稀有池 20 张里 11 张是 X 倍率（55%）</strong>，且多是无条件的 X2~X4（二重奏/三重奏/一家人/秩序/部落）</li><li><strong>+倍率恰好反过来</strong>：普通 27 张，稀有仅 1 张</li></ul>
+<p>也就是说，<strong>稀有度在 Balatro 里不是「数值更大」，而是「解锁更高阶的运算符」</strong>。 普通小丑给你加法，稀有小丑给你乘法。掉率 70%/25%/5% （<code class="path">源码/functions/common_events.lua:2008</code>） 直接翻译成「95% 的商店出货只能帮你走二次曲线，5% 才能帮你上指数」。</p>
+<p>配套的还有 <strong>43 张成长型小丑</strong>（表里填的是初始值），它们的作用是把轴 C 从「开局就有」改成「需要时间培养」，给局内决策加上一条时间维度： 早买便宜但慢热，晚买贵且没时间涨。</p>
+</section>
+<section id="s5">
+<h2><span class="eyebrow">四</span>流派聚类与倍增网络</h2>
+<p>把 150 张按「<strong>靠什么条件触发</strong>」而不是「效果是什么」分类，得到 16 个流派。 产物是两张表：<code class="path">_小丑流派表.csv</code>（150 行，一行一张）与 <code class="path">_小丑倍增关系.csv</code>（420 条关系）， 由 <code>工具/balatro_synergy.py</code> 生成。</p>
+<h3>4.1 十六个流派</h3>
+<p>一张可挂多个标签（如血石同属花色流与逐张计分），所以合计大于 150：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">流派</th><th style="text-align:right">张数</th><th style="text-align:right">X倍率占比</th><th style="text-align:left">代表</th></tr></thead><tbody><tr><td style="text-align:left">牌型流</td><td style="text-align:right">30</td><td style="text-align:right">30%</td><td style="text-align:left">二重奏/三重奏/一家人/秩序/部落、开心小丑系、奸诈小丑系</td></tr><tr><td style="text-align:left">自增成长型</td><td style="text-align:right">29</td><td style="text-align:right"><strong>45%</strong></td><td style="text-align:left">篝火、回溯、全息影像、方尖石塔、上路吧杰克</td></tr><tr><td style="text-align:left">经济流</td><td style="text-align:right">26</td><td style="text-align:right">0%</td><td style="text-align:left">黄金小丑、火箭、冲向月球、提靴带</td></tr><tr><td style="text-align:left">逐张计分</td><td style="text-align:right">20</td><td style="text-align:right">20%</td><td style="text-align:left">贪婪小丑系、斐波那契、恐怖面孔、徒步者、小小丑</td></tr><tr><td style="text-align:left">点数流</td><td style="text-align:right">17</td><td style="text-align:right">24%</td><td style="text-align:left">偶数史蒂文、奇数托德、男爵、射月、特里布莱</td></tr><tr><td style="text-align:left">花色流</td><td style="text-align:right">14</td><td style="text-align:right">43%</td><td style="text-align:left">血石、缟玛瑙、箭头、璞玉、偶像、古老小丑</td></tr><tr><td style="text-align:left">弃牌流</td><td style="text-align:right">14</td><td style="text-align:right">21%</td><td style="text-align:left">神秘之峰、旗帜、上路吧杰克、约里克</td></tr><tr><td style="text-align:left">消耗品流</td><td style="text-align:right">14</td><td style="text-align:right">7%</td><td style="text-align:left">占卜师、星座、卫星、卡牌术士、天文学家</td></tr><tr><td style="text-align:left">手牌保留流</td><td style="text-align:right">11</td><td style="text-align:right">18%</td><td style="text-align:left">男爵、射月、致胜之拳、私人车位</td></tr><tr><td style="text-align:left">人头牌流</td><td style="text-align:right">11</td><td style="text-align:right">27%</td><td style="text-align:left">照片、微笑表情、迈达斯面具、卡尼奥</td></tr><tr><td style="text-align:left"><strong>强化牌流</strong></td><td style="text-align:right">10</td><td style="text-align:right"><strong>50%</strong></td><td style="text-align:left">钢铁小丑、玻璃小丑、招财猫、驾驶执照、吸血鬼</td></tr><tr><td style="text-align:left">使能器</td><td style="text-align:right">9</td><td style="text-align:right">0%</td><td style="text-align:left">四指、捷径、模糊小丑、幻视、飞溅、六六大顺</td></tr><tr><td style="text-align:left">槽位规则</td><td style="text-align:right">7</td><td style="text-align:right">29%</td><td style="text-align:left">模具小丑、棒球卡、抽象小丑、侠盗</td></tr><tr><td style="text-align:left">重复触发源</td><td style="text-align:right">6</td><td style="text-align:right">0%</td><td style="text-align:left">黄昏、苏打水、未断选票、喜与悲、烂脱口秀演员、哑剧演员</td></tr><tr><td style="text-align:left">牌组体积流</td><td style="text-align:right">5</td><td style="text-align:right">20%</td><td style="text-align:left">蓝色小丑、侵蚀、DNA、全息影像</td></tr><tr><td style="text-align:left">复制源</td><td style="text-align:right">4</td><td style="text-align:right">0%</td><td style="text-align:left">蓝图、头脑风暴、隐形小丑、帕奇欧</td></tr></tbody></table></div>
+<p><strong>X倍率占比是这张表里最有信息量的一列。</strong> 强化牌流 50%、自增成长型 45%、花色流 43% ——这三个流派是通往轴 C 的主干道；而经济流、使能器、重复触发源、复制源的 X倍率占比是 <strong>0</strong>。 后面这四类一张 X 倍率都不出，是因为<strong>它们的价值本来就不在自己身上，而在乘别人</strong>。</p>
+<h3>4.2 关系图</h3>
+<figure class="fig"><div class="fig-scroll"><svg id="fig2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 1366" font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Microsoft YaHei&quot;,&quot;PingFang SC&quot;,&quot;Noto Sans CJK SC&quot;,sans-serif">
+<style>#fig2{--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--ink3:#8a8984;--chip:#f1f0ec;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--crit:#c02d2d;}
+@media (prefers-color-scheme:dark){#fig2{--surface:#1a1a19;--ink:#fff;--ink2:#c3c2b7;--ink3:#8f8e86;--chip:#262623;
+--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--crit:#e66767;}}#fig2 .bg{fill:var(--surface)}#fig2 .ttl{fill:var(--ink);font-size:19px;font-weight:650}#fig2 .sub{fill:var(--ink2);font-size:12.5px}#fig2 .h2{fill:var(--ink);font-size:13.5px;font-weight:650}#fig2 .nd{fill:var(--ink);font-size:12.5px;font-weight:600}#fig2 .nd2{fill:var(--ink2);font-size:12px}#fig2 .sm{fill:var(--ink3);font-size:10.5px}#fig2 .note{fill:var(--ink3);font-size:11px}#fig2 .mk{stroke:var(--surface);stroke-width:2}#fig2 .halo{paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}</style>
+<rect class="bg" x="0" y="0" width="1040" height="1366"/>
+<text class="ttl" x="56" y="40">小丑倍增关系图</text>
+<text class="sub" x="56" y="62">Balatro 1.0.1o · 150 张小丑 · 420 条关系 · 数据出自 _小丑倍增关系.csv 与 _小丑流派表.csv</text>
+<text class="sub" x="56" y="80">「倍增」= 收益落在得分公式 (筹码) × (倍率) × Π(X倍率) 的某一项上，不是「配合得好」</text>
+<text class="h2" x="56" y="106">① 倍增源 → 它乘的是谁（边宽 = 命中张数）</text>
+<path d="M 268 170.0 C 484.0 170.0, 484.0 250.6, 700 250.6" fill="none" stroke="var(--s1)" stroke-width="4.0" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="166.1" text-anchor="middle" fill="var(--s1)" font-weight="650">20</text>
+<path d="M 268 204.0 C 484.0 204.0, 484.0 250.6, 700 250.6" fill="none" stroke="var(--s1)" stroke-width="4.0" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="199.6" text-anchor="middle" fill="var(--s1)" font-weight="650">20</text>
+<path d="M 268 238.0 C 484.0 238.0, 484.0 250.6, 700 250.6" fill="none" stroke="var(--s1)" stroke-width="4.0" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="233.2" text-anchor="middle" fill="var(--s1)" font-weight="650">20</text>
+<path d="M 268 272.0 C 484.0 272.0, 484.0 250.6, 700 250.6" fill="none" stroke="var(--s1)" stroke-width="3.2" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="266.7" text-anchor="middle" fill="var(--s1)" font-weight="650">16</text>
+<path d="M 268 306.0 C 484.0 306.0, 484.0 250.6, 700 250.6" fill="none" stroke="var(--s1)" stroke-width="2.8" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="300.2" text-anchor="middle" fill="var(--s1)" font-weight="650">14</text>
+<path d="M 268 340.0 C 484.0 340.0, 484.0 723.4, 700 723.4" fill="none" stroke="var(--s1)" stroke-width="1.3" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="340.3" text-anchor="middle" fill="var(--s1)" font-weight="650">4</text>
+<path d="M 268 412.0 C 484.0 412.0, 484.0 156.0, 700 156.0" fill="none" stroke="var(--s2)" stroke-width="7.0" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="403.4" text-anchor="middle" fill="var(--s2)" font-weight="650">35</text>
+<path d="M 268 446.0 C 484.0 446.0, 484.0 156.0, 700 156.0" fill="none" stroke="var(--s2)" stroke-width="7.0" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="437.0" text-anchor="middle" fill="var(--s2)" font-weight="650">35</text>
+<path d="M 268 480.0 C 484.0 480.0, 484.0 156.0, 700 156.0" fill="none" stroke="var(--s2)" stroke-width="7.0" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="470.5" text-anchor="middle" fill="var(--s2)" font-weight="650">35</text>
+<path d="M 268 514.0 C 484.0 514.0, 484.0 156.0, 700 156.0" fill="none" stroke="var(--s2)" stroke-width="7.0" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="504.0" text-anchor="middle" fill="var(--s2)" font-weight="650">35</text>
+<path d="M 268 586.0 C 484.0 586.0, 484.0 345.1, 700 345.1" fill="none" stroke="var(--s3)" stroke-width="6.0" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="577.7" text-anchor="middle" fill="var(--s3)" font-weight="650">30</text>
+<path d="M 268 586.0 C 484.0 586.0, 484.0 439.7, 700 439.7" fill="none" stroke="var(--s3)" stroke-width="2.8" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="352.0" y="575.7" text-anchor="middle" fill="var(--s3)" font-weight="650">14</text>
+<path d="M 268 620.0 C 484.0 620.0, 484.0 345.1, 700 345.1" fill="none" stroke="var(--s3)" stroke-width="6.0" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="611.2" text-anchor="middle" fill="var(--s3)" font-weight="650">30</text>
+<path d="M 268 654.0 C 484.0 654.0, 484.0 250.6, 700 250.6" fill="none" stroke="var(--s3)" stroke-width="4.0" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="643.4" text-anchor="middle" fill="var(--s3)" font-weight="650">20</text>
+<path d="M 268 688.0 C 484.0 688.0, 484.0 439.7, 700 439.7" fill="none" stroke="var(--s3)" stroke-width="2.8" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="679.6" text-anchor="middle" fill="var(--s3)" font-weight="650">14</text>
+<path d="M 268 722.0 C 484.0 722.0, 484.0 628.9, 700 628.9" fill="none" stroke="var(--s3)" stroke-width="2.6" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="715.7" text-anchor="middle" fill="var(--s3)" font-weight="650">13</text>
+<path d="M 268 756.0 C 484.0 756.0, 484.0 534.3, 700 534.3" fill="none" stroke="var(--s3)" stroke-width="2.2" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="747.9" text-anchor="middle" fill="var(--s3)" font-weight="650">11</text>
+<path d="M 268 828.0 C 484.0 828.0, 484.0 818.0, 700 818.0" fill="none" stroke="var(--s4)" stroke-width="1.8" opacity="0.4" stroke-linecap="round"/>
+<text class="sm halo" x="314.0" y="822.9" text-anchor="middle" fill="var(--s4)" font-weight="650">9</text>
+<text class="sm" x="56" y="152" fill="var(--s1)" font-weight="650">R 重复触发</text>
+<circle class="mk" cx="268" cy="170.0" r="4.5" fill="var(--s1)"/>
+<text class="nd" x="255" y="171.0" text-anchor="end">黄昏</text>
+<text class="sm" x="255" y="185.0" text-anchor="end">全量</text>
+<circle class="mk" cx="268" cy="204.0" r="4.5" fill="var(--s1)"/>
+<text class="nd" x="255" y="205.0" text-anchor="end">苏打水</text>
+<text class="sm" x="255" y="219.0" text-anchor="end">全量 · 限 10 手</text>
+<circle class="mk" cx="268" cy="238.0" r="4.5" fill="var(--s1)"/>
+<text class="nd" x="255" y="239.0" text-anchor="end">未断选票</text>
+<text class="sm" x="255" y="253.0" text-anchor="end">仅首张</text>
+<circle class="mk" cx="268" cy="272.0" r="4.5" fill="var(--s1)"/>
+<text class="nd" x="255" y="273.0" text-anchor="end">烂脱口秀演员</text>
+<text class="sm" x="255" y="287.0" text-anchor="end">子集 · 2~5</text>
+<circle class="mk" cx="268" cy="306.0" r="4.5" fill="var(--s1)"/>
+<text class="nd" x="255" y="307.0" text-anchor="end">喜与悲</text>
+<text class="sm" x="255" y="321.0" text-anchor="end">子集 · 人头牌</text>
+<circle class="mk" cx="268" cy="340.0" r="4.5" fill="var(--s1)"/>
+<text class="nd" x="255" y="341.0" text-anchor="end">哑剧演员</text>
+<text class="sm" x="255" y="355.0" text-anchor="end">手牌区,另一批</text>
+<text class="sm" x="56" y="394" fill="var(--s2)" font-weight="650">C 复制</text>
+<circle class="mk" cx="268" cy="412.0" r="4.5" fill="var(--s2)"/>
+<text class="nd" x="255" y="413.0" text-anchor="end">蓝图</text>
+<text class="sm" x="255" y="427.0" text-anchor="end">复制右邻</text>
+<circle class="mk" cx="268" cy="446.0" r="4.5" fill="var(--s2)"/>
+<text class="nd" x="255" y="447.0" text-anchor="end">头脑风暴</text>
+<text class="sm" x="255" y="461.0" text-anchor="end">复制最左</text>
+<circle class="mk" cx="268" cy="480.0" r="4.5" fill="var(--s2)"/>
+<text class="nd" x="255" y="481.0" text-anchor="end">隐形小丑</text>
+<text class="sm" x="255" y="495.0" text-anchor="end">售出时复制</text>
+<circle class="mk" cx="268" cy="514.0" r="4.5" fill="var(--s2)"/>
+<text class="nd" x="255" y="515.0" text-anchor="end">帕奇欧</text>
+<text class="sm" x="255" y="529.0" text-anchor="end">离店复制消耗牌</text>
+<text class="sm" x="56" y="568" fill="var(--s3)" font-weight="650">E 使能器</text>
+<circle class="mk" cx="268" cy="586.0" r="4.5" fill="var(--s3)"/>
+<text class="nd" x="255" y="587.0" text-anchor="end">四指</text>
+<text class="sm" x="255" y="601.0" text-anchor="end">同花/顺子 4 张即可</text>
+<circle class="mk" cx="268" cy="620.0" r="4.5" fill="var(--s3)"/>
+<text class="nd" x="255" y="621.0" text-anchor="end">捷径</text>
+<text class="sm" x="255" y="635.0" text-anchor="end">顺子可隔 1 点</text>
+<circle class="mk" cx="268" cy="654.0" r="4.5" fill="var(--s3)"/>
+<text class="nd" x="255" y="655.0" text-anchor="end">飞溅</text>
+<text class="sm" x="255" y="669.0" text-anchor="end">全部打出牌都计分</text>
+<circle class="mk" cx="268" cy="688.0" r="4.5" fill="var(--s3)"/>
+<text class="nd" x="255" y="689.0" text-anchor="end">模糊小丑</text>
+<text class="sm" x="255" y="703.0" text-anchor="end">四色并两色</text>
+<circle class="mk" cx="268" cy="722.0" r="4.5" fill="var(--s3)"/>
+<text class="nd" x="255" y="723.0" text-anchor="end">马戏团长</text>
+<text class="sm" x="255" y="737.0" text-anchor="end">消耗品可多张</text>
+<circle class="mk" cx="268" cy="756.0" r="4.5" fill="var(--s3)"/>
+<text class="nd" x="255" y="757.0" text-anchor="end">幻视</text>
+<text class="sm" x="255" y="771.0" text-anchor="end">所有牌算人头牌</text>
+<text class="sm" x="56" y="810" fill="var(--s4)" font-weight="650">O 概率翻倍</text>
+<circle class="mk" cx="268" cy="828.0" r="4.5" fill="var(--s4)"/>
+<text class="nd" x="255" y="829.0" text-anchor="end">六六大顺</text>
+<text class="sm" x="255" y="843.0" text-anchor="end">写明的几率 ×2</text>
+<circle class="mk" cx="700" cy="156.0" r="5.5" fill="var(--ink3)"/>
+<text class="nd" x="714" y="157.0">X倍率卡</text>
+<text class="sm" x="714" y="172.0">共 35 张</text>
+<circle class="mk" cx="700" cy="250.6" r="5.5" fill="var(--ink3)"/>
+<text class="nd" x="714" y="251.6">逐张计分</text>
+<text class="sm" x="714" y="266.6">共 20 张</text>
+<circle class="mk" cx="700" cy="345.1" r="5.5" fill="var(--ink3)"/>
+<text class="nd" x="714" y="346.1">牌型流</text>
+<text class="sm" x="714" y="361.1">共 30 张</text>
+<circle class="mk" cx="700" cy="439.7" r="5.5" fill="var(--ink3)"/>
+<text class="nd" x="714" y="440.7">花色流</text>
+<text class="sm" x="714" y="455.7">共 14 张</text>
+<circle class="mk" cx="700" cy="534.3" r="5.5" fill="var(--ink3)"/>
+<text class="nd" x="714" y="535.3">人头牌流</text>
+<text class="sm" x="714" y="550.3">共 11 张</text>
+<circle class="mk" cx="700" cy="628.9" r="5.5" fill="var(--ink3)"/>
+<text class="nd" x="714" y="629.9">消耗品流</text>
+<text class="sm" x="714" y="644.9">共 14 张</text>
+<circle class="mk" cx="700" cy="723.4" r="5.5" fill="var(--ink3)"/>
+<text class="nd" x="714" y="724.4">手牌保留·逐张</text>
+<text class="sm" x="714" y="739.4">共 4 张</text>
+<circle class="mk" cx="700" cy="818.0" r="5.5" fill="var(--ink3)"/>
+<text class="nd" x="714" y="819.0">写明几率的卡</text>
+<text class="sm" x="714" y="834.0">共 9 张</text>
+<text class="note" x="56" y="876">读法：黄昏/苏打水命中 20 张全量；未断选票同样覆盖 20 张，但只作用于第一张计分牌；喜与悲与烂脱口秀演员的作用面互斥（人头牌 vs 2~5），不是同一种卡。</text>
+<text class="note" x="56" y="894">四张复制卡各覆盖 35 张 X倍率卡，是全池连接度最高的一档——它们的期望值等于你构筑上限的函数。</text>
+<text class="h2" x="56" y="938">② 产销链：谁把谁的累加器喂大</text>
+<text class="sm" x="284" y="959" text-anchor="end" fill="var(--ink3)">产出方</text>
+<text class="sm" x="470" y="959" text-anchor="middle" fill="var(--ink3)">资源</text>
+<text class="sm" x="654" y="959" fill="var(--ink3)">消费方（小丑）</text>
+<line x1="292" y1="976.0" x2="418" y2="976.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="976.0" x2="646" y2="976.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="965.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s5)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="980.0" text-anchor="middle">钢铁牌</text>
+<text class="nd2" x="284" y="980.0" text-anchor="end">战车(塔罗)</text>
+<text class="nd2" x="654" y="980.0">钢铁小丑</text>
+<line x1="292" y1="1006.0" x2="418" y2="1006.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="1006.0" x2="646" y2="1006.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="995.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s5)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="1010.0" text-anchor="middle">玻璃牌</text>
+<text class="nd2" x="284" y="1010.0" text-anchor="end">正义(塔罗)</text>
+<text class="nd2" x="654" y="1010.0">玻璃小丑</text>
+<line x1="292" y1="1036.0" x2="418" y2="1036.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="1036.0" x2="646" y2="1036.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="1025.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s5)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="1040.0" text-anchor="middle">幸运牌</text>
+<text class="nd2" x="284" y="1040.0" text-anchor="end">魔术师(塔罗)</text>
+<text class="nd2" x="654" y="1040.0">招财猫</text>
+<line x1="292" y1="1066.0" x2="418" y2="1066.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="1066.0" x2="646" y2="1066.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="1055.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s5)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="1070.0" text-anchor="middle">黄金牌</text>
+<text class="nd2" x="284" y="1070.0" text-anchor="end">恶魔(塔罗)、迈达斯面具</text>
+<text class="nd2" x="654" y="1070.0">黄金门票</text>
+<line x1="292" y1="1096.0" x2="418" y2="1096.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="1096.0" x2="646" y2="1096.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="1085.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s5)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="1100.0" text-anchor="middle">石头牌</text>
+<text class="nd2" x="284" y="1100.0" text-anchor="end">塔(塔罗)、大理石小丑</text>
+<text class="nd2" x="654" y="1100.0">石头小丑</text>
+<line x1="292" y1="1126.0" x2="418" y2="1126.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="1126.0" x2="646" y2="1126.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="1115.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s5)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="1130.0" text-anchor="middle">强化牌总量</text>
+<text class="nd2" x="284" y="1130.0" text-anchor="end">以上全部(塔罗)</text>
+<text class="nd2" x="654" y="1130.0">驾驶执照、吸血鬼</text>
+<line x1="292" y1="1156.0" x2="418" y2="1156.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="1156.0" x2="646" y2="1156.0" stroke="var(--s5)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="1145.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s5)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="1160.0" text-anchor="middle">红蜡封</text>
+<text class="nd2" x="284" y="1160.0" text-anchor="end">既视感(幽灵)</text>
+<text class="nd2" x="654" y="1160.0">(= 第 7 个重复触发源)</text>
+<line x1="292" y1="1186.0" x2="418" y2="1186.0" stroke="var(--s3)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="1186.0" x2="646" y2="1186.0" stroke="var(--s3)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="1175.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s3)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="1190.0" text-anchor="middle">塔罗牌</text>
+<text class="nd2" x="284" y="1190.0" text-anchor="end">卡牌术士、幻觉、八号球、叠加态、流浪者</text>
+<text class="nd2" x="654" y="1190.0">占卜师</text>
+<line x1="292" y1="1216.0" x2="418" y2="1216.0" stroke="var(--s3)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="1216.0" x2="646" y2="1216.0" stroke="var(--s3)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="1205.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s3)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="1220.0" text-anchor="middle">星球牌</text>
+<text class="nd2" x="284" y="1220.0" text-anchor="end">天文学家</text>
+<text class="nd2" x="654" y="1220.0">星座、卫星</text>
+<line x1="292" y1="1246.0" x2="418" y2="1246.0" stroke="var(--s3)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="1246.0" x2="646" y2="1246.0" stroke="var(--s3)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="1235.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s3)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="1250.0" text-anchor="middle">牌型等级</text>
+<text class="nd2" x="284" y="1250.0" text-anchor="end">太空小丑、烧焦小丑</text>
+<text class="nd2" x="654" y="1250.0">超新星</text>
+<line x1="292" y1="1276.0" x2="418" y2="1276.0" stroke="var(--s3)" stroke-width="1.8" opacity="0.55"/>
+<line x1="522" y1="1276.0" x2="646" y2="1276.0" stroke="var(--s3)" stroke-width="1.8" opacity="0.55"/>
+<rect x="418" y="1265.5" width="104" height="21" rx="5" fill="var(--chip)" stroke="var(--s3)" stroke-width="1.2"/>
+<text class="nd2" x="470" y="1280.0" text-anchor="middle">牌组张数</text>
+<text class="nd2" x="284" y="1280.0" text-anchor="end">DNA、全息影像</text>
+<text class="nd2" x="654" y="1280.0">蓝色小丑</text>
+<path d="M 843 976.0 L 852 976.0 L 852 1126.0 L 843 1126.0" fill="none" stroke="var(--crit)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text class="nd2" x="861" y="1048.0" fill="var(--crit)">⊣ 吸血鬼</text>
+<text class="sm" x="861" y="1063.0" fill="var(--crit)">吃掉强化牌，拆这四张吃的存量</text>
+<path d="M 843 1269.0 L 852 1269.0 L 852 1283.0 L 843 1283.0" fill="none" stroke="var(--crit)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text class="nd2" x="861" y="1273.0" fill="var(--crit)">⊣ 侵蚀</text>
+<text class="sm" x="861" y="1288.0" fill="var(--crit)">靠牌少吃饭，被 DNA/全息影像反向拆</text>
+<text class="note" x="56" y="1320">粉色链 = 燃料在小丑池之外（塔罗/幽灵产出）。X倍率占比最高的强化牌流（50%），燃料 100% 靠塔罗——这是一条跨内容类型的依赖，光看小丑池看不出来。</text>
+<text class="note" x="56" y="1338">吸血鬼那组值得单说：它自己是强化牌流的 X倍率卡（每吃一张 X0.1），但吃法正好摧毁同流派另外四张的存量。同一流派内部自带互斥线。</text>
+</svg></div><figcaption>图 2 · 小丑倍增关系图</figcaption></figure>
+<p>由 <code>工具/balatro_synergy_graph.py</code> 从上面两张 CSV 直接画出来，图上每个数字都是实读的命中张数， 不是集合规模顶替的。上半张是「谁乘谁」，下半张是「谁把谁的累加器喂大」。</p>
+<h3>4.3 五类真正的乘法（不是「配合得好」）</h3>
+<p>「互为倍增」必须落到得分公式 <code>(筹码) × (倍率) × Π(X倍率)</code> 的某一项上才算数。全部 420 条关系分五类：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">机制</th><th style="text-align:right">边数</th><th style="text-align:left">乘在哪</th><th style="text-align:left">性质</th></tr></thead><tbody><tr><td style="text-align:left"><strong>R 重复触发</strong></td><td style="text-align:right">94</td><td style="text-align:left">逐张计分的收益整份 ×2</td><td style="text-align:left">定向</td></tr><tr><td style="text-align:left"><strong>C 复制</strong></td><td style="text-align:right">140</td><td style="text-align:left">Π 项里多一个因子</td><td style="text-align:left">通用枢纽</td></tr><tr><td style="text-align:left"><strong>E 使能器</strong></td><td style="text-align:right">131</td><td style="text-align:left">触发率 p → 1，期望 ×(1/p)</td><td style="text-align:left">通用枢纽</td></tr><tr><td style="text-align:left"><strong>P 产销</strong></td><td style="text-align:right">13 内 + 21 外</td><td style="text-align:left">把成长型的累加器喂大</td><td style="text-align:left">定向</td></tr><tr><td style="text-align:left"><strong>O 概率翻倍</strong></td><td style="text-align:right">9</td><td style="text-align:left">期望值 ×2</td><td style="text-align:left">定向</td></tr><tr><td style="text-align:left">A 反协同</td><td style="text-align:right">10</td><td style="text-align:left">⚠ 负向</td><td style="text-align:left">定向</td></tr></tbody></table></div>
+<h3>4.4 重复触发矩阵：六个源的作用面完全不同</h3>
+<p>这是最容易搞错的一块——<strong>六张重复触发卡不是同一种东西</strong>, 把它们当成一类会得出「喜与悲 × 斐波那契」这种根本碰不上的假组合 （喜与悲只管人头牌，斐波那契数的是 A/2/3/5/8，交集为空）。 脚本按 scope 与计分键求交集，碰不上的不生成边：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">触发源</th><th style="text-align:left">作用面</th><th style="text-align:right">命中</th><th style="text-align:left">说明</th></tr></thead><tbody><tr><td style="text-align:left">黄昏</td><td style="text-align:left">最后一次出牌的<strong>全部</strong>打出牌</td><td style="text-align:right">20 张全量</td><td style="text-align:left">强度最高，但一回合只吃一次</td></tr><tr><td style="text-align:left">苏打水</td><td style="text-align:left">接下来 10 次出牌的<strong>全部</strong>打出牌</td><td style="text-align:right">20 张全量</td><td style="text-align:left">同样全量，但有 10 手的保质期</td></tr><tr><td style="text-align:left">未断选票</td><td style="text-align:left"><strong>只有第一张</strong>计分牌，额外 2 次</td><td style="text-align:right">20 张仅首张</td><td style="text-align:left">覆盖面最广、单次收益最低</td></tr><tr><td style="text-align:left">烂脱口秀演员</td><td style="text-align:left">打出的 <strong>2/3/4/5</strong></td><td style="text-align:right">16 张子集</td><td style="text-align:left">碰不到人头牌流与学者</td></tr><tr><td style="text-align:left">喜与悲</td><td style="text-align:left">打出的<strong>人头牌</strong></td><td style="text-align:right">14 张(3 全量 + 11 子集)</td><td style="text-align:left">全量命中只有恐怖面孔/微笑表情/特里布莱</td></tr><tr><td style="text-align:left">哑剧演员</td><td style="text-align:left"><strong>留在手牌</strong>里的牌</td><td style="text-align:right">4 张全量</td><td style="text-align:left">和「打出的牌」是两批，只对男爵/射月/致胜之拳/私人车位有效</td></tr></tbody></table></div>
+<p><strong>哑剧演员是最容易被误判的一张</strong>:它重复触发的是手牌区， 对贪婪小丑这种打出才计分的卡完全无效；反过来，它是男爵（手牌每张 K 给 X1.5） 唯一的倍增器——男爵 + 哑剧演员 = 每张 K 给 X2.25。</p>
+<p>另有<strong>第七个重复触发源不在小丑池里</strong>:红蜡封（由幽灵牌「既视感」产出）, 它按单张牌生效，可以叠在上面任何一个源之上。</p>
+<h3>4.5 外部燃料：强化牌流的饭全在塔罗牌里</h3>
+<p>强化牌流 10 张（X倍率占比 50%,全流派最高）吃的是牌组里的强化牌存量， 而<strong>产出强化牌的一张小丑都没有</strong>——除了大理石小丑（石头牌）和迈达斯面具（黄金牌）这两张：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">燃料</th><th style="text-align:left">唯一产出方</th><th style="text-align:left">吃它的小丑</th></tr></thead><tbody><tr><td style="text-align:left">钢铁牌</td><td style="text-align:left">塔罗·战车</td><td style="text-align:left">钢铁小丑(每张 X0.2)</td></tr><tr><td style="text-align:left">玻璃牌</td><td style="text-align:left">塔罗·正义</td><td style="text-align:left">玻璃小丑(每摧毁一张 X0.75)</td></tr><tr><td style="text-align:left">幸运牌</td><td style="text-align:left">塔罗·魔术师</td><td style="text-align:left">招财猫(每次触发 X0.25)</td></tr><tr><td style="text-align:left">黄金牌</td><td style="text-align:left">塔罗·恶魔 / 迈达斯面具</td><td style="text-align:left">黄金门票($4/张)</td></tr><tr><td style="text-align:left">石头牌</td><td style="text-align:left">塔罗·塔 / 大理石小丑</td><td style="text-align:left">石头小丑(每张 +25 筹码)</td></tr><tr><td style="text-align:left">任意强化牌</td><td style="text-align:left">上述全部</td><td style="text-align:left">驾驶执照(≥16 张给 X 倍率)、吸血鬼</td></tr><tr><td style="text-align:left">红/金/蓝/紫蜡封</td><td style="text-align:left">幽灵·既视感/护身符/入迷/灵媒</td><td style="text-align:left">(无小丑直接吃，但红蜡封 = 第七个重复触发源)</td></tr></tbody></table></div>
+<p><strong>结论：X倍率占比最高的那个流派，燃料 100% 在小丑池之外。</strong> 想走强化牌流，必须先把商店的塔罗出货率(<code>tarot_rate=4</code>,14.3%)或 塔罗包（权重 29%）当成主要资源来运营——这是一条<strong>跨内容类型的依赖</strong>, 光看小丑池看不出来。它也解释了塔罗商人/水晶球这类优惠券为什么是强流派的前置。</p>
+<h3>4.6 通用枢纽 vs 定向对</h3>
+<p>十张卡跟谁都能配，它们的价值等于「你手上最好的那张牌的价值」:</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">枢纽</th><th style="text-align:right">覆盖</th><th style="text-align:left">乘的是什么</th></tr></thead><tbody><tr><td style="text-align:left">蓝图 / 头脑风暴 / 隐形小丑 / 帕奇欧</td><td style="text-align:right">各 35 张 X倍率卡</td><td style="text-align:left">直接在 Π 项里多加一个因子</td></tr><tr><td style="text-align:left">四指</td><td style="text-align:right">44 张(牌型流+花色流)</td><td style="text-align:left">同花/顺子只要 4 张</td></tr><tr><td style="text-align:left">捷径</td><td style="text-align:right">30 张(牌型流)</td><td style="text-align:left">顺子可隔 1 点</td></tr><tr><td style="text-align:left">飞溅</td><td style="text-align:right">19 张(逐张计分)</td><td style="text-align:left">计分张数从 2~3 拉满到 5</td></tr><tr><td style="text-align:left">模糊小丑</td><td style="text-align:right">14 张(花色流)</td><td style="text-align:left">红桃=方片、黑桃=梅花</td></tr><tr><td style="text-align:left">马戏团长</td><td style="text-align:right">13 张(消耗品流)</td><td style="text-align:left">消耗品可同时出现复数张</td></tr><tr><td style="text-align:left">幻视</td><td style="text-align:right">11 张(人头牌流)</td><td style="text-align:left">所有牌视为人头牌</td></tr></tbody></table></div>
+<p><strong>四张复制卡各覆盖 35 张 X 倍率，是全池连接度最高的一档。</strong> 这也是为什么蓝图在实战里被当成「第二张最强小丑」——它的期望值不是固定的， 而是你构筑上限的函数。</p>
+<p>另有三张是<strong>保险不是倍增</strong>,不进边表：希科（所有 Boss 限制消失）、 摔跤手（卖掉解除当前 Boss 限制）、骷髅先生（差 25% 以内不判负）。 它们不放大任何收益，只防止构筑被 Boss 整个掐断——条件流越极端越需要。</p>
+<h3>4.7 反协同：十组会互相拆台的</h3>
+<div class="tw"><table><thead><tr><th style="text-align:left">冲突</th><th style="text-align:left">原因</th></tr></thead><tbody><tr><td style="text-align:left">吸血鬼 × 钢铁/玻璃小丑/招财猫/驾驶执照</td><td style="text-align:left">吸血鬼每吃一张强化牌就移除其强化，而那四张吃的正是强化牌<strong>存量</strong></td></tr><tr><td style="text-align:left">DNA / 全息影像 × 侵蚀</td><td style="text-align:left">前者往牌组加牌，侵蚀靠牌少吃饭</td></tr><tr><td style="text-align:left">模糊小丑 × 花盆</td><td style="text-align:left">花盆要四种花色各一张，模糊小丑把四色并成两色</td></tr><tr><td style="text-align:left">六六大顺 × 大麦克香蕉 / 卡文迪什</td><td style="text-align:left"><strong>自毁几率也翻倍</strong>：1/6→1/3、1/1000→1/500</td></tr><tr><td style="text-align:left">模具小丑 × 任何满槽构筑</td><td style="text-align:left">它按空槽算 X 倍率，装满小丑等于把它废掉</td></tr></tbody></table></div>
+<p><strong>吸血鬼那一组是设计上最有意思的一处</strong>:它自己是强化牌流里的 X 倍率卡（每吃一张 X0.1）, 但它的吃法正好摧毁同流派另外四张的存量。<strong>同一个流派内部自带一条互斥线</strong>—— 你要么走「囤强化牌」（钢铁/玻璃/驾驶执照），要么走「吃强化牌」（吸血鬼），两条路不能同走。</p>
+</section>
+<section id="s6">
+<h2><span class="eyebrow">五</span>随机性与玩家能动性：七种「掰弯 RNG」的工具</h2>
+<p>肉鸽的品质取决于玩家能在多大程度上对抗随机。Balatro 给了七层工具， 按「介入随机的时间点」排列：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">层</th><th style="text-align:left">工具</th><th style="text-align:left">介入点</th><th style="text-align:left">作用</th></tr></thead><tbody><tr><td style="text-align:left">1</td><td style="text-align:left">选牌组（16 张）</td><td style="text-align:left">开局前</td><td style="text-align:left">改起始资源/规则</td></tr><tr><td style="text-align:left">2</td><td style="text-align:left">优惠券（32 张，16 对）</td><td style="text-align:left">每 Ante 一次</td><td style="text-align:left">27 张买下即改全局字段</td></tr><tr><td style="text-align:left">3</td><td style="text-align:left">跳过盲注换 Tag（24 种）</td><td style="text-align:left">每 Ante 两次</td><td style="text-align:left">指定下一次产出的类型</td></tr><tr><td style="text-align:left">4</td><td style="text-align:left">商店重摇（$5 起递增）</td><td style="text-align:left">随时</td><td style="text-align:left">纯付费重抽</td></tr><tr><td style="text-align:left">5</td><td style="text-align:left">补充包档位（普通/巨型/超巨）</td><td style="text-align:left">商店内</td><td style="text-align:left">花钱买「挑选宽度」</td></tr><tr><td style="text-align:left">6</td><td style="text-align:left">塔罗/幽灵牌（40 张）</td><td style="text-align:left">随时</td><td style="text-align:left">直接改造牌组本体</td></tr><tr><td style="text-align:left">7</td><td style="text-align:left">种子（<code>pseudorandom</code>）</td><td style="text-align:left">局外</td><td style="text-align:left">每类掉落独立 seed 键</td></tr></tbody></table></div>
+<p><strong>第 5 层的定价最能说明设计意图</strong>：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">档位</th><th style="text-align:right">售价</th><th style="text-align:right">可选</th><th style="text-align:right">候选</th><th style="text-align:right">每张成本</th></tr></thead><tbody><tr><td style="text-align:left">普通</td><td style="text-align:right">$4</td><td style="text-align:right">1</td><td style="text-align:right">2~3</td><td style="text-align:right">$4.00</td></tr><tr><td style="text-align:left">巨型</td><td style="text-align:right">$6</td><td style="text-align:right">1</td><td style="text-align:right">4~5</td><td style="text-align:right">$6.00</td></tr><tr><td style="text-align:left">超巨</td><td style="text-align:right">$8</td><td style="text-align:right">2</td><td style="text-align:right">4~5</td><td style="text-align:right">$4.00</td></tr></tbody></table></div>
+<p>$4 和 $8 每张成本相同，<strong>$6 的巨型包是最贵的一档——因为它卖的不是卡，是命中率</strong>。 这是把「降低方差」明码标价，是整个包里对肉鸽随机性最直白的一处设计表态。</p>
+<p>第 7 层值得单说：<code>pseudoseed(key .. ante .. 局种子)</code> 让每一类掉落有独立种子， <strong>同一局里重摇商店不会影响 Boss 抽取</strong>。这个隔离既是反 savescum 设计， 也是社区种子分析器能离线复现整局的技术前提。</p>
+</section>
+<section id="s7">
+<h2><span class="eyebrow">六</span>四组结构性张力</h2>
+<p>好肉鸽靠「每个选择都在放弃另一个东西」驱动。Balatro 有四组硬对立：</p>
+<h3>6.1 囤钱 vs 花钱（最核心的一组）</h3>
+<p>利息 = 每持有 $5 给 $1，<strong>封顶持有额 $25</strong>（<code>interest_cap = 25</code>）。 一个没有经济小丑的玩家每回合稳定收入：</p>
+<pre><code>盲注奖励 $3~5  +  利息 ≤$5  +  未用出牌 ≤$4   ≈  $12~14</code></pre>
+<p>而一张小丑 $4~8、一个包 $4~8、一张优惠券 $10。 <strong>收入约等于一到两件商品</strong>，所以「吃满 $25 利息」与「买齐这家店」永远只能选一个。 后期的种子基金（上限 ×2 到 $50）与摇钱树（到 $100）就是专门用来解除这个锁的， 它们本质上是「把经济从零和改成正和」的开关。</p>
+<h3>6.2 分数 vs 资源（跳过机制）</h3>
+<p>见第一节。跳过 = 放弃 $3~4 与一次商店，换一个确定性的 Tag。 Ante 1 的 Tag 池被砍到只剩 2 个可跳，是在强制玩家先建立基础盘。</p>
+<h3>6.3 即时强度 vs 成长潜力</h3>
+<p>43 张成长型小丑 + 星球牌的二次曲线 vs 稀有小丑的即时 X 倍率。 <strong>卖价一律 <code>floor(售价/2)</code></strong>，买进卖出净亏一半以上—— 所以「先买过渡件后期换掉」的代价是显式的，这让构筑决策不可逆， 也正是 <code>j_swashbuckler</code>（卖小丑加倍率）与清仓特卖（折扣）这类卡存在的理由。</p>
+<h3>6.4 强度 vs 风险（贴纸系统）</h3>
+<p>注码 4/7/8 档分别引入永恒（不可卖）、易腐（5 回合后失效）、租赁（每回合 $3）。 这三种贴纸<strong>不改变数值，只改变「这张卡能不能反悔」</strong>。 把它们放在高注码而不是基础难度，说明设计上认为 「限制玩家的调整自由」比「提高数字」是更高阶的难度手段。</p>
+</section>
+<section id="s8">
+<h2><span class="eyebrow">七</span>难度阶梯：数值墙与运营压力被刻意错开</h2>
+<p>8 档注码是累加的（选 N 档叠加 1..N 全部修正，<code class="path">源码/game.lua:2266</code>）：</p>
+<div class="tw"><table><thead><tr><th style="text-align:right">档</th><th style="text-align:left">加的是什么</th><th style="text-align:left">类型</th></tr></thead><tbody><tr><td style="text-align:right">2 红</td><td style="text-align:left">小盲不再给 $3</td><td style="text-align:left">经济压制</td></tr><tr><td style="text-align:right">3 绿</td><td style="text-align:left">分数曲线 → scaling 2</td><td style="text-align:left"><strong>数值墙</strong></td></tr><tr><td style="text-align:right">4 黑</td><td style="text-align:left">出永恒小丑</td><td style="text-align:left">风险/自由度</td></tr><tr><td style="text-align:right">5 蓝</td><td style="text-align:left">弃牌 −1（3→2）</td><td style="text-align:left">资源压制</td></tr><tr><td style="text-align:right">6 紫</td><td style="text-align:left">分数曲线 → scaling 3</td><td style="text-align:left"><strong>数值墙</strong></td></tr><tr><td style="text-align:right">7 橙</td><td style="text-align:left">出易腐小丑</td><td style="text-align:left">风险/自由度</td></tr><tr><td style="text-align:right">8 金</td><td style="text-align:left">出租赁小丑</td><td style="text-align:left">经济+风险</td></tr></tbody></table></div>
+<p><strong>8 档里只有 2 档抬分数，其余 5 档全在压资源与自由度。</strong> 这是很克制的做法：直接乘分数是最省事的难度设计，但它只会让玩家「更需要运气」； 而砍弃牌、砍收入、让卡不可卖，压的是<strong>决策质量</strong>而不是构筑上限。 金注的实际难度 = 分数 ×4 + 少 1 弃牌 + 少 $3/回合 + 三种负面贴纸同时在池。</p>
+<p>Boss 侧同理。23 个普通 Boss 的 <code>boss.min</code> 出场窗口不是随机分配的：</p>
+<ul><li><code>min=1</code>（8 个）：钩子、镣铐、柱、头…… 都是<strong>通用轻压制</strong>，不依赖玩家有构筑</li><li><code>min=6</code>：<code>bl_ox</code> 牛，惩罚「你最常打的牌型」—— <strong>Ante 6 之前玩家还没有主力牌型，放出来没意义</strong></li></ul>
+<p><code>min</code> 越高的 Boss，压制越依赖玩家已成型的构筑。这是「Boss 反制玩家策略」 必须晚出场的直接体现。分数倍率的三个例外划出了 Boss 设计的两端： 墙 ×4、血管 ×6 是<strong>纯数值墙</strong>；针 ×1 但只能出 1 次牌，是<strong>纯规则墙</strong>。</p>
+</section>
+<section id="s9">
+<h2><span class="eyebrow">八</span>元进程：三层解锁，但不给永久强度</h2>
+<div class="tw"><table><thead><tr><th style="text-align:left">层</th><th style="text-align:left">内容</th><th style="text-align:left">解锁方式</th></tr></thead><tbody><tr><td style="text-align:left">内容池</td><td style="text-align:left"><strong>150 张小丑里默认锁 45 张</strong></td><td style="text-align:left">21 种条件：改牌组(7)、无弃牌通关(5)、特定回合胜利(3)、分数达标(3)…</td></tr><tr><td style="text-align:left">玩法变体</td><td style="text-align:left">16 张牌组（默认只开 2 张）</td><td style="text-align:left">发现数量(4) → 通关指定牌组(5) → 通关指定注码(5)</td></tr><tr><td style="text-align:left">难度</td><td style="text-align:left">8 档注码</td><td style="text-align:left">逐档通关解锁</td></tr><tr><td style="text-align:left">规则变体</td><td style="text-align:left">20 个挑战，96 条规则</td><td style="text-align:left">—</td></tr></tbody></table></div>
+<p><strong>关键设计取舍：Balatro 的元进程只解锁「更多可能性」，不解锁「更强的起点」。</strong> 解锁一张新小丑不会让你变强，只会让商店池变大—— 甚至因为池子被稀释，短期内命中关键卡的概率还会略降。 这与《杀戮尖塔》同路、与《哈迪斯》相反，属于<strong>纯内容型元进程</strong>。</p>
+<p>解锁条件的类型分布也有讲究：<code>modify_deck</code>(7) 和 <code>win_no_hand</code>(5) 占最多， 这两类都要求玩家<strong>主动用一种非常规方式打一局</strong>，而不是「累计玩 N 局」。 只有 5 条是纯计数型（输 N 局、打 N 次牌、卖 N 张小丑）。 即元进程被当成<strong>任务清单</strong>而非<strong>时长门槛</strong>。</p>
+<p>挑战模式是唯一能从玩家侧覆盖 Ante 曲线的入口（<code>modifiers.ante_scaling</code>， 走的是与注码同一套 <code>G.GAME.modifiers</code>），相当于官方开放的半个编辑器。</p>
+</section>
+<section id="s10">
+<h2><span class="eyebrow">九</span>实现层面对「可扩展性」的意义</h2>
+<p>（做二次开发或同类型立项时最实用的一节）</p>
+<p>11 张总表按「配置驱动 vs 按名字写专属逻辑」横向排开：</p>
+<div class="tw"><table><thead><tr><th style="text-align:left">类别</th><th style="text-align:right">配置驱动</th><th style="text-align:left">含义</th></tr></thead><tbody><tr><td style="text-align:left">牌组 Back</td><td style="text-align:right"><strong>16/16 = 100%</strong></td><td style="text-align:left">加一张新牌组：只填 config，零代码</td></tr><tr><td style="text-align:left">补充包 Booster</td><td style="text-align:right"><strong>32/32 = 100%</strong></td><td style="text-align:left">同上</td></tr><tr><td style="text-align:left">塔罗 Tarot</td><td style="text-align:right">17/22 = 77%</td><td style="text-align:left">转强化/转花色是模板</td></tr><tr><td style="text-align:left">强化牌 Enhanced</td><td style="text-align:right">5/8 = 63%</td><td style="text-align:left">只有石头/幸运/万能按名字判</td></tr><tr><td style="text-align:left">幽灵 Spectral</td><td style="text-align:right">4/18 = 22%</td><td style="text-align:left">基本一张一逻辑</td></tr><tr><td style="text-align:left">盲注 Blind</td><td style="text-align:right">6/30 = 20%</td><td style="text-align:left">只有废牌判据被模板化</td></tr><tr><td style="text-align:left">小丑 Joker</td><td style="text-align:right">19/150 = 13%</td><td style="text-align:left">只有花色/牌型加成那四族</td></tr><tr><td style="text-align:left">蜡封 Seal</td><td style="text-align:right"><strong>0/4，连 config 字段都没有</strong></td><td style="text-align:left">地板</td></tr></tbody></table></div>
+<p><strong>规律：越是「同一种效果换参数」的内容，配置化程度越高。</strong></p>
+<p>把这条规律和第三节的稀有度结论合起来看，会得到一个有意思的推论： <strong>配置驱动的那 19 张小丑，全部是低稀有度的加法类</strong>（花色倍率 4、 牌型 X 倍率 5、牌型倍率 5、牌型筹码 5）。 也就是说 Balatro 的内容生产是这样分工的：</p>
+<ul><li><strong>「填充池子」的内容走配置</strong>（让普通池有足够多的加法小丑稀释概率）</li><li><strong>「定义流派」的内容走代码</strong>（每张稀有/传奇小丑都是一条独立规则）</li></ul>
+<p>这对同类型项目是可直接照搬的结论： <strong>不要试图把所有小丑都做成配置表</strong>。把 80% 的池子填充物模板化， 剩下 20% 定义玩法的手写——这才是 150 张卡能在一个人手里做完的原因。</p>
+</section>
+<section id="s11">
+<h2><span class="eyebrow">十</span>几条可质疑 / 值得注意的设计点</h2>
+<ol><li><strong>无尽模式在 Ante 12 数学崩塌</strong>（3 亿 → 470 亿）。它不是一个「玩到腻为止」的模式， 而是一个「看你能撑几关」的计分板。如果照抄这套曲线做长线模式会翻车。</li><li><strong>轴 C 被 5 个槽位卡死，但破局手段（负片）只有 0.3%</strong>。 这让「能不能上大分」在很大程度上由早期是否撞到负片/稀有决定， 方差集中在前 3 个 Ante。缓解手段全是花钱（重摇、巨型包）， 所以经济差的局会被双重惩罚。</li><li><strong><code>e_negative.config.extra = 1</code> 是死字段</strong>，负片的 +1 槽硬编在 <code class="path">源码/card.lua:409</code>。改 config 无效——包里少见的配置与实现脱节处。</li><li><strong>蜡封（4 种）连 config 都没有</strong>，全部硬编。它是体验上很重要的一层 （金/红/蓝/紫各对应一种触发时机），却是可维护性最差的一块。</li><li><strong>所有数值写死在客户端，无服务端下发</strong>。意味着一旦发版就无法调平衡， 反过来说也让「种子复现」与社区工具生态成立——这是个明确的取舍，不是疏漏。</li></ol>
+</section>
+<section id="s12">
+<h2><span class="eyebrow"></span>附：这份分析用到的产物</h2>
+<div class="tw"><table><thead><tr><th style="text-align:left">结论</th><th style="text-align:left">数据来源</th></tr></thead><tbody><tr><td style="text-align:left">分数曲线、经济、掉率</td><td style="text-align:left"><code class="path">数值设计报告.md</code> 第二/三章</td></tr><tr><td style="text-align:left">稀有度 × 杠杆交叉表</td><td style="text-align:left"><code class="path">配置CSV/_小丑总表.csv</code> 的 <code>稀有度</code> + <code>中文描述</code> + <code>数值参数</code></td></tr><tr><td style="text-align:left">牌型二次曲线</td><td style="text-align:left"><code class="path">配置CSV/HANDS.csv</code> 的 <code>chips</code>/<code>mult</code>/<code>l_chips</code>/<code>l_mult</code></td></tr><tr><td style="text-align:left">Tag 的 Ante 门槛</td><td style="text-align:left"><code class="path">配置CSV/_标签总表.csv</code> 的 <code>最低出场Ante</code></td></tr><tr><td style="text-align:left">Boss 出场窗口</td><td style="text-align:left"><code class="path">配置CSV/P_BLINDS.csv</code> 的 <code>boss.min</code></td></tr><tr><td style="text-align:left">元进程解锁</td><td style="text-align:left"><code class="path">配置CSV/_小丑总表.csv</code> <code>解锁条件类型</code> + <code class="path">_牌组总表.csv</code></td></tr><tr><td style="text-align:left">配置化程度</td><td style="text-align:left"><code class="path">配置/总表索引.md</code></td></tr></tbody></table></div>
+<blockquote>分类口径说明：第三节的「杠杆」分类由脚本按 <code>中文描述</code> 与 <code>数值参数</code> 关键词判定 （<code>X倍率</code> 匹配 <code>X&lt;数&gt;倍率</code> 或 config 含 <code>Xmult</code>），一张小丑可命中多个标签， 所以横向合计 150+。成长型小丑按初始值计入，实际强度需按「触发次数 × 增量」估。</blockquote>
+</section>
+</main>
+<footer><b>口径说明。</b>需求曲线、经济、掉率、权重全部出自包内明文 Lua 与拆出的 11 张总表，可逐条回溯到 <code>文件:行号</code>。第二节的四种构筑、第四节的流派标签与资源产销表是<b>建模与人工判断</b>，不是拆包事实——口径写在生成脚本里，改判断只动那几张表。文中的路径指向拆包工作区，在这份单文件报告里不可点。<br>两张图由 <code>balatro_curve.py</code> 与 <code>balatro_synergy_graph.py</code> 生成，数字均为实读；本页由 <code>balatro_report.py</code> 打包。</footer>
+</div>

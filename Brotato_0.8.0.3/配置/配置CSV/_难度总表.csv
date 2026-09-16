@@ -1,0 +1,12 @@
+﻿id,中文名,英文名,难度值,稀有度槽,默认解锁,效果(中),效果原始,出处
+difficulty_0,危险0,Danger 0,0,0,True,无修改,effect_no_modifiers=0,items/difficulties/0/difficulty_0.tres
+difficulty_1,危险1,Danger 1,1,1,False,出现新敌人,EFFECT_NEW_ENEMIES=0,items/difficulties/1/difficulty_1.tres
+difficulty_10,危险10,Danger 10,10,0,False,,,items/difficulties/others/difficulty_10.tres
+difficulty_2,危险2,Danger 2,2,2,False,出现新敌人 / 精英怪和敌群出现,EFFECT_NEW_ENEMIES=0 / effect_elites=0,items/difficulties/2/difficulty_2.tres
+difficulty_3,危险3,Danger 3,3,3,False,出现新敌人 / 精英怪和敌群出现 / 敌人更加强大 / enemy_damage=12,EFFECT_NEW_ENEMIES=0 / effect_elites=0 / enemy_health=12 / enemy_damage=12,items/difficulties/3/difficulty_3.tres
+difficulty_4,危险4,Danger 4,4,4,False,出现新敌人 / 精英怪和敌群出现 / 敌人更加强大 / 更多的精英怪和敌群出现 / enemy_damage=26,EFFECT_NEW_ENEMIES=0 / effect_elites=0 / enemy_health=26 / effect_more_elites=0 / enemy_damage=26,items/difficulties/4/difficulty_4.tres
+difficulty_5,危险5,Danger 5,5,5,False,出现新敌人 / 精英怪和敌群出现 / 敌人更加强大 / 更多的精英怪和敌群出现 / 同时出现两个头目 / enemy_damage=40,EFFECT_NEW_ENEMIES=0 / effect_elites=0 / enemy_health=40 / effect_more_elites=0 / double_boss=1 / enemy_damage=40,items/difficulties/5/difficulty_5.tres
+difficulty_6,危险6,Danger 6,6,0,False,,,items/difficulties/others/difficulty_6.tres
+difficulty_7,危险7,Danger 7,7,0,False,,,items/difficulties/others/difficulty_7.tres
+difficulty_8,危险8,Danger 8,8,0,False,,,items/difficulties/others/difficulty_8.tres
+difficulty_9,危险9,Danger 9,9,0,False,,,items/difficulties/others/difficulty_9.tres

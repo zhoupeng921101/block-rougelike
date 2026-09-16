@@ -1,0 +1,116 @@
+[
+  {
+    "属性key": "explosion_damage",
+    "中文名": "%爆炸伤害",
+    "英文名": "% Explosion Damage\u0000",
+    "出处": "items/upgrades/stat_explosion_damage.tres"
+  },
+  {
+    "属性key": "stat_armor",
+    "中文名": "护甲",
+    "英文名": "Armor",
+    "出处": "items/upgrades/armor/stat_armor.tres"
+  },
+  {
+    "属性key": "stat_attack_speed",
+    "中文名": "%攻击速度",
+    "英文名": "% Attack Speed",
+    "出处": "items/upgrades/attack_speed/stat_attack_speed.tres"
+  },
+  {
+    "属性key": "stat_crit_chance",
+    "中文名": "%暴击率",
+    "英文名": "% Crit Chance",
+    "出处": "items/upgrades/crit_chance/stat_crit_chance.tres"
+  },
+  {
+    "属性key": "stat_crit_damage",
+    "中文名": "％暴击伤害",
+    "英文名": "% Crit Damage",
+    "出处": "items/upgrades/crit_damage/stat_crit_damage.tres"
+  },
+  {
+    "属性key": "stat_dodge",
+    "中文名": "%闪避",
+    "英文名": "% Dodge",
+    "出处": "items/upgrades/dodge/stat_dodge.tres"
+  },
+  {
+    "属性key": "stat_elemental_damage",
+    "中文名": "元素伤害",
+    "英文名": "Elemental Damage\u0000",
+    "出处": "items/upgrades/elemental_damage/stat_elemental_damage.tres"
+  },
+  {
+    "属性key": "stat_engineering",
+    "中文名": "工程学",
+    "英文名": "Engineering\u0000",
+    "出处": "items/upgrades/engineering/stat_engineering.tres"
+  },
+  {
+    "属性key": "stat_harvesting",
+    "中文名": "收获",
+    "英文名": "Harvesting\u0000",
+    "出处": "items/upgrades/harvesting/stat_harvesting.tres"
+  },
+  {
+    "属性key": "stat_hp_regeneration",
+    "中文名": "生命再生",
+    "英文名": "HP Regeneration\u0000",
+    "出处": "items/upgrades/health_regeneration/stat_hp_regeneration.tres"
+  },
+  {
+    "属性key": "stat_lifesteal",
+    "中文名": "%生命窃取",
+    "英文名": "% Life Steal",
+    "出处": "items/upgrades/lifesteal/stat_lifesteal.tres"
+  },
+  {
+    "属性key": "stat_luck",
+    "中文名": "幸运",
+    "英文名": "Luck",
+    "出处": "items/upgrades/luck/stat_luck.tres"
+  },
+  {
+    "属性key": "stat_materials",
+    "中文名": "",
+    "英文名": "",
+    "出处": "items/upgrades/stat_materials.tres"
+  },
+  {
+    "属性key": "stat_max_hp",
+    "中文名": "最大生命值",
+    "英文名": "Max HP",
+    "出处": "items/upgrades/health/stat_max_hp.tres"
+  },
+  {
+    "属性key": "stat_melee_damage",
+    "中文名": "近战伤害",
+    "英文名": "Melee Damage\u0000",
+    "出处": "items/upgrades/melee_damage/stat_melee_damage.tres"
+  },
+  {
+    "属性key": "stat_percent_damage",
+    "中文名": "%伤害",
+    "英文名": "% Damage",
+    "出处": "items/upgrades/percent_damage/stat_percent_damage.tres"
+  },
+  {
+    "属性key": "stat_range",
+    "中文名": "范围",
+    "英文名": "Range",
+    "出处": "items/upgrades/range/stat_range.tres"
+  },
+  {
+    "属性key": "stat_ranged_damage",
+    "中文名": "远程伤害",
+    "英文名": "Ranged Damage\u0000",
+    "出处": "items/upgrades/ranged_damage/stat_ranged_damage.tres"
+  },
+  {
+    "属性key": "stat_speed",
+    "中文名": "%速度",
+    "英文名": "% Speed",
+    "出处": "items/upgrades/speed/stat_speed.tres"
+  }
+]

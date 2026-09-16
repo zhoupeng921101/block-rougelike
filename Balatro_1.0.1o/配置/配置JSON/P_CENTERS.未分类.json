@@ -1,0 +1,20 @@
+{
+ "soul": {
+  "pos": {
+   "x": 0,
+   "y": 1
+  }
+ },
+ "undiscovered_joker": {
+  "pos": {
+   "x": 5,
+   "y": 3
+  }
+ },
+ "undiscovered_tarot": {
+  "pos": {
+   "x": 6,
+   "y": 3
+  }
+ }
+}

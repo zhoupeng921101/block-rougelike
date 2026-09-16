@@ -1,0 +1,9 @@
+﻿key,中文名,英文名,config.Xmult,config.bonus,config.extra,config.h_dollars,config.h_x_mult,config.mult,config.p_dollars,effect,label,max,name,order,pos.x,pos.y,set
+m_bonus,奖励牌,Bonus Card,,30,,,,,,Bonus Card,Bonus Card,500,Bonus,2,1,1,Enhanced
+m_glass,玻璃牌,Glass Card,2,,4,,,,,Glass Card,Glass Card,500,Glass Card,5,5,1,Enhanced
+m_gold,黄金牌,Gold Card,,,,3,,,,Gold Card,Gold Card,500,Gold Card,8,6,0,Enhanced
+m_lucky,幸运牌,Lucky Card,,,,,,20,20,Lucky Card,Lucky Card,500,Lucky Card,9,4,1,Enhanced
+m_mult,倍率牌,Mult Card,,,,,,4,,Mult Card,Mult Card,500,Mult,3,2,1,Enhanced
+m_steel,钢铁牌,Steel Card,,,,,1.5,,,Steel Card,Steel Card,500,Steel Card,6,6,1,Enhanced
+m_stone,石头牌,Stone Card,,50,,,,,,Stone Card,Stone Card,500,Stone Card,7,5,0,Enhanced
+m_wild,万能牌,Wild Card,,,,,,,,Wild Card,Wild Card,500,Wild Card,4,3,1,Enhanced

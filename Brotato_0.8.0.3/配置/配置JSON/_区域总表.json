@@ -1,0 +1,32 @@
+[
+  {
+    "id": 0,
+    "中文名": "ZONE_CRASH_ZONE",
+    "英文名": "",
+    "宽": 32,
+    "高": 24,
+    "默认解锁": true,
+    "波次数": 20,
+    "出处": "zones/zone_1/zone_1_data.tres"
+  },
+  {
+    "id": 0,
+    "中文名": "ZONE_LAKE",
+    "英文名": "",
+    "宽": 32,
+    "高": 24,
+    "默认解锁": false,
+    "波次数": 1,
+    "出处": "zones/zone_2/zone_2_data.tres"
+  },
+  {
+    "id": 0,
+    "中文名": "ZONE_VOLCANIC_GROUNDS",
+    "英文名": "",
+    "宽": 32,
+    "高": 24,
+    "默认解锁": false,
+    "波次数": 1,
+    "出处": "zones/zone_3/zone_3_data.tres"
+  }
+]

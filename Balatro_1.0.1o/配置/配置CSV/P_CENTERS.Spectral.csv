@@ -1,0 +1,19 @@
+﻿key,中文名,英文名,config.extra,config.extra.destroy,config.extra.dollars,config.max_highlighted,config.remove_card,consumeable,cost,demo,discovered,effect,hidden,name,order,pos.x,pos.y,set
+c_ankh,生命十字章,Ankh,2,,,,,True,4,,False,,,Ankh,11,0,5,Spectral
+c_aura,光环,Aura,,,,,,True,4,,False,,,Aura,5,4,4,Spectral
+c_black_hole,黑洞,Black Hole,,,,,,True,4,True,False,,True,Black Hole,18,9,3,Spectral
+c_cryptid,神秘生物,Cryptid,2,,,1,,True,4,,False,,,Cryptid,16,5,5,Spectral
+c_deja_vu,既视感,Deja Vu,Red,,,1,,True,4,,False,,,Deja Vu,12,1,5,Spectral
+c_ectoplasm,灵质,Ectoplasm,,,,,,True,4,,False,,,Ectoplasm,9,8,4,Spectral
+c_familiar,使魔,Familiar,3,,,,True,True,4,,False,,,Familiar,1,0,4,Spectral
+c_grim,严峻,Grim,2,,,,True,True,4,,False,,,Grim,2,1,4,Spectral
+c_hex,妖法,Hex,2,,,,,True,4,,False,,,Hex,13,2,5,Spectral
+c_immolate,火祭,Immolate,,5,20,,True,True,4,,False,,,Immolate,10,9,4,Spectral
+c_incantation,咒语,Incantation,4,,,,True,True,4,,False,,,Incantation,3,2,4,Spectral
+c_medium,灵媒,Medium,Purple,,,1,,True,4,,False,,,Medium,15,4,5,Spectral
+c_ouija,占卜,Ouija,,,,,,True,4,,False,,,Ouija,8,7,4,Spectral
+c_sigil,符印,Sigil,,,,,,True,4,,False,,,Sigil,7,6,4,Spectral
+c_soul,灵魂,The Soul,,,,,,True,4,True,False,Unlocker,True,The Soul,17,2,2,Spectral
+c_talisman,护身符,Talisman,Gold,,,1,,True,4,,False,,,Talisman,4,3,4,Spectral
+c_trance,入迷,Trance,Blue,,,1,,True,4,,False,,,Trance,14,3,5,Spectral
+c_wraith,幽灵,Wraith,,,,,,True,4,,False,,,Wraith,6,5,4,Spectral

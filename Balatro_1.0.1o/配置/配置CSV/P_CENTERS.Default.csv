@@ -1,0 +1,2 @@
+﻿key,cost_mult,discovered,effect,freq,label,line,max,name,pos.x,pos.y,set,start_alerted,start_discovered
+c_base,1.0,True,Base,1,Base Card,base,500,Default Base,1,0,Default,True,True

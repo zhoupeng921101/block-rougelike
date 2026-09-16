@@ -1,0 +1,21 @@
+﻿id,英文名,中文名,自定义规则数,数值修正数,禁用物品数,起始物品数,牌组张数
+c_omelette_1,The Omelette,煎蛋卷,3,0,6,5,默认
+c_city_1,15 Minute City,15分钟都市,0,0,0,2,52
+c_rich_1,Rich get Richer,富者愈富,1,1,0,0,默认
+c_knife_1,On a Knife's Edge,刀锋之上,0,0,0,1,默认
+c_xray_1,X-ray Vision,X光视界,1,0,0,0,默认
+c_mad_world_1,Mad World,疯狂世界,2,0,1,2,32
+c_luxury_1,Luxury Tax,奢侈税,1,1,0,0,默认
+c_non_perishable_1,Non-Perishable,不腐之物,1,0,12,0,默认
+c_medusa_1,Medusa,美杜莎,0,0,0,1,52
+c_double_nothing_1,Double or Nothing,孤注一掷,1,0,0,0,52
+c_typecast_1,Typecast,角色固化,2,0,1,0,默认
+c_inflation_1,Inflation,通货膨胀,1,0,2,1,默认
+c_bram_poker_1,Bram Poker,布莱姆·扑克,1,0,0,3,默认
+c_fragile_1,Fragile,易碎品,0,0,18,2,52
+c_monolith_1,Monolith,巨石,0,0,0,2,默认
+c_blast_off_1,Blast Off,点火升空,0,3,3,2,默认
+c_five_card_1,Five-Card Draw,五连抽,0,3,3,2,默认
+c_golden_needle_1,Golden Needle,金针,1,3,3,1,默认
+c_cruelty_1,Cruelty,残酷,2,1,0,0,默认
+c_jokerless_1,Jokerless,无小丑,1,1,16,0,默认

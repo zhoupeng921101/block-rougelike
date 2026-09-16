@@ -1,0 +1,275 @@
+{
+ "c_ankh": {
+  "config": {
+   "extra": 2
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Ankh",
+  "order": 11,
+  "pos": {
+   "x": 0,
+   "y": 5
+  },
+  "set": "Spectral"
+ },
+ "c_aura": {
+  "config": {},
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Aura",
+  "order": 5,
+  "pos": {
+   "x": 4,
+   "y": 4
+  },
+  "set": "Spectral"
+ },
+ "c_black_hole": {
+  "config": {},
+  "consumeable": true,
+  "cost": 4,
+  "demo": true,
+  "discovered": false,
+  "hidden": true,
+  "name": "Black Hole",
+  "order": 18,
+  "pos": {
+   "x": 9,
+   "y": 3
+  },
+  "set": "Spectral"
+ },
+ "c_cryptid": {
+  "config": {
+   "extra": 2,
+   "max_highlighted": 1
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Cryptid",
+  "order": 16,
+  "pos": {
+   "x": 5,
+   "y": 5
+  },
+  "set": "Spectral"
+ },
+ "c_deja_vu": {
+  "config": {
+   "extra": "Red",
+   "max_highlighted": 1
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Deja Vu",
+  "order": 12,
+  "pos": {
+   "x": 1,
+   "y": 5
+  },
+  "set": "Spectral"
+ },
+ "c_ectoplasm": {
+  "config": {},
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Ectoplasm",
+  "order": 9,
+  "pos": {
+   "x": 8,
+   "y": 4
+  },
+  "set": "Spectral"
+ },
+ "c_familiar": {
+  "config": {
+   "extra": 3,
+   "remove_card": true
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Familiar",
+  "order": 1,
+  "pos": {
+   "x": 0,
+   "y": 4
+  },
+  "set": "Spectral"
+ },
+ "c_grim": {
+  "config": {
+   "extra": 2,
+   "remove_card": true
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Grim",
+  "order": 2,
+  "pos": {
+   "x": 1,
+   "y": 4
+  },
+  "set": "Spectral"
+ },
+ "c_hex": {
+  "config": {
+   "extra": 2
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Hex",
+  "order": 13,
+  "pos": {
+   "x": 2,
+   "y": 5
+  },
+  "set": "Spectral"
+ },
+ "c_immolate": {
+  "config": {
+   "extra": {
+    "destroy": 5,
+    "dollars": 20
+   },
+   "remove_card": true
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Immolate",
+  "order": 10,
+  "pos": {
+   "x": 9,
+   "y": 4
+  },
+  "set": "Spectral"
+ },
+ "c_incantation": {
+  "config": {
+   "extra": 4,
+   "remove_card": true
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Incantation",
+  "order": 3,
+  "pos": {
+   "x": 2,
+   "y": 4
+  },
+  "set": "Spectral"
+ },
+ "c_medium": {
+  "config": {
+   "extra": "Purple",
+   "max_highlighted": 1
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Medium",
+  "order": 15,
+  "pos": {
+   "x": 4,
+   "y": 5
+  },
+  "set": "Spectral"
+ },
+ "c_ouija": {
+  "config": {},
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Ouija",
+  "order": 8,
+  "pos": {
+   "x": 7,
+   "y": 4
+  },
+  "set": "Spectral"
+ },
+ "c_sigil": {
+  "config": {},
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Sigil",
+  "order": 7,
+  "pos": {
+   "x": 6,
+   "y": 4
+  },
+  "set": "Spectral"
+ },
+ "c_soul": {
+  "config": {},
+  "consumeable": true,
+  "cost": 4,
+  "demo": true,
+  "discovered": false,
+  "effect": "Unlocker",
+  "hidden": true,
+  "name": "The Soul",
+  "order": 17,
+  "pos": {
+   "x": 2,
+   "y": 2
+  },
+  "set": "Spectral"
+ },
+ "c_talisman": {
+  "config": {
+   "extra": "Gold",
+   "max_highlighted": 1
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Talisman",
+  "order": 4,
+  "pos": {
+   "x": 3,
+   "y": 4
+  },
+  "set": "Spectral"
+ },
+ "c_trance": {
+  "config": {
+   "extra": "Blue",
+   "max_highlighted": 1
+  },
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Trance",
+  "order": 14,
+  "pos": {
+   "x": 3,
+   "y": 5
+  },
+  "set": "Spectral"
+ },
+ "c_wraith": {
+  "config": {},
+  "consumeable": true,
+  "cost": 4,
+  "discovered": false,
+  "name": "Wraith",
+  "order": 6,
+  "pos": {
+   "x": 5,
+   "y": 4
+  },
+  "set": "Spectral"
+ }
+}

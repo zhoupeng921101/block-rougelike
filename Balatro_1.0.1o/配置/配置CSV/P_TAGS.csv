@@ -1,0 +1,25 @@
+﻿key,中文名,英文名,config.dollars,config.dollars_per_discard,config.dollars_per_hand,config.edition,config.h_size,config.levels,config.max,config.odds,config.skip_bonus,config.spawn_jokers,config.type,discovered,min_ante,name,order,pos.x,pos.y,requires,set
+tag_boss,Boss标签,Boss Tag,,,,,,,,,,,new_blind_choice,False,,Boss Tag,9,0,2,,Tag
+tag_buffoon,小丑标签,Buffoon Tag,,,,,,,,,,,new_blind_choice,False,2,Buffoon Tag,13,4,2,,Tag
+tag_charm,吊饰标签,Charm Tag,,,,,,,,,,,new_blind_choice,False,,Charm Tag,11,2,2,,Tag
+tag_coupon,代金券标签,Coupon Tag,,,,,,,,,,,shop_final_pass,False,,Coupon Tag,17,4,0,,Tag
+tag_d_six,D6标签,D6 Tag,,,,,,,,,,,shop_start,False,,D6 Tag,20,5,3,,Tag
+tag_double,双倍标签,Double Tag,,,,,,,,,,,tag_add,False,,Double Tag,18,5,0,,Tag
+tag_economy,经济标签,Economy Tag,,,,,,,40,,,,immediate,False,,Economy Tag,24,4,3,,Tag
+tag_ethereal,空灵标签,Ethereal Tag,,,,,,,,,,,new_blind_choice,False,2,Ethereal Tag,16,3,3,,Tag
+tag_foil,闪箔标签,Foil Tag,,,,foil,,,,2,,,store_joker_modify,False,,Foil Tag,4,3,0,e_foil,Tag
+tag_garbage,垃圾标签,Garbage Tag,,1,,,,,,,,,immediate,False,2,Garbage Tag,15,2,3,,Tag
+tag_handy,顺手标签,Handy Tag,,,1,,,,,,,,immediate,False,2,Handy Tag,14,1,3,,Tag
+tag_holo,镭射标签,Holographic Tag,,,,holo,,,,3,,,store_joker_modify,False,,Holographic Tag,5,0,1,e_holo,Tag
+tag_investment,投资标签,Investment Tag,25,,,,,,,,,,eval,False,,Investment Tag,7,2,1,,Tag
+tag_juggle,杂耍标签,Juggle Tag,,,,,3,,,,,,round_start_bonus,False,,Juggle Tag,19,5,1,,Tag
+tag_meteor,流星标签,Meteor Tag,,,,,,,,,,,new_blind_choice,False,2,Meteor Tag,12,3,2,,Tag
+tag_negative,负片标签,Negative Tag,,,,negative,,,,5,,,store_joker_modify,False,2,Negative Tag,3,2,0,e_negative,Tag
+tag_orbital,轨道标签,Orbital Tag,,,,,,3,,,,,immediate,False,2,Orbital Tag,23,5,2,,Tag
+tag_polychrome,多彩标签,Polychrome Tag,,,,polychrome,,,,4,,,store_joker_modify,False,,Polychrome Tag,6,1,1,e_polychrome,Tag
+tag_rare,稀有标签,Rare Tag,,,,,,,,3,,,store_joker_create,False,,Rare Tag,2,1,0,j_blueprint,Tag
+tag_skip,速度标签,Speed Tag,,,,,,,,,5,,immediate,False,,Skip Tag,22,0,3,,Tag
+tag_standard,标准标签,Standard Tag,,,,,,,,,,,new_blind_choice,False,2,Standard Tag,10,1,2,,Tag
+tag_top_up,充值标签,Top-up Tag,,,,,,,,,,2,immediate,False,2,Top-up Tag,21,4,1,,Tag
+tag_uncommon,罕见标签,Uncommon Tag,,,,,,,,,,,store_joker_create,False,,Uncommon Tag,1,0,0,,Tag
+tag_voucher,优惠券标签,Voucher Tag,,,,,,,,,,,voucher_add,False,,Voucher Tag,8,3,1,,Tag

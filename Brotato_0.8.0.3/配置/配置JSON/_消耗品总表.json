@@ -1,0 +1,32 @@
+[
+  {
+    "id": "consumable_fruit",
+    "中文名": "CONSUMABLE_FRUIT",
+    "英文名": "",
+    "稀有度": "I 普通",
+    "价值": 1,
+    "效果(中)": "effect_heal=3",
+    "效果原始": "effect_heal=3",
+    "出处": "items/consumables/fruit/fruit_data.tres"
+  },
+  {
+    "id": "consumable_item_box",
+    "中文名": "CONSUMABLE_ITEM_BOX",
+    "英文名": "",
+    "稀有度": "I 普通",
+    "价值": 1,
+    "效果(中)": "effect_heal=3",
+    "效果原始": "effect_heal=3",
+    "出处": "items/consumables/item_box/item_box_data.tres"
+  },
+  {
+    "id": "consumable_legendary_item_box",
+    "中文名": "CONSUMABLE_ITEM_BOX",
+    "英文名": "",
+    "稀有度": "IV 传奇",
+    "价值": 1,
+    "效果(中)": "effect_heal=100",
+    "效果原始": "effect_heal=100",
+    "出处": "items/consumables/legendary_item_box/legendary_item_box_data.tres"
+  }
+]

@@ -1,0 +1,221 @@
+{
+ "c_ceres": {
+  "config": {
+   "hand_type": "Flush House",
+   "softlock": true
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Ceres",
+  "order": 11,
+  "pos": {
+   "x": 8,
+   "y": 2
+  },
+  "set": "Planet"
+ },
+ "c_earth": {
+  "config": {
+   "hand_type": "Full House"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Earth",
+  "order": 3,
+  "pos": {
+   "x": 2,
+   "y": 3
+  },
+  "set": "Planet"
+ },
+ "c_eris": {
+  "config": {
+   "hand_type": "Flush Five",
+   "softlock": true
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Eris",
+  "order": 12,
+  "pos": {
+   "x": 3,
+   "y": 2
+  },
+  "set": "Planet"
+ },
+ "c_jupiter": {
+  "config": {
+   "hand_type": "Flush"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Jupiter",
+  "order": 5,
+  "pos": {
+   "x": 4,
+   "y": 3
+  },
+  "set": "Planet"
+ },
+ "c_mars": {
+  "config": {
+   "hand_type": "Four of a Kind"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Mars",
+  "order": 4,
+  "pos": {
+   "x": 3,
+   "y": 3
+  },
+  "set": "Planet"
+ },
+ "c_mercury": {
+  "config": {
+   "hand_type": "Pair"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Mercury",
+  "order": 1,
+  "pos": {
+   "x": 0,
+   "y": 3
+  },
+  "set": "Planet"
+ },
+ "c_neptune": {
+  "config": {
+   "hand_type": "Straight Flush"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Neptune",
+  "order": 8,
+  "pos": {
+   "x": 7,
+   "y": 3
+  },
+  "set": "Planet"
+ },
+ "c_planet_x": {
+  "config": {
+   "hand_type": "Five of a Kind",
+   "softlock": true
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Planet X",
+  "order": 10,
+  "pos": {
+   "x": 9,
+   "y": 2
+  },
+  "set": "Planet"
+ },
+ "c_pluto": {
+  "config": {
+   "hand_type": "High Card"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Pluto",
+  "order": 9,
+  "pos": {
+   "x": 8,
+   "y": 3
+  },
+  "set": "Planet"
+ },
+ "c_saturn": {
+  "config": {
+   "hand_type": "Straight"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Saturn",
+  "order": 6,
+  "pos": {
+   "x": 5,
+   "y": 3
+  },
+  "set": "Planet"
+ },
+ "c_uranus": {
+  "config": {
+   "hand_type": "Two Pair"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Uranus",
+  "order": 7,
+  "pos": {
+   "x": 6,
+   "y": 3
+  },
+  "set": "Planet"
+ },
+ "c_venus": {
+  "config": {
+   "hand_type": "Three of a Kind"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Hand Upgrade",
+  "freq": 1,
+  "name": "Venus",
+  "order": 2,
+  "pos": {
+   "x": 1,
+   "y": 3
+  },
+  "set": "Planet"
+ }
+}

@@ -1,0 +1,62 @@
+[
+ {
+  "key": "Gold",
+  "中文名": "金色蜡封",
+  "英文名": "Gold",
+  "触发时机": "计分结算",
+  "效果": "每张给 $3",
+  "中文描述": "这张牌被打出 并计分时 获得$3",
+  "英文描述": "Earn $3 when this card is played and scores",
+  "数值来源": "硬编码(P_SEALS 无 config)",
+  "实现说明": "写死在 Card:get_p_dollars 里的 ret + 3",
+  "生效点": "card.lua:305 ; card.lua:495 ; card.lua:571 ; card.lua:1072 ; card.lua:4484",
+  "文案键": "descriptions.Other.gold_seal",
+  "order": 1,
+  "图片": "图片资源/Seal/Gold.png"
+ },
+ {
+  "key": "Red",
+  "中文名": "红色蜡封",
+  "英文名": "Red",
+  "触发时机": "重复触发",
+  "效果": "该牌再触发 1 次",
+  "中文描述": "重新触发 此卡牌1次",
+  "英文描述": "Retrigger this card 1 time",
+  "数值来源": "硬编码(P_SEALS 无 config)",
+  "实现说明": "context.repetition 分支返回 repetitions = 1",
+  "生效点": "card.lua:2248",
+  "文案键": "descriptions.Other.red_seal",
+  "order": 2,
+  "图片": "图片资源/Seal/Red.png"
+ },
+ {
+  "key": "Blue",
+  "中文名": "蓝色蜡封",
+  "英文名": "Blue",
+  "触发时机": "回合结束",
+  "效果": "留在手牌则生成 1 张星球牌",
+  "中文描述": "如果在回合结束时 这张牌还留在手牌中 会生成最后一手牌型的星球牌 （必须有空位）",
+  "英文描述": "Creates the Planet card for final played poker hand of round if held in hand (Must have room)",
+  "数值来源": "硬编码(P_SEALS 无 config)",
+  "实现说明": "受消耗品槽位上限限制",
+  "生效点": "card.lua:1041",
+  "文案键": "descriptions.Other.blue_seal",
+  "order": 3,
+  "图片": "图片资源/Seal/Blue.png"
+ },
+ {
+  "key": "Purple",
+  "中文名": "紫色蜡封",
+  "英文名": "Purple",
+  "触发时机": "弃牌时",
+  "效果": "生成 1 张塔罗牌",
+  "中文描述": "被弃掉时 生成一张塔罗牌 （必须有空位）",
+  "英文描述": "Creates a Tarot card when discarded (Must have room)",
+  "数值来源": "硬编码(P_SEALS 无 config)",
+  "实现说明": "受消耗品槽位上限限制",
+  "生效点": "card.lua:2257",
+  "文案键": "descriptions.Other.purple_seal",
+  "order": 4,
+  "图片": "图片资源/Seal/Purple.png"
+ }
+]

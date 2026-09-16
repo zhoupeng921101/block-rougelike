@@ -1,0 +1,13 @@
+﻿key,chips,example,l_chips,l_mult,level,mult,order,played,played_this_round,s_chips,s_mult,visible
+Five of a Kind,120,"[[""S_A"", true], [""H_A"", true], [""H_A"", true], [""C_A"", true], [""D_A"", true]]",35,3,1,12,3,0,0,120,12,False
+Flush,35,"[[""H_A"", true], [""H_K"", true], [""H_T"", true], [""H_5"", true], [""H_4"", true]]",15,2,1,4,7,0,0,35,4,True
+Flush Five,160,"[[""S_A"", true], [""S_A"", true], [""S_A"", true], [""S_A"", true], [""S_A"", true]]",50,3,1,16,1,0,0,160,16,False
+Flush House,140,"[[""D_7"", true], [""D_7"", true], [""D_7"", true], [""D_4"", true], [""D_4"", true]]",40,4,1,14,2,0,0,140,14,False
+Four of a Kind,60,"[[""S_J"", true], [""H_J"", true], [""C_J"", true], [""D_J"", true], [""C_3"", false]]",30,3,1,7,5,0,0,60,7,True
+Full House,40,"[[""H_K"", true], [""C_K"", true], [""D_K"", true], [""S_2"", true], [""D_2"", true]]",25,2,1,4,6,0,0,40,4,True
+High Card,5,"[[""S_A"", true], [""D_Q"", false], [""D_9"", false], [""C_4"", false], [""D_3"", false]]",10,1,1,1,12,0,0,5,1,True
+Pair,10,"[[""S_K"", false], [""S_9"", true], [""D_9"", true], [""H_6"", false], [""D_3"", false]]",15,1,1,2,11,0,0,10,2,True
+Straight,30,"[[""D_J"", true], [""C_T"", true], [""C_9"", true], [""S_8"", true], [""H_7"", true]]",30,3,1,4,8,0,0,30,4,True
+Straight Flush,100,"[[""S_Q"", true], [""S_J"", true], [""S_T"", true], [""S_9"", true], [""S_8"", true]]",40,4,1,8,4,0,0,100,8,True
+Three of a Kind,30,"[[""S_T"", true], [""C_T"", true], [""D_T"", true], [""H_6"", false], [""D_5"", false]]",20,2,1,3,9,0,0,30,3,True
+Two Pair,20,"[[""H_A"", true], [""D_A"", true], [""C_Q"", false], [""H_4"", true], [""C_4"", true]]",20,1,1,2,10,0,0,20,2,True

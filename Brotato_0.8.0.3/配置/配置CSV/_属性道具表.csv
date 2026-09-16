@@ -1,0 +1,399 @@
+﻿属性key,道具id,道具,点数,稀有度,价格,每百材料点数,上限,标签,效果类,出处
+,item_landmines,地雷,1,I 普通,15,6.7,-1,stat_engineering / explosive,structure_effect,items/all/landmines/landmines_data.tres
+,item_turret,炮塔,1,I 普通,15,6.7,-1,stat_engineering,turret_effect,items/all/turret/turret_data.tres
+,item_turret_flame,燃烧炮塔,1,II 罕见,40,2.5,-1,stat_engineering,turret_effect,items/all/turret_flame/turret_flame_data.tres
+,item_turret_healing,医疗炮塔,1,II 罕见,40,2.5,-1,stat_engineering,turret_effect,items/all/turret_healing/turret_healing_data.tres
+,item_garden,花园,1,II 罕见,50,2.0,-1,,turret_effect,items/all/garden/garden_data.tres
+,item_turret_laser,激光炮塔,1,III 稀有,65,1.5,-1,stat_engineering,turret_effect,items/all/turret_laser/turret_laser_data.tres
+,item_tyler,泰勒,1,III 稀有,75,1.3,-1,stat_engineering,turret_effect,items/all/tyler/tyler_data.tres
+,item_turret_rocket,爆炸炮塔,1,IV 传奇,80,1.2,-1,stat_engineering,turret_effect,items/all/turret_rocket/turret_rocket_data.tres
+alien_eyes,item_alien_eyes,异形眼球,6,II 罕见,50,12.0,-1,stat_max_hp,projectile_effect,items/all/alien_eyes/alien_eyes_data.tres
+bounce,item_ricochet,跳弹,1,IV 传奇,100,1.0,-1,stat_ranged_damage,effect,items/all/ricochet/ricochet_data.tres
+burning_cooldown_reduction,item_eyes_surgery,眼部手术,10,II 罕见,60,16.7,3,stat_elemental_damage,effect,items/all/eyes_surgery/eye_surgery_data.tres
+burning_spread,item_snake,蛇,1,I 普通,25,4.0,-1,stat_elemental_damage,effect,items/all/snake/snake_data.tres
+chance_double_gold,item_metal_detector,金属探测器,5,II 罕见,40,12.5,20,stat_luck / stat_engineering / pickup / economy,effect,items/all/metal_detector/metal_detector_data.tres
+consumable_heal,item_weird_food,奇怪的食物,2,I 普通,20,10.0,-1,stat_luck,effect,items/all/weird_food/weird_food_data.tres
+consumable_heal,item_lemonade,柠檬水,1,I 普通,15,6.7,-1,stat_luck,effect,items/all/lemonade/lemonade_data.tres
+consumable_heal,item_alien_worm,异形虫,-1,I 普通,15,-6.7,-1,stat_max_hp / stat_hp_regeneration,effect,items/all/alien_worm/alien_worm_data.tres
+consumable_stats_while_max[stat_max_hp],item_extra_stomach,另一个胃,1,IV 传奇,100,1.0,1,stat_max_hp / stat_luck,stat_with_max_effect,items/all/extra_stomach/extra_stomach_data.tres
+damage_against_bosses,item_silver_bullet,银质子弹,25,III 稀有,70,35.7,-1,,effect,items/all/silver_bullet/silver_bullet_data.tres
+dmg_on_dodge[stat_melee_damage],item_riposte,反击,300,II 罕见,40,750.0,-1,stat_dodge / stat_melee_damage,chance_stat_damage_effect / effect,items/all/riposte/riposte_data.tres
+dmg_when_death[stat_luck],item_cyberball,赛博球,25,I 普通,30,83.3,-1,stat_luck,chance_stat_damage_effect,items/all/cyberball/cyberball_data.tres
+dmg_when_pickup_gold[stat_luck],item_baby_elephant,象宝宝,25,I 普通,30,83.3,-1,stat_luck / pickup,chance_stat_damage_effect,items/all/baby_elephant/baby_elephant_data.tres
+double_hp_regen_below_half_health,item_potion,再生药水,1,IV 传奇,90,1.1,1,stat_hp_regeneration,effect,items/all/potion/potion_data.tres
+enemy_speed,item_alien_baby,幼年异形,8,III 稀有,80,10.0,-1,stat_max_hp / more_enemy_speed,effect,items/all/alien_baby/alien_baby_data.tres
+enemy_speed,item_snail,蜗牛,-5,II 罕见,40,-12.5,1,less_enemy_speed,effect,items/all/snail/snail_data.tres
+explode_on_consumable,item_spicy_sauce,辣酱,1,II 罕见,40,2.5,4,stat_max_hp / stat_luck / explosive,effect / item_exploding_effect,items/all/spicy_sauce/spicy_sauce_data.tres
+explode_on_death,item_rip_and_tear,狂怒,1,III 稀有,65,1.5,5,stat_melee_damage / explosive,effect / item_exploding_effect,items/all/rip_and_tear/rip_and_tear_data.tres
+explosion_damage,item_dynamite,炸药,15,I 普通,20,75.0,-1,explosive,effect,items/all/dynamite/dynamite_data.tres
+explosion_damage,item_explosive_shells,爆裂弹,60,IV 传奇,100,60.0,-1,explosive,effect,items/all/explosive_shells/explosive_shells_data.tres
+explosion_size,item_plastic_explosive,塑性炸药,25,III 稀有,60,41.7,-1,explosive,effect,items/all/plastic_explosive/plastic_explosive_data.tres
+extra_enemies_next_wave,item_bait,诱饵,1,II 罕见,25,4.0,-1,stat_percent_damage / number_of_enemies,effect,items/all/bait/bait_data.tres
+free_rerolls,item_dangerous_bunny,危险的兔子,1,II 罕见,35,2.9,-1,economy,effect,items/all/dangerous_bunny/dangerous_bunny_data.tres
+gain_pct_gold_start_wave,item_piggy_bank,猪猪存钱罐,20,II 罕见,40,50.0,1,saving,effect,items/all/piggy_bank/piggy_bank_data.tres
+giant_crit_damage,item_giant_belt,巨型带,10,IV 传奇,100,10.0,1,stat_crit_chance,effect,items/all/giant_belt/giant_belt_data.tres
+gold_on_crit_kill[gold_on_crit_kill],item_hunting_trophy,狩猎战利品,33,III 稀有,55,60.0,-1,stat_crit_chance,effect,items/all/hunting_trophy/hunting_trophy_data.tres
+harvesting_growth,item_crown,王冠,8,III 稀有,70,11.4,1,stat_harvesting,effect,items/all/crown/crown_data.tres
+heal_on_crit_kill,item_tentacle,触手,20,II 罕见,32,62.5,5,stat_crit_chance,effect,items/all/tentacle/tentacle_data.tres
+heal_on_dodge[],item_adrenaline,肾上腺素,5,III 稀有,60,8.3,1,stat_dodge,chance_stat_damage_effect / effect,items/all/adrenaline/adrenaline_data.tres
+heal_when_pickup_gold,item_cute_monkey,萌萌猴,8,I 普通,25,32.0,13,pickup,effect,items/all/cute_monkey/cute_monkey_data.tres
+hit_protection,item_tardigrade,水熊虫,1,III 稀有,50,2.0,-1,,effect,items/all/tardigrade/tardigrade_data.tres
+hp_start_next_wave,item_weird_ghost,奇怪的幽灵,-100,I 普通,12,-833.3,-1,stat_max_hp,effect,items/all/weird_ghost/weird_ghost_data.tres
+hp_start_wave,item_sad_tomato,悲伤的番茄,-50,III 稀有,50,-100.0,1,stat_hp_regeneration,effect,items/all/sad_tomato/sad_tomato_data.tres
+instant_gold_attracting,item_baby_gecko,壁虎宝宝,20,I 普通,18,111.1,5,pickup,effect,items/all/baby_gecko/baby_gecko_data.tres
+instant_gold_attracting,item_sifds_relic,Sifd的圣物,100,IV 传奇,100,100.0,1,pickup,effect,items/all/sifds_relic/sifds_relic_data.tres
+item_box_gold,item_bag,背包,15,I 普通,15,100.0,3,stat_luck / exploration / economy,effect,items/all/bag/bag_data.tres
+items_price,item_coupon,优惠券,-5,I 普通,15,-33.3,5,economy,effect,items/all/coupon/coupon_data.tres
+knockback,item_boxing_glove,拳击手套,3,I 普通,15,20.0,-1,,effect,items/all/boxing_glove/boxing_glove_data.tres
+knockback,item_whetstone,磨刀石,-3,II 罕见,40,-7.5,-1,stat_lifesteal,effect,items/all/whetstone/whetstone_data.tres
+lose_hp_per_second,item_blood_donation,献血,1,III 稀有,50,2.0,-1,stat_harvesting,effect,items/all/blood_donation/blood_donation_data.tres
+lose_hp_per_second,item_bloody_hand,血淋淋的手,1,IV 传奇,100,1.0,1,stat_lifesteal,effect / gain_stat_for_every_stat_effect,items/all/bloody_hand/bloody_hand_data.tres
+number_of_enemies,item_mouse,老鼠,10,III 稀有,55,18.2,5,stat_lifesteal / more_enemies,effect,items/all/mouse/mouse_data.tres
+number_of_enemies,item_gentle_alien,外星绅士,5,I 普通,30,16.7,10,stat_max_hp / stat_percent_damage / more_enemies,effect,items/all/gentle_alien/gentle_alien_data.tres
+number_of_enemies,item_white_flag,白旗,-5,II 罕见,40,-12.5,1,stat_harvesting / less_enemies,effect,items/all/white_flag/white_flag_data.tres
+number_of_enemies,item_candle,蜡烛,-10,III 稀有,65,-15.4,1,stat_elemental_damage / stat_hp_regeneration / less_enemies,effect,items/all/candle/candle_data.tres
+one_shot_trees,item_lumberjack_shirt,伐木工人衬衫,1,I 普通,15,6.7,1,exploration,effect,items/all/lumberjack_shirt/lumberjack_shirt_data.tres
+pickup_range,item_alien_tongue,异形之舌,30,I 普通,25,120.0,-1,pickup,effect,items/all/alien_tongue/alien_tongue_data.tres
+pickup_range,item_little_frog,小青蛙,20,II 罕见,50,40.0,-1,stat_harvesting / pickup,effect,items/all/little_frog/little_frog_data.tres
+pickup_range,item_gnome,地精,-20,IV 传奇,100,-20.0,-1,stat_melee_damage / stat_elemental_damage,effect,items/all/gnome/gnome_data.tres
+piercing,item_bandana,头巾,1,III 稀有,75,1.3,-1,stat_ranged_damage,effect,items/all/bandana/bandana_data.tres
+piercing_damage,item_pumpkin,南瓜,15,II 罕见,40,37.5,-1,stat_ranged_damage,effect,items/all/pumpkin/pumpkin_data.tres
+projectiles_on_death,item_baby_with_a_beard,长胡子的婴儿,1,III 稀有,100,1.0,-1,stat_ranged_damage,effect / projectile_effect,items/all/baby_with_a_beard/baby_with_a_beard_data.tres
+recycling_gains,item_recycling_machine,回收装置,35,II 罕见,35,100.0,1,economy,effect,items/all/recycling_machine/recycling_machine_data.tres
+remove_speed[],item_ugly_tooth,丑牙,10,I 普通,25,40.0,1,less_enemy_speed,effect / stat_with_max_effect,items/all/ugly_tooth/ugly_tooth_data.tres
+stat_armor,item_robot_arm,机械臂,6,IV 传奇,90,6.7,-1,stat_armor / stat_engineering,effect,items/all/robot_arm/robot_arm_data.tres
+stat_armor,item_exoskeleton,外骨骼,5,IV 传奇,90,5.6,-1,stat_armor / stat_crit_chance / stat_engineering / stat_speed,effect,items/all/exoskeleton/exoskeleton_data.tres
+stat_armor,item_metal_plate,金属板,2,II 罕见,40,5.0,-1,stat_armor,effect,items/all/metal_plate/metal_plate_data.tres
+stat_armor,item_leather_vest,皮革背心,2,II 罕见,45,4.4,-1,stat_armor / stat_dodge,effect,items/all/leather_vest/leather_vest_data.tres
+stat_armor,item_duct_tape,胶带,1,I 普通,25,4.0,-1,stat_armor / stat_engineering,effect,items/all/duct_tape/duct_tape_data.tres
+stat_armor,item_helmet,头盔,1,I 普通,25,4.0,-1,stat_armor,effect,items/all/helmet/helmet_data.tres
+stat_armor,item_warrior_helmet,士兵头盔,3,III 稀有,80,3.8,-1,stat_armor / stat_max_hp,effect,items/all/warrior_helmet/warrior_helmet_data.tres
+stat_armor,item_medal,勋章,1,II 罕见,55,1.8,-1,stat_max_hp / stat_percent_damage / stat_armor / stat_speed,effect,items/all/medal/medal_data.tres
+stat_armor,item_triangle_of_power,三角之力,1,III 稀有,65,1.5,-1,stat_percent_damage / stat_armor,effect,items/all/triangle_of_power/triangle_of_power_data.tres
+stat_armor,item_potato,土豆,1,IV 传奇,85,1.2,-1,stat_max_hp / stat_hp_regeneration / stat_percent_damage / stat_speed / stat_luck,effect,items/all/potato/potato_data.tres
+stat_armor,item_gambling_token,赌博筹码,-1,II 罕见,60,-1.7,-1,stat_dodge,effect,items/all/gambling_token/gambling_token_data.tres
+stat_armor,item_big_arms,巨臂,-2,IV 传奇,105,-1.9,-1,stat_melee_damage / stat_ranged_damage,effect,items/all/big_arms/big_arms_data.tres
+stat_armor,item_jetpack,喷气背包,-2,IV 传奇,100,-2.0,-1,stat_speed / stat_dodge,effect,items/all/jetpack/jetpack_data.tres
+stat_armor,item_lucky_coin,幸运硬币,-2,IV 传奇,100,-2.0,1,stat_crit_chance / stat_luck,effect / gain_stat_for_every_stat_effect,items/all/lucky_coin/lucky_coin_data.tres
+stat_armor,item_sunglasses,墨镜,-1,II 罕见,50,-2.0,-1,stat_crit_chance,effect,items/all/sunglasses/sunglasses_data.tres
+stat_armor,item_night_goggles,夜视镜,-2,IV 传奇,90,-2.2,-1,stat_crit_chance / stat_range,effect,items/all/night_goggles/night_goggles_data.tres
+stat_armor,item_wheelbarrow,独轮车,-1,II 罕见,40,-2.5,-1,stat_harvesting,effect,items/all/wheelbarrow/wheelbarrow_data.tres
+stat_armor,item_community_support,社区支持,-2,III 稀有,75,-2.7,-1,,effect / gain_stat_for_every_stat_effect,items/all/community_support/community_support_data.tres
+stat_armor,item_glass_cannon,玻璃大炮,-3,III 稀有,75,-4.0,-1,stat_percent_damage,effect,items/all/glass_cannon/glass_cannon_data.tres
+stat_armor,item_gummy_berserker,软糖狂战士,-1,I 普通,25,-4.0,-1,stat_attack_speed / stat_range,effect,items/all/gummy_berserker/gummy_berserker_data.tres
+stat_attack_speed,item_coffee,咖啡,10,I 普通,15,66.7,-1,stat_attack_speed,effect,items/all/coffee/coffee_data.tres
+stat_attack_speed,item_gummy_berserker,软糖狂战士,5,I 普通,25,20.0,-1,stat_attack_speed / stat_range,effect,items/all/gummy_berserker/gummy_berserker_data.tres
+stat_attack_speed,item_banner,旗帜,10,II 罕见,55,18.2,-1,stat_range / stat_attack_speed,effect,items/all/banner/banner_data.tres
+stat_attack_speed,item_small_magazine,小型弹匣,10,II 罕见,60,16.7,-1,stat_ranged_damage / stat_attack_speed,effect,items/all/small_magazine/small_magazine_data.tres
+stat_attack_speed,item_improved_tools,改进工具,10,III 稀有,70,14.3,1,stat_elemental_damage,effect,items/all/improved_tools/improved_tools_data.tres
+stat_attack_speed,item_poisonous_tonic,毒性补品,10,III 稀有,80,12.5,-1,stat_attack_speed / stat_crit_chance / stat_range,effect,items/all/poisonous_tonic/poisonous_tonic_data.tres
+stat_attack_speed,item_retromations_hoodie,Retromation的连帽衫 ,2,IV 传奇,100,2.0,1,stat_dodge,effect / gain_stat_for_every_stat_effect,items/all/retromations_hoodie/retromations_hoodie_data.tres
+stat_attack_speed,item_community_support,社区支持,1,III 稀有,75,1.3,-1,,effect / gain_stat_for_every_stat_effect,items/all/community_support/community_support_data.tres
+stat_attack_speed,item_bowler_hat,圆顶礼帽,-5,III 稀有,75,-6.7,-1,stat_luck / stat_harvesting,effect,items/all/bowler_hat/bowler_hat_data.tres
+stat_attack_speed,item_pencil,铅笔,-1,I 普通,15,-6.7,-1,stat_engineering,effect,items/all/pencil/pencil_data.tres
+stat_attack_speed,item_heavy_bullets,重型子弹,-10,IV 传奇,100,-10.0,-1,stat_ranged_damage / stat_percent_damage / stat_range,effect,items/all/heavy_bullets/heavy_bullets_data.tres
+stat_attack_speed,item_scope,瞄准镜,-7,II 罕见,55,-12.7,-1,stat_ranged_damage / stat_range,effect,items/all/scope/scope_data.tres
+stat_attack_speed,item_missile,导弹,-6,II 罕见,45,-13.3,-1,stat_percent_damage,effect,items/all/missile/missile_data.tres
+stat_attack_speed,item_toolbox,工具箱,-8,III 稀有,55,-14.5,-1,stat_engineering,effect,items/all/toolbox/toolbox_data.tres
+stat_attack_speed,item_defective_steroids,有缺陷的增强剂,-3,I 普通,20,-15.0,-1,stat_max_hp / stat_melee_damage,effect,items/all/defective_steroids/defective_steroids_data.tres
+stat_crit_chance,item_insanity,精神异常,6,I 普通,20,30.0,-1,stat_crit_chance,effect,items/all/insanity/insanity_data.tres
+stat_crit_chance,item_sunglasses,墨镜,10,II 罕见,50,20.0,-1,stat_crit_chance,effect,items/all/sunglasses/sunglasses_data.tres
+stat_crit_chance,item_night_goggles,夜视镜,15,IV 传奇,90,16.7,-1,stat_crit_chance / stat_range,effect,items/all/night_goggles/night_goggles_data.tres
+stat_crit_chance,item_claw_tree,利爪树,3,I 普通,20,15.0,-1,stat_melee_damage / stat_crit_chance,effect,items/all/claw_tree/claw_tree_data.tres
+stat_crit_chance,item_blindfold,眼罩,5,II 罕见,45,11.1,-1,stat_crit_chance / stat_dodge,effect,items/all/blindfold/blindfold_data.tres
+stat_crit_chance,item_tentacle,触手,3,II 罕见,32,9.4,5,stat_crit_chance,effect,items/all/tentacle/tentacle_data.tres
+stat_crit_chance,item_energy_bracelet,能量手环,4,II 罕见,55,7.3,-1,stat_crit_chance / stat_elemental_damage,effect,items/all/energy_bracelet/energy_bracelet_data.tres
+stat_crit_chance,item_alloy,合金,5,III 稀有,80,6.2,-1,stat_melee_damage / stat_ranged_damage / stat_engineering / stat_crit_chance,effect,items/all/alloy/alloy_data.tres
+stat_crit_chance,item_poisonous_tonic,毒性补品,5,III 稀有,80,6.2,-1,stat_attack_speed / stat_crit_chance / stat_range,effect,items/all/poisonous_tonic/poisonous_tonic_data.tres
+stat_crit_chance,item_exoskeleton,外骨骼,5,IV 传奇,90,5.6,-1,stat_armor / stat_crit_chance / stat_engineering / stat_speed,effect,items/all/exoskeleton/exoskeleton_data.tres
+stat_crit_chance,item_bowler_hat,圆顶礼帽,-3,III 稀有,75,-4.0,-1,stat_luck / stat_harvesting,effect,items/all/bowler_hat/bowler_hat_data.tres
+stat_crit_chance,item_heavy_bullets,重型子弹,-5,IV 传奇,100,-5.0,-1,stat_ranged_damage / stat_percent_damage / stat_range,effect,items/all/heavy_bullets/heavy_bullets_data.tres
+stat_crit_chance,item_pencil,铅笔,-1,I 普通,15,-6.7,-1,stat_engineering,effect,items/all/pencil/pencil_data.tres
+stat_crit_chance,item_medal,勋章,-4,II 罕见,55,-7.3,-1,stat_max_hp / stat_percent_damage / stat_armor / stat_speed,effect,items/all/medal/medal_data.tres
+stat_crit_chance,item_compass,指南针,-3,II 罕见,40,-7.5,-1,stat_speed / stat_engineering,effect,items/all/compass/compass_data.tres
+stat_crit_chance,item_octopus,章鱼,-8,IV 传奇,105,-7.6,-1,stat_max_hp / stat_lifesteal,effect,items/all/octopus/octopus_data.tres
+stat_crit_chance,item_goat_skull,山羊头骨,-2,I 普通,25,-8.0,-1,stat_melee_damage,effect,items/all/goat_skull/goat_skull_data.tres
+stat_dodge,item_peaceful_bee,和平蜜蜂,4,I 普通,18,22.2,-1,stat_dodge / stat_harvesting,effect,items/all/peaceful_bee/peaceful_bee_data.tres
+stat_dodge,item_cape,斗篷,20,IV 传奇,110,18.2,-1,stat_lifesteal / stat_dodge,effect,items/all/cape/cape_data.tres
+stat_dodge,item_gambling_token,赌博筹码,8,II 罕见,60,13.3,-1,stat_dodge,effect,items/all/gambling_token/gambling_token_data.tres
+stat_dodge,item_leather_vest,皮革背心,6,II 罕见,45,13.3,-1,stat_armor / stat_dodge,effect,items/all/leather_vest/leather_vest_data.tres
+stat_dodge,item_blindfold,眼罩,5,II 罕见,45,11.1,-1,stat_crit_chance / stat_dodge,effect,items/all/blindfold/blindfold_data.tres
+stat_dodge,item_jetpack,喷气背包,10,IV 传奇,100,10.0,-1,stat_speed / stat_dodge,effect,items/all/jetpack/jetpack_data.tres
+stat_dodge,item_clover,三叶草,6,III 稀有,65,9.2,-1,stat_luck / stat_dodge,effect,items/all/clover/clover_data.tres
+stat_dodge,item_adrenaline,肾上腺素,5,III 稀有,60,8.3,1,stat_dodge,chance_stat_damage_effect / effect,items/all/adrenaline/adrenaline_data.tres
+stat_dodge,item_chameleon,变色龙,3,III 稀有,70,4.3,-1,stat_dodge / stand_still,effect,items/all/chameleon/chameleon_data.tres
+stat_dodge,item_potato,土豆,3,IV 传奇,85,3.5,-1,stat_max_hp / stat_hp_regeneration / stat_percent_damage / stat_speed / stat_luck,effect,items/all/potato/potato_data.tres
+stat_dodge,item_spider,蜘蛛,-6,IV 传奇,120,-5.0,-1,stat_percent_damage / stat_attack_speed,effect,items/all/spider/spider_data.tres
+stat_dodge,item_acid,酸液,-4,II 罕见,65,-6.2,-1,stat_max_hp,effect,items/all/acid/acid_data.tres
+stat_dodge,item_alloy,合金,-6,III 稀有,80,-7.5,-1,stat_melee_damage / stat_ranged_damage / stat_engineering / stat_crit_chance,effect,items/all/alloy/alloy_data.tres
+stat_dodge,item_little_frog,小青蛙,-5,II 罕见,50,-10.0,-1,stat_harvesting / pickup,effect,items/all/little_frog/little_frog_data.tres
+stat_dodge,item_toxic_sludge,毒污泥,-2,I 普通,20,-10.0,-1,stat_elemental_damage,effect,items/all/toxic_sludge/toxic_sludge_data.tres
+stat_dodge,item_weird_food,奇怪的食物,-2,I 普通,20,-10.0,-1,stat_luck,effect,items/all/weird_food/weird_food_data.tres
+stat_elemental_damage,item_handcuffs,手铐,8,III 稀有,80,10.0,1,stat_melee_damage / stat_ranged_damage / stat_elemental_damage,effect / stat_cap_effect,items/all/handcuffs/handcuffs_data.tres
+stat_elemental_damage,item_toxic_sludge,毒污泥,2,I 普通,20,10.0,-1,stat_elemental_damage,effect,items/all/toxic_sludge/toxic_sludge_data.tres
+stat_elemental_damage,item_wolf_helmet,野狼头盔,8,IV 传奇,80,10.0,-1,stat_elemental_damage / stat_luck,effect,items/all/wolf_helmet/wolf_helmet_data.tres
+stat_elemental_damage,item_fuel_tank,燃料箱,4,II 罕见,45,8.9,-1,stat_elemental_damage,effect,items/all/fuel_tank/fuel_tank_data.tres
+stat_elemental_damage,item_boiling_water,沸水,2,I 普通,30,6.7,-1,stat_elemental_damage,effect,items/all/boiling_water/boiling_water_data.tres
+stat_elemental_damage,item_candle,蜡烛,4,III 稀有,65,6.2,1,stat_elemental_damage / stat_hp_regeneration / less_enemies,effect,items/all/candle/candle_data.tres
+stat_elemental_damage,item_campfire,篝火,2,II 罕见,40,5.0,-1,stat_elemental_damage / stat_hp_regeneration,effect,items/all/campfire/campfire_data.tres
+stat_elemental_damage,item_charcoal,木炭,1,I 普通,20,5.0,-1,stat_elemental_damage / stat_melee_damage,effect,items/all/charcoal/charcoal_data.tres
+stat_elemental_damage,item_gnome,地精,5,IV 传奇,100,5.0,-1,stat_melee_damage / stat_elemental_damage,effect,items/all/gnome/gnome_data.tres
+stat_elemental_damage,item_mutation,异变,1,I 普通,25,4.0,-1,stat_ranged_damage / stat_elemental_damage,effect,items/all/mutation/mutation_data.tres
+stat_elemental_damage,item_energy_bracelet,能量手环,2,II 罕见,55,3.6,-1,stat_crit_chance / stat_elemental_damage,effect,items/all/energy_bracelet/energy_bracelet_data.tres
+stat_elemental_damage,item_cape,斗篷,-2,IV 传奇,110,-1.8,-1,stat_lifesteal / stat_dodge,effect,items/all/cape/cape_data.tres
+stat_elemental_damage,item_wheat,小麦,-2,III 稀有,85,-2.4,-1,stat_melee_damage / stat_ranged_damage / stat_harvesting,effect,items/all/wheat/wheat_data.tres
+stat_elemental_damage,item_wings,翅膀,-2,III 稀有,85,-2.4,-1,stat_speed / stat_range,effect,items/all/wings/wings_data.tres
+stat_elemental_damage,item_butterfly,蝴蝶,-1,I 普通,30,-3.3,-1,stat_lifesteal,effect,items/all/butterfly/butterfly_data.tres
+stat_elemental_damage,item_lost_duck,失落鸭鸭,-1,I 普通,25,-4.0,-1,stat_luck,effect,items/all/lost_duck/lost_duck_data.tres
+stat_engineering,item_pencil,铅笔,2,I 普通,15,13.3,-1,stat_engineering,effect,items/all/pencil/pencil_data.tres
+stat_engineering,item_book,书本,1,I 普通,8,12.5,-1,stat_engineering,effect,items/all/book/book_data.tres
+stat_engineering,item_diploma,执照,10,IV 传奇,80,12.5,-1,stat_engineering / xp_gain,effect,items/all/diploma/diploma_data.tres
+stat_engineering,item_cog,齿轮,4,II 罕见,35,11.4,-1,stat_engineering,effect,items/all/cog/cog_data.tres
+stat_engineering,item_toolbox,工具箱,6,III 稀有,55,10.9,-1,stat_engineering,effect,items/all/toolbox/toolbox_data.tres
+stat_engineering,item_compass,指南针,3,II 罕见,40,7.5,-1,stat_speed / stat_engineering,effect,items/all/compass/compass_data.tres
+stat_engineering,item_robot_arm,机械臂,6,IV 传奇,90,6.7,-1,stat_armor / stat_engineering,effect,items/all/robot_arm/robot_arm_data.tres
+stat_engineering,item_exoskeleton,外骨骼,5,IV 传奇,90,5.6,-1,stat_armor / stat_crit_chance / stat_engineering / stat_speed,effect,items/all/exoskeleton/exoskeleton_data.tres
+stat_engineering,item_metal_detector,金属探测器,2,II 罕见,40,5.0,20,stat_luck / stat_engineering / pickup / economy,effect,items/all/metal_detector/metal_detector_data.tres
+stat_engineering,item_duct_tape,胶带,1,I 普通,25,4.0,-1,stat_armor / stat_engineering,effect,items/all/duct_tape/duct_tape_data.tres
+stat_engineering,item_alloy,合金,3,III 稀有,80,3.8,-1,stat_melee_damage / stat_ranged_damage / stat_engineering / stat_crit_chance,effect,items/all/alloy/alloy_data.tres
+stat_engineering,item_strange_book,奇怪之书,1,III 稀有,70,1.4,1,stat_engineering / stat_elemental_damage,effect / gain_stat_for_every_stat_effect,items/all/strange_book/strange_book_data.tres
+stat_engineering,item_ritual,仪式,-2,II 罕见,60,-3.3,-1,stat_percent_damage / stat_lifesteal,effect,items/all/ritual/ritual_data.tres
+stat_engineering,item_wolf_helmet,野狼头盔,-5,IV 传奇,80,-6.2,-1,stat_elemental_damage / stat_luck,effect,items/all/wolf_helmet/wolf_helmet_data.tres
+stat_harvesting,item_blood_donation,献血,40,III 稀有,50,80.0,-1,stat_harvesting,effect,items/all/blood_donation/blood_donation_data.tres
+stat_harvesting,item_tractor,拖拉机,40,III 稀有,70,57.1,-1,stat_harvesting,effect,items/all/tractor/tractor_data.tres
+stat_harvesting,item_fertilizer,肥料,8,I 普通,15,53.3,-1,stat_harvesting,effect,items/all/fertilizer/fertilizer_data.tres
+stat_harvesting,item_wheelbarrow,独轮车,16,II 罕见,40,40.0,-1,stat_harvesting,effect,items/all/wheelbarrow/wheelbarrow_data.tres
+stat_harvesting,item_bowler_hat,圆顶礼帽,18,III 稀有,75,24.0,-1,stat_luck / stat_harvesting,effect,items/all/bowler_hat/bowler_hat_data.tres
+stat_harvesting,item_peaceful_bee,和平蜜蜂,4,I 普通,18,22.2,-1,stat_dodge / stat_harvesting,effect,items/all/peaceful_bee/peaceful_bee_data.tres
+stat_harvesting,item_little_frog,小青蛙,10,II 罕见,50,20.0,-1,stat_harvesting / pickup,effect,items/all/little_frog/little_frog_data.tres
+stat_harvesting,item_white_flag,白旗,5,II 罕见,40,12.5,1,stat_harvesting / less_enemies,effect,items/all/white_flag/white_flag_data.tres
+stat_harvesting,item_wheat,小麦,10,III 稀有,85,11.8,-1,stat_melee_damage / stat_ranged_damage / stat_harvesting,effect,items/all/wheat/wheat_data.tres
+stat_harvesting,item_spider,蜘蛛,-8,IV 传奇,120,-6.7,-1,stat_percent_damage / stat_attack_speed,effect,items/all/spider/spider_data.tres
+stat_harvesting,item_mouse,老鼠,-5,III 稀有,55,-9.1,5,stat_lifesteal / more_enemies,effect,items/all/mouse/mouse_data.tres
+stat_harvesting,item_bat,蝙蝠,-2,I 普通,20,-10.0,-1,stat_lifesteal,effect,items/all/bat/bat_data.tres
+stat_harvesting,item_charcoal,木炭,-2,I 普通,20,-10.0,-1,stat_elemental_damage / stat_melee_damage,effect,items/all/charcoal/charcoal_data.tres
+stat_harvesting,item_blood_leech,血蛭,-6,II 罕见,50,-12.0,-1,stat_lifesteal / stat_hp_regeneration,effect,items/all/blood_leech/blood_leech_data.tres
+stat_harvesting,item_rip_and_tear,狂怒,-12,III 稀有,65,-18.5,5,stat_melee_damage / explosive,effect / item_exploding_effect,items/all/rip_and_tear/rip_and_tear_data.tres
+stat_hp_regeneration,item_plant,植物,3,I 普通,10,30.0,-1,stat_hp_regeneration,effect,items/all/plant/plant_data.tres
+stat_hp_regeneration,item_sad_tomato,悲伤的番茄,8,III 稀有,50,16.0,1,stat_hp_regeneration,effect,items/all/sad_tomato/sad_tomato_data.tres
+stat_hp_regeneration,item_alien_worm,异形虫,2,I 普通,15,13.3,-1,stat_max_hp / stat_hp_regeneration,effect,items/all/alien_worm/alien_worm_data.tres
+stat_hp_regeneration,item_mushroom,蘑菇,3,I 普通,25,12.0,-1,stat_hp_regeneration,effect,items/all/mushroom/mushroom_data.tres
+stat_hp_regeneration,item_medikit,急救包,10,IV 传奇,90,11.1,-1,stat_hp_regeneration,effect,items/all/medikit/medikit_data.tres
+stat_hp_regeneration,item_campfire,篝火,2,II 罕见,40,5.0,-1,stat_elemental_damage / stat_hp_regeneration,effect,items/all/campfire/campfire_data.tres
+stat_hp_regeneration,item_blood_leech,血蛭,2,II 罕见,50,4.0,-1,stat_lifesteal / stat_hp_regeneration,effect,items/all/blood_leech/blood_leech_data.tres
+stat_hp_regeneration,item_alien_magic,外星魔法,3,III 稀有,85,3.5,-1,stat_max_hp / stat_hp_regeneration,effect,items/all/alien_magic/alien_magic_data.tres
+stat_hp_regeneration,item_potion,再生药水,3,IV 传奇,90,3.3,1,stat_hp_regeneration,effect,items/all/potion/potion_data.tres
+stat_hp_regeneration,item_shmoop,休穆糖,2,III 稀有,60,3.3,-1,stat_max_hp / stat_hp_regeneration,effect,items/all/shmoop/shmoop_data.tres
+stat_hp_regeneration,item_estys_couch,Esty的沙发,2,IV 传奇,100,2.0,1,stat_hp_regeneration / stat_max_hp,effect / gain_stat_for_every_stat_effect,items/all/estys_couch/estys_couch_data.tres
+stat_hp_regeneration,item_mammoth,猛犸,2,IV 传奇,115,1.7,-1,stat_melee_damage / stat_hp_regeneration,effect,items/all/mammoth/mammoth_data.tres
+stat_hp_regeneration,item_candle,蜡烛,1,III 稀有,65,1.5,1,stat_elemental_damage / stat_hp_regeneration / less_enemies,effect,items/all/candle/candle_data.tres
+stat_hp_regeneration,item_potato,土豆,1,IV 传奇,85,1.2,-1,stat_max_hp / stat_hp_regeneration / stat_percent_damage / stat_speed / stat_luck,effect,items/all/potato/potato_data.tres
+stat_hp_regeneration,item_exoskeleton,外骨骼,-2,IV 传奇,90,-2.2,-1,stat_armor / stat_crit_chance / stat_engineering / stat_speed,effect,items/all/exoskeleton/exoskeleton_data.tres
+stat_hp_regeneration,item_poisonous_tonic,毒性补品,-2,III 稀有,80,-2.5,-1,stat_attack_speed / stat_crit_chance / stat_range,effect,items/all/poisonous_tonic/poisonous_tonic_data.tres
+stat_hp_regeneration,item_hedgehog,刺猬,-1,I 普通,30,-3.3,-1,stat_melee_damage / stat_ranged_damage,effect,items/all/hedgehog/hedgehog_data.tres
+stat_hp_regeneration,item_robot_arm,机械臂,-3,IV 传奇,90,-3.3,-1,stat_armor / stat_engineering,effect,items/all/robot_arm/robot_arm_data.tres
+stat_hp_regeneration,item_broken_mouth,裂口,-1,I 普通,25,-4.0,-1,stat_max_hp,effect,items/all/broken_mouth/broken_mouth_data.tres
+stat_hp_regeneration,item_shady_potion,阴影药水,-2,II 罕见,48,-4.2,-1,stat_luck,effect,items/all/shady_potion/shady_potion_data.tres
+stat_lifesteal,item_bloody_hand,血淋淋的手,12,IV 传奇,100,12.0,1,stat_lifesteal,effect / gain_stat_for_every_stat_effect,items/all/bloody_hand/bloody_hand_data.tres
+stat_lifesteal,item_bat,蝙蝠,2,I 普通,20,10.0,-1,stat_lifesteal,effect,items/all/bat/bat_data.tres
+stat_lifesteal,item_whetstone,磨刀石,4,II 罕见,40,10.0,-1,stat_lifesteal,effect,items/all/whetstone/whetstone_data.tres
+stat_lifesteal,item_mouse,老鼠,5,III 稀有,55,9.1,5,stat_lifesteal / more_enemies,effect,items/all/mouse/mouse_data.tres
+stat_lifesteal,item_butterfly,蝴蝶,2,I 普通,30,6.7,-1,stat_lifesteal,effect,items/all/butterfly/butterfly_data.tres
+stat_lifesteal,item_octopus,章鱼,5,IV 传奇,105,4.8,-1,stat_max_hp / stat_lifesteal,effect,items/all/octopus/octopus_data.tres
+stat_lifesteal,item_fin,鳍,3,III 稀有,65,4.6,-1,stat_speed / stat_lifesteal,effect,items/all/fin/fin_data.tres
+stat_lifesteal,item_cape,斗篷,5,IV 传奇,110,4.5,-1,stat_lifesteal / stat_dodge,effect,items/all/cape/cape_data.tres
+stat_lifesteal,item_blood_leech,血蛭,2,II 罕见,50,4.0,-1,stat_lifesteal / stat_hp_regeneration,effect,items/all/blood_leech/blood_leech_data.tres
+stat_lifesteal,item_ritual,仪式,2,II 罕见,60,3.3,-1,stat_percent_damage / stat_lifesteal,effect,items/all/ritual/ritual_data.tres
+stat_lifesteal,item_potato,土豆,1,IV 传奇,85,1.2,-1,stat_max_hp / stat_hp_regeneration / stat_percent_damage / stat_speed / stat_luck,effect,items/all/potato/potato_data.tres
+stat_lifesteal,item_exoskeleton,外骨骼,-2,IV 传奇,90,-2.2,-1,stat_armor / stat_crit_chance / stat_engineering / stat_speed,effect,items/all/exoskeleton/exoskeleton_data.tres
+stat_lifesteal,item_bean_teacher,豆老师,-2,III 稀有,70,-2.9,-1,xp_gain,effect,items/all/bean_teacher/bean_teacher_data.tres
+stat_lifesteal,item_clover,三叶草,-2,III 稀有,65,-3.1,-1,stat_luck / stat_dodge,effect,items/all/clover/clover_data.tres
+stat_lifesteal,item_robot_arm,机械臂,-3,IV 传奇,90,-3.3,-1,stat_armor / stat_engineering,effect,items/all/robot_arm/robot_arm_data.tres
+stat_lifesteal,item_banner,旗帜,-2,II 罕见,55,-3.6,-1,stat_range / stat_attack_speed,effect,items/all/banner/banner_data.tres
+stat_lifesteal,item_baby_gecko,壁虎宝宝,-1,I 普通,18,-5.6,5,pickup,effect,items/all/baby_gecko/baby_gecko_data.tres
+stat_lifesteal,item_plant,植物,-1,I 普通,10,-10.0,-1,stat_hp_regeneration,effect,items/all/plant/plant_data.tres
+stat_luck,item_shady_potion,阴影药水,20,II 罕见,48,41.7,-1,stat_luck,effect,items/all/shady_potion/shady_potion_data.tres
+stat_luck,item_lost_duck,失落鸭鸭,10,I 普通,25,40.0,-1,stat_luck,effect,items/all/lost_duck/lost_duck_data.tres
+stat_luck,item_lucky_charm,护身符,30,III 稀有,75,40.0,-1,stat_luck,effect,items/all/lucky_charm/lucky_charm_data.tres
+stat_luck,item_propeller_hat,螺旋桨帽,10,I 普通,28,35.7,-1,stat_luck,effect,items/all/propeller_hat/propeller_hat_data.tres
+stat_luck,item_clover,三叶草,20,III 稀有,65,30.8,-1,stat_luck / stat_dodge,effect,items/all/clover/clover_data.tres
+stat_luck,item_panda,熊猫,25,IV 传奇,100,25.0,-1,stat_max_hp / stat_luck,effect,items/all/panda/panda_data.tres
+stat_luck,item_bowler_hat,圆顶礼帽,15,III 稀有,75,20.0,-1,stat_luck / stat_harvesting,effect,items/all/bowler_hat/bowler_hat_data.tres
+stat_luck,item_wolf_helmet,野狼头盔,15,IV 传奇,80,18.8,-1,stat_elemental_damage / stat_luck,effect,items/all/wolf_helmet/wolf_helmet_data.tres
+stat_luck,item_metal_detector,金属探测器,6,II 罕见,40,15.0,20,stat_luck / stat_engineering / pickup / economy,effect,items/all/metal_detector/metal_detector_data.tres
+stat_luck,item_potato,土豆,5,IV 传奇,85,5.9,-1,stat_max_hp / stat_hp_regeneration / stat_percent_damage / stat_speed / stat_luck,effect,items/all/potato/potato_data.tres
+stat_luck,item_lucky_coin,幸运硬币,2,IV 传奇,100,2.0,1,stat_crit_chance / stat_luck,effect / gain_stat_for_every_stat_effect,items/all/lucky_coin/lucky_coin_data.tres
+stat_luck,item_mushroom,蘑菇,-2,I 普通,25,-8.0,-1,stat_hp_regeneration,effect,items/all/mushroom/mushroom_data.tres
+stat_luck,item_alien_magic,外星魔法,-8,III 稀有,85,-9.4,-1,stat_max_hp / stat_hp_regeneration,effect,items/all/alien_magic/alien_magic_data.tres
+stat_luck,item_medikit,急救包,-10,IV 传奇,90,-11.1,-1,stat_hp_regeneration,effect,items/all/medikit/medikit_data.tres
+stat_luck,item_fin,鳍,-8,III 稀有,65,-12.3,-1,stat_speed / stat_lifesteal,effect,items/all/fin/fin_data.tres
+stat_luck,item_black_belt,黑带,-8,II 罕见,50,-16.0,-1,stat_melee_damage / xp_gain,effect,items/all/black_belt/black_belt_data.tres
+stat_luck,item_terrified_onion,惊恐的洋葱,-6,I 普通,15,-40.0,-1,stat_speed,effect,items/all/terrified_onion/terrified_onion_data.tres
+stat_max_hp,item_weird_ghost,奇怪的幽灵,3,I 普通,12,25.0,-1,stat_max_hp,effect,items/all/weird_ghost/weird_ghost_data.tres
+stat_max_hp,item_alien_worm,异形虫,3,I 普通,15,20.0,-1,stat_max_hp / stat_hp_regeneration,effect,items/all/alien_worm/alien_worm_data.tres
+stat_max_hp,item_broken_mouth,裂口,5,I 普通,25,20.0,-1,stat_max_hp,effect,items/all/broken_mouth/broken_mouth_data.tres
+stat_max_hp,item_cake,蛋糕,3,I 普通,15,20.0,-1,stat_max_hp,effect,items/all/cake/cake_data.tres
+stat_max_hp,item_alien_baby,幼年异形,15,III 稀有,80,18.8,-1,stat_max_hp / more_enemy_speed,effect,items/all/alien_baby/alien_baby_data.tres
+stat_max_hp,item_torture,拷问,15,IV 传奇,110,13.6,1,stat_max_hp,effect,items/all/torture/torture_data.tres
+stat_max_hp,item_acid,酸液,8,II 罕见,65,12.3,-1,stat_max_hp,effect,items/all/acid/acid_data.tres
+stat_max_hp,item_panda,熊猫,12,IV 传奇,100,12.0,-1,stat_max_hp / stat_luck,effect,items/all/panda/panda_data.tres
+stat_max_hp,item_octopus,章鱼,12,IV 传奇,105,11.4,-1,stat_max_hp / stat_lifesteal,effect,items/all/octopus/octopus_data.tres
+stat_max_hp,item_defective_steroids,有缺陷的增强剂,2,I 普通,20,10.0,-1,stat_max_hp / stat_melee_damage,effect,items/all/defective_steroids/defective_steroids_data.tres
+stat_max_hp,item_little_muscley_dude,肌肉小子,5,II 罕见,50,10.0,-1,stat_melee_damage / stat_max_hp,effect,items/all/little_muscley_dude/little_muscley_dude_data.tres
+stat_max_hp,item_shmoop,休穆糖,6,III 稀有,60,10.0,-1,stat_max_hp / stat_hp_regeneration,effect,items/all/shmoop/shmoop_data.tres
+stat_max_hp,item_alien_magic,外星魔法,8,III 稀有,85,9.4,-1,stat_max_hp / stat_hp_regeneration,effect,items/all/alien_magic/alien_magic_data.tres
+stat_max_hp,item_padding,护垫,4,II 罕见,45,8.9,-1,saving,effect / gain_stat_for_every_stat_effect,items/all/padding/padding_data.tres
+stat_max_hp,item_spicy_sauce,辣酱,3,II 罕见,40,7.5,4,stat_max_hp / stat_luck / explosive,effect / item_exploding_effect,items/all/spicy_sauce/spicy_sauce_data.tres
+stat_max_hp,item_gentle_alien,外星绅士,2,I 普通,30,6.7,10,stat_max_hp / stat_percent_damage / more_enemies,effect,items/all/gentle_alien/gentle_alien_data.tres
+stat_max_hp,item_warrior_helmet,士兵头盔,5,III 稀有,80,6.2,-1,stat_armor / stat_max_hp,effect,items/all/warrior_helmet/warrior_helmet_data.tres
+stat_max_hp,item_medal,勋章,3,II 罕见,55,5.5,-1,stat_max_hp / stat_percent_damage / stat_armor / stat_speed,effect,items/all/medal/medal_data.tres
+stat_max_hp,item_estys_couch,Esty的沙发,5,IV 传奇,100,5.0,1,stat_hp_regeneration / stat_max_hp,effect / gain_stat_for_every_stat_effect,items/all/estys_couch/estys_couch_data.tres
+stat_max_hp,item_potato,土豆,3,IV 传奇,85,3.5,-1,stat_max_hp / stat_hp_regeneration / stat_percent_damage / stat_speed / stat_luck,effect,items/all/potato/potato_data.tres
+stat_max_hp,item_boiling_water,沸水,-1,I 普通,30,-3.3,-1,stat_elemental_damage,effect,items/all/boiling_water/boiling_water_data.tres
+stat_max_hp,item_night_goggles,夜视镜,-3,IV 传奇,90,-3.3,-1,stat_crit_chance / stat_range,effect,items/all/night_goggles/night_goggles_data.tres
+stat_max_hp,item_diploma,执照,-3,IV 传奇,80,-3.8,-1,stat_engineering / xp_gain,effect,items/all/diploma/diploma_data.tres
+stat_max_hp,item_snake,蛇,-1,I 普通,25,-4.0,-1,stat_elemental_damage,effect,items/all/snake/snake_data.tres
+stat_max_hp,item_claw_tree,利爪树,-1,I 普通,20,-5.0,-1,stat_melee_damage / stat_crit_chance,effect,items/all/claw_tree/claw_tree_data.tres
+stat_max_hp,item_jetpack,喷气背包,-6,IV 传奇,100,-6.0,-1,stat_speed / stat_dodge,effect,items/all/jetpack/jetpack_data.tres
+stat_max_hp,item_leather_vest,皮革背心,-3,II 罕见,45,-6.7,-1,stat_armor / stat_dodge,effect,items/all/leather_vest/leather_vest_data.tres
+stat_max_hp,item_duct_tape,胶带,-2,I 普通,25,-8.0,-1,stat_armor / stat_engineering,effect,items/all/duct_tape/duct_tape_data.tres
+stat_max_hp,item_injection,注射剂,-2,I 普通,20,-10.0,-1,stat_percent_damage,effect,items/all/injection/injection_data.tres
+stat_melee_damage,item_mammoth,猛犸,15,IV 传奇,115,13.0,-1,stat_melee_damage / stat_hp_regeneration,effect,items/all/mammoth/mammoth_data.tres
+stat_melee_damage,item_goat_skull,山羊头骨,3,I 普通,25,12.0,-1,stat_melee_damage,effect,items/all/goat_skull/goat_skull_data.tres
+stat_melee_damage,item_mastery,精湛技艺,6,II 罕见,55,10.9,-1,stat_melee_damage,effect,items/all/mastery/mastery_data.tres
+stat_melee_damage,item_charcoal,木炭,2,I 普通,20,10.0,-1,stat_elemental_damage / stat_melee_damage,effect,items/all/charcoal/charcoal_data.tres
+stat_melee_damage,item_defective_steroids,有缺陷的增强剂,2,I 普通,20,10.0,-1,stat_max_hp / stat_melee_damage,effect,items/all/defective_steroids/defective_steroids_data.tres
+stat_melee_damage,item_gnome,地精,10,IV 传奇,100,10.0,-1,stat_melee_damage / stat_elemental_damage,effect,items/all/gnome/gnome_data.tres
+stat_melee_damage,item_handcuffs,手铐,8,III 稀有,80,10.0,1,stat_melee_damage / stat_ranged_damage / stat_elemental_damage,effect / stat_cap_effect,items/all/handcuffs/handcuffs_data.tres
+stat_melee_damage,item_big_arms,巨臂,10,IV 传奇,105,9.5,-1,stat_melee_damage / stat_ranged_damage,effect,items/all/big_arms/big_arms_data.tres
+stat_melee_damage,item_hedgehog,刺猬,2,I 普通,30,6.7,-1,stat_melee_damage / stat_ranged_damage,effect,items/all/hedgehog/hedgehog_data.tres
+stat_melee_damage,item_black_belt,黑带,3,II 罕见,50,6.0,-1,stat_melee_damage / xp_gain,effect,items/all/black_belt/black_belt_data.tres
+stat_melee_damage,item_little_muscley_dude,肌肉小子,3,II 罕见,50,6.0,-1,stat_melee_damage / stat_max_hp,effect,items/all/little_muscley_dude/little_muscley_dude_data.tres
+stat_melee_damage,item_claw_tree,利爪树,1,I 普通,20,5.0,-1,stat_melee_damage / stat_crit_chance,effect,items/all/claw_tree/claw_tree_data.tres
+stat_melee_damage,item_riposte,反击,2,II 罕见,40,5.0,-1,stat_dodge / stat_melee_damage,chance_stat_damage_effect / effect,items/all/riposte/riposte_data.tres
+stat_melee_damage,item_wheat,小麦,4,III 稀有,85,4.7,-1,stat_melee_damage / stat_ranged_damage / stat_harvesting,effect,items/all/wheat/wheat_data.tres
+stat_melee_damage,item_alloy,合金,3,III 稀有,80,3.8,-1,stat_melee_damage / stat_ranged_damage / stat_engineering / stat_crit_chance,effect,items/all/alloy/alloy_data.tres
+stat_melee_damage,item_strange_book,奇怪之书,-1,III 稀有,70,-1.4,1,stat_engineering / stat_elemental_damage,effect / gain_stat_for_every_stat_effect,items/all/strange_book/strange_book_data.tres
+stat_melee_damage,item_cape,斗篷,-2,IV 传奇,110,-1.8,-1,stat_lifesteal / stat_dodge,effect,items/all/cape/cape_data.tres
+stat_melee_damage,item_fuel_tank,燃料箱,-1,II 罕见,45,-2.2,-1,stat_elemental_damage,effect,items/all/fuel_tank/fuel_tank_data.tres
+stat_melee_damage,item_lucky_charm,护身符,-2,III 稀有,75,-2.7,-1,stat_luck,effect,items/all/lucky_charm/lucky_charm_data.tres
+stat_melee_damage,item_shmoop,休穆糖,-2,III 稀有,60,-3.3,-1,stat_max_hp / stat_hp_regeneration,effect,items/all/shmoop/shmoop_data.tres
+stat_melee_damage,item_peaceful_bee,和平蜜蜂,-1,I 普通,18,-5.6,-1,stat_dodge / stat_harvesting,effect,items/all/peaceful_bee/peaceful_bee_data.tres
+stat_melee_damage,item_fertilizer,肥料,-1,I 普通,15,-6.7,-1,stat_harvesting,effect,items/all/fertilizer/fertilizer_data.tres
+stat_percent_damage,item_injection,注射剂,7,I 普通,20,35.0,-1,stat_percent_damage,effect,items/all/injection/injection_data.tres
+stat_percent_damage,item_glass_cannon,玻璃大炮,25,III 稀有,75,33.3,-1,stat_percent_damage,effect,items/all/glass_cannon/glass_cannon_data.tres
+stat_percent_damage,item_bait,诱饵,8,II 罕见,25,32.0,-1,stat_percent_damage / number_of_enemies,effect,items/all/bait/bait_data.tres
+stat_percent_damage,item_triangle_of_power,三角之力,20,III 稀有,65,30.8,-1,stat_percent_damage / stat_armor,effect,items/all/triangle_of_power/triangle_of_power_data.tres
+stat_percent_damage,item_focus,焦点,30,IV 传奇,110,27.3,-1,stat_percent_damage,effect,items/all/focus/focus_data.tres
+stat_percent_damage,item_cyclops_worm,独眼虫,12,II 罕见,45,26.7,-1,stat_percent_damage,effect,items/all/cyclops_worm/cyclops_worm_data.tres
+stat_percent_damage,item_head_injury,头部创伤,6,I 普通,25,24.0,-1,stat_percent_damage,effect,items/all/head_injury/head_injury_data.tres
+stat_percent_damage,item_missile,导弹,10,II 罕见,45,22.2,-1,stat_percent_damage,effect,items/all/missile/missile_data.tres
+stat_percent_damage,item_gentle_alien,外星绅士,5,I 普通,30,16.7,10,stat_max_hp / stat_percent_damage / more_enemies,effect,items/all/gentle_alien/gentle_alien_data.tres
+stat_percent_damage,item_heavy_bullets,重型子弹,10,IV 传奇,100,10.0,-1,stat_ranged_damage / stat_percent_damage / stat_range,effect,items/all/heavy_bullets/heavy_bullets_data.tres
+stat_percent_damage,item_ritual,仪式,6,II 罕见,60,10.0,-1,stat_percent_damage / stat_lifesteal,effect,items/all/ritual/ritual_data.tres
+stat_percent_damage,item_spider,蜘蛛,12,IV 传奇,120,10.0,-1,stat_percent_damage / stat_attack_speed,effect,items/all/spider/spider_data.tres
+stat_percent_damage,item_medal,勋章,3,II 罕见,55,5.5,-1,stat_max_hp / stat_percent_damage / stat_armor / stat_speed,effect,items/all/medal/medal_data.tres
+stat_percent_damage,item_potato,土豆,3,IV 传奇,85,3.5,-1,stat_max_hp / stat_hp_regeneration / stat_percent_damage / stat_speed / stat_luck,effect,items/all/potato/potato_data.tres
+stat_percent_damage,item_bloody_hand,血淋淋的手,2,IV 传奇,100,2.0,1,stat_lifesteal,effect / gain_stat_for_every_stat_effect,items/all/bloody_hand/bloody_hand_data.tres
+stat_percent_damage,item_pumpkin,南瓜,-2,II 罕见,40,-5.0,-1,stat_ranged_damage,effect,items/all/pumpkin/pumpkin_data.tres
+stat_percent_damage,item_chameleon,变色龙,-4,III 稀有,70,-5.7,-1,stat_dodge / stand_still,effect,items/all/chameleon/chameleon_data.tres
+stat_percent_damage,item_power_generator,发电机,-4,III 稀有,65,-6.2,1,stat_speed,effect / gain_stat_for_every_stat_effect,items/all/power_generator/power_generator_data.tres
+stat_percent_damage,item_cake,蛋糕,-1,I 普通,15,-6.7,-1,stat_max_hp,effect,items/all/cake/cake_data.tres
+stat_percent_damage,item_mammoth,猛犸,-8,IV 传奇,115,-7.0,-1,stat_melee_damage / stat_hp_regeneration,effect,items/all/mammoth/mammoth_data.tres
+stat_percent_damage,item_propeller_hat,螺旋桨帽,-2,I 普通,28,-7.1,-1,stat_luck,effect,items/all/propeller_hat/propeller_hat_data.tres
+stat_percent_damage,item_metal_plate,金属板,-3,II 罕见,40,-7.5,-1,stat_armor,effect,items/all/metal_plate/metal_plate_data.tres
+stat_percent_damage,item_candle,蜡烛,-5,III 稀有,65,-7.7,1,stat_elemental_damage / stat_hp_regeneration / less_enemies,effect,items/all/candle/candle_data.tres
+stat_percent_damage,item_small_magazine,小型弹匣,-6,II 罕见,60,-10.0,-1,stat_ranged_damage / stat_attack_speed,effect,items/all/small_magazine/small_magazine_data.tres
+stat_percent_damage,item_cog,齿轮,-4,II 罕见,35,-11.4,-1,stat_engineering,effect,items/all/cog/cog_data.tres
+stat_percent_damage,item_tractor,拖拉机,-8,III 稀有,70,-11.4,-1,stat_harvesting,effect,items/all/tractor/tractor_data.tres
+stat_percent_damage,item_panda,熊猫,-12,IV 传奇,100,-12.0,-1,stat_max_hp / stat_luck,effect,items/all/panda/panda_data.tres
+stat_percent_damage,item_metal_detector,金属探测器,-5,II 罕见,40,-12.5,20,stat_luck / stat_engineering / pickup / economy,effect,items/all/metal_detector/metal_detector_data.tres
+stat_percent_damage,item_bandana,头巾,-10,III 稀有,75,-13.3,-1,stat_ranged_damage,effect,items/all/bandana/bandana_data.tres
+stat_percent_damage,item_coffee,咖啡,-2,I 普通,15,-13.3,-1,stat_attack_speed,effect,items/all/coffee/coffee_data.tres
+stat_percent_damage,item_explosive_shells,爆裂弹,-15,IV 传奇,100,-15.0,-1,explosive,effect,items/all/explosive_shells/explosive_shells_data.tres
+stat_percent_damage,item_insanity,精神异常,-3,I 普通,20,-15.0,-1,stat_crit_chance,effect,items/all/insanity/insanity_data.tres
+stat_percent_damage,item_wisdom,智慧,-20,III 稀有,85,-23.5,1,stat_percent_damage,effect,items/all/wisdom/wisdom_data.tres
+stat_percent_damage,item_ricochet,跳弹,-35,IV 传奇,100,-35.0,-1,stat_ranged_damage,effect,items/all/ricochet/ricochet_data.tres
+stat_range,item_glasses,眼镜,20,I 普通,25,80.0,-1,stat_range,effect,items/all/glasses/glasses_data.tres
+stat_range,item_gummy_berserker,软糖狂战士,15,I 普通,25,60.0,-1,stat_attack_speed / stat_range,effect,items/all/gummy_berserker/gummy_berserker_data.tres
+stat_range,item_night_goggles,夜视镜,50,IV 传奇,90,55.6,-1,stat_crit_chance / stat_range,effect,items/all/night_goggles/night_goggles_data.tres
+stat_range,item_scope,瞄准镜,25,II 罕见,55,45.5,-1,stat_ranged_damage / stat_range,effect,items/all/scope/scope_data.tres
+stat_range,item_banner,旗帜,20,II 罕见,55,36.4,-1,stat_range / stat_attack_speed,effect,items/all/banner/banner_data.tres
+stat_range,item_wings,翅膀,30,III 稀有,85,35.3,-1,stat_speed / stat_range,effect,items/all/wings/wings_data.tres
+stat_range,item_poisonous_tonic,毒性补品,15,III 稀有,80,18.8,-1,stat_attack_speed / stat_crit_chance / stat_range,effect,items/all/poisonous_tonic/poisonous_tonic_data.tres
+stat_range,item_heavy_bullets,重型子弹,10,IV 传奇,100,10.0,-1,stat_ranged_damage / stat_percent_damage / stat_range,effect,items/all/heavy_bullets/heavy_bullets_data.tres
+stat_range,item_eyes_surgery,眼部手术,-10,II 罕见,60,-16.7,3,stat_elemental_damage,effect,items/all/eyes_surgery/eye_surgery_data.tres
+stat_range,item_gnome,地精,-20,IV 传奇,100,-20.0,-1,stat_melee_damage / stat_elemental_damage,effect,items/all/gnome/gnome_data.tres
+stat_range,item_lens,镜片,-5,I 普通,20,-25.0,-1,stat_ranged_damage,effect,items/all/lens/lens_data.tres
+stat_range,item_cyclops_worm,独眼虫,-12,II 罕见,45,-26.7,-1,stat_percent_damage,effect,items/all/cyclops_worm/cyclops_worm_data.tres
+stat_range,item_scar,疤痕,-8,I 普通,30,-26.7,-1,xp_gain,effect,items/all/scar/scar_data.tres
+stat_range,item_beanie,无檐小便帽,-6,I 普通,20,-30.0,-1,stat_speed,effect,items/all/beanie/beanie_data.tres
+stat_range,item_little_muscley_dude,肌肉小子,-15,II 罕见,50,-30.0,-1,stat_melee_damage / stat_max_hp,effect,items/all/little_muscley_dude/little_muscley_dude_data.tres
+stat_range,item_head_injury,头部创伤,-8,I 普通,25,-32.0,-1,stat_percent_damage,effect,items/all/head_injury/head_injury_data.tres
+stat_range,item_blindfold,眼罩,-15,II 罕见,45,-33.3,-1,stat_crit_chance / stat_dodge,effect,items/all/blindfold/blindfold_data.tres
+stat_range,item_baby_with_a_beard,长胡子的婴儿,-50,III 稀有,100,-50.0,-1,stat_ranged_damage,effect / projectile_effect,items/all/baby_with_a_beard/baby_with_a_beard_data.tres
+stat_range,item_retromations_hoodie,Retromation的连帽衫 ,-80,IV 传奇,100,-80.0,1,stat_dodge,effect / gain_stat_for_every_stat_effect,items/all/retromations_hoodie/retromations_hoodie_data.tres
+stat_ranged_damage,item_handcuffs,手铐,8,III 稀有,80,10.0,1,stat_melee_damage / stat_ranged_damage / stat_elemental_damage,effect / stat_cap_effect,items/all/handcuffs/handcuffs_data.tres
+stat_ranged_damage,item_heavy_bullets,重型子弹,5,IV 传奇,100,5.0,-1,stat_ranged_damage / stat_percent_damage / stat_range,effect,items/all/heavy_bullets/heavy_bullets_data.tres
+stat_ranged_damage,item_lens,镜片,1,I 普通,20,5.0,-1,stat_ranged_damage,effect,items/all/lens/lens_data.tres
+stat_ranged_damage,item_big_arms,巨臂,5,IV 传奇,105,4.8,-1,stat_melee_damage / stat_ranged_damage,effect,items/all/big_arms/big_arms_data.tres
+stat_ranged_damage,item_mutation,异变,1,I 普通,25,4.0,-1,stat_ranged_damage / stat_elemental_damage,effect,items/all/mutation/mutation_data.tres
+stat_ranged_damage,item_alloy,合金,3,III 稀有,80,3.8,-1,stat_melee_damage / stat_ranged_damage / stat_engineering / stat_crit_chance,effect,items/all/alloy/alloy_data.tres
+stat_ranged_damage,item_scope,瞄准镜,2,II 罕见,55,3.6,-1,stat_ranged_damage / stat_range,effect,items/all/scope/scope_data.tres
+stat_ranged_damage,item_hedgehog,刺猬,1,I 普通,30,3.3,-1,stat_melee_damage / stat_ranged_damage,effect,items/all/hedgehog/hedgehog_data.tres
+stat_ranged_damage,item_small_magazine,小型弹匣,2,II 罕见,60,3.3,-1,stat_ranged_damage / stat_attack_speed,effect,items/all/small_magazine/small_magazine_data.tres
+stat_ranged_damage,item_wheat,小麦,2,III 稀有,85,2.4,-1,stat_melee_damage / stat_ranged_damage / stat_harvesting,effect,items/all/wheat/wheat_data.tres
+stat_ranged_damage,item_lucky_charm,护身符,-1,III 稀有,75,-1.3,-1,stat_luck,effect,items/all/lucky_charm/lucky_charm_data.tres
+stat_ranged_damage,item_strange_book,奇怪之书,-1,III 稀有,70,-1.4,1,stat_engineering / stat_elemental_damage,effect / gain_stat_for_every_stat_effect,items/all/strange_book/strange_book_data.tres
+stat_ranged_damage,item_shmoop,休穆糖,-1,III 稀有,60,-1.7,-1,stat_max_hp / stat_hp_regeneration,effect,items/all/shmoop/shmoop_data.tres
+stat_ranged_damage,item_cape,斗篷,-2,IV 传奇,110,-1.8,-1,stat_lifesteal / stat_dodge,effect,items/all/cape/cape_data.tres
+stat_ranged_damage,item_fuel_tank,燃料箱,-1,II 罕见,45,-2.2,-1,stat_elemental_damage,effect,items/all/fuel_tank/fuel_tank_data.tres
+stat_ranged_damage,item_energy_bracelet,能量手环,-2,II 罕见,55,-3.6,-1,stat_crit_chance / stat_elemental_damage,effect,items/all/energy_bracelet/energy_bracelet_data.tres
+stat_ranged_damage,item_cute_monkey,萌萌猴,-1,I 普通,25,-4.0,13,pickup,effect,items/all/cute_monkey/cute_monkey_data.tres
+stat_ranged_damage,item_mastery,精湛技艺,-3,II 罕见,55,-5.5,-1,stat_melee_damage,effect,items/all/mastery/mastery_data.tres
+stat_ranged_damage,item_peaceful_bee,和平蜜蜂,-1,I 普通,18,-5.6,-1,stat_dodge / stat_harvesting,effect,items/all/peaceful_bee/peaceful_bee_data.tres
+stat_speed,item_terrified_onion,惊恐的洋葱,4,I 普通,15,26.7,-1,stat_speed,effect,items/all/terrified_onion/terrified_onion_data.tres
+stat_speed,item_beanie,无檐小便帽,4,I 普通,20,20.0,-1,stat_speed,effect,items/all/beanie/beanie_data.tres
+stat_speed,item_fin,鳍,10,III 稀有,65,15.4,-1,stat_speed / stat_lifesteal,effect,items/all/fin/fin_data.tres
+stat_speed,item_jetpack,喷气背包,15,IV 传奇,100,15.0,-1,stat_speed / stat_dodge,effect,items/all/jetpack/jetpack_data.tres
+stat_speed,item_compass,指南针,5,II 罕见,40,12.5,-1,stat_speed / stat_engineering,effect,items/all/compass/compass_data.tres
+stat_speed,item_wings,翅膀,10,III 稀有,85,11.8,-1,stat_speed / stat_range,effect,items/all/wings/wings_data.tres
+stat_speed,item_exoskeleton,外骨骼,5,IV 传奇,90,5.6,-1,stat_armor / stat_crit_chance / stat_engineering / stat_speed,effect,items/all/exoskeleton/exoskeleton_data.tres
+stat_speed,item_medal,勋章,3,II 罕见,55,5.5,-1,stat_max_hp / stat_percent_damage / stat_armor / stat_speed,effect,items/all/medal/medal_data.tres
+stat_speed,item_potato,土豆,3,IV 传奇,85,3.5,-1,stat_max_hp / stat_hp_regeneration / stat_percent_damage / stat_speed / stat_luck,effect,items/all/potato/potato_data.tres
+stat_speed,item_mammoth,猛犸,-3,IV 传奇,115,-2.6,-1,stat_melee_damage / stat_hp_regeneration,effect,items/all/mammoth/mammoth_data.tres
+stat_speed,item_big_arms,巨臂,-5,IV 传奇,105,-4.8,-1,stat_melee_damage / stat_ranged_damage,effect,items/all/big_arms/big_arms_data.tres
+stat_speed,item_campfire,篝火,-2,II 罕见,40,-5.0,-1,stat_elemental_damage / stat_hp_regeneration,effect,items/all/campfire/campfire_data.tres
+stat_speed,item_warrior_helmet,士兵头盔,-5,III 稀有,80,-6.2,-1,stat_armor / stat_max_hp,effect,items/all/warrior_helmet/warrior_helmet_data.tres
+stat_speed,item_bag,背包,-1,I 普通,15,-6.7,3,stat_luck / exploration / economy,effect,items/all/bag/bag_data.tres
+stat_speed,item_barricade,路障,-5,III 稀有,75,-6.7,-1,stat_armor / stand_still,effect,items/all/barricade/barricade_data.tres
+stat_speed,item_snail,蜗牛,-3,II 罕见,40,-7.5,1,less_enemy_speed,effect,items/all/snail/snail_data.tres
+stat_speed,item_helmet,头盔,-2,I 普通,25,-8.0,-1,stat_armor,effect,items/all/helmet/helmet_data.tres
+stat_speed,item_padding,护垫,-5,II 罕见,45,-11.1,-1,saving,effect / gain_stat_for_every_stat_effect,items/all/padding/padding_data.tres
+stat_speed,item_mutation,异变,-3,I 普通,25,-12.0,-1,stat_ranged_damage / stat_elemental_damage,effect,items/all/mutation/mutation_data.tres
+stat_speed,item_ugly_tooth,丑牙,-3,I 普通,25,-12.0,1,less_enemy_speed,effect / stat_with_max_effect,items/all/ugly_tooth/ugly_tooth_data.tres
+stat_speed,item_estys_couch,Esty的沙发,-15,IV 传奇,100,-15.0,1,stat_hp_regeneration / stat_max_hp,effect / gain_stat_for_every_stat_effect,items/all/estys_couch/estys_couch_data.tres
+stat_speed,item_statue,雕像,-10,III 稀有,65,-15.4,-1,stat_attack_speed / stand_still,effect,items/all/statue/statue_data.tres
+stats_end_of_wave[stat_hp_regeneration],item_grinds_magical_leaf,Grind的魔法绿叶,1,IV 传奇,100,1.0,-1,stat_max_hp / stat_hp_regeneration / stat_lifesteal,effect,items/all/grinds_magical_leaf/grinds_magical_leaf_data.tres
+stats_end_of_wave[stat_lifesteal],item_grinds_magical_leaf,Grind的魔法绿叶,1,IV 传奇,100,1.0,-1,stat_max_hp / stat_hp_regeneration / stat_lifesteal,effect,items/all/grinds_magical_leaf/grinds_magical_leaf_data.tres
+stats_end_of_wave[stat_max_hp],item_grinds_magical_leaf,Grind的魔法绿叶,3,IV 传奇,100,3.0,-1,stat_max_hp / stat_hp_regeneration / stat_lifesteal,effect,items/all/grinds_magical_leaf/grinds_magical_leaf_data.tres
+stats_end_of_wave[stat_percent_damage],item_vigilante_ring,义警戒指,3,III 稀有,92,3.3,-1,stat_percent_damage,effect,items/all/vigilante_ring/vigilante_ring_data.tres
+stats_next_wave[enemy_damage],item_peacock,孔雀,50,III 稀有,50,100.0,-1,xp_gain,effect,items/all/peacock/peacock_data.tres
+stats_next_wave[xp_gain],item_peacock,孔雀,100,III 稀有,50,200.0,-1,xp_gain,effect,items/all/peacock/peacock_data.tres
+structures_cooldown_reduction[stat_attack_speed],item_improved_tools,改进工具,50,III 稀有,70,71.4,1,stat_elemental_damage,effect,items/all/improved_tools/improved_tools_data.tres
+temp_stats_on_hit[stat_percent_damage],item_triangle_of_power,三角之力,-2,III 稀有,65,-3.1,-1,stat_percent_damage / stat_armor,effect,items/all/triangle_of_power/triangle_of_power_data.tres
+temp_stats_stacking[stat_percent_damage],item_wisdom,智慧,5,III 稀有,85,5.9,1,stat_percent_damage,effect,items/all/wisdom/wisdom_data.tres
+temp_stats_while_not_moving[stat_armor],item_barricade,路障,8,III 稀有,75,10.7,-1,stat_armor / stand_still,effect,items/all/barricade/barricade_data.tres
+temp_stats_while_not_moving[stat_attack_speed],item_statue,雕像,30,III 稀有,65,46.2,-1,stat_attack_speed / stand_still,effect,items/all/statue/statue_data.tres
+temp_stats_while_not_moving[stat_dodge],item_chameleon,变色龙,20,III 稀有,70,28.6,-1,stat_dodge / stand_still,effect,items/all/chameleon/chameleon_data.tres
+torture,item_torture,拷问,4,IV 传奇,110,3.6,1,stat_max_hp,effect,items/all/torture/torture_data.tres
+trees,item_tree,树木,1,I 普通,15,6.7,-1,exploration,effect,items/all/tree/tree_data.tres
+unique_weapon_effects[stat_attack_speed],item_spider,蜘蛛,6,IV 传奇,120,5.0,-1,stat_percent_damage / stat_attack_speed,effect,items/all/spider/spider_data.tres
+unique_weapon_effects[stat_attack_speed],item_focus,焦点,-3,IV 传奇,110,-2.7,-1,stat_percent_damage,effect,items/all/focus/focus_data.tres
+upgrade_random_weapon[stat_armor],item_anvil,铁砧,2,IV 传奇,120,1.7,1,,effect,items/all/anvil/anvil_data.tres
+wandering_bot,item_wandering_bot,流浪机器人,1,III 稀有,60,1.7,-1,less_enemy_speed,turret_effect,items/all/wandering_bot/wandering_bot_data.tres
+xp_gain,item_scar,疤痕,20,I 普通,30,66.7,-1,xp_gain,effect,items/all/scar/scar_data.tres
+xp_gain,item_bean_teacher,豆老师,40,III 稀有,70,57.1,-1,xp_gain,effect,items/all/bean_teacher/bean_teacher_data.tres
+xp_gain,item_black_belt,黑带,25,II 罕见,50,50.0,-1,stat_melee_damage / xp_gain,effect,items/all/black_belt/black_belt_data.tres
+xp_gain,item_peacock,孔雀,25,III 稀有,50,50.0,-1,xp_gain,effect,items/all/peacock/peacock_data.tres
+xp_gain,item_diploma,执照,10,IV 传奇,80,12.5,-1,stat_engineering / xp_gain,effect,items/all/diploma/diploma_data.tres

@@ -1,0 +1,12 @@
+﻿序号,总表,类别,条目数,列数,主键,生成脚本,原型数据来源,效果逻辑出处,配置驱动,特有列,要点
+1,_小丑总表.csv,小丑 Joker,150,27,key (j_*),balatro_jokers.py,game.lua P_CENTERS(set=Joker),card.lua Card:calculate_joker(2294-4066),19/150 = 13%,稀有度; 生效方式; 通用规则; 触发时机; 成长型; 蓝图可复制; 代码出处,生效方式分三类:按名字 106 / 通用规则 19 / 外部引用 25;43 张成长型填的是初始值
+2,_塔罗总表.csv,塔罗 Tarot,22,19,key (c_*),balatro_cards.py,game.lua P_CENTERS(set=Tarot),card.lua Card:use_consumeable(1092),17/22 = 77%,作用类型; 生效方式; 需选牌数; 转换目标; 消耗所选牌,"模板化内容:转强化 10 / 转花色 4,加一张同族只填 config;统一售价 $3"
+3,_幽灵总表.csv,幽灵 Spectral,18,19,key (c_*),balatro_cards.py,game.lua P_CENTERS(set=Spectral),card.lua Card:use_consumeable(1092),4/18 = 22%,作用类型; 生效方式; 需选牌数; 转换目标; 消耗所选牌,"与塔罗相反,14 张各写各的;统一售价 $4,散卡 spectral_rate=0 只能靠幽灵包"
+4,_优惠券总表.csv,优惠券 Voucher,32,20,key (v_*),balatro_cards.py,game.lua P_CENTERS(set=Voucher),card.lua Card:apply_to_run(1882-1974),0/32,档位; 前置券; 升级为; 生效方式; 生效字段; 查询点,"严格 16 对基础/升级,全 $10;27 张买下即改全局,5 张靠 used_vouchers 被动查询"
+5,_牌组总表.csv,牌组 Back,16,15,key (b_*),balatro_meta.py,game.lua P_CENTERS(set=Back),back.lua Back:apply_to_run(176),16/16 = 100%,生效字段; 未被 apply_to_run 认的字段; 解锁条件类型; 解锁条件,"全包配置化最高的一类,一个按名字的分支都没有;没有配了不被消费的字段"
+6,_标签总表.csv,标签 Tag,24,14,key (tag_*),balatro_meta.py,game.lua P_TAGS,tag.lua Tag:apply_to_run(115),config.type 全驱动,触发类型; 触发时机; 最低底注; 依赖资产,config.type 就是触发时机(10 种);9 张锁 min_ante=2
+7,_盲注总表.csv,盲注 Blind,30,19,key (bl_*),balatro_meta.py,game.lua P_BLINDS,blind.lua 的 9 个方法,6/30 = 20%,类型; 分数倍率; 通关奖励$; 最低出场Ante; 生效方式; debuff判据; 生效方法,22 条按名字 / 6 条 debuff 配置驱动 / 2 条(小盲大盲)只有分数倍率
+8,_补充包总表.csv,补充包 Booster,32,18,key (p_*),balatro_packs.py,game.lua P_CENTERS(set=Booster),game.lua update_*_pack 各状态机,32/32 = 100%,种类; 档位; 可选数; 候选数; 每张成本; 出货权重; 权重占比%,5 种 × 3 档;weight 出货权重只在原型表里;描述在 descriptions.Other
+9,_强化牌总表.csv,强化牌 Enhanced,8,16,key (m_*),balatro_packs.py,game.lua P_CENTERS(set=Enhanced),card.lua 的 get_chip_* / get_p_dollars,5/8 = 63%,effect; 附加筹码; 生效方式; 数值消费点; 名字出现处,5 张靠通用 getter 读 config;石头牌/幸运牌比 effect、万能牌比 name
+10,_版本总表.csv,版本 Edition,5,16,key (e_*),balatro_mods.py,game.lua P_CENTERS(set=Edition),card.lua Card:set_edition(390-417),3/5(负片那条是死字段),效果类型; 效果数值; 掉率_基础%; 掉率_保底包%; 售价加成$; 数值消费点,掉率/售价加成都不在 config;e_negative.config.extra 全树无人读
+11,_蜡封总表.csv,蜡封 Seal,4,13,key (Gold/Red/…),balatro_mods.py,game.lua P_SEALS,card.lua 多处 self.seal == …,"0/4,连 config 字段都没有",触发时机; 效果; 数值来源; 实现说明; 生效点; 文案键,"配置化程度的地板;文案在 descriptions.Other.<小写>_seal,没有 Seal 集合"

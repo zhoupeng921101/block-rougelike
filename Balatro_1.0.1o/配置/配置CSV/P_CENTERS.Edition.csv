@@ -1,0 +1,6 @@
+﻿key,中文名,英文名,atlas,config.extra,discovered,name,order,pos.x,pos.y,set,unlocked
+e_base,基础,Base,Joker,,False,Base,1,0,0,Edition,True
+e_foil,闪箔,Foil,Joker,50,False,Foil,2,0,0,Edition,True
+e_holo,镭射,Holographic,Joker,10,False,Holographic,3,0,0,Edition,True
+e_negative,负片,Negative,Joker,1,False,Negative,5,0,0,Edition,True
+e_polychrome,多彩,Polychrome,Joker,1.5,False,Polychrome,4,0,0,Edition,True

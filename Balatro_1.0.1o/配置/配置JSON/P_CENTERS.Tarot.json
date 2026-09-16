@@ -1,0 +1,388 @@
+{
+ "c_chariot": {
+  "config": {
+   "max_highlighted": 1,
+   "mod_conv": "m_steel"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Enhance",
+  "name": "The Chariot",
+  "order": 8,
+  "pos": {
+   "x": 7,
+   "y": 0
+  },
+  "set": "Tarot"
+ },
+ "c_death": {
+  "config": {
+   "max_highlighted": 2,
+   "min_highlighted": 2,
+   "mod_conv": "card"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Card Conversion",
+  "name": "Death",
+  "order": 14,
+  "pos": {
+   "x": 3,
+   "y": 1
+  },
+  "set": "Tarot"
+ },
+ "c_devil": {
+  "config": {
+   "max_highlighted": 1,
+   "mod_conv": "m_gold"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Enhance",
+  "name": "The Devil",
+  "order": 16,
+  "pos": {
+   "x": 5,
+   "y": 1
+  },
+  "set": "Tarot"
+ },
+ "c_emperor": {
+  "config": {
+   "tarots": 2
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Round Bonus",
+  "name": "The Emperor",
+  "order": 5,
+  "pos": {
+   "x": 4,
+   "y": 0
+  },
+  "set": "Tarot"
+ },
+ "c_empress": {
+  "config": {
+   "max_highlighted": 2,
+   "mod_conv": "m_mult"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Enhance",
+  "name": "The Empress",
+  "order": 4,
+  "pos": {
+   "x": 3,
+   "y": 0
+  },
+  "set": "Tarot"
+ },
+ "c_fool": {
+  "config": {},
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Disable Blind Effect",
+  "name": "The Fool",
+  "order": 1,
+  "pos": {
+   "x": 0,
+   "y": 0
+  },
+  "set": "Tarot"
+ },
+ "c_hanged_man": {
+  "config": {
+   "max_highlighted": 2,
+   "remove_card": true
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Card Removal",
+  "name": "The Hanged Man",
+  "order": 13,
+  "pos": {
+   "x": 2,
+   "y": 1
+  },
+  "set": "Tarot"
+ },
+ "c_heirophant": {
+  "config": {
+   "max_highlighted": 2,
+   "mod_conv": "m_bonus"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Enhance",
+  "name": "The Hierophant",
+  "order": 6,
+  "pos": {
+   "x": 5,
+   "y": 0
+  },
+  "set": "Tarot"
+ },
+ "c_hermit": {
+  "config": {
+   "extra": 20
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Dollar Doubler",
+  "name": "The Hermit",
+  "order": 10,
+  "pos": {
+   "x": 9,
+   "y": 0
+  },
+  "set": "Tarot"
+ },
+ "c_high_priestess": {
+  "config": {
+   "planets": 2
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Round Bonus",
+  "name": "The High Priestess",
+  "order": 3,
+  "pos": {
+   "x": 2,
+   "y": 0
+  },
+  "set": "Tarot"
+ },
+ "c_judgement": {
+  "config": {},
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Random Joker",
+  "name": "Judgement",
+  "order": 21,
+  "pos": {
+   "x": 0,
+   "y": 2
+  },
+  "set": "Tarot"
+ },
+ "c_justice": {
+  "config": {
+   "max_highlighted": 1,
+   "mod_conv": "m_glass"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Enhance",
+  "name": "Justice",
+  "order": 9,
+  "pos": {
+   "x": 8,
+   "y": 0
+  },
+  "set": "Tarot"
+ },
+ "c_lovers": {
+  "config": {
+   "max_highlighted": 1,
+   "mod_conv": "m_wild"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Enhance",
+  "name": "The Lovers",
+  "order": 7,
+  "pos": {
+   "x": 6,
+   "y": 0
+  },
+  "set": "Tarot"
+ },
+ "c_magician": {
+  "config": {
+   "max_highlighted": 2,
+   "mod_conv": "m_lucky"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Enhance",
+  "name": "The Magician",
+  "order": 2,
+  "pos": {
+   "x": 1,
+   "y": 0
+  },
+  "set": "Tarot"
+ },
+ "c_moon": {
+  "config": {
+   "max_highlighted": 3,
+   "suit_conv": "Clubs"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Suit Conversion",
+  "name": "The Moon",
+  "order": 19,
+  "pos": {
+   "x": 8,
+   "y": 1
+  },
+  "set": "Tarot"
+ },
+ "c_star": {
+  "config": {
+   "max_highlighted": 3,
+   "suit_conv": "Diamonds"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Suit Conversion",
+  "name": "The Star",
+  "order": 18,
+  "pos": {
+   "x": 7,
+   "y": 1
+  },
+  "set": "Tarot"
+ },
+ "c_strength": {
+  "config": {
+   "max_highlighted": 2,
+   "mod_conv": "up_rank"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Round Bonus",
+  "name": "Strength",
+  "order": 12,
+  "pos": {
+   "x": 1,
+   "y": 1
+  },
+  "set": "Tarot"
+ },
+ "c_sun": {
+  "config": {
+   "max_highlighted": 3,
+   "suit_conv": "Hearts"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Suit Conversion",
+  "name": "The Sun",
+  "order": 20,
+  "pos": {
+   "x": 9,
+   "y": 1
+  },
+  "set": "Tarot"
+ },
+ "c_temperance": {
+  "config": {
+   "extra": 50
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Joker Payout",
+  "name": "Temperance",
+  "order": 15,
+  "pos": {
+   "x": 4,
+   "y": 1
+  },
+  "set": "Tarot"
+ },
+ "c_tower": {
+  "config": {
+   "max_highlighted": 1,
+   "mod_conv": "m_stone"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Enhance",
+  "name": "The Tower",
+  "order": 17,
+  "pos": {
+   "x": 6,
+   "y": 1
+  },
+  "set": "Tarot"
+ },
+ "c_wheel_of_fortune": {
+  "config": {
+   "extra": 4
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Round Bonus",
+  "name": "The Wheel of Fortune",
+  "order": 11,
+  "pos": {
+   "x": 0,
+   "y": 1
+  },
+  "set": "Tarot"
+ },
+ "c_world": {
+  "config": {
+   "max_highlighted": 3,
+   "suit_conv": "Spades"
+  },
+  "consumeable": true,
+  "cost": 3,
+  "cost_mult": 1.0,
+  "discovered": false,
+  "effect": "Suit Conversion",
+  "name": "The World",
+  "order": 22,
+  "pos": {
+   "x": 1,
+   "y": 2
+  },
+  "set": "Tarot"
+ }
+}

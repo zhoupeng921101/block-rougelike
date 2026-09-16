@@ -1,0 +1,9 @@
+package n;
+
+/* compiled from: r8-map-id-69a9a81d8cf707cf57020cf61d81327cd23e88718ad4e2ee1ff2f249552ea3bc */
+/* loaded from: E:\AniRes\Balatro_1.0.1o\安卓壳\classes.dex */
+public abstract class a {
+    public static int a(int i4, int i5, int i6) {
+        return i4 < i5 ? i5 : i4 > i6 ? i6 : i4;
+    }
+}

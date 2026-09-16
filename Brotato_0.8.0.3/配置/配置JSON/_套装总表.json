@@ -1,0 +1,702 @@
+[
+  {
+    "id": "set_blade",
+    "中文名": "利器",
+    "英文名": "Blade",
+    "件数": 2,
+    "效果(中)": "+1 近战伤害 / +1 %生命窃取",
+    "效果(英)": "+1 Melee Damage\u0000 / +1 % Life Steal",
+    "效果原始": "stat_melee_damage=1 / stat_lifesteal=1",
+    "出处": "items/sets/blade/blade_set_data.tres"
+  },
+  {
+    "id": "set_blade",
+    "中文名": "利器",
+    "英文名": "Blade",
+    "件数": 3,
+    "效果(中)": "+2 近战伤害 / +2 %生命窃取",
+    "效果(英)": "+2 Melee Damage\u0000 / +2 % Life Steal",
+    "效果原始": "stat_melee_damage=2 / stat_lifesteal=2",
+    "出处": "items/sets/blade/blade_set_data.tres"
+  },
+  {
+    "id": "set_blade",
+    "中文名": "利器",
+    "英文名": "Blade",
+    "件数": 4,
+    "效果(中)": "+3 近战伤害 / +3 %生命窃取",
+    "效果(英)": "+3 Melee Damage\u0000 / +3 % Life Steal",
+    "效果原始": "stat_melee_damage=3 / stat_lifesteal=3",
+    "出处": "items/sets/blade/blade_set_data.tres"
+  },
+  {
+    "id": "set_blade",
+    "中文名": "利器",
+    "英文名": "Blade",
+    "件数": 5,
+    "效果(中)": "+4 近战伤害 / +4 %生命窃取",
+    "效果(英)": "+4 Melee Damage\u0000 / +4 % Life Steal",
+    "效果原始": "stat_melee_damage=4 / stat_lifesteal=4",
+    "出处": "items/sets/blade/blade_set_data.tres"
+  },
+  {
+    "id": "set_blade",
+    "中文名": "利器",
+    "英文名": "Blade",
+    "件数": 6,
+    "效果(中)": "+5 近战伤害 / +5 %生命窃取",
+    "效果(英)": "+5 Melee Damage\u0000 / +5 % Life Steal",
+    "效果原始": "stat_melee_damage=5 / stat_lifesteal=5",
+    "出处": "items/sets/blade/blade_set_data.tres"
+  },
+  {
+    "id": "set_blunt",
+    "中文名": "钝器",
+    "英文名": "Blunt",
+    "件数": 2,
+    "效果(中)": "+1 护甲 / -2 %速度",
+    "效果(英)": "+1 Armor / -2 % Speed",
+    "效果原始": "stat_armor=1 / stat_speed=-2",
+    "出处": "items/sets/blunt/blunt_set_data.tres"
+  },
+  {
+    "id": "set_blunt",
+    "中文名": "钝器",
+    "英文名": "Blunt",
+    "件数": 3,
+    "效果(中)": "+1 护甲 / +3 最大生命值 / -4 %速度",
+    "效果(英)": "+1 Armor / +3 Max HP / -4 % Speed",
+    "效果原始": "stat_armor=1 / stat_max_hp=3 / stat_speed=-4",
+    "出处": "items/sets/blunt/blunt_set_data.tres"
+  },
+  {
+    "id": "set_blunt",
+    "中文名": "钝器",
+    "英文名": "Blunt",
+    "件数": 4,
+    "效果(中)": "+2 护甲 / +3 最大生命值 / -6 %速度",
+    "效果(英)": "+2 Armor / +3 Max HP / -6 % Speed",
+    "效果原始": "stat_armor=2 / stat_max_hp=3 / stat_speed=-6",
+    "出处": "items/sets/blunt/blunt_set_data.tres"
+  },
+  {
+    "id": "set_blunt",
+    "中文名": "钝器",
+    "英文名": "Blunt",
+    "件数": 5,
+    "效果(中)": "+2 护甲 / +6 最大生命值 / -8 %速度",
+    "效果(英)": "+2 Armor / +6 Max HP / -8 % Speed",
+    "效果原始": "stat_armor=2 / stat_max_hp=6 / stat_speed=-8",
+    "出处": "items/sets/blunt/blunt_set_data.tres"
+  },
+  {
+    "id": "set_blunt",
+    "中文名": "钝器",
+    "英文名": "Blunt",
+    "件数": 6,
+    "效果(中)": "+3 护甲 / +6 最大生命值 / -10 %速度",
+    "效果(英)": "+3 Armor / +6 Max HP / -10 % Speed",
+    "效果原始": "stat_armor=3 / stat_max_hp=6 / stat_speed=-10",
+    "出处": "items/sets/blunt/blunt_set_data.tres"
+  },
+  {
+    "id": "set_elemental",
+    "中文名": "元素",
+    "英文名": "Elemental\u0000",
+    "件数": 2,
+    "效果(中)": "+1 元素伤害",
+    "效果(英)": "+1 Elemental Damage\u0000",
+    "效果原始": "stat_elemental_damage=1",
+    "出处": "items/sets/fire/fire_set_data.tres"
+  },
+  {
+    "id": "set_elemental",
+    "中文名": "元素",
+    "英文名": "Elemental\u0000",
+    "件数": 3,
+    "效果(中)": "+2 元素伤害",
+    "效果(英)": "+2 Elemental Damage\u0000",
+    "效果原始": "stat_elemental_damage=2",
+    "出处": "items/sets/fire/fire_set_data.tres"
+  },
+  {
+    "id": "set_elemental",
+    "中文名": "元素",
+    "英文名": "Elemental\u0000",
+    "件数": 4,
+    "效果(中)": "+3 元素伤害",
+    "效果(英)": "+3 Elemental Damage\u0000",
+    "效果原始": "stat_elemental_damage=3",
+    "出处": "items/sets/fire/fire_set_data.tres"
+  },
+  {
+    "id": "set_elemental",
+    "中文名": "元素",
+    "英文名": "Elemental\u0000",
+    "件数": 5,
+    "效果(中)": "+4 元素伤害",
+    "效果(英)": "+4 Elemental Damage\u0000",
+    "效果原始": "stat_elemental_damage=4",
+    "出处": "items/sets/fire/fire_set_data.tres"
+  },
+  {
+    "id": "set_elemental",
+    "中文名": "元素",
+    "英文名": "Elemental\u0000",
+    "件数": 6,
+    "效果(中)": "+5 元素伤害",
+    "效果(英)": "+5 Elemental Damage\u0000",
+    "效果原始": "stat_elemental_damage=5",
+    "出处": "items/sets/fire/fire_set_data.tres"
+  },
+  {
+    "id": "set_ethereal",
+    "中文名": "虚灵",
+    "英文名": "Ethereal\u0000",
+    "件数": 2,
+    "效果(中)": "+6 %闪避 / -1 护甲",
+    "效果(英)": "+6 % Dodge / -1 Armor",
+    "效果原始": "stat_dodge=6 / stat_armor=-1",
+    "出处": "items/sets/ethereal/ethereal_set_data.tres"
+  },
+  {
+    "id": "set_ethereal",
+    "中文名": "虚灵",
+    "英文名": "Ethereal\u0000",
+    "件数": 3,
+    "效果(中)": "+12 %闪避 / -2 护甲",
+    "效果(英)": "+12 % Dodge / -2 Armor",
+    "效果原始": "stat_dodge=12 / stat_armor=-2",
+    "出处": "items/sets/ethereal/ethereal_set_data.tres"
+  },
+  {
+    "id": "set_ethereal",
+    "中文名": "虚灵",
+    "英文名": "Ethereal\u0000",
+    "件数": 4,
+    "效果(中)": "+18 %闪避 / -3 护甲",
+    "效果(英)": "+18 % Dodge / -3 Armor",
+    "效果原始": "stat_dodge=18 / stat_armor=-3",
+    "出处": "items/sets/ethereal/ethereal_set_data.tres"
+  },
+  {
+    "id": "set_ethereal",
+    "中文名": "虚灵",
+    "英文名": "Ethereal\u0000",
+    "件数": 5,
+    "效果(中)": "+24 %闪避 / -4 护甲",
+    "效果(英)": "+24 % Dodge / -4 Armor",
+    "效果原始": "stat_dodge=24 / stat_armor=-4",
+    "出处": "items/sets/ethereal/ethereal_set_data.tres"
+  },
+  {
+    "id": "set_ethereal",
+    "中文名": "虚灵",
+    "英文名": "Ethereal\u0000",
+    "件数": 6,
+    "效果(中)": "+30 %闪避 / -5 护甲",
+    "效果(英)": "+30 % Dodge / -5 Armor",
+    "效果原始": "stat_dodge=30 / stat_armor=-5",
+    "出处": "items/sets/ethereal/ethereal_set_data.tres"
+  },
+  {
+    "id": "set_explosive",
+    "中文名": "爆炸",
+    "英文名": "Explosive",
+    "件数": 2,
+    "效果(中)": "+5 %爆炸范围",
+    "效果(英)": "+5 % Explosion Size",
+    "效果原始": "explosion_size=5",
+    "出处": "items/sets/explosive/explosive_set_data.tres"
+  },
+  {
+    "id": "set_explosive",
+    "中文名": "爆炸",
+    "英文名": "Explosive",
+    "件数": 3,
+    "效果(中)": "+10 %爆炸范围",
+    "效果(英)": "+10 % Explosion Size",
+    "效果原始": "explosion_size=10",
+    "出处": "items/sets/explosive/explosive_set_data.tres"
+  },
+  {
+    "id": "set_explosive",
+    "中文名": "爆炸",
+    "英文名": "Explosive",
+    "件数": 4,
+    "效果(中)": "+15 %爆炸范围",
+    "效果(英)": "+15 % Explosion Size",
+    "效果原始": "explosion_size=15",
+    "出处": "items/sets/explosive/explosive_set_data.tres"
+  },
+  {
+    "id": "set_explosive",
+    "中文名": "爆炸",
+    "英文名": "Explosive",
+    "件数": 5,
+    "效果(中)": "+20 %爆炸范围",
+    "效果(英)": "+20 % Explosion Size",
+    "效果原始": "explosion_size=20",
+    "出处": "items/sets/explosive/explosive_set_data.tres"
+  },
+  {
+    "id": "set_explosive",
+    "中文名": "爆炸",
+    "英文名": "Explosive",
+    "件数": 6,
+    "效果(中)": "+25 %爆炸范围",
+    "效果(英)": "+25 % Explosion Size",
+    "效果原始": "explosion_size=25",
+    "出处": "items/sets/explosive/explosive_set_data.tres"
+  },
+  {
+    "id": "set_gun",
+    "中文名": "枪械",
+    "英文名": "Gun",
+    "件数": 2,
+    "效果(中)": "+10 范围",
+    "效果(英)": "+10 Range",
+    "效果原始": "stat_range=10",
+    "出处": "items/sets/gun/gun_set_data.tres"
+  },
+  {
+    "id": "set_gun",
+    "中文名": "枪械",
+    "英文名": "Gun",
+    "件数": 3,
+    "效果(中)": "+20 范围",
+    "效果(英)": "+20 Range",
+    "效果原始": "stat_range=20",
+    "出处": "items/sets/gun/gun_set_data.tres"
+  },
+  {
+    "id": "set_gun",
+    "中文名": "枪械",
+    "英文名": "Gun",
+    "件数": 4,
+    "效果(中)": "+30 范围",
+    "效果(英)": "+30 Range",
+    "效果原始": "stat_range=30",
+    "出处": "items/sets/gun/gun_set_data.tres"
+  },
+  {
+    "id": "set_gun",
+    "中文名": "枪械",
+    "英文名": "Gun",
+    "件数": 5,
+    "效果(中)": "+40 范围",
+    "效果(英)": "+40 Range",
+    "效果原始": "stat_range=40",
+    "出处": "items/sets/gun/gun_set_data.tres"
+  },
+  {
+    "id": "set_gun",
+    "中文名": "枪械",
+    "英文名": "Gun",
+    "件数": 6,
+    "效果(中)": "+50 范围",
+    "效果(英)": "+50 Range",
+    "效果原始": "stat_range=50",
+    "出处": "items/sets/gun/gun_set_data.tres"
+  },
+  {
+    "id": "set_heavy",
+    "中文名": "重型",
+    "英文名": "Heavy",
+    "件数": 2,
+    "效果(中)": "+5 %伤害",
+    "效果(英)": "+5 % Damage",
+    "效果原始": "stat_percent_damage=5",
+    "出处": "items/sets/heavy/heavy_set_data.tres"
+  },
+  {
+    "id": "set_heavy",
+    "中文名": "重型",
+    "英文名": "Heavy",
+    "件数": 3,
+    "效果(中)": "+10 %伤害",
+    "效果(英)": "+10 % Damage",
+    "效果原始": "stat_percent_damage=10",
+    "出处": "items/sets/heavy/heavy_set_data.tres"
+  },
+  {
+    "id": "set_heavy",
+    "中文名": "重型",
+    "英文名": "Heavy",
+    "件数": 4,
+    "效果(中)": "+15 %伤害",
+    "效果(英)": "+15 % Damage",
+    "效果原始": "stat_percent_damage=15",
+    "出处": "items/sets/heavy/heavy_set_data.tres"
+  },
+  {
+    "id": "set_heavy",
+    "中文名": "重型",
+    "英文名": "Heavy",
+    "件数": 5,
+    "效果(中)": "+20 %伤害",
+    "效果(英)": "+20 % Damage",
+    "效果原始": "stat_percent_damage=20",
+    "出处": "items/sets/heavy/heavy_set_data.tres"
+  },
+  {
+    "id": "set_heavy",
+    "中文名": "重型",
+    "英文名": "Heavy",
+    "件数": 6,
+    "效果(中)": "+25 %伤害",
+    "效果(英)": "+25 % Damage",
+    "效果原始": "stat_percent_damage=25",
+    "出处": "items/sets/heavy/heavy_set_data.tres"
+  },
+  {
+    "id": "set_medical",
+    "中文名": "医疗",
+    "英文名": "Medical\u0000",
+    "件数": 2,
+    "效果(中)": "+1 生命再生",
+    "效果(英)": "+1 HP Regeneration\u0000",
+    "效果原始": "stat_hp_regeneration=1",
+    "出处": "items/sets/medical/medical_set_data.tres"
+  },
+  {
+    "id": "set_medical",
+    "中文名": "医疗",
+    "英文名": "Medical\u0000",
+    "件数": 3,
+    "效果(中)": "+2 生命再生",
+    "效果(英)": "+2 HP Regeneration\u0000",
+    "效果原始": "stat_hp_regeneration=2",
+    "出处": "items/sets/medical/medical_set_data.tres"
+  },
+  {
+    "id": "set_medical",
+    "中文名": "医疗",
+    "英文名": "Medical\u0000",
+    "件数": 4,
+    "效果(中)": "+3 生命再生",
+    "效果(英)": "+3 HP Regeneration\u0000",
+    "效果原始": "stat_hp_regeneration=3",
+    "出处": "items/sets/medical/medical_set_data.tres"
+  },
+  {
+    "id": "set_medical",
+    "中文名": "医疗",
+    "英文名": "Medical\u0000",
+    "件数": 5,
+    "效果(中)": "+4 生命再生",
+    "效果(英)": "+4 HP Regeneration\u0000",
+    "效果原始": "stat_hp_regeneration=4",
+    "出处": "items/sets/medical/medical_set_data.tres"
+  },
+  {
+    "id": "set_medical",
+    "中文名": "医疗",
+    "英文名": "Medical\u0000",
+    "件数": 6,
+    "效果(中)": "+5 生命再生",
+    "效果(英)": "+5 HP Regeneration\u0000",
+    "效果原始": "stat_hp_regeneration=5",
+    "出处": "items/sets/medical/medical_set_data.tres"
+  },
+  {
+    "id": "set_medieval",
+    "中文名": "中世纪",
+    "英文名": "Medieval",
+    "件数": 2,
+    "效果(中)": "+1 护甲",
+    "效果(英)": "+1 Armor",
+    "效果原始": "stat_armor=1",
+    "出处": "items/sets/medieval/medieval_set_data.tres"
+  },
+  {
+    "id": "set_medieval",
+    "中文名": "中世纪",
+    "英文名": "Medieval",
+    "件数": 3,
+    "效果(中)": "+1 护甲 / +3 %闪避",
+    "效果(英)": "+1 Armor / +3 % Dodge",
+    "效果原始": "stat_armor=1 / stat_dodge=3",
+    "出处": "items/sets/medieval/medieval_set_data.tres"
+  },
+  {
+    "id": "set_medieval",
+    "中文名": "中世纪",
+    "英文名": "Medieval",
+    "件数": 4,
+    "效果(中)": "+2 护甲 / +3 %闪避",
+    "效果(英)": "+2 Armor / +3 % Dodge",
+    "效果原始": "stat_armor=2 / stat_dodge=3",
+    "出处": "items/sets/medieval/medieval_set_data.tres"
+  },
+  {
+    "id": "set_medieval",
+    "中文名": "中世纪",
+    "英文名": "Medieval",
+    "件数": 5,
+    "效果(中)": "+2 护甲 / +6 %闪避",
+    "效果(英)": "+2 Armor / +6 % Dodge",
+    "效果原始": "stat_armor=2 / stat_dodge=6",
+    "出处": "items/sets/medieval/medieval_set_data.tres"
+  },
+  {
+    "id": "set_medieval",
+    "中文名": "中世纪",
+    "英文名": "Medieval",
+    "件数": 6,
+    "效果(中)": "+3 护甲 / +6 %闪避",
+    "效果(英)": "+3 Armor / +6 % Dodge",
+    "效果原始": "stat_armor=3 / stat_dodge=6",
+    "出处": "items/sets/medieval/medieval_set_data.tres"
+  },
+  {
+    "id": "set_precise",
+    "中文名": "精准",
+    "英文名": "Precise",
+    "件数": 2,
+    "效果(中)": "+3 %暴击率",
+    "效果(英)": "+3 % Crit Chance",
+    "效果原始": "stat_crit_chance=3",
+    "出处": "items/sets/precise/precise_set_data.tres"
+  },
+  {
+    "id": "set_precise",
+    "中文名": "精准",
+    "英文名": "Precise",
+    "件数": 3,
+    "效果(中)": "+6 %暴击率",
+    "效果(英)": "+6 % Crit Chance",
+    "效果原始": "stat_crit_chance=6",
+    "出处": "items/sets/precise/precise_set_data.tres"
+  },
+  {
+    "id": "set_precise",
+    "中文名": "精准",
+    "英文名": "Precise",
+    "件数": 4,
+    "效果(中)": "+9 %暴击率",
+    "效果(英)": "+9 % Crit Chance",
+    "效果原始": "stat_crit_chance=9",
+    "出处": "items/sets/precise/precise_set_data.tres"
+  },
+  {
+    "id": "set_precise",
+    "中文名": "精准",
+    "英文名": "Precise",
+    "件数": 5,
+    "效果(中)": "+12 %暴击率",
+    "效果(英)": "+12 % Crit Chance",
+    "效果原始": "stat_crit_chance=12",
+    "出处": "items/sets/precise/precise_set_data.tres"
+  },
+  {
+    "id": "set_precise",
+    "中文名": "精准",
+    "英文名": "Precise",
+    "件数": 6,
+    "效果(中)": "+15 %暴击率",
+    "效果(英)": "+15 % Crit Chance",
+    "效果原始": "stat_crit_chance=15",
+    "出处": "items/sets/precise/precise_set_data.tres"
+  },
+  {
+    "id": "set_primitive",
+    "中文名": "原始",
+    "英文名": "Primitive\u0000",
+    "件数": 2,
+    "效果(中)": "+3 最大生命值",
+    "效果(英)": "+3 Max HP",
+    "效果原始": "stat_max_hp=3",
+    "出处": "items/sets/primitive/primitive_set_data.tres"
+  },
+  {
+    "id": "set_primitive",
+    "中文名": "原始",
+    "英文名": "Primitive\u0000",
+    "件数": 3,
+    "效果(中)": "+6 最大生命值",
+    "效果(英)": "+6 Max HP",
+    "效果原始": "stat_max_hp=6",
+    "出处": "items/sets/primitive/primitive_set_data.tres"
+  },
+  {
+    "id": "set_primitive",
+    "中文名": "原始",
+    "英文名": "Primitive\u0000",
+    "件数": 4,
+    "效果(中)": "+9 最大生命值",
+    "效果(英)": "+9 Max HP",
+    "效果原始": "stat_max_hp=9",
+    "出处": "items/sets/primitive/primitive_set_data.tres"
+  },
+  {
+    "id": "set_primitive",
+    "中文名": "原始",
+    "英文名": "Primitive\u0000",
+    "件数": 5,
+    "效果(中)": "+12 最大生命值",
+    "效果(英)": "+12 Max HP",
+    "效果原始": "stat_max_hp=12",
+    "出处": "items/sets/primitive/primitive_set_data.tres"
+  },
+  {
+    "id": "set_primitive",
+    "中文名": "原始",
+    "英文名": "Primitive\u0000",
+    "件数": 6,
+    "效果(中)": "+15 最大生命值",
+    "效果(英)": "+15 Max HP",
+    "效果原始": "stat_max_hp=15",
+    "出处": "items/sets/primitive/primitive_set_data.tres"
+  },
+  {
+    "id": "set_support",
+    "中文名": "辅助",
+    "英文名": "Support",
+    "件数": 2,
+    "效果(中)": "+5 收获",
+    "效果(英)": "+5 Harvesting\u0000",
+    "效果原始": "stat_harvesting=5",
+    "出处": "items/sets/support/support_set_data.tres"
+  },
+  {
+    "id": "set_support",
+    "中文名": "辅助",
+    "英文名": "Support",
+    "件数": 3,
+    "效果(中)": "+10 收获",
+    "效果(英)": "+10 Harvesting\u0000",
+    "效果原始": "stat_harvesting=10",
+    "出处": "items/sets/support/support_set_data.tres"
+  },
+  {
+    "id": "set_support",
+    "中文名": "辅助",
+    "英文名": "Support",
+    "件数": 4,
+    "效果(中)": "+15 收获",
+    "效果(英)": "+15 Harvesting\u0000",
+    "效果原始": "stat_harvesting=15",
+    "出处": "items/sets/support/support_set_data.tres"
+  },
+  {
+    "id": "set_support",
+    "中文名": "辅助",
+    "英文名": "Support",
+    "件数": 5,
+    "效果(中)": "+20 收获",
+    "效果(英)": "+20 Harvesting\u0000",
+    "效果原始": "stat_harvesting=20",
+    "出处": "items/sets/support/support_set_data.tres"
+  },
+  {
+    "id": "set_support",
+    "中文名": "辅助",
+    "英文名": "Support",
+    "件数": 6,
+    "效果(中)": "+25 收获",
+    "效果(英)": "+25 Harvesting\u0000",
+    "效果原始": "stat_harvesting=25",
+    "出处": "items/sets/support/support_set_data.tres"
+  },
+  {
+    "id": "set_tool",
+    "中文名": "工具",
+    "英文名": "Tool",
+    "件数": 2,
+    "效果(中)": "+1 工程学",
+    "效果(英)": "+1 Engineering\u0000",
+    "效果原始": "stat_engineering=1",
+    "出处": "items/sets/tool/tool_set_data.tres"
+  },
+  {
+    "id": "set_tool",
+    "中文名": "工具",
+    "英文名": "Tool",
+    "件数": 3,
+    "效果(中)": "+2 工程学",
+    "效果(英)": "+2 Engineering\u0000",
+    "效果原始": "stat_engineering=2",
+    "出处": "items/sets/tool/tool_set_data.tres"
+  },
+  {
+    "id": "set_tool",
+    "中文名": "工具",
+    "英文名": "Tool",
+    "件数": 4,
+    "效果(中)": "+3 工程学",
+    "效果(英)": "+3 Engineering\u0000",
+    "效果原始": "stat_engineering=3",
+    "出处": "items/sets/tool/tool_set_data.tres"
+  },
+  {
+    "id": "set_tool",
+    "中文名": "工具",
+    "英文名": "Tool",
+    "件数": 5,
+    "效果(中)": "+4 工程学",
+    "效果(英)": "+4 Engineering\u0000",
+    "效果原始": "stat_engineering=4",
+    "出处": "items/sets/tool/tool_set_data.tres"
+  },
+  {
+    "id": "set_tool",
+    "中文名": "工具",
+    "英文名": "Tool",
+    "件数": 6,
+    "效果(中)": "+5 工程学",
+    "效果(英)": "+5 Engineering\u0000",
+    "效果原始": "stat_engineering=5",
+    "出处": "items/sets/tool/tool_set_data.tres"
+  },
+  {
+    "id": "set_unarmed",
+    "中文名": "徒手",
+    "英文名": "Unarmed",
+    "件数": 2,
+    "效果(中)": "+3 %闪避",
+    "效果(英)": "+3 % Dodge",
+    "效果原始": "stat_dodge=3",
+    "出处": "items/sets/unarmed/unarmed_set_data.tres"
+  },
+  {
+    "id": "set_unarmed",
+    "中文名": "徒手",
+    "英文名": "Unarmed",
+    "件数": 3,
+    "效果(中)": "+6 %闪避",
+    "效果(英)": "+6 % Dodge",
+    "效果原始": "stat_dodge=6",
+    "出处": "items/sets/unarmed/unarmed_set_data.tres"
+  },
+  {
+    "id": "set_unarmed",
+    "中文名": "徒手",
+    "英文名": "Unarmed",
+    "件数": 4,
+    "效果(中)": "+9 %闪避",
+    "效果(英)": "+9 % Dodge",
+    "效果原始": "stat_dodge=9",
+    "出处": "items/sets/unarmed/unarmed_set_data.tres"
+  },
+  {
+    "id": "set_unarmed",
+    "中文名": "徒手",
+    "英文名": "Unarmed",
+    "件数": 5,
+    "效果(中)": "+12 %闪避",
+    "效果(英)": "+12 % Dodge",
+    "效果原始": "stat_dodge=12",
+    "出处": "items/sets/unarmed/unarmed_set_data.tres"
+  },
+  {
+    "id": "set_unarmed",
+    "中文名": "徒手",
+    "英文名": "Unarmed",
+    "件数": 6,
+    "效果(中)": "+15 %闪避",
+    "效果(英)": "+15 % Dodge",
+    "效果原始": "stat_dodge=15",
+    "出处": "items/sets/unarmed/unarmed_set_data.tres"
+  }
+]

@@ -1,0 +1,578 @@
+{
+ "p_arcana_jumbo_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 5
+  },
+  "cost": 6,
+  "discovered": false,
+  "kind": "Arcana",
+  "name": "Jumbo Arcana Pack",
+  "order": 5,
+  "pos": {
+   "x": 0,
+   "y": 2
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_arcana_jumbo_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 5
+  },
+  "cost": 6,
+  "discovered": false,
+  "kind": "Arcana",
+  "name": "Jumbo Arcana Pack",
+  "order": 6,
+  "pos": {
+   "x": 1,
+   "y": 2
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_arcana_mega_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 2,
+   "extra": 5
+  },
+  "cost": 8,
+  "discovered": false,
+  "kind": "Arcana",
+  "name": "Mega Arcana Pack",
+  "order": 7,
+  "pos": {
+   "x": 2,
+   "y": 2
+  },
+  "set": "Booster",
+  "weight": 0.25
+ },
+ "p_arcana_mega_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 2,
+   "extra": 5
+  },
+  "cost": 8,
+  "discovered": false,
+  "kind": "Arcana",
+  "name": "Mega Arcana Pack",
+  "order": 8,
+  "pos": {
+   "x": 3,
+   "y": 2
+  },
+  "set": "Booster",
+  "weight": 0.25
+ },
+ "p_arcana_normal_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Arcana",
+  "name": "Arcana Pack",
+  "order": 1,
+  "pos": {
+   "x": 0,
+   "y": 0
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_arcana_normal_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Arcana",
+  "name": "Arcana Pack",
+  "order": 2,
+  "pos": {
+   "x": 1,
+   "y": 0
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_arcana_normal_3": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Arcana",
+  "name": "Arcana Pack",
+  "order": 3,
+  "pos": {
+   "x": 2,
+   "y": 0
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_arcana_normal_4": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Arcana",
+  "name": "Arcana Pack",
+  "order": 4,
+  "pos": {
+   "x": 3,
+   "y": 0
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_buffoon_jumbo_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 4
+  },
+  "cost": 6,
+  "discovered": false,
+  "kind": "Buffoon",
+  "name": "Jumbo Buffoon Pack",
+  "order": 27,
+  "pos": {
+   "x": 2,
+   "y": 8
+  },
+  "set": "Booster",
+  "weight": 0.6
+ },
+ "p_buffoon_mega_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 2,
+   "extra": 4
+  },
+  "cost": 8,
+  "discovered": false,
+  "kind": "Buffoon",
+  "name": "Mega Buffoon Pack",
+  "order": 28,
+  "pos": {
+   "x": 3,
+   "y": 8
+  },
+  "set": "Booster",
+  "weight": 0.15
+ },
+ "p_buffoon_normal_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 2
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Buffoon",
+  "name": "Buffoon Pack",
+  "order": 25,
+  "pos": {
+   "x": 0,
+   "y": 8
+  },
+  "set": "Booster",
+  "weight": 0.6
+ },
+ "p_buffoon_normal_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 2
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Buffoon",
+  "name": "Buffoon Pack",
+  "order": 26,
+  "pos": {
+   "x": 1,
+   "y": 8
+  },
+  "set": "Booster",
+  "weight": 0.6
+ },
+ "p_celestial_jumbo_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 5
+  },
+  "cost": 6,
+  "discovered": false,
+  "kind": "Celestial",
+  "name": "Jumbo Celestial Pack",
+  "order": 13,
+  "pos": {
+   "x": 0,
+   "y": 3
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_celestial_jumbo_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 5
+  },
+  "cost": 6,
+  "discovered": false,
+  "kind": "Celestial",
+  "name": "Jumbo Celestial Pack",
+  "order": 14,
+  "pos": {
+   "x": 1,
+   "y": 3
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_celestial_mega_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 2,
+   "extra": 5
+  },
+  "cost": 8,
+  "discovered": false,
+  "kind": "Celestial",
+  "name": "Mega Celestial Pack",
+  "order": 15,
+  "pos": {
+   "x": 2,
+   "y": 3
+  },
+  "set": "Booster",
+  "weight": 0.25
+ },
+ "p_celestial_mega_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 2,
+   "extra": 5
+  },
+  "cost": 8,
+  "discovered": false,
+  "kind": "Celestial",
+  "name": "Mega Celestial Pack",
+  "order": 16,
+  "pos": {
+   "x": 3,
+   "y": 3
+  },
+  "set": "Booster",
+  "weight": 0.25
+ },
+ "p_celestial_normal_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Celestial",
+  "name": "Celestial Pack",
+  "order": 9,
+  "pos": {
+   "x": 0,
+   "y": 1
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_celestial_normal_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Celestial",
+  "name": "Celestial Pack",
+  "order": 10,
+  "pos": {
+   "x": 1,
+   "y": 1
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_celestial_normal_3": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Celestial",
+  "name": "Celestial Pack",
+  "order": 11,
+  "pos": {
+   "x": 2,
+   "y": 1
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_celestial_normal_4": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Celestial",
+  "name": "Celestial Pack",
+  "order": 12,
+  "pos": {
+   "x": 3,
+   "y": 1
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_spectral_jumbo_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 4
+  },
+  "cost": 6,
+  "discovered": false,
+  "kind": "Spectral",
+  "name": "Jumbo Spectral Pack",
+  "order": 31,
+  "pos": {
+   "x": 2,
+   "y": 4
+  },
+  "set": "Booster",
+  "weight": 0.3
+ },
+ "p_spectral_mega_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 2,
+   "extra": 4
+  },
+  "cost": 8,
+  "discovered": false,
+  "kind": "Spectral",
+  "name": "Mega Spectral Pack",
+  "order": 32,
+  "pos": {
+   "x": 3,
+   "y": 4
+  },
+  "set": "Booster",
+  "weight": 0.07
+ },
+ "p_spectral_normal_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 2
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Spectral",
+  "name": "Spectral Pack",
+  "order": 29,
+  "pos": {
+   "x": 0,
+   "y": 4
+  },
+  "set": "Booster",
+  "weight": 0.3
+ },
+ "p_spectral_normal_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 2
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Spectral",
+  "name": "Spectral Pack",
+  "order": 30,
+  "pos": {
+   "x": 1,
+   "y": 4
+  },
+  "set": "Booster",
+  "weight": 0.3
+ },
+ "p_standard_jumbo_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 5
+  },
+  "cost": 6,
+  "discovered": false,
+  "kind": "Standard",
+  "name": "Jumbo Standard Pack",
+  "order": 21,
+  "pos": {
+   "x": 0,
+   "y": 7
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_standard_jumbo_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 5
+  },
+  "cost": 6,
+  "discovered": false,
+  "kind": "Standard",
+  "name": "Jumbo Standard Pack",
+  "order": 22,
+  "pos": {
+   "x": 1,
+   "y": 7
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_standard_mega_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 2,
+   "extra": 5
+  },
+  "cost": 8,
+  "discovered": false,
+  "kind": "Standard",
+  "name": "Mega Standard Pack",
+  "order": 23,
+  "pos": {
+   "x": 2,
+   "y": 7
+  },
+  "set": "Booster",
+  "weight": 0.25
+ },
+ "p_standard_mega_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 2,
+   "extra": 5
+  },
+  "cost": 8,
+  "discovered": false,
+  "kind": "Standard",
+  "name": "Mega Standard Pack",
+  "order": 24,
+  "pos": {
+   "x": 3,
+   "y": 7
+  },
+  "set": "Booster",
+  "weight": 0.25
+ },
+ "p_standard_normal_1": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Standard",
+  "name": "Standard Pack",
+  "order": 17,
+  "pos": {
+   "x": 0,
+   "y": 6
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_standard_normal_2": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Standard",
+  "name": "Standard Pack",
+  "order": 18,
+  "pos": {
+   "x": 1,
+   "y": 6
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_standard_normal_3": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Standard",
+  "name": "Standard Pack",
+  "order": 19,
+  "pos": {
+   "x": 2,
+   "y": 6
+  },
+  "set": "Booster",
+  "weight": 1
+ },
+ "p_standard_normal_4": {
+  "atlas": "Booster",
+  "config": {
+   "choose": 1,
+   "extra": 3
+  },
+  "cost": 4,
+  "discovered": false,
+  "kind": "Standard",
+  "name": "Standard Pack",
+  "order": 20,
+  "pos": {
+   "x": 3,
+   "y": 6
+  },
+  "set": "Booster",
+  "weight": 1
+ }
+}

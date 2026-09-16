@@ -1,0 +1,20 @@
+{
+ "c_base": {
+  "config": {},
+  "cost_mult": 1.0,
+  "discovered": true,
+  "effect": "Base",
+  "freq": 1,
+  "label": "Base Card",
+  "line": "base",
+  "max": 500,
+  "name": "Default Base",
+  "pos": {
+   "x": 1,
+   "y": 0
+  },
+  "set": "Default",
+  "start_alerted": true,
+  "start_discovered": true
+ }
+}

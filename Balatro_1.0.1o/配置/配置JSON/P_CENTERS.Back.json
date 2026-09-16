@@ -1,0 +1,325 @@
+{
+ "b_abandoned": {
+  "config": {
+   "remove_faces": true
+  },
+  "demo": true,
+  "name": "Abandoned Deck",
+  "order": 9,
+  "pos": {
+   "x": 3,
+   "y": 3
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "deck": "b_green",
+   "type": "win_deck"
+  },
+  "unlocked": false
+ },
+ "b_anaglyph": {
+  "config": {},
+  "demo": true,
+  "name": "Anaglyph Deck",
+  "order": 13,
+  "pos": {
+   "x": 2,
+   "y": 4
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "stake": 4,
+   "type": "win_stake"
+  },
+  "unlocked": false
+ },
+ "b_black": {
+  "config": {
+   "hands": -1,
+   "joker_slot": 1
+  },
+  "demo": true,
+  "name": "Black Deck",
+  "order": 5,
+  "pos": {
+   "x": 3,
+   "y": 2
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "amount": 100,
+   "type": "discover_amount"
+  },
+  "unlocked": false
+ },
+ "b_blue": {
+  "config": {
+   "hands": 1
+  },
+  "demo": true,
+  "name": "Blue Deck",
+  "order": 2,
+  "pos": {
+   "x": 0,
+   "y": 2
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "amount": 20,
+   "type": "discover_amount"
+  },
+  "unlocked": false
+ },
+ "b_challenge": {
+  "config": {},
+  "demo": true,
+  "name": "Challenge Deck",
+  "omit": true,
+  "order": 16,
+  "pos": {
+   "x": 0,
+   "y": 4
+  },
+  "set": "Back",
+  "stake": 1,
+  "unlocked": true
+ },
+ "b_checkered": {
+  "config": {},
+  "demo": true,
+  "name": "Checkered Deck",
+  "order": 10,
+  "pos": {
+   "x": 1,
+   "y": 3
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "deck": "b_black",
+   "type": "win_deck"
+  },
+  "unlocked": false
+ },
+ "b_erratic": {
+  "config": {
+   "randomize_rank_suit": true
+  },
+  "demo": true,
+  "name": "Erratic Deck",
+  "order": 15,
+  "pos": {
+   "x": 2,
+   "y": 3
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "stake": 7,
+   "type": "win_stake"
+  },
+  "unlocked": false
+ },
+ "b_ghost": {
+  "config": {
+   "consumables": [
+    "c_hex"
+   ],
+   "spectral_rate": 2
+  },
+  "demo": true,
+  "name": "Ghost Deck",
+  "order": 8,
+  "pos": {
+   "x": 6,
+   "y": 2
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "deck": "b_yellow",
+   "type": "win_deck"
+  },
+  "unlocked": false
+ },
+ "b_green": {
+  "config": {
+   "extra_discard_bonus": 1,
+   "extra_hand_bonus": 2,
+   "no_interest": true
+  },
+  "demo": true,
+  "name": "Green Deck",
+  "order": 4,
+  "pos": {
+   "x": 2,
+   "y": 2
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "amount": 75,
+   "type": "discover_amount"
+  },
+  "unlocked": false
+ },
+ "b_magic": {
+  "config": {
+   "consumables": [
+    "c_fool",
+    "c_fool"
+   ],
+   "voucher": "v_crystal_ball"
+  },
+  "demo": false,
+  "name": "Magic Deck",
+  "order": 6,
+  "pos": {
+   "x": 0,
+   "y": 3
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "deck": "b_red",
+   "type": "win_deck"
+  },
+  "unlocked": false
+ },
+ "b_nebula": {
+  "config": {
+   "consumable_slot": -1,
+   "voucher": "v_telescope"
+  },
+  "demo": true,
+  "name": "Nebula Deck",
+  "order": 7,
+  "pos": {
+   "x": 3,
+   "y": 0
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "deck": "b_blue",
+   "type": "win_deck"
+  },
+  "unlocked": false
+ },
+ "b_painted": {
+  "config": {
+   "hand_size": 2,
+   "joker_slot": -1
+  },
+  "demo": true,
+  "name": "Painted Deck",
+  "order": 12,
+  "pos": {
+   "x": 4,
+   "y": 3
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "stake": 3,
+   "type": "win_stake"
+  },
+  "unlocked": false
+ },
+ "b_plasma": {
+  "config": {
+   "ante_scaling": 2
+  },
+  "demo": true,
+  "name": "Plasma Deck",
+  "order": 14,
+  "pos": {
+   "x": 4,
+   "y": 2
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "stake": 5,
+   "type": "win_stake"
+  },
+  "unlocked": false
+ },
+ "b_red": {
+  "config": {
+   "discards": 1
+  },
+  "demo": false,
+  "discovered": true,
+  "name": "Red Deck",
+  "order": 1,
+  "pos": {
+   "x": 0,
+   "y": 0
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_discovered": true,
+  "unlocked": true
+ },
+ "b_yellow": {
+  "config": {
+   "dollars": 10
+  },
+  "demo": false,
+  "name": "Yellow Deck",
+  "order": 3,
+  "pos": {
+   "x": 1,
+   "y": 2
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "amount": 50,
+   "type": "discover_amount"
+  },
+  "unlocked": false
+ },
+ "b_zodiac": {
+  "config": {
+   "vouchers": [
+    "v_tarot_merchant",
+    "v_planet_merchant",
+    "v_overstock_norm"
+   ]
+  },
+  "demo": true,
+  "name": "Zodiac Deck",
+  "order": 11,
+  "pos": {
+   "x": 3,
+   "y": 4
+  },
+  "set": "Back",
+  "stake": 1,
+  "start_locked": true,
+  "unlock_condition": {
+   "stake": 2,
+   "type": "win_stake"
+  },
+  "unlocked": false
+ }
+}

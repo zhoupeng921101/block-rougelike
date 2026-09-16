@@ -1,0 +1,33 @@
+﻿key,中文名,英文名,available,config.extra,config.extra_disp,cost,demo,discovered,name,order,pos.x,pos.y,requires,set,start_locked,unlock_condition.ante,unlock_condition.extra,unlock_condition.type,unlocked
+v_antimatter,反物质,Antimatter,True,15,,10,True,False,Antimatter,24,7,1,v_blank,Voucher,True,,10,blank_redeems,False
+v_blank,空白,Blank,True,5,,10,False,False,Blank,23,7,0,,Voucher,,,,,True
+v_clearance_sale,清仓特卖,Clearance Sale,True,25,,10,False,False,Clearance Sale,3,3,0,,Voucher,,,,,True
+v_crystal_ball,水晶球,Crystal Ball,True,3,,10,True,False,Crystal Ball,9,2,2,,Voucher,,,,,True
+v_directors_cut,导演剪辑版,Director's Cut,True,10,,10,False,False,Director's Cut,29,6,2,,Voucher,,,,,True
+v_glow_up,焕彩,Glow Up,True,4,,10,True,False,Glow Up,6,4,1,v_hone,Voucher,True,,5,have_edition,False
+v_grabber,抓手,Grabber,True,1,,10,False,False,Grabber,13,5,0,,Voucher,,,,,True
+v_hieroglyph,象形文字,Hieroglyph,True,1,,10,True,False,Hieroglyph,27,5,2,,Voucher,,,,,True
+v_hone,打磨,Hone,True,2,,10,True,False,Hone,5,4,0,,Voucher,,,,,True
+v_illusion,幻象,Illusion,True,4,,10,True,False,Illusion,26,4,3,v_magic_trick,Voucher,True,,20,c_playing_cards_bought,False
+v_liquidation,清算,Liquidation,True,50,,10,True,False,Liquidation,4,3,1,v_clearance_sale,Voucher,True,,10,run_redeem,False
+v_magic_trick,魔术,Magic Trick,True,4,,10,False,False,Magic Trick,25,4,2,,Voucher,,,,,True
+v_money_tree,摇钱树,Money Tree,True,100,,10,True,False,Money Tree,22,1,3,v_seed_money,Voucher,True,,10,interest_streak,False
+v_nacho_tong,玉米片夹,Nacho Tong,True,1,,10,True,False,Nacho Tong,14,5,1,v_grabber,Voucher,True,,2500,c_cards_played,False
+v_observatory,天文台,Observatory,True,1.5,,10,True,False,Observatory,12,3,3,v_telescope,Voucher,True,,25,c_planetarium_used,False
+v_omen_globe,预兆球,Omen Globe,True,4,,10,True,False,Omen Globe,10,2,3,v_crystal_ball,Voucher,True,,25,c_tarot_reading_used,False
+v_overstock_norm,库存过剩,Overstock,True,,,10,True,False,Overstock,1,0,0,,Voucher,,,,,True
+v_overstock_plus,库存过剩加强版,Overstock Plus,True,,,10,True,False,Overstock Plus,2,0,1,v_overstock_norm,Voucher,True,,2500,c_shop_dollars_spent,False
+v_paint_brush,油漆刷,Paint Brush,True,1,,10,False,False,Paint Brush,31,7,2,,Voucher,,,,,True
+v_palette,调色板,Palette,True,1,,10,True,False,Palette,32,7,3,v_paint_brush,Voucher,True,,5,min_hand_size,False
+v_petroglyph,岩画,Petroglyph,True,1,,10,True,False,Petroglyph,28,5,3,v_hieroglyph,Voucher,True,12,12,ante_up,False
+v_planet_merchant,星球牌商人,Planet Merchant,True,2.4,2,10,True,False,Planet Merchant,19,2,0,,Voucher,,,,,True
+v_planet_tycoon,星球大亨,Planet Tycoon,True,8.0,4,10,True,False,Planet Tycoon,20,2,1,v_planet_merchant,Voucher,True,,50,c_planets_bought,False
+v_recyclomancy,回收魔法,Recyclomancy,True,1,,10,True,False,Recyclomancy,16,6,1,v_wasteful,Voucher,True,,2500,c_cards_discarded,False
+v_reroll_glut,重掷加強版,Reroll Glut,True,2,,10,True,False,Reroll Glut,8,0,3,v_reroll_surplus,Voucher,True,,100,c_shop_rerolls,False
+v_reroll_surplus,多次重掷,Reroll Surplus,True,2,,10,False,False,Reroll Surplus,7,0,2,,Voucher,,,,,True
+v_retcon,重构,Retcon,True,10,,10,True,False,Retcon,30,6,3,v_directors_cut,Voucher,True,,25,blind_discoveries,False
+v_seed_money,种子基金,Seed Money,True,50,,10,True,False,Seed Money,21,1,2,,Voucher,,,,,True
+v_tarot_merchant,塔罗牌商人,Tarot Merchant,True,2.4,2,10,False,False,Tarot Merchant,17,1,0,,Voucher,,,,,True
+v_tarot_tycoon,塔罗大亨,Tarot Tycoon,True,8.0,4,10,True,False,Tarot Tycoon,18,1,1,v_tarot_merchant,Voucher,True,,50,c_tarots_bought,False
+v_telescope,望远镜,Telescope,True,3,,10,True,False,Telescope,11,3,2,,Voucher,,,,,True
+v_wasteful,常弃常新,Wasteful,True,1,,10,True,False,Wasteful,15,6,0,,Voucher,,,,,True

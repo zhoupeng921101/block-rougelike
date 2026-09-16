@@ -1,0 +1,17 @@
+﻿key,中文名,英文名,config.ante_scaling,config.consumable_slot,config.consumables,config.discards,config.dollars,config.extra_discard_bonus,config.extra_hand_bonus,config.hand_size,config.hands,config.joker_slot,config.no_interest,config.randomize_rank_suit,config.remove_faces,config.spectral_rate,config.voucher,config.vouchers,demo,discovered,name,omit,order,pos.x,pos.y,set,stake,start_discovered,start_locked,unlock_condition.amount,unlock_condition.deck,unlock_condition.stake,unlock_condition.type,unlocked
+b_abandoned,废弃牌组,Abandoned Deck,,,,,,,,,,,,,True,,,,True,,Abandoned Deck,,9,3,3,Back,1,,True,,b_green,,win_deck,False
+b_anaglyph,浮雕牌组,Anaglyph Deck,,,,,,,,,,,,,,,,,True,,Anaglyph Deck,,13,2,4,Back,1,,True,,,4,win_stake,False
+b_black,黑色牌组,Black Deck,,,,,,,,,-1,1,,,,,,,True,,Black Deck,,5,3,2,Back,1,,True,100,,,discover_amount,False
+b_blue,蓝色牌组,Blue Deck,,,,,,,,,1,,,,,,,,True,,Blue Deck,,2,0,2,Back,1,,True,20,,,discover_amount,False
+b_challenge,挑战牌组,Challenge Deck,,,,,,,,,,,,,,,,,True,,Challenge Deck,True,16,0,4,Back,1,,,,,,,True
+b_checkered,方格牌组,Checkered Deck,,,,,,,,,,,,,,,,,True,,Checkered Deck,,10,1,3,Back,1,,True,,b_black,,win_deck,False
+b_erratic,古怪牌组,Erratic Deck,,,,,,,,,,,,True,,,,,True,,Erratic Deck,,15,2,3,Back,1,,True,,,7,win_stake,False
+b_ghost,幽灵牌组,Ghost Deck,,,c_hex,,,,,,,,,,,2,,,True,,Ghost Deck,,8,6,2,Back,1,,True,,b_yellow,,win_deck,False
+b_green,绿色牌组,Green Deck,,,,,,1,2,,,,True,,,,,,True,,Green Deck,,4,2,2,Back,1,,True,75,,,discover_amount,False
+b_magic,魔法牌组,Magic Deck,,,c_fool|c_fool,,,,,,,,,,,,v_crystal_ball,,False,,Magic Deck,,6,0,3,Back,1,,True,,b_red,,win_deck,False
+b_nebula,星云牌组,Nebula Deck,,-1,,,,,,,,,,,,,v_telescope,,True,,Nebula Deck,,7,3,0,Back,1,,True,,b_blue,,win_deck,False
+b_painted,彩绘牌组,Painted Deck,,,,,,,,2,,-1,,,,,,,True,,Painted Deck,,12,4,3,Back,1,,True,,,3,win_stake,False
+b_plasma,等离子牌组,Plasma Deck,2,,,,,,,,,,,,,,,,True,,Plasma Deck,,14,4,2,Back,1,,True,,,5,win_stake,False
+b_red,红色牌组,Red Deck,,,,1,,,,,,,,,,,,,False,True,Red Deck,,1,0,0,Back,1,True,,,,,,True
+b_yellow,黄色牌组,Yellow Deck,,,,,10,,,,,,,,,,,,False,,Yellow Deck,,3,1,2,Back,1,,True,50,,,discover_amount,False
+b_zodiac,黄道牌组,Zodiac Deck,,,,,,,,,,,,,,,,v_tarot_merchant|v_planet_merchant|v_overstock_norm,True,,Zodiac Deck,,11,3,4,Back,1,,True,,,2,win_stake,False

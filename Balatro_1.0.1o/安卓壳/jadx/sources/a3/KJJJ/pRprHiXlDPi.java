@@ -1,0 +1,50 @@
+package a3.KJJJ;
+
+/* loaded from: E:\AniRes\Balatro_1.0.1o\安卓壳\classes.dex */
+public class pRprHiXlDPi {
+    public static String BNqDTYdrCLj;
+    public static String CqfYVecEEqRhtsu;
+    public static String DQPxPQcGoR;
+    public static String DwBRi;
+    public static String FZtQF;
+    public static String GdvnegI;
+    public static String GtQDiV;
+    public static String IDbgMtQRWf;
+    public static String JNNlLHkTkHPtZ;
+    public static String JXCioBpzM;
+    public static String KPGrGfiMW;
+    public static String LmQoUKzb;
+    public static String LwHuJFRv;
+    public static String MAFjrLOCuPNWuV;
+    public static String PqaoWPPyLdUWzVA;
+    public static String SyelBCgOzu;
+    public static String TAJWdD;
+    public static String TtDpq;
+    public static String WXacgULQP;
+    public static String XpjnCbqMmsivO;
+    public static String aXAOj;
+    public static String cAtItCVIqNZi;
+    public static String ckFjFJNRm;
+    public static String ecHybyeKUwAMtu;
+    public static String gCfpVDAf;
+    public static String gqdg;
+    public static String hKPQZDNMGLlut;
+    public static String hzx;
+    public static String iKoMSRFLqRayWBl;
+    public static String isWJmYtaxFSKf;
+    public static String jziGHHMQPZTKgDW;
+    public static String nIPVMuEpUIFG;
+    public static String owcsfBgZeO;
+    public static String pTxrTuk;
+    public static String pylN;
+    public static String qmQlpNRHsQLc;
+    public static String rAIveyAwbja;
+    public static String rjbfgu;
+    public static String sAen;
+    public static String uHeDBHMhO;
+    public static String wBrRDHoJCb;
+    public static String xSflez;
+    public static String xUceCQejwHfnTv;
+    public static String ynM;
+    public static String zSAhjEaOYwua;
+}

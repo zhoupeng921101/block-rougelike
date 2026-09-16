@@ -1,0 +1,4 @@
+﻿id,中文名,英文名,稀有度,价值,效果(中),效果原始,出处
+consumable_fruit,CONSUMABLE_FRUIT,,I 普通,1,effect_heal=3,effect_heal=3,items/consumables/fruit/fruit_data.tres
+consumable_item_box,CONSUMABLE_ITEM_BOX,,I 普通,1,effect_heal=3,effect_heal=3,items/consumables/item_box/item_box_data.tres
+consumable_legendary_item_box,CONSUMABLE_ITEM_BOX,,IV 传奇,1,effect_heal=100,effect_heal=100,items/consumables/legendary_item_box/legendary_item_box_data.tres

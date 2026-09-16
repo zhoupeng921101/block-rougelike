@@ -1,0 +1,9 @@
+﻿key,中文名,英文名,name,order,pos.x,pos.y,set,stake_level,start_locked,unlocked
+stake_black,黑注,Black Stake,Black Chip,4,4,0,Stake,4,True,False
+stake_blue,蓝注,Blue Stake,Blue Chip,5,3,0,Stake,5,True,False
+stake_gold,金注,Gold Stake,Gold Chip,8,2,1,Stake,8,True,False
+stake_green,绿注,Green Stake,Green Chip,3,2,0,Stake,3,True,False
+stake_orange,橙注,Orange Stake,Orange Chip,7,1,1,Stake,7,True,False
+stake_purple,紫注,Purple Stake,Purple Chip,6,0,1,Stake,6,True,False
+stake_red,红注,Red Stake,Red Chip,2,1,0,Stake,2,True,False
+stake_white,白注,White Stake,White Chip,1,0,0,Stake,1,,True

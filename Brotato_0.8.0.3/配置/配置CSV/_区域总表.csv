@@ -1,0 +1,4 @@
+﻿id,中文名,英文名,宽,高,默认解锁,波次数,出处
+0,ZONE_CRASH_ZONE,,32,24,True,20,zones/zone_1/zone_1_data.tres
+0,ZONE_LAKE,,32,24,False,1,zones/zone_2/zone_2_data.tres
+0,ZONE_VOLCANIC_GROUNDS,,32,24,False,1,zones/zone_3/zone_3_data.tres

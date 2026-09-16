@@ -1,0 +1,6 @@
+﻿key,中文名,英文名,效果类型,效果数值,效果说明,中文描述,英文描述,消耗品上的变体描述,掉率_基础%,掉率_保底包%,售价加成$,数值参数,数值消费点,order,图片
+e_base,基础,Base,无,,,无额外效果,No extra effects,,96.0,0.0,0,,(无 config),1,图片资源/Edition/e_base.png
+e_foil,闪箔,Foil,筹码,50,加筹码,+50筹码,+50 chips,,2.0,50.0,2,extra=50,card.lua:397 -> self.edition.chips,2,图片资源/Edition/e_foil.png
+e_holo,镭射,Holographic,倍率,10,加倍率,+10倍率,+10 Mult,,1.4,35.0,3,extra=10,card.lua:392 -> self.edition.mult,3,图片资源/Edition/e_holo.png
+e_polychrome,多彩,Polychrome,X倍率,1.5,乘区,X1.5倍率, X1.5  Mult,,0.3,7.5,5,extra=1.5,card.lua:402 -> self.edition.x_mult,4,图片资源/Edition/e_polychrome.png
+e_negative,负片,Negative,槽位,1,+1 小丑槽(消耗品上是 +1 消耗品槽),+1个小丑牌槽位,+1 Joker slot,+1个消耗牌槽位,0.3,7.5,5,extra=1,(无人读 config.extra;+1 槽位写死在 card.lua:409-413),5,图片资源/Edition/e_negative.png

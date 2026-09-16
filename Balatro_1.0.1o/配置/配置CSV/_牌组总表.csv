@@ -1,0 +1,19 @@
+﻿key,中文名,英文名,中文描述,英文描述,数值参数,生效字段,未被 apply_to_run 认的字段,占位变量取值,loc_args原式,默认解锁,解锁条件类型,解锁条件,order,图片
+b_red,红色牌组,Red Deck,每回合 +1次弃牌,+1 discard every round,discards=1,discards,,#1#=1,effect_config.discards,是,,,1,图片资源/Back/b_red.png
+b_blue,蓝色牌组,Blue Deck,每回合 +1次出牌,+1 hand every round,hands=1,hands,,#1#=1,effect_config.hands,,discover_amount,,2,图片资源/Back/b_blue.png
+b_yellow,黄色牌组,Yellow Deck,开局时 额外获得$10,Start with extra $10,dollars=10,dollars,,#1#=10,effect_config.dollars,,discover_amount,,3,图片资源/Back/b_yellow.png
+b_green,绿色牌组,Green Deck,每回合结束时： 每剩一次出牌次数，获得$2 每剩一次弃牌次数，获得$1 不赚取任何利息,At end of each Round: $2 per remaining Hand $1 per remaining Discard Earn no Interest,extra_discard_bonus=1; extra_hand_bonus=2; no_interest=True,extra_discard_bonus; extra_hand_bonus; no_interest,,#1#=2 | #2#=1,"effect_config.extra_hand_bonus, effect_config.extra_discard_bonus",,discover_amount,,4,图片资源/Back/b_green.png
+b_black,黑色牌组,Black Deck,小丑牌槽位+1  每回合 出牌次数-1,+1 Joker slot  -1 hand every round,hands=-1; joker_slot=1,hands; joker_slot,,#1#=1 | #2#=1,"effect_config.joker_slot, -effect_config.hands",,discover_amount,,5,图片资源/Back/b_black.png
+b_magic,魔法牌组,Magic Deck,开局时拥有 水晶球优惠券 和2张愚者,Start run with the 水晶球 voucher and 2 copies of 愚者,"consumables=['c_fool', 'c_fool']; voucher=v_crystal_ball",consumables; voucher,,#1#=水晶球 | #2#=愚者,"localize{type = 'name_text', key = 'v_crystal_ball', set = 'Voucher'}, localize{type = 'name_text', key = 'c_fool', set = 'Tarot'}",,win_deck,,6,图片资源/Back/b_magic.png
+b_nebula,星云牌组,Nebula Deck,开局时拥有 望远镜优惠券 消耗牌槽位-1,Start run with the 望远镜 voucher  -1 consumable slot,consumable_slot=-1; voucher=v_telescope,consumable_slot; voucher,,#1#=望远镜 | #2#=-1,"localize{type = 'name_text', key = 'v_telescope', set = 'Voucher'}, -1",,win_deck,,7,图片资源/Back/b_nebula.png
+b_ghost,幽灵牌组,Ghost Deck,商店中可能 出现幻灵牌 初始带有妖法牌,"Spectral cards may appear in the shop, start with a Hex card",consumables=['c_hex']; spectral_rate=2,consumables; spectral_rate,,,,,win_deck,,8,图片资源/Back/b_ghost.png
+b_abandoned,废弃牌组,Abandoned Deck,开局时 玩家牌组中 没有人头牌,Start run with no Face Cards in your deck,remove_faces=True,remove_faces,,,,,win_deck,,9,图片资源/Back/b_abandoned.png
+b_checkered,方格牌组,Checkered Deck,开局时 牌组中有26张黑桃和 26张红桃,Start run with 26 Spades and 26 Hearts in deck,,"(无,靠专属逻辑)",,,,,win_deck,,10,图片资源/Back/b_checkered.png
+b_zodiac,黄道牌组,Zodiac Deck,开局时即拥有 塔罗牌商人、 星球牌商人、 和库存过剩,"Start run with 塔罗牌商人, 星球牌商人, and 库存过剩","vouchers=['v_tarot_merchant', 'v_planet_merchant', 'v_overstock_norm']",vouchers,,#1#=塔罗牌商人 | #2#=星球牌商人 | #3#=库存过剩,"localize{type = 'name_text', key = 'v_tarot_merchant', set = 'Voucher'}, 
+                            localize{type = 'name_text', key = 'v_planet_merchant', set = 'Voucher'},
+                            localize{type = 'name_text', key = 'v_overstock_norm', set = 'Voucher'}",,win_stake,,11,图片资源/Back/b_zodiac.png
+b_painted,彩绘牌组,Painted Deck,手牌上限+2 小丑牌槽位-1,"+2 hand size, -1 Joker slot",hand_size=2; joker_slot=-1,hand_size; joker_slot,,#1#=2 | #2#=-1,"effect_config.hand_size,effect_config.joker_slot",,win_stake,,12,图片资源/Back/b_painted.png
+b_anaglyph,浮雕牌组,Anaglyph Deck,每次击败Boss盲注后 获得一个双倍标签,"After defeating each Boss Blind, gain a 双倍标签",,"(无,靠专属逻辑)",,#1#=双倍标签,"localize{type = 'name_text', key = 'tag_double', set = 'Tag'}",,win_stake,,13,图片资源/Back/b_anaglyph.png
+b_plasma,等离子牌组,Plasma Deck,计算出牌分数时 平衡筹码和倍率 盲注要求分数X2,Balance Chips and Mult when calculating score for played hand X2 base Blind size,ante_scaling=2,ante_scaling,,#1#=2,effect_config.ante_scaling,,win_stake,,14,图片资源/Back/b_plasma.png
+b_erratic,古怪牌组,Erratic Deck,牌组中所有牌的 点数和花色 都是随机的,All Ranks and Suits in deck are randomized,randomize_rank_suit=True,randomize_rank_suit,,,,,win_stake,,15,图片资源/Back/b_erratic.png
+b_challenge,挑战牌组,Challenge Deck,,,,"(无,靠专属逻辑)",,,,是,,,16,图片资源/Back/b_challenge.png

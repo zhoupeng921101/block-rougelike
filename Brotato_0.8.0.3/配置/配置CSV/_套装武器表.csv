@@ -1,0 +1,15 @@
+﻿套装id,中文名,成员武器族数,成员武器,2件,3件,4件,5件,6件,绑定角色
+set_blade,利器,4,剑、圆锯、砍刀、雷剑,stat_melee_damage+1 / stat_lifesteal+1,stat_melee_damage+2 / stat_lifesteal+2,stat_melee_damage+3 / stat_lifesteal+3,stat_melee_damage+4 / stat_lifesteal+4,stat_melee_damage+5 / stat_lifesteal+5,
+set_blunt,钝器,3,尖刺盾、石头、铁锤,stat_armor+1 / stat_speed-2,stat_armor+1 / stat_max_hp+3 / stat_speed-4,stat_armor+2 / stat_max_hp+3 / stat_speed-6,stat_armor+2 / stat_max_hp+6 / stat_speed-8,stat_armor+3 / stat_max_hp+6 / stat_speed-10,
+set_elemental,元素,9,喷火器、木板、火把、烈焰黄铜指虎、电击枪、等离子大锤、雷光刀、雷剑、魔杖,stat_elemental_damage+1,stat_elemental_damage+2,stat_elemental_damage+3,stat_elemental_damage+4,stat_elemental_damage+5,
+set_ethereal,虚灵,3,幽魂斧、幽魂燧石、幽魂节杖,stat_dodge+6 / stat_armor-1,stat_dodge+12 / stat_armor-2,stat_dodge+18 / stat_armor-3,stat_dodge+24 / stat_armor-4,stat_dodge+30 / stat_armor-5,幽灵
+set_explosive,爆炸,6,强拳、木板、核弹发射器、火箭筒、等离子大锤、粉碎者,explosion_size+5,explosion_size+10,explosion_size+15,explosion_size+20,explosion_size+25,
+set_gun,枪械,9,冲锋枪、加特林机枪、医疗枪、双管霰弹枪、左轮手枪、手枪、激光枪、狙击手枪、粉碎者,stat_range+10,stat_range+20,stat_range+30,stat_range+40,stat_range+50,
+set_heavy,重型,7,刺棍、加特林机枪、喷火器、核弹发射器、毁灭者、火箭筒、铁锤,stat_percent_damage+5,stat_percent_damage+10,stat_percent_damage+15,stat_percent_damage+20,stat_percent_damage+25,
+set_medical,医疗,3,剪刀、医疗枪、圆锯,stat_hp_regeneration+1,stat_hp_regeneration+2,stat_hp_regeneration+3,stat_hp_regeneration+4,stat_hp_regeneration+5,医生
+set_medieval,中世纪,4,剑、十字弓、尖刺盾、长矛,stat_armor+1,stat_armor+1 / stat_dodge+3,stat_armor+2 / stat_dodge+3,stat_armor+2 / stat_dodge+6,stat_armor+3 / stat_dodge+6,
+set_precise,精准,7,剪刀、十字弓、小刀、手里剑、狙击手枪、盗贼匕首、雷光刀,stat_crit_chance+3,stat_crit_chance+6,stat_crit_chance+9,stat_crit_chance+12,stat_crit_chance+15,狂人
+set_primitive,原始,7,刺棍、弹弓、树枝、火把、矛、短斧、石头,stat_max_hp+3,stat_max_hp+6,stat_max_hp+9,stat_max_hp+12,stat_max_hp+15,野人
+set_support,辅助,4,修枝剪刀、土豆发射器、掌、电击枪,stat_harvesting+5,stat_harvesting+10,stat_harvesting+15,stat_harvesting+20,stat_harvesting+25,
+set_tool,工具,2,扳手、螺丝刀,stat_engineering+1,stat_engineering+2,stat_engineering+3,stat_engineering+4,stat_engineering+5,
+set_unarmed,徒手,4,强拳、拳、掌、烈焰黄铜指虎,stat_dodge+3,stat_dodge+6,stat_dodge+9,stat_dodge+12,stat_dodge+15,斗士

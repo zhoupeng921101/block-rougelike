@@ -1,0 +1,122 @@
+{
+ "m_bonus": {
+  "config": {
+   "bonus": 30
+  },
+  "effect": "Bonus Card",
+  "label": "Bonus Card",
+  "max": 500,
+  "name": "Bonus",
+  "order": 2,
+  "pos": {
+   "x": 1,
+   "y": 1
+  },
+  "set": "Enhanced"
+ },
+ "m_glass": {
+  "config": {
+   "Xmult": 2,
+   "extra": 4
+  },
+  "effect": "Glass Card",
+  "label": "Glass Card",
+  "max": 500,
+  "name": "Glass Card",
+  "order": 5,
+  "pos": {
+   "x": 5,
+   "y": 1
+  },
+  "set": "Enhanced"
+ },
+ "m_gold": {
+  "config": {
+   "h_dollars": 3
+  },
+  "effect": "Gold Card",
+  "label": "Gold Card",
+  "max": 500,
+  "name": "Gold Card",
+  "order": 8,
+  "pos": {
+   "x": 6,
+   "y": 0
+  },
+  "set": "Enhanced"
+ },
+ "m_lucky": {
+  "config": {
+   "mult": 20,
+   "p_dollars": 20
+  },
+  "effect": "Lucky Card",
+  "label": "Lucky Card",
+  "max": 500,
+  "name": "Lucky Card",
+  "order": 9,
+  "pos": {
+   "x": 4,
+   "y": 1
+  },
+  "set": "Enhanced"
+ },
+ "m_mult": {
+  "config": {
+   "mult": 4
+  },
+  "effect": "Mult Card",
+  "label": "Mult Card",
+  "max": 500,
+  "name": "Mult",
+  "order": 3,
+  "pos": {
+   "x": 2,
+   "y": 1
+  },
+  "set": "Enhanced"
+ },
+ "m_steel": {
+  "config": {
+   "h_x_mult": 1.5
+  },
+  "effect": "Steel Card",
+  "label": "Steel Card",
+  "max": 500,
+  "name": "Steel Card",
+  "order": 6,
+  "pos": {
+   "x": 6,
+   "y": 1
+  },
+  "set": "Enhanced"
+ },
+ "m_stone": {
+  "config": {
+   "bonus": 50
+  },
+  "effect": "Stone Card",
+  "label": "Stone Card",
+  "max": 500,
+  "name": "Stone Card",
+  "order": 7,
+  "pos": {
+   "x": 5,
+   "y": 0
+  },
+  "set": "Enhanced"
+ },
+ "m_wild": {
+  "config": {},
+  "effect": "Wild Card",
+  "label": "Wild Card",
+  "max": 500,
+  "name": "Wild Card",
+  "order": 4,
+  "pos": {
+   "x": 3,
+   "y": 1
+  },
+  "set": "Enhanced"
+ }
+}

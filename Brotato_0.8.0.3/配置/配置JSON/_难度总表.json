@@ -1,0 +1,123 @@
+[
+  {
+    "id": "difficulty_0",
+    "中文名": "危险0",
+    "英文名": "Danger 0",
+    "难度值": 0,
+    "稀有度槽": 0,
+    "默认解锁": true,
+    "效果(中)": "无修改",
+    "效果原始": "effect_no_modifiers=0",
+    "出处": "items/difficulties/0/difficulty_0.tres"
+  },
+  {
+    "id": "difficulty_1",
+    "中文名": "危险1",
+    "英文名": "Danger 1",
+    "难度值": 1,
+    "稀有度槽": 1,
+    "默认解锁": false,
+    "效果(中)": "出现新敌人",
+    "效果原始": "EFFECT_NEW_ENEMIES=0",
+    "出处": "items/difficulties/1/difficulty_1.tres"
+  },
+  {
+    "id": "difficulty_10",
+    "中文名": "危险10",
+    "英文名": "Danger 10",
+    "难度值": 10,
+    "稀有度槽": 0,
+    "默认解锁": false,
+    "效果(中)": "",
+    "效果原始": "",
+    "出处": "items/difficulties/others/difficulty_10.tres"
+  },
+  {
+    "id": "difficulty_2",
+    "中文名": "危险2",
+    "英文名": "Danger 2",
+    "难度值": 2,
+    "稀有度槽": 2,
+    "默认解锁": false,
+    "效果(中)": "出现新敌人 / 精英怪和敌群出现",
+    "效果原始": "EFFECT_NEW_ENEMIES=0 / effect_elites=0",
+    "出处": "items/difficulties/2/difficulty_2.tres"
+  },
+  {
+    "id": "difficulty_3",
+    "中文名": "危险3",
+    "英文名": "Danger 3",
+    "难度值": 3,
+    "稀有度槽": 3,
+    "默认解锁": false,
+    "效果(中)": "出现新敌人 / 精英怪和敌群出现 / 敌人更加强大 / enemy_damage=12",
+    "效果原始": "EFFECT_NEW_ENEMIES=0 / effect_elites=0 / enemy_health=12 / enemy_damage=12",
+    "出处": "items/difficulties/3/difficulty_3.tres"
+  },
+  {
+    "id": "difficulty_4",
+    "中文名": "危险4",
+    "英文名": "Danger 4",
+    "难度值": 4,
+    "稀有度槽": 4,
+    "默认解锁": false,
+    "效果(中)": "出现新敌人 / 精英怪和敌群出现 / 敌人更加强大 / 更多的精英怪和敌群出现 / enemy_damage=26",
+    "效果原始": "EFFECT_NEW_ENEMIES=0 / effect_elites=0 / enemy_health=26 / effect_more_elites=0 / enemy_damage=26",
+    "出处": "items/difficulties/4/difficulty_4.tres"
+  },
+  {
+    "id": "difficulty_5",
+    "中文名": "危险5",
+    "英文名": "Danger 5",
+    "难度值": 5,
+    "稀有度槽": 5,
+    "默认解锁": false,
+    "效果(中)": "出现新敌人 / 精英怪和敌群出现 / 敌人更加强大 / 更多的精英怪和敌群出现 / 同时出现两个头目 / enemy_damage=40",
+    "效果原始": "EFFECT_NEW_ENEMIES=0 / effect_elites=0 / enemy_health=40 / effect_more_elites=0 / double_boss=1 / enemy_damage=40",
+    "出处": "items/difficulties/5/difficulty_5.tres"
+  },
+  {
+    "id": "difficulty_6",
+    "中文名": "危险6",
+    "英文名": "Danger 6",
+    "难度值": 6,
+    "稀有度槽": 0,
+    "默认解锁": false,
+    "效果(中)": "",
+    "效果原始": "",
+    "出处": "items/difficulties/others/difficulty_6.tres"
+  },
+  {
+    "id": "difficulty_7",
+    "中文名": "危险7",
+    "英文名": "Danger 7",
+    "难度值": 7,
+    "稀有度槽": 0,
+    "默认解锁": false,
+    "效果(中)": "",
+    "效果原始": "",
+    "出处": "items/difficulties/others/difficulty_7.tres"
+  },
+  {
+    "id": "difficulty_8",
+    "中文名": "危险8",
+    "英文名": "Danger 8",
+    "难度值": 8,
+    "稀有度槽": 0,
+    "默认解锁": false,
+    "效果(中)": "",
+    "效果原始": "",
+    "出处": "items/difficulties/others/difficulty_8.tres"
+  },
+  {
+    "id": "difficulty_9",
+    "中文名": "危险9",
+    "英文名": "Danger 9",
+    "难度值": 9,
+    "稀有度槽": 0,
+    "默认解锁": false,
+    "效果(中)": "",
+    "效果原始": "",
+    "出处": "items/difficulties/others/difficulty_9.tres"
+  }
+]

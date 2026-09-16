@@ -1,0 +1,5 @@
+﻿key,中文名,英文名,触发时机,效果,中文描述,英文描述,数值来源,实现说明,生效点,文案键,order,图片
+Gold,金色蜡封,Gold,计分结算,每张给 $3,这张牌被打出 并计分时 获得$3,Earn $3 when this card is played and scores,硬编码(P_SEALS 无 config),写死在 Card:get_p_dollars 里的 ret + 3,card.lua:305 ; card.lua:495 ; card.lua:571 ; card.lua:1072 ; card.lua:4484,descriptions.Other.gold_seal,1,图片资源/Seal/Gold.png
+Red,红色蜡封,Red,重复触发,该牌再触发 1 次,重新触发 此卡牌1次,Retrigger this card 1 time,硬编码(P_SEALS 无 config),context.repetition 分支返回 repetitions = 1,card.lua:2248,descriptions.Other.red_seal,2,图片资源/Seal/Red.png
+Blue,蓝色蜡封,Blue,回合结束,留在手牌则生成 1 张星球牌,如果在回合结束时 这张牌还留在手牌中 会生成最后一手牌型的星球牌 （必须有空位）,Creates the Planet card for final played poker hand of round if held in hand (Must have room),硬编码(P_SEALS 无 config),受消耗品槽位上限限制,card.lua:1041,descriptions.Other.blue_seal,3,图片资源/Seal/Blue.png
+Purple,紫色蜡封,Purple,弃牌时,生成 1 张塔罗牌,被弃掉时 生成一张塔罗牌 （必须有空位）,Creates a Tarot card when discarded (Must have room),硬编码(P_SEALS 无 config),受消耗品槽位上限限制,card.lua:2257,descriptions.Other.purple_seal,4,图片资源/Seal/Purple.png

@@ -1,0 +1,23 @@
+﻿key,中文名,英文名,config.extra,config.max_highlighted,config.min_highlighted,config.mod_conv,config.planets,config.remove_card,config.suit_conv,config.tarots,consumeable,cost,cost_mult,discovered,effect,name,order,pos.x,pos.y,set
+c_chariot,战车,The Chariot,,1,,m_steel,,,,,True,3,1.0,False,Enhance,The Chariot,8,7,0,Tarot
+c_death,死神,Death,,2,2,card,,,,,True,3,1.0,False,Card Conversion,Death,14,3,1,Tarot
+c_devil,恶魔,The Devil,,1,,m_gold,,,,,True,3,1.0,False,Enhance,The Devil,16,5,1,Tarot
+c_emperor,皇帝,The Emperor,,,,,,,,2,True,3,1.0,False,Round Bonus,The Emperor,5,4,0,Tarot
+c_empress,皇后,The Empress,,2,,m_mult,,,,,True,3,1.0,False,Enhance,The Empress,4,3,0,Tarot
+c_fool,愚者,The Fool,,,,,,,,,True,3,1.0,False,Disable Blind Effect,The Fool,1,0,0,Tarot
+c_hanged_man,倒吊人,The Hanged Man,,2,,,,True,,,True,3,1.0,False,Card Removal,The Hanged Man,13,2,1,Tarot
+c_heirophant,教皇,The Hierophant,,2,,m_bonus,,,,,True,3,1.0,False,Enhance,The Hierophant,6,5,0,Tarot
+c_hermit,隐者,The Hermit,20,,,,,,,,True,3,1.0,False,Dollar Doubler,The Hermit,10,9,0,Tarot
+c_high_priestess,女祭司,The High Priestess,,,,,2,,,,True,3,1.0,False,Round Bonus,The High Priestess,3,2,0,Tarot
+c_judgement,审判,Judgement,,,,,,,,,True,3,1.0,False,Random Joker,Judgement,21,0,2,Tarot
+c_justice,正义,Justice,,1,,m_glass,,,,,True,3,1.0,False,Enhance,Justice,9,8,0,Tarot
+c_lovers,恋人,The Lovers,,1,,m_wild,,,,,True,3,1.0,False,Enhance,The Lovers,7,6,0,Tarot
+c_magician,魔术师,The Magician,,2,,m_lucky,,,,,True,3,1.0,False,Enhance,The Magician,2,1,0,Tarot
+c_moon,月亮,The Moon,,3,,,,,Clubs,,True,3,1.0,False,Suit Conversion,The Moon,19,8,1,Tarot
+c_star,星星,The Star,,3,,,,,Diamonds,,True,3,1.0,False,Suit Conversion,The Star,18,7,1,Tarot
+c_strength,力量,Strength,,2,,up_rank,,,,,True,3,1.0,False,Round Bonus,Strength,12,1,1,Tarot
+c_sun,太阳,The Sun,,3,,,,,Hearts,,True,3,1.0,False,Suit Conversion,The Sun,20,9,1,Tarot
+c_temperance,节制,Temperance,50,,,,,,,,True,3,1.0,False,Joker Payout,Temperance,15,4,1,Tarot
+c_tower,塔,The Tower,,1,,m_stone,,,,,True,3,1.0,False,Enhance,The Tower,17,6,1,Tarot
+c_wheel_of_fortune,命运之轮,The Wheel of Fortune,4,,,,,,,,True,3,1.0,False,Round Bonus,The Wheel of Fortune,11,0,1,Tarot
+c_world,世界,The World,,3,,,,,Spades,,True,3,1.0,False,Suit Conversion,The World,22,1,2,Tarot

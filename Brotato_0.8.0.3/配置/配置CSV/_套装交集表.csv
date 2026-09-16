@@ -1,0 +1,23 @@
+﻿套装A,套装B,共有族数,共有武器,A满6件,B满6件,备注
+元素,爆炸,2,木板、等离子大锤,stat_elemental_damage+5,explosion_size+25,带这 2 族里任一把 ×6 就能同时点满两套
+爆炸,重型,2,核弹发射器、火箭筒,explosion_size+25,stat_percent_damage+25,带这 2 族里任一把 ×6 就能同时点满两套
+中世纪,精准,1,十字弓,stat_armor+3 / stat_dodge+6,stat_crit_chance+15,带这 1 族里任一把 ×6 就能同时点满两套
+元素,重型,1,喷火器,stat_elemental_damage+5,stat_percent_damage+25,带这 1 族里任一把 ×6 就能同时点满两套
+元素,精准,1,雷光刀,stat_elemental_damage+5,stat_crit_chance+15,带这 1 族里任一把 ×6 就能同时点满两套
+元素,原始,1,火把,stat_elemental_damage+5,stat_max_hp+15,带这 1 族里任一把 ×6 就能同时点满两套
+元素,辅助,1,电击枪,stat_elemental_damage+5,stat_harvesting+25,带这 1 族里任一把 ×6 就能同时点满两套
+元素,徒手,1,烈焰黄铜指虎,stat_elemental_damage+5,stat_dodge+15,带这 1 族里任一把 ×6 就能同时点满两套
+利器,元素,1,雷剑,stat_lifesteal+5 / stat_melee_damage+5,stat_elemental_damage+5,带这 1 族里任一把 ×6 就能同时点满两套
+利器,医疗,1,圆锯,stat_lifesteal+5 / stat_melee_damage+5,stat_hp_regeneration+5,带这 1 族里任一把 ×6 就能同时点满两套
+利器,中世纪,1,剑,stat_lifesteal+5 / stat_melee_damage+5,stat_armor+3 / stat_dodge+6,带这 1 族里任一把 ×6 就能同时点满两套
+医疗,精准,1,剪刀,stat_hp_regeneration+5,stat_crit_chance+15,带这 1 族里任一把 ×6 就能同时点满两套
+枪械,重型,1,加特林机枪,stat_range+50,stat_percent_damage+25,带这 1 族里任一把 ×6 就能同时点满两套
+枪械,医疗,1,医疗枪,stat_range+50,stat_hp_regeneration+5,带这 1 族里任一把 ×6 就能同时点满两套
+枪械,精准,1,狙击手枪,stat_range+50,stat_crit_chance+15,带这 1 族里任一把 ×6 就能同时点满两套
+爆炸,枪械,1,粉碎者,explosion_size+25,stat_range+50,带这 1 族里任一把 ×6 就能同时点满两套
+爆炸,徒手,1,强拳,explosion_size+25,stat_dodge+15,带这 1 族里任一把 ×6 就能同时点满两套
+辅助,徒手,1,掌,stat_harvesting+25,stat_dodge+15,带这 1 族里任一把 ×6 就能同时点满两套
+重型,原始,1,刺棍,stat_percent_damage+25,stat_max_hp+15,带这 1 族里任一把 ×6 就能同时点满两套
+钝器,重型,1,铁锤,stat_armor+3 / stat_max_hp+6 / stat_speed-10,stat_percent_damage+25,带这 1 族里任一把 ×6 就能同时点满两套
+钝器,中世纪,1,尖刺盾,stat_armor+3 / stat_max_hp+6 / stat_speed-10,stat_armor+3 / stat_dodge+6,带这 1 族里任一把 ×6 就能同时点满两套
+钝器,原始,1,石头,stat_armor+3 / stat_max_hp+6 / stat_speed-10,stat_max_hp+15,带这 1 族里任一把 ×6 就能同时点满两套

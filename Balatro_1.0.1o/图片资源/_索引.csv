@@ -1,0 +1,360 @@
+﻿key,分组,英文名,中文名,图集,pos.x,pos.y,尺寸,备注,落盘位置
+b_abandoned,Back,Abandoned Deck,废弃牌组,centers,3,3,142x190,,Back/b_abandoned.png
+b_anaglyph,Back,Anaglyph Deck,浮雕牌组,centers,2,4,142x190,,Back/b_anaglyph.png
+b_black,Back,Black Deck,黑色牌组,centers,3,2,142x190,,Back/b_black.png
+b_blue,Back,Blue Deck,蓝色牌组,centers,0,2,142x190,,Back/b_blue.png
+b_challenge,Back,Challenge Deck,挑战牌组,centers,0,4,142x190,,Back/b_challenge.png
+b_checkered,Back,Checkered Deck,方格牌组,centers,1,3,142x190,,Back/b_checkered.png
+b_erratic,Back,Erratic Deck,古怪牌组,centers,2,3,142x190,,Back/b_erratic.png
+b_ghost,Back,Ghost Deck,幽灵牌组,centers,6,2,142x190,,Back/b_ghost.png
+b_green,Back,Green Deck,绿色牌组,centers,2,2,142x190,,Back/b_green.png
+b_magic,Back,Magic Deck,魔法牌组,centers,0,3,142x190,,Back/b_magic.png
+b_nebula,Back,Nebula Deck,星云牌组,centers,3,0,142x190,,Back/b_nebula.png
+b_painted,Back,Painted Deck,彩绘牌组,centers,4,3,142x190,,Back/b_painted.png
+b_plasma,Back,Plasma Deck,等离子牌组,centers,4,2,142x190,,Back/b_plasma.png
+b_red,Back,Red Deck,红色牌组,centers,0,0,142x190,,Back/b_red.png
+b_yellow,Back,Yellow Deck,黄色牌组,centers,1,2,142x190,,Back/b_yellow.png
+b_zodiac,Back,Zodiac Deck,黄道牌组,centers,3,4,142x190,,Back/b_zodiac.png
+c_ankh,Spectral,Ankh,生命十字章,Spectral,0,5,142x190,,Spectral/c_ankh.png
+c_aura,Spectral,Aura,光环,Spectral,4,4,142x190,,Spectral/c_aura.png
+c_base,Default,,,centers,1,0,142x190,,Default/c_base.png
+c_black_hole,Spectral,Black Hole,黑洞,Spectral,9,3,142x190,,Spectral/c_black_hole.png
+c_ceres,Planet,Ceres,谷神星,Planet,8,2,142x190,,Planet/c_ceres.png
+c_chariot,Tarot,The Chariot,战车,Tarot,7,0,142x190,,Tarot/c_chariot.png
+c_cryptid,Spectral,Cryptid,神秘生物,Spectral,5,5,142x190,,Spectral/c_cryptid.png
+c_death,Tarot,Death,死神,Tarot,3,1,142x190,,Tarot/c_death.png
+c_deja_vu,Spectral,Deja Vu,既视感,Spectral,1,5,142x190,,Spectral/c_deja_vu.png
+c_devil,Tarot,The Devil,恶魔,Tarot,5,1,142x190,,Tarot/c_devil.png
+c_earth,Planet,Earth,地球,Planet,2,3,142x190,,Planet/c_earth.png
+c_ectoplasm,Spectral,Ectoplasm,灵质,Spectral,8,4,142x190,,Spectral/c_ectoplasm.png
+c_emperor,Tarot,The Emperor,皇帝,Tarot,4,0,142x190,,Tarot/c_emperor.png
+c_empress,Tarot,The Empress,皇后,Tarot,3,0,142x190,,Tarot/c_empress.png
+c_eris,Planet,Eris,阋神星,Planet,3,2,142x190,,Planet/c_eris.png
+c_familiar,Spectral,Familiar,使魔,Spectral,0,4,142x190,,Spectral/c_familiar.png
+c_fool,Tarot,The Fool,愚者,Tarot,0,0,142x190,,Tarot/c_fool.png
+c_grim,Spectral,Grim,严峻,Spectral,1,4,142x190,,Spectral/c_grim.png
+c_hanged_man,Tarot,The Hanged Man,倒吊人,Tarot,2,1,142x190,,Tarot/c_hanged_man.png
+c_heirophant,Tarot,The Hierophant,教皇,Tarot,5,0,142x190,,Tarot/c_heirophant.png
+c_hermit,Tarot,The Hermit,隐者,Tarot,9,0,142x190,,Tarot/c_hermit.png
+c_hex,Spectral,Hex,妖法,Spectral,2,5,142x190,,Spectral/c_hex.png
+c_high_priestess,Tarot,The High Priestess,女祭司,Tarot,2,0,142x190,,Tarot/c_high_priestess.png
+c_immolate,Spectral,Immolate,火祭,Spectral,9,4,142x190,,Spectral/c_immolate.png
+c_incantation,Spectral,Incantation,咒语,Spectral,2,4,142x190,,Spectral/c_incantation.png
+c_judgement,Tarot,Judgement,审判,Tarot,0,2,142x190,,Tarot/c_judgement.png
+c_jupiter,Planet,Jupiter,木星,Planet,4,3,142x190,,Planet/c_jupiter.png
+c_justice,Tarot,Justice,正义,Tarot,8,0,142x190,,Tarot/c_justice.png
+c_lovers,Tarot,The Lovers,恋人,Tarot,6,0,142x190,,Tarot/c_lovers.png
+c_magician,Tarot,The Magician,魔术师,Tarot,1,0,142x190,,Tarot/c_magician.png
+c_mars,Planet,Mars,火星,Planet,3,3,142x190,,Planet/c_mars.png
+c_medium,Spectral,Medium,灵媒,Spectral,4,5,142x190,,Spectral/c_medium.png
+c_mercury,Planet,Mercury,水星,Planet,0,3,142x190,,Planet/c_mercury.png
+c_moon,Tarot,The Moon,月亮,Tarot,8,1,142x190,,Tarot/c_moon.png
+c_neptune,Planet,Neptune,海王星,Planet,7,3,142x190,,Planet/c_neptune.png
+c_ouija,Spectral,Ouija,占卜,Spectral,7,4,142x190,,Spectral/c_ouija.png
+c_planet_x,Planet,Planet X,X行星,Planet,9,2,142x190,,Planet/c_planet_x.png
+c_pluto,Planet,Pluto,冥王星,Planet,8,3,142x190,,Planet/c_pluto.png
+c_saturn,Planet,Saturn,土星,Planet,5,3,142x190,,Planet/c_saturn.png
+c_sigil,Spectral,Sigil,符印,Spectral,6,4,142x190,,Spectral/c_sigil.png
+c_soul,Spectral,The Soul,灵魂,Spectral,2,2,142x190,,Spectral/c_soul.png
+c_star,Tarot,The Star,星星,Tarot,7,1,142x190,,Tarot/c_star.png
+c_strength,Tarot,Strength,力量,Tarot,1,1,142x190,,Tarot/c_strength.png
+c_sun,Tarot,The Sun,太阳,Tarot,9,1,142x190,,Tarot/c_sun.png
+c_talisman,Spectral,Talisman,护身符,Spectral,3,4,142x190,,Spectral/c_talisman.png
+c_temperance,Tarot,Temperance,节制,Tarot,4,1,142x190,,Tarot/c_temperance.png
+c_tower,Tarot,The Tower,塔,Tarot,6,1,142x190,,Tarot/c_tower.png
+c_trance,Spectral,Trance,入迷,Spectral,3,5,142x190,,Spectral/c_trance.png
+c_uranus,Planet,Uranus,天王星,Planet,6,3,142x190,,Planet/c_uranus.png
+c_venus,Planet,Venus,金星,Planet,1,3,142x190,,Planet/c_venus.png
+c_wheel_of_fortune,Tarot,The Wheel of Fortune,命运之轮,Tarot,0,1,142x190,,Tarot/c_wheel_of_fortune.png
+c_world,Tarot,The World,世界,Tarot,1,2,142x190,,Tarot/c_world.png
+c_wraith,Spectral,Wraith,幽灵,Spectral,5,4,142x190,,Spectral/c_wraith.png
+e_base,Edition,Base,基础,Joker,0,0,142x190,,Edition/e_base.png
+e_foil,Edition,Foil,闪箔,Joker,0,0,142x190,,Edition/e_foil.png
+e_holo,Edition,Holographic,镭射,Joker,0,0,142x190,,Edition/e_holo.png
+e_negative,Edition,Negative,负片,Joker,0,0,142x190,,Edition/e_negative.png
+e_polychrome,Edition,Polychrome,多彩,Joker,0,0,142x190,,Edition/e_polychrome.png
+j_8_ball,Joker,8 Ball,八号球,Joker,0,5,142x190,,Joker/j_8_ball.png
+j_abstract,Joker,Abstract Joker,抽象小丑,Joker,3,3,142x190,,Joker/j_abstract.png
+j_acrobat,Joker,Acrobat,杂技演员,Joker,2,1,142x190,,Joker/j_acrobat.png
+j_ancient,Joker,Ancient Joker,古老小丑,Joker,7,15,142x190,,Joker/j_ancient.png
+j_arrowhead,Joker,Arrowhead,箭头,Joker,1,8,142x190,,Joker/j_arrowhead.png
+j_astronomer,Joker,Astronomer,天文学家,Joker,2,7,142x190,,Joker/j_astronomer.png
+j_banner,Joker,Banner,旗帜,Joker,1,2,142x190,,Joker/j_banner.png
+j_baron,Joker,Baron,男爵,Joker,6,12,142x190,,Joker/j_baron.png
+j_baseball,Joker,Baseball Card,棒球卡,Joker,6,14,142x190,,Joker/j_baseball.png
+j_blackboard,Joker,Blackboard,黑板,Joker,2,10,142x190,,Joker/j_blackboard.png
+j_bloodstone,Joker,Bloodstone,血石,Joker,0,8,142x190,,Joker/j_bloodstone.png
+j_blue_joker,Joker,Blue Joker,蓝色小丑,Joker,7,10,142x190,,Joker/j_blue_joker.png
+j_blueprint,Joker,Blueprint,蓝图,Joker,0,3,142x190,,Joker/j_blueprint.png
+j_bootstraps,Joker,Bootstraps,提靴带,Joker,9,8,142x190,,Joker/j_bootstraps.png
+j_brainstorm,Joker,Brainstorm,头脑风暴,Joker,7,7,142x190,,Joker/j_brainstorm.png
+j_bull,Joker,Bull,斗牛,Joker,7,14,142x190,,Joker/j_bull.png
+j_burglar,Joker,Burglar,窃贼,Joker,1,10,142x190,,Joker/j_burglar.png
+j_burnt,Joker,Burnt Joker,烧焦小丑,Joker,3,7,142x190,,Joker/j_burnt.png
+j_business,Joker,Business Card,名片,Joker,1,4,142x190,,Joker/j_business.png
+j_caino,Joker,Canio,卡尼奥,Joker,3,8,142x190,,Joker/j_caino.png
+j_caino_soul,Joker_soul,,,Joker,3,9,142x190,浮空层,Joker_soul/j_caino_soul.png
+j_campfire,Joker,Campfire,篝火,Joker,5,15,142x190,,Joker/j_campfire.png
+j_card_sharp,Joker,Card Sharp,老千小丑,Joker,6,11,142x190,,Joker/j_card_sharp.png
+j_cartomancer,Joker,Cartomancer,卡牌术士,Joker,7,3,142x190,,Joker/j_cartomancer.png
+j_castle,Joker,Castle,城堡,Joker,9,15,142x190,,Joker/j_castle.png
+j_cavendish,Joker,Cavendish,卡文迪什,Joker,5,11,142x190,,Joker/j_cavendish.png
+j_ceremonial,Joker,Ceremonial Dagger,仪式匕首,Joker,5,5,142x190,,Joker/j_ceremonial.png
+j_certificate,Joker,Certificate,证书,Joker,8,8,142x190,,Joker/j_certificate.png
+j_chaos,Joker,Chaos the Clown,混沌小丑,Joker,1,0,142x190,,Joker/j_chaos.png
+j_chicot,Joker,Chicot,希科,Joker,6,8,142x190,,Joker/j_chicot.png
+j_chicot_soul,Joker_soul,,,Joker,6,9,142x190,浮空层,Joker_soul/j_chicot_soul.png
+j_clever,Joker,Clever Joker,聪敏小丑,Joker,2,14,142x190,,Joker/j_clever.png
+j_cloud_9,Joker,Cloud 9,9霄云外,Joker,7,12,142x190,,Joker/j_cloud_9.png
+j_constellation,Joker,Constellation,星座,Joker,9,10,142x190,,Joker/j_constellation.png
+j_crafty,Joker,Crafty Joker,精明小丑,Joker,4,14,142x190,,Joker/j_crafty.png
+j_crazy,Joker,Crazy Joker,狂野小丑,Joker,5,0,142x190,,Joker/j_crazy.png
+j_credit_card,Joker,Credit Card,信用卡,Joker,5,1,142x190,,Joker/j_credit_card.png
+j_delayed_grat,Joker,Delayed Gratification,延迟满足,Joker,4,3,142x190,,Joker/j_delayed_grat.png
+j_devious,Joker,Devious Joker,阴险小丑,Joker,3,14,142x190,,Joker/j_devious.png
+j_diet_cola,Joker,Diet Cola,零糖可乐,Joker,8,14,142x190,,Joker/j_diet_cola.png
+j_dna,Joker,DNA,DNA,Joker,5,10,142x190,,Joker/j_dna.png
+j_drivers_license,Joker,Driver's License,驾驶执照,Joker,0,7,142x190,,Joker/j_drivers_license.png
+j_droll,Joker,Droll Joker,滑稽小丑,Joker,6,0,142x190,,Joker/j_droll.png
+j_drunkard,Joker,Drunkard,醉汉,Joker,1,1,142x190,,Joker/j_drunkard.png
+j_duo,Joker,The Duo,二重奏,Joker,5,4,142x190,,Joker/j_duo.png
+j_dusk,Joker,Dusk,黄昏,Joker,4,7,142x190,,Joker/j_dusk.png
+j_egg,Joker,Egg,鸡蛋,Joker,0,10,142x190,,Joker/j_egg.png
+j_erosion,Joker,Erosion,侵蚀,Joker,5,13,142x190,,Joker/j_erosion.png
+j_even_steven,Joker,Even Steven,偶数史蒂文,Joker,8,3,142x190,,Joker/j_even_steven.png
+j_faceless,Joker,Faceless Joker,无面小丑,Joker,1,11,142x190,,Joker/j_faceless.png
+j_family,Joker,The Family,一家人,Joker,7,4,142x190,,Joker/j_family.png
+j_fibonacci,Joker,Fibonacci,斐波那契,Joker,1,5,142x190,,Joker/j_fibonacci.png
+j_flash,Joker,Flash Card,闪示卡,Joker,0,15,142x190,,Joker/j_flash.png
+j_flower_pot,Joker,Flower Pot,花盆,Joker,0,6,142x190,,Joker/j_flower_pot.png
+j_fortune_teller,Joker,Fortune Teller,占卜师,Joker,7,5,142x190,,Joker/j_fortune_teller.png
+j_four_fingers,Joker,Four Fingers,四指,Joker,6,6,142x190,,Joker/j_four_fingers.png
+j_gift,Joker,Gift Card,礼品卡,Joker,3,13,142x190,,Joker/j_gift.png
+j_glass,Joker,Glass Joker,玻璃小丑,Joker,1,3,142x190,,Joker/j_glass.png
+j_gluttenous_joker,Joker,Gluttonous Joker,暴食小丑,Joker,9,1,142x190,,Joker/j_gluttenous_joker.png
+j_golden,Joker,Golden Joker,黄金小丑,Joker,9,2,142x190,,Joker/j_golden.png
+j_greedy_joker,Joker,Greedy Joker,贪婪小丑,Joker,6,1,142x190,,Joker/j_greedy_joker.png
+j_green_joker,Joker,Green Joker,绿色小丑,Joker,2,11,142x190,,Joker/j_green_joker.png
+j_gros_michel,Joker,Gros Michel,大麦克香蕉,Joker,7,6,142x190,,Joker/j_gros_michel.png
+j_hack,Joker,Hack,烂脱口秀演员,Joker,5,2,142x190,,Joker/j_hack.png
+j_half,Joker,Half Joker,半张小丑,Joker,7,0,142x190,,Joker/j_half.png
+j_hallucination,Joker,Hallucination,幻觉,Joker,9,13,142x190,,Joker/j_hallucination.png
+j_hanging_chad,Joker,Hanging Chad,未断选票,Joker,9,6,142x190,,Joker/j_hanging_chad.png
+j_hiker,Joker,Hiker,徒步者,Joker,0,11,142x190,,Joker/j_hiker.png
+j_hit_the_road,Joker,Hit the Road,上路吧杰克,Joker,8,5,142x190,,Joker/j_hit_the_road.png
+j_hologram,Joker,Hologram,全息影像,Joker,4,12,142x190,,Joker/j_hologram.png
+j_hologram_soul,Joker_soul,,,Joker,2,9,142x190,浮空层,Joker_soul/j_hologram_soul.png
+j_ice_cream,Joker,Ice Cream,冰淇淋,Joker,4,10,142x190,,Joker/j_ice_cream.png
+j_idol,Joker,The Idol,偶像,Joker,6,7,142x190,,Joker/j_idol.png
+j_invisible,Joker,Invisible Joker,隐形小丑,Joker,1,7,142x190,,Joker/j_invisible.png
+j_joker,Joker,Joker,小丑,Joker,0,0,142x190,,Joker/j_joker.png
+j_jolly,Joker,Jolly Joker,开心小丑,Joker,2,0,142x190,,Joker/j_jolly.png
+j_juggler,Joker,Juggler,杂耍师,Joker,0,1,142x190,,Joker/j_juggler.png
+j_loyalty_card,Joker,Loyalty Card,积分卡,Joker,4,2,142x190,,Joker/j_loyalty_card.png
+j_luchador,Joker,Luchador,摔跤手,Joker,1,13,142x190,,Joker/j_luchador.png
+j_lucky_cat,Joker,Lucky Cat,招财猫,Joker,5,14,142x190,,Joker/j_lucky_cat.png
+j_lusty_joker,Joker,Lusty Joker,色欲小丑,Joker,7,1,142x190,,Joker/j_lusty_joker.png
+j_mad,Joker,Mad Joker,疯狂小丑,Joker,4,0,142x190,,Joker/j_mad.png
+j_madness,Joker,Madness,疯狂,Joker,8,11,142x190,,Joker/j_madness.png
+j_mail,Joker,Mail-In Rebate,邮件回扣,Joker,7,13,142x190,,Joker/j_mail.png
+j_marble,Joker,Marble Joker,大理石小丑,Joker,3,2,142x190,,Joker/j_marble.png
+j_matador,Joker,Matador,斗牛士,Joker,4,5,142x190,,Joker/j_matador.png
+j_merry_andy,Joker,Merry Andy,快乐安迪,Joker,8,0,142x190,,Joker/j_merry_andy.png
+j_midas_mask,Joker,Midas Mask,迈达斯面具,Joker,0,13,142x190,,Joker/j_midas_mask.png
+j_mime,Joker,Mime,哑剧演员,Joker,4,1,142x190,,Joker/j_mime.png
+j_misprint,Joker,Misprint,印错小丑,Joker,6,2,142x190,,Joker/j_misprint.png
+j_mr_bones,Joker,Mr. Bones,骷髅先生,Joker,3,4,142x190,,Joker/j_mr_bones.png
+j_mystic_summit,Joker,Mystic Summit,神秘之峰,Joker,2,2,142x190,,Joker/j_mystic_summit.png
+j_obelisk,Joker,Obelisk,方尖石塔,Joker,9,12,142x190,,Joker/j_obelisk.png
+j_odd_todd,Joker,Odd Todd,奇数托德,Joker,9,3,142x190,,Joker/j_odd_todd.png
+j_onyx_agate,Joker,Onyx Agate,缟玛瑙,Joker,2,8,142x190,,Joker/j_onyx_agate.png
+j_oops,Joker,Oops! All 6s,六六大顺,Joker,5,6,142x190,,Joker/j_oops.png
+j_order,Joker,The Order,秩序,Joker,8,4,142x190,,Joker/j_order.png
+j_pareidolia,Joker,Pareidolia,幻视,Joker,6,3,142x190,,Joker/j_pareidolia.png
+j_perkeo,Joker,Perkeo,帕奇欧,Joker,7,8,142x190,,Joker/j_perkeo.png
+j_perkeo_soul,Joker_soul,,,Joker,7,9,142x190,浮空层,Joker_soul/j_perkeo_soul.png
+j_photograph,Joker,Photograph,照片,Joker,2,13,142x190,,Joker/j_photograph.png
+j_popcorn,Joker,Popcorn,爆米花,Joker,1,15,142x190,,Joker/j_popcorn.png
+j_raised_fist,Joker,Raised Fist,致胜之拳,Joker,8,2,142x190,,Joker/j_raised_fist.png
+j_ramen,Joker,Ramen,拉面,Joker,2,15,142x190,,Joker/j_ramen.png
+j_red_card,Joker,Red Card,红牌,Joker,7,11,142x190,,Joker/j_red_card.png
+j_reserved_parking,Joker,Reserved Parking,私人车位,Joker,6,13,142x190,,Joker/j_reserved_parking.png
+j_ride_the_bus,Joker,Ride the Bus,搭乘巴士,Joker,1,6,142x190,,Joker/j_ride_the_bus.png
+j_riff_raff,Joker,Riff-Raff,乌合之众,Joker,1,12,142x190,,Joker/j_riff_raff.png
+j_ring_master,Joker,Showman,马戏团长,Joker,6,5,142x190,,Joker/j_ring_master.png
+j_rocket,Joker,Rocket,火箭,Joker,8,12,142x190,,Joker/j_rocket.png
+j_rough_gem,Joker,Rough Gem,璞玉,Joker,9,7,142x190,,Joker/j_rough_gem.png
+j_runner,Joker,Runner,跑步选手,Joker,3,10,142x190,,Joker/j_runner.png
+j_satellite,Joker,Satellite,卫星,Joker,8,7,142x190,,Joker/j_satellite.png
+j_scary_face,Joker,Scary Face,恐怖面孔,Joker,2,3,142x190,,Joker/j_scary_face.png
+j_scholar,Joker,Scholar,学者,Joker,0,4,142x190,,Joker/j_scholar.png
+j_seance,Joker,Séance,通灵,Joker,0,12,142x190,,Joker/j_seance.png
+j_seeing_double,Joker,Seeing Double,重影,Joker,4,4,142x190,,Joker/j_seeing_double.png
+j_selzer,Joker,Seltzer,苏打水,Joker,3,15,142x190,,Joker/j_selzer.png
+j_shoot_the_moon,Joker,Shoot the Moon,射月,Joker,2,6,142x190,,Joker/j_shoot_the_moon.png
+j_shortcut,Joker,Shortcut,捷径,Joker,3,12,142x190,,Joker/j_shortcut.png
+j_sixth_sense,Joker,Sixth Sense,第六感,Joker,8,10,142x190,,Joker/j_sixth_sense.png
+j_sly,Joker,Sly Joker,奸诈小丑,Joker,0,14,142x190,,Joker/j_sly.png
+j_smeared,Joker,Smeared Joker,模糊小丑,Joker,4,6,142x190,,Joker/j_smeared.png
+j_smiley,Joker,Smiley Face,微笑表情,Joker,6,15,142x190,,Joker/j_smiley.png
+j_sock_and_buskin,Joker,Sock and Buskin,喜与悲,Joker,3,1,142x190,,Joker/j_sock_and_buskin.png
+j_space,Joker,Space Joker,太空小丑,Joker,3,5,142x190,,Joker/j_space.png
+j_splash,Joker,Splash,飞溅,Joker,6,10,142x190,,Joker/j_splash.png
+j_square,Joker,Square Joker,方形小丑,Joker,9,11,142x190,,Joker/j_square.png
+j_steel_joker,Joker,Steel Joker,钢铁小丑,Joker,7,2,142x190,,Joker/j_steel_joker.png
+j_stencil,Joker,Joker Stencil,模具小丑,Joker,2,5,142x190,,Joker/j_stencil.png
+j_stone,Joker,Stone Joker,石头小丑,Joker,9,0,142x190,,Joker/j_stone.png
+j_stuntman,Joker,Stuntman,特技演员,Joker,8,6,142x190,,Joker/j_stuntman.png
+j_supernova,Joker,Supernova,超新星,Joker,2,4,142x190,,Joker/j_supernova.png
+j_superposition,Joker,Superposition,叠加态,Joker,3,11,142x190,,Joker/j_superposition.png
+j_swashbuckler,Joker,Swashbuckler,侠盗,Joker,9,5,142x190,,Joker/j_swashbuckler.png
+j_throwback,Joker,Throwback,回溯,Joker,5,7,142x190,,Joker/j_throwback.png
+j_ticket,Joker,Golden Ticket,黄金门票,Joker,5,3,142x190,,Joker/j_ticket.png
+j_to_the_moon,Joker,To the Moon,冲向月球,Joker,8,13,142x190,,Joker/j_to_the_moon.png
+j_todo_list,Joker,To Do List,待办清单,Joker,4,11,142x190,,Joker/j_todo_list.png
+j_trading,Joker,Trading Card,交易卡,Joker,9,14,142x190,,Joker/j_trading.png
+j_tribe,Joker,The Tribe,部落,Joker,9,4,142x190,,Joker/j_tribe.png
+j_triboulet,Joker,Triboulet,特里布莱,Joker,4,8,142x190,,Joker/j_triboulet.png
+j_triboulet_soul,Joker_soul,,,Joker,4,9,142x190,浮空层,Joker_soul/j_triboulet_soul.png
+j_trio,Joker,The Trio,三重奏,Joker,6,4,142x190,,Joker/j_trio.png
+j_troubadour,Joker,Troubadour,游吟诗人,Joker,0,2,142x190,,Joker/j_troubadour.png
+j_trousers,Joker,Spare Trousers,备用裤子,Joker,4,15,142x190,,Joker/j_trousers.png
+j_turtle_bean,Joker,Turtle Bean,黑龟豆,Joker,4,13,142x190,,Joker/j_turtle_bean.png
+j_vagabond,Joker,Vagabond,流浪者,Joker,5,12,142x190,,Joker/j_vagabond.png
+j_vampire,Joker,Vampire,吸血鬼,Joker,2,12,142x190,,Joker/j_vampire.png
+j_walkie_talkie,Joker,Walkie Talkie,对讲机,Joker,8,15,142x190,,Joker/j_walkie_talkie.png
+j_wee,Joker,Wee Joker,小小丑,Joker,0,0,142x190,,Joker/j_wee.png
+j_wily,Joker,Wily Joker,狡猾小丑,Joker,1,14,142x190,,Joker/j_wily.png
+j_wrathful_joker,Joker,Wrathful Joker,愤怒小丑,Joker,8,1,142x190,,Joker/j_wrathful_joker.png
+j_yorick,Joker,Yorick,约里克,Joker,5,8,142x190,,Joker/j_yorick.png
+j_yorick_soul,Joker_soul,,,Joker,5,9,142x190,浮空层,Joker_soul/j_yorick_soul.png
+j_zany,Joker,Zany Joker,古怪小丑,Joker,3,0,142x190,,Joker/j_zany.png
+m_bonus,Enhanced,Bonus Card,奖励牌,centers,1,1,142x190,,Enhanced/m_bonus.png
+m_glass,Enhanced,Glass Card,玻璃牌,centers,5,1,142x190,,Enhanced/m_glass.png
+m_gold,Enhanced,Gold Card,黄金牌,centers,6,0,142x190,,Enhanced/m_gold.png
+m_lucky,Enhanced,Lucky Card,幸运牌,centers,4,1,142x190,,Enhanced/m_lucky.png
+m_mult,Enhanced,Mult Card,倍率牌,centers,2,1,142x190,,Enhanced/m_mult.png
+m_steel,Enhanced,Steel Card,钢铁牌,centers,6,1,142x190,,Enhanced/m_steel.png
+m_stone,Enhanced,Stone Card,石头牌,centers,5,0,142x190,,Enhanced/m_stone.png
+m_wild,Enhanced,Wild Card,万能牌,centers,3,1,142x190,,Enhanced/m_wild.png
+p_arcana_jumbo_1,Booster,,,Booster,0,2,142x190,,Booster/p_arcana_jumbo_1.png
+p_arcana_jumbo_2,Booster,,,Booster,1,2,142x190,,Booster/p_arcana_jumbo_2.png
+p_arcana_mega_1,Booster,,,Booster,2,2,142x190,,Booster/p_arcana_mega_1.png
+p_arcana_mega_2,Booster,,,Booster,3,2,142x190,,Booster/p_arcana_mega_2.png
+p_arcana_normal_1,Booster,,,Booster,0,0,142x190,,Booster/p_arcana_normal_1.png
+p_arcana_normal_2,Booster,,,Booster,1,0,142x190,,Booster/p_arcana_normal_2.png
+p_arcana_normal_3,Booster,,,Booster,2,0,142x190,,Booster/p_arcana_normal_3.png
+p_arcana_normal_4,Booster,,,Booster,3,0,142x190,,Booster/p_arcana_normal_4.png
+p_buffoon_jumbo_1,Booster,,,Booster,2,8,142x190,,Booster/p_buffoon_jumbo_1.png
+p_buffoon_mega_1,Booster,,,Booster,3,8,142x190,,Booster/p_buffoon_mega_1.png
+p_buffoon_normal_1,Booster,,,Booster,0,8,142x190,,Booster/p_buffoon_normal_1.png
+p_buffoon_normal_2,Booster,,,Booster,1,8,142x190,,Booster/p_buffoon_normal_2.png
+p_celestial_jumbo_1,Booster,,,Booster,0,3,142x190,,Booster/p_celestial_jumbo_1.png
+p_celestial_jumbo_2,Booster,,,Booster,1,3,142x190,,Booster/p_celestial_jumbo_2.png
+p_celestial_mega_1,Booster,,,Booster,2,3,142x190,,Booster/p_celestial_mega_1.png
+p_celestial_mega_2,Booster,,,Booster,3,3,142x190,,Booster/p_celestial_mega_2.png
+p_celestial_normal_1,Booster,,,Booster,0,1,142x190,,Booster/p_celestial_normal_1.png
+p_celestial_normal_2,Booster,,,Booster,1,1,142x190,,Booster/p_celestial_normal_2.png
+p_celestial_normal_3,Booster,,,Booster,2,1,142x190,,Booster/p_celestial_normal_3.png
+p_celestial_normal_4,Booster,,,Booster,3,1,142x190,,Booster/p_celestial_normal_4.png
+p_spectral_jumbo_1,Booster,,,Booster,2,4,142x190,,Booster/p_spectral_jumbo_1.png
+p_spectral_mega_1,Booster,,,Booster,3,4,142x190,,Booster/p_spectral_mega_1.png
+p_spectral_normal_1,Booster,,,Booster,0,4,142x190,,Booster/p_spectral_normal_1.png
+p_spectral_normal_2,Booster,,,Booster,1,4,142x190,,Booster/p_spectral_normal_2.png
+p_standard_jumbo_1,Booster,,,Booster,0,7,142x190,,Booster/p_standard_jumbo_1.png
+p_standard_jumbo_2,Booster,,,Booster,1,7,142x190,,Booster/p_standard_jumbo_2.png
+p_standard_mega_1,Booster,,,Booster,2,7,142x190,,Booster/p_standard_mega_1.png
+p_standard_mega_2,Booster,,,Booster,3,7,142x190,,Booster/p_standard_mega_2.png
+p_standard_normal_1,Booster,,,Booster,0,6,142x190,,Booster/p_standard_normal_1.png
+p_standard_normal_2,Booster,,,Booster,1,6,142x190,,Booster/p_standard_normal_2.png
+p_standard_normal_3,Booster,,,Booster,2,6,142x190,,Booster/p_standard_normal_3.png
+p_standard_normal_4,Booster,,,Booster,3,6,142x190,,Booster/p_standard_normal_4.png
+soul,其它,,,centers,0,1,142x190,,其它/soul.png
+undiscovered_joker,其它,Not Discovered,未发现,centers,5,3,142x190,,其它/undiscovered_joker.png
+undiscovered_tarot,其它,Not Discovered,未发现,centers,6,3,142x190,,其它/undiscovered_tarot.png
+v_antimatter,Voucher,Antimatter,反物质,Voucher,7,1,142x190,,Voucher/v_antimatter.png
+v_blank,Voucher,Blank,空白,Voucher,7,0,142x190,,Voucher/v_blank.png
+v_clearance_sale,Voucher,Clearance Sale,清仓特卖,Voucher,3,0,142x190,,Voucher/v_clearance_sale.png
+v_crystal_ball,Voucher,Crystal Ball,水晶球,Voucher,2,2,142x190,,Voucher/v_crystal_ball.png
+v_directors_cut,Voucher,Director's Cut,导演剪辑版,Voucher,6,2,142x190,,Voucher/v_directors_cut.png
+v_glow_up,Voucher,Glow Up,焕彩,Voucher,4,1,142x190,,Voucher/v_glow_up.png
+v_grabber,Voucher,Grabber,抓手,Voucher,5,0,142x190,,Voucher/v_grabber.png
+v_hieroglyph,Voucher,Hieroglyph,象形文字,Voucher,5,2,142x190,,Voucher/v_hieroglyph.png
+v_hone,Voucher,Hone,打磨,Voucher,4,0,142x190,,Voucher/v_hone.png
+v_illusion,Voucher,Illusion,幻象,Voucher,4,3,142x190,,Voucher/v_illusion.png
+v_liquidation,Voucher,Liquidation,清算,Voucher,3,1,142x190,,Voucher/v_liquidation.png
+v_magic_trick,Voucher,Magic Trick,魔术,Voucher,4,2,142x190,,Voucher/v_magic_trick.png
+v_money_tree,Voucher,Money Tree,摇钱树,Voucher,1,3,142x190,,Voucher/v_money_tree.png
+v_nacho_tong,Voucher,Nacho Tong,玉米片夹,Voucher,5,1,142x190,,Voucher/v_nacho_tong.png
+v_observatory,Voucher,Observatory,天文台,Voucher,3,3,142x190,,Voucher/v_observatory.png
+v_omen_globe,Voucher,Omen Globe,预兆球,Voucher,2,3,142x190,,Voucher/v_omen_globe.png
+v_overstock_norm,Voucher,Overstock,库存过剩,Voucher,0,0,142x190,,Voucher/v_overstock_norm.png
+v_overstock_plus,Voucher,Overstock Plus,库存过剩加强版,Voucher,0,1,142x190,,Voucher/v_overstock_plus.png
+v_paint_brush,Voucher,Paint Brush,油漆刷,Voucher,7,2,142x190,,Voucher/v_paint_brush.png
+v_palette,Voucher,Palette,调色板,Voucher,7,3,142x190,,Voucher/v_palette.png
+v_petroglyph,Voucher,Petroglyph,岩画,Voucher,5,3,142x190,,Voucher/v_petroglyph.png
+v_planet_merchant,Voucher,Planet Merchant,星球牌商人,Voucher,2,0,142x190,,Voucher/v_planet_merchant.png
+v_planet_tycoon,Voucher,Planet Tycoon,星球大亨,Voucher,2,1,142x190,,Voucher/v_planet_tycoon.png
+v_recyclomancy,Voucher,Recyclomancy,回收魔法,Voucher,6,1,142x190,,Voucher/v_recyclomancy.png
+v_reroll_glut,Voucher,Reroll Glut,重掷加強版,Voucher,0,3,142x190,,Voucher/v_reroll_glut.png
+v_reroll_surplus,Voucher,Reroll Surplus,多次重掷,Voucher,0,2,142x190,,Voucher/v_reroll_surplus.png
+v_retcon,Voucher,Retcon,重构,Voucher,6,3,142x190,,Voucher/v_retcon.png
+v_seed_money,Voucher,Seed Money,种子基金,Voucher,1,2,142x190,,Voucher/v_seed_money.png
+v_tarot_merchant,Voucher,Tarot Merchant,塔罗牌商人,Voucher,1,0,142x190,,Voucher/v_tarot_merchant.png
+v_tarot_tycoon,Voucher,Tarot Tycoon,塔罗大亨,Voucher,1,1,142x190,,Voucher/v_tarot_tycoon.png
+v_telescope,Voucher,Telescope,望远镜,Voucher,3,2,142x190,,Voucher/v_telescope.png
+v_wasteful,Voucher,Wasteful,常弃常新,Voucher,6,0,142x190,,Voucher/v_wasteful.png
+tag_boss,Tag,Boss Tag,Boss标签,tags,0,2,68x68,,Tag/tag_boss.png
+tag_buffoon,Tag,Buffoon Tag,小丑标签,tags,4,2,68x68,,Tag/tag_buffoon.png
+tag_charm,Tag,Charm Tag,吊饰标签,tags,2,2,68x68,,Tag/tag_charm.png
+tag_coupon,Tag,Coupon Tag,代金券标签,tags,4,0,68x68,,Tag/tag_coupon.png
+tag_d_six,Tag,D6 Tag,D6标签,tags,5,3,68x68,,Tag/tag_d_six.png
+tag_double,Tag,Double Tag,双倍标签,tags,5,0,68x68,,Tag/tag_double.png
+tag_economy,Tag,Economy Tag,经济标签,tags,4,3,68x68,,Tag/tag_economy.png
+tag_ethereal,Tag,Ethereal Tag,空灵标签,tags,3,3,68x68,,Tag/tag_ethereal.png
+tag_foil,Tag,Foil Tag,闪箔标签,tags,3,0,68x68,,Tag/tag_foil.png
+tag_garbage,Tag,Garbage Tag,垃圾标签,tags,2,3,68x68,,Tag/tag_garbage.png
+tag_handy,Tag,Handy Tag,顺手标签,tags,1,3,68x68,,Tag/tag_handy.png
+tag_holo,Tag,Holographic Tag,镭射标签,tags,0,1,68x68,,Tag/tag_holo.png
+tag_investment,Tag,Investment Tag,投资标签,tags,2,1,68x68,,Tag/tag_investment.png
+tag_juggle,Tag,Juggle Tag,杂耍标签,tags,5,1,68x68,,Tag/tag_juggle.png
+tag_meteor,Tag,Meteor Tag,流星标签,tags,3,2,68x68,,Tag/tag_meteor.png
+tag_negative,Tag,Negative Tag,负片标签,tags,2,0,68x68,,Tag/tag_negative.png
+tag_orbital,Tag,Orbital Tag,轨道标签,tags,5,2,68x68,,Tag/tag_orbital.png
+tag_polychrome,Tag,Polychrome Tag,多彩标签,tags,1,1,68x68,,Tag/tag_polychrome.png
+tag_rare,Tag,Rare Tag,稀有标签,tags,1,0,68x68,,Tag/tag_rare.png
+tag_skip,Tag,Speed Tag,速度标签,tags,0,3,68x68,,Tag/tag_skip.png
+tag_standard,Tag,Standard Tag,标准标签,tags,1,2,68x68,,Tag/tag_standard.png
+tag_top_up,Tag,Top-up Tag,充值标签,tags,4,1,68x68,,Tag/tag_top_up.png
+tag_uncommon,Tag,Uncommon Tag,罕见标签,tags,0,0,68x68,,Tag/tag_uncommon.png
+tag_voucher,Tag,Voucher Tag,优惠券标签,tags,3,1,68x68,,Tag/tag_voucher.png
+bl_arm,Blind,The Arm,手臂,blind_chips,0,11,68x68,动画首帧/共21帧,Blind/bl_arm.png
+bl_big,Blind,Big Blind,大盲注,blind_chips,0,1,68x68,动画首帧/共21帧,Blind/bl_big.png
+bl_club,Blind,The Club,梅花,blind_chips,0,4,68x68,动画首帧/共21帧,Blind/bl_club.png
+bl_eye,Blind,The Eye,眼睛,blind_chips,0,17,68x68,动画首帧/共21帧,Blind/bl_eye.png
+bl_final_acorn,Blind,Amber Acorn,琥珀之实,blind_chips,0,27,68x68,动画首帧/共21帧,Blind/bl_final_acorn.png
+bl_final_bell,Blind,Cerulean Bell,蔚蓝之铃,blind_chips,0,26,68x68,动画首帧/共21帧,Blind/bl_final_bell.png
+bl_final_heart,Blind,Crimson Heart,绯红之心,blind_chips,0,25,68x68,动画首帧/共21帧,Blind/bl_final_heart.png
+bl_final_leaf,Blind,Verdant Leaf,翠绿之叶,blind_chips,0,28,68x68,动画首帧/共21帧,Blind/bl_final_leaf.png
+bl_final_vessel,Blind,Violet Vessel,靛紫之杯,blind_chips,0,29,68x68,动画首帧/共21帧,Blind/bl_final_vessel.png
+bl_fish,Blind,The Fish,鱼,blind_chips,0,5,68x68,动画首帧/共21帧,Blind/bl_fish.png
+bl_flint,Blind,The Flint,燧石,blind_chips,0,24,68x68,动画首帧/共21帧,Blind/bl_flint.png
+bl_goad,Blind,The Goad,挑衅,blind_chips,0,13,68x68,动画首帧/共21帧,Blind/bl_goad.png
+bl_head,Blind,The Head,头部,blind_chips,0,21,68x68,动画首帧/共21帧,Blind/bl_head.png
+bl_hook,Blind,The Hook,钩子,blind_chips,0,7,68x68,动画首帧/共21帧,Blind/bl_hook.png
+bl_house,Blind,The House,房屋,blind_chips,0,3,68x68,动画首帧/共21帧,Blind/bl_house.png
+bl_manacle,Blind,The Manacle,镣铐,blind_chips,0,8,68x68,动画首帧/共21帧,Blind/bl_manacle.png
+bl_mark,Blind,The Mark,标记,blind_chips,0,23,68x68,动画首帧/共21帧,Blind/bl_mark.png
+bl_mouth,Blind,The Mouth,嘴巴,blind_chips,0,18,68x68,动画首帧/共21帧,Blind/bl_mouth.png
+bl_needle,Blind,The Needle,针,blind_chips,0,20,68x68,动画首帧/共21帧,Blind/bl_needle.png
+bl_ox,Blind,The Ox,公牛,blind_chips,0,2,68x68,动画首帧/共21帧,Blind/bl_ox.png
+bl_pillar,Blind,The Pillar,支柱,blind_chips,0,16,68x68,动画首帧/共21帧,Blind/bl_pillar.png
+bl_plant,Blind,The Plant,植物,blind_chips,0,19,68x68,动画首帧/共21帧,Blind/bl_plant.png
+bl_psychic,Blind,The Psychic,灵媒,blind_chips,0,12,68x68,动画首帧/共21帧,Blind/bl_psychic.png
+bl_serpent,Blind,The Serpent,巨蟒,blind_chips,0,15,68x68,动画首帧/共21帧,Blind/bl_serpent.png
+bl_small,Blind,Small Blind,小盲注,blind_chips,0,0,68x68,动画首帧/共21帧,Blind/bl_small.png
+bl_tooth,Blind,The Tooth,牙齿,blind_chips,0,22,68x68,动画首帧/共21帧,Blind/bl_tooth.png
+bl_wall,Blind,The Wall,围墙,blind_chips,0,9,68x68,动画首帧/共21帧,Blind/bl_wall.png
+bl_water,Blind,The Water,水,blind_chips,0,14,68x68,动画首帧/共21帧,Blind/bl_water.png
+bl_wheel,Blind,The Wheel,车轮,blind_chips,0,10,68x68,动画首帧/共21帧,Blind/bl_wheel.png
+bl_window,Blind,The Window,窗口,blind_chips,0,6,68x68,动画首帧/共21帧,Blind/bl_window.png
