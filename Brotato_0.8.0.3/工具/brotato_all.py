@@ -44,8 +44,11 @@ def main(argv):
         for name, desc, mod, _ in plan:
             print('  %-8s %-46s (%s.py)' % (name, desc, mod))
         return 0
-    if not os.path.exists(APK):
+    # 只有真要跑 unpack 时才需要 APK；--skip=unpack 时资源已在盘上，不该被拦
+    if any(st[0] == 'unpack' for st in plan) and not os.path.exists(APK):
         print('找不到 APK: %s' % APK)
+        print('（资源已在盘上的话用 --skip=unpack；要拆别的包用 '
+              'python 工具/brotato_unpack.py <apk路径>）')
         return 2
 
     t0 = time.time()
