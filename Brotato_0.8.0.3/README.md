@@ -123,4 +123,4 @@ python 工具/brotato_index.py  [配置目录]                  # 总表 -> 配�
   `application/run/main_scene` 指向 `res://addons/mod_loader/pause.tscn` —— 主场景被 mod loader 接管了。
 - `lib/` 有 arm64-v8a 与 armeabi-v7a 两套，各 ~30 MB，是 `安卓壳/` 65 MB 的大头。
 
-细节见 `../文档/Godot-Brotato技术细节.md`。
+细节见 `../工具文档/Godot-Brotato技术细节.md`。

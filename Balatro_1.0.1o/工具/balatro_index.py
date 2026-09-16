@@ -150,7 +150,7 @@ def main():
               '这份索引由 `工具/balatro_index.py` 从 CSV 实读生成，'
               '改了任何一张总表后重跑即可刷新。\n' % (len(rows), total))
     md.append('数值结论看 [数值设计报告.md](../数值设计报告.md)，'
-              '解析细节看 [文档/Balatro技术细节.md](../../文档/Balatro技术细节.md)。\n')
+              '解析细节看 [工具文档/Balatro技术细节.md](../../工具文档/Balatro技术细节.md)。\n')
     md.append('## 一览\n')
     md.append('| # | 总表 | 类别 | 条目 | 列 | 生成脚本 | 配置驱动 |')
     md.append('|--:|---|---|--:|--:|---|---|')

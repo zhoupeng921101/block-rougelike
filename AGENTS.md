@@ -11,7 +11,7 @@
 | 肉鸽玩法和构筑设计 | [肉鸽玩法设计分析.md](Balatro_1.0.1o/肉鸽玩法设计分析.md) | [角色构筑指南.md](Brotato_0.8.0.3/角色构筑指南.md)、[武器搭配与套装组合.md](Brotato_0.8.0.3/武器搭配与套装组合.md) |
 | 具体数值、经济和概率 | [数值设计报告.md](Balatro_1.0.1o/数值设计报告.md) | [数值设计报告.md](Brotato_0.8.0.3/数值设计报告.md) |
 | 各类卡牌、角色、武器和道具的详细数据 | [总表索引.md](Balatro_1.0.1o/配置/总表索引.md) | [总表索引.md](Brotato_0.8.0.3/配置/总表索引.md) |
-| 改脚本 / 排查解析问题 | [文档/Balatro技术细节.md](文档/Balatro技术细节.md) | [文档/Godot-Brotato技术细节.md](文档/Godot-Brotato技术细节.md) |
+| 改脚本 / 排查解析问题 | [工具文档/Balatro技术细节.md](工具文档/Balatro技术细节.md) | [工具文档/Godot-Brotato技术细节.md](工具文档/Godot-Brotato技术细节.md) |
 
 ### 肉鸽玩法和构筑设计
 
@@ -65,9 +65,9 @@ Each game has its own extracted Android package and analysis tooling. Paths belo
 - `图片资源/`, `音频/`: decoded textures and extracted audio; `安卓壳/` includes native libraries under `lib/`.
 - Top-level analysis Markdown and `配置/总表索引.md`: the primary research entry points above.
 
-`文档/`（workspace root）:
+`工具文档/`（workspace root）:
 
-- `Balatro技术细节.md` / `Godot-Brotato技术细节.md`: format specs, parser judgement calls, and known pitfalls for each toolchain. **Read the relevant one before changing any script under a game's `工具/`.** Each game's `README.md` links to it as `../文档/`.
+- `Balatro技术细节.md` / `Godot-Brotato技术细节.md`: format specs, parser judgement calls, and known pitfalls for each toolchain. **Read the relevant one before changing any script under a game's `工具/`.** Each game's `README.md` links to it as `../工具文档/`.
 
 Prefer changing generators over manually editing generated files. Preserve extracted inputs unless the task specifically requires modifying them.
 
