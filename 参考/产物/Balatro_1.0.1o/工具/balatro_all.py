@@ -39,7 +39,7 @@ if hasattr(sys.stdout, 'reconfigure'):   # Windows 控制台默认 GBK
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
-WORKSPACE = os.path.dirname(ROOT)
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(ROOT)))  # 仓库根（参考/产物/<游戏>/ 往上三层）
 
 # (步骤名, 脚本, 说明)
 STEPS = [
@@ -55,7 +55,7 @@ STEPS = [
     ('index',   'balatro_index.py',   '总表索引'),
 ]
 
-JADX = os.path.join(WORKSPACE, '_工具缓存', 'jadx', 'bin', 'jadx.bat')
+JADX = os.path.join(REPO, '_工具缓存', 'jadx', 'bin', 'jadx.bat')
 
 
 def arg_value(flag, default=None):

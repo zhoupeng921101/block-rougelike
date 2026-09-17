@@ -1,12 +1,12 @@
 # Balatro（LÖVE / LuaJIT）技术细节
 
-动 `Balatro_1.0.1o/工具/balatro_*.py` 之前读这份。正文导航在 [AGENTS.md](../AGENTS.md)，
-数值结论在 [Balatro_1.0.1o/数值设计报告.md](../Balatro_1.0.1o/数值设计报告.md)。
+动 `Balatro_1.0.1o/工具/balatro_*.py` 之前读这份。正文导航在 [AGENTS.md](../../AGENTS.md)，
+数值结论在 [Balatro_1.0.1o/数值设计报告.md](../结论/Balatro_1.0.1o/数值设计报告.md)。
 
 ## 包结构:没有壳
 
 > APK 不在仓库里（`.gitignore` 忽略 `*.apk`，且不便公开分发）。要跑 `unpack` 请自备一份
-> 放到工作区根目录，命名 `com.playstack.balatro.android.apk`；其余步骤读已入库的解包产物，
+> 放到仓库根的 `源包/`，命名 `com.playstack.balatro.android.apk`；其余步骤读已入库的解包产物，
 > 无需 APK。
 
 `com.playstack.balatro.android.apk` 是 LÖVE(Love2D) 打的包，**不是 `.love` 容器、不是字节码、

@@ -6,8 +6,8 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # Brotato_0.8.0.3/
-WORKSPACE = os.path.dirname(ROOT)                                    # E:/AniRes/
-APK = os.path.join(WORKSPACE, 'tudouxiongdi.apk')
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(ROOT)))       # 仓库根（参考/产物/<游戏>/ 往上三层）
+APK = os.path.join(REPO, '源包', 'tudouxiongdi.apk')
 
 
 def setup_stdout():

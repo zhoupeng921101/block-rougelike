@@ -27,7 +27,8 @@ if hasattr(sys.stdout, 'reconfigure'):   # Windows 控制台默认 GBK
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEFAULT_APK = os.path.join(os.path.dirname(ROOT), 'com.playstack.balatro.android.apk')
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(ROOT)))  # 仓库根（参考/产物/<游戏>/ 往上三层）
+DEFAULT_APK = os.path.join(REPO, '源包', 'com.playstack.balatro.android.apk')
 
 SHELL_FILES = {'AndroidManifest.xml', 'resources.arsc', 'classes.dex'}
 

@@ -25,7 +25,9 @@ if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, '肉鸽玩法设计分析.md')
+# 结论文档在 参考/结论/<游戏>/，与产物目录分层放；ROOT 是 参考/产物/Balatro_1.0.1o/
+SRC = os.path.join(os.path.dirname(os.path.dirname(ROOT)),
+                   '结论', 'Balatro_1.0.1o', '肉鸽玩法设计分析.md')
 
 CN_NUM = '零一二三四五六七八九十'
 

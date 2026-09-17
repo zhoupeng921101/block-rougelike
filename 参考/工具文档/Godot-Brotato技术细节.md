@@ -6,7 +6,7 @@
 包：`tudouxiongdi.apk` → `Brotato_0.8.0.3/`。
 
 > APK 不在仓库里：它有 103 MiB，超过 GitHub 单文件 100 MiB 硬上限，且不便公开分发。
-> 要跑 `unpack` 请自备一份放到工作区根目录并命名 `tudouxiongdi.apk`；其余步骤读已入库的
+> 要跑 `unpack` 请自备一份放到仓库根的 `源包/` 并命名 `tudouxiongdi.apk`；其余步骤读已入库的
 > 解包产物，用 `--skip=unpack` 即可，无需 APK。
 
 引擎 **Godot 3.5.1.stable**，GDScript，Android 导出。
