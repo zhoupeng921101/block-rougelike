@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" width="960" height="720" font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Microsoft YaHei&quot;,&quot;PingFang SC&quot;,&quot;Noto Sans CJK SC&quot;,sans-serif"><style>
+svg{--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--ink3:#8a8984;--grid:#e8e7e3;--band:#dedcd6;--bandtxt:#6b6a65;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--crit:#c02d2d;--rule:#9a9994;}
+@media (prefers-color-scheme:dark){svg{--surface:#1a1a19;--ink:#fff;--ink2:#c3c2b7;--ink3:#8f8e86;--grid:#2e2e2c;--band:#333330;--bandtxt:#a5a49b;
+--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--crit:#e66767;--rule:#6d6c66;}}
+.bg{fill:var(--surface)} .ttl{fill:var(--ink);font-size:19px;font-weight:650}
+.sub{fill:var(--ink2);font-size:12.5px} .ax{fill:var(--ink2);font-size:11.5px}
+.axm{fill:var(--ink3);font-size:11px} .lbl{font-size:12.5px;font-weight:600}
+.note{fill:var(--ink3);font-size:11px}
+.halo{paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.gl{stroke:var(--grid);stroke-width:1} .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.mk{stroke:var(--surface);stroke-width:2}
+</style><rect class="bg" x="0" y="0" width="960" height="720"/>
+<text class="ttl" x="70" y="38">一个自变量（wave）驱动的四条曲线</text>
+<text class="sub" x="70" y="60">Brotato 0.8.0.3 · 玩家侧的幸运 / 收获 / 物价只改斜率，不改形状 · 竖线为第 20 波（无尽分界）</text>
+<text class="sub" x="70" y="78">四条曲线的拐点全部对齐在「前 10 波成长 / 10-20 波兑现 / 20+ 波清算」这三段上</text>
+<text class="lbl" x="70" y="98" fill="var(--ink)">① 波次时长（秒）</text>
+<text class="note" x="70" y="260">20 起步、每波 +5、第 9 波封顶 60，第 20 波破例给 90</text>
+<line class="gl" x1="70" y1="230.0" x2="906" y2="230.0"/>
+<text class="axm" x="62" y="234.0" text-anchor="end">0</text>
+<line class="gl" x1="70" y1="171.0" x2="906" y2="171.0"/>
+<text class="axm" x="62" y="175.0" text-anchor="end">48</text>
+<line class="gl" x1="70" y1="112.0" x2="906" y2="112.0"/>
+<text class="axm" x="62" y="116.0" text-anchor="end">95</text>
+<line x1="617.7" y1="112" x2="617.7" y2="230" stroke="var(--crit)" stroke-width="1.2" stroke-dasharray="4 4"/>
+<path class="ln" d="M 70.0 205.2 L 98.8 198.9 L 127.7 192.7 L 156.5 186.5 L 185.3 180.3 L 214.1 174.1 L 243.0 167.9 L 271.8 161.7 L 300.6 155.5 L 329.4 155.5 L 358.3 155.5 L 387.1 155.5 L 415.9 155.5 L 444.8 155.5 L 473.6 155.5 L 502.4 155.5 L 531.2 155.5 L 560.1 155.5 L 588.9 155.5 L 617.7 118.2 L 646.6 155.5 L 675.4 155.5 L 704.2 155.5 L 733.0 155.5 L 761.9 155.5 L 790.7 155.5 L 819.5 155.5 L 848.3 155.5 L 877.2 155.5 L 906.0 155.5" stroke="var(--s1)"/>
+<circle class="mk" cx="70.0" cy="205.2" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="185.3" cy="180.3" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="329.4" cy="155.5" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="473.6" cy="155.5" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="617.7" cy="118.2" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="761.9" cy="155.5" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="906.0" cy="155.5" r="3.4" fill="var(--s1)"/>
+<text class="axm halo" x="912.0" y="159.5" fill="var(--s1)">60</text>
+<text class="ax" x="70.0" y="246" text-anchor="middle">1</text>
+<text class="ax" x="185.3" y="246" text-anchor="middle">5</text>
+<text class="ax" x="329.4" y="246" text-anchor="middle">10</text>
+<text class="ax" x="473.6" y="246" text-anchor="middle">15</text>
+<text class="ax" x="617.7" y="246" text-anchor="middle">20</text>
+<text class="ax" x="761.9" y="246" text-anchor="middle">25</text>
+<text class="ax" x="906.0" y="246" text-anchor="middle">30</text>
+<text class="lbl" x="70" y="252" fill="var(--ink)">② 材料掉落概率</text>
+<text class="note" x="70" y="414">前 4 波 100%，第 5 波起 −1.5%/波，无尽期斜率翻成 −2.5%/波、第 30 波触 25% 地板</text>
+<line class="gl" x1="70" y1="384.0" x2="906" y2="384.0"/>
+<text class="axm" x="62" y="388.0" text-anchor="end">0%</text>
+<line class="gl" x1="70" y1="325.0" x2="906" y2="325.0"/>
+<text class="axm" x="62" y="329.0" text-anchor="end">52%</text>
+<line class="gl" x1="70" y1="266.0" x2="906" y2="266.0"/>
+<text class="axm" x="62" y="270.0" text-anchor="end">105%</text>
+<line x1="617.7" y1="266" x2="617.7" y2="384" stroke="var(--crit)" stroke-width="1.2" stroke-dasharray="4 4"/>
+<path class="ln" d="M 70.0 271.6 L 98.8 271.6 L 127.7 271.6 L 156.5 271.6 L 185.3 280.0 L 214.1 281.7 L 243.0 283.4 L 271.8 285.1 L 300.6 286.8 L 329.4 288.5 L 358.3 290.2 L 387.1 291.8 L 415.9 293.5 L 444.8 295.2 L 473.6 296.9 L 502.4 298.6 L 531.2 300.3 L 560.1 302.0 L 588.9 303.6 L 617.7 305.3 L 646.6 330.6 L 675.4 333.4 L 704.2 336.2 L 733.0 339.0 L 761.9 341.9 L 790.7 344.7 L 819.5 347.5 L 848.3 350.3 L 877.2 353.1 L 906.0 355.9" stroke="var(--s2)"/>
+<circle class="mk" cx="70.0" cy="271.6" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="185.3" cy="280.0" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="329.4" cy="288.5" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="473.6" cy="296.9" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="617.7" cy="305.3" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="761.9" cy="341.9" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="906.0" cy="355.9" r="3.4" fill="var(--s2)"/>
+<text class="axm halo" x="912.0" y="359.9" fill="var(--s2)">25%</text>
+<text class="ax" x="70.0" y="400" text-anchor="middle">1</text>
+<text class="ax" x="185.3" y="400" text-anchor="middle">5</text>
+<text class="ax" x="329.4" y="400" text-anchor="middle">10</text>
+<text class="ax" x="473.6" y="400" text-anchor="middle">15</text>
+<text class="ax" x="617.7" y="400" text-anchor="middle">20</text>
+<text class="ax" x="761.9" y="400" text-anchor="middle">25</text>
+<text class="ax" x="906.0" y="400" text-anchor="middle">30</text>
+<text class="lbl" x="70" y="406" fill="var(--ink)">③ 商店 / 升级卡的档位分布（堆叠）</text>
+<text class="note" x="70" y="568">罕见在第 11 波封顶 60%，稀有在 15.5 波封顶 25%，此后普通永久锁死 40%</text>
+<line class="gl" x1="70" y1="538.0" x2="906" y2="538.0"/>
+<line class="gl" x1="70" y1="479.0" x2="906" y2="479.0"/>
+<line class="gl" x1="70" y1="420.0" x2="906" y2="420.0"/>
+<line x1="617.7" y1="420" x2="617.7" y2="538" stroke="var(--crit)" stroke-width="1.2" stroke-dasharray="4 4"/>
+<path d="M 70.0 420.0 L 98.8 427.1 L 127.7 434.2 L 156.5 441.2 L 185.3 448.3 L 214.1 455.4 L 243.0 462.5 L 271.8 469.6 L 300.6 476.6 L 329.4 483.7 L 358.3 490.8 L 387.1 490.8 L 415.9 490.8 L 444.8 490.8 L 473.6 490.8 L 502.4 490.8 L 531.2 490.8 L 560.1 490.8 L 588.9 490.8 L 617.7 490.8 L 646.6 490.8 L 675.4 490.8 L 704.2 490.8 L 733.0 490.8 L 761.9 490.8 L 790.7 490.8 L 819.5 490.8 L 848.3 490.8 L 877.2 490.8 L 906.0 490.8 L 906.0 538.0 L 877.2 538.0 L 848.3 538.0 L 819.5 538.0 L 790.7 538.0 L 761.9 538.0 L 733.0 538.0 L 704.2 538.0 L 675.4 538.0 L 646.6 538.0 L 617.7 538.0 L 588.9 538.0 L 560.1 538.0 L 531.2 538.0 L 502.4 538.0 L 473.6 538.0 L 444.8 538.0 L 415.9 538.0 L 387.1 538.0 L 358.3 538.0 L 329.4 538.0 L 300.6 538.0 L 271.8 538.0 L 243.0 538.0 L 214.1 538.0 L 185.3 538.0 L 156.5 538.0 L 127.7 538.0 L 98.8 538.0 L 70.0 538.0 Z" fill="var(--s1)" opacity="0.85"/>
+<text class="axm halo" x="912.0" y="518.4" fill="var(--ink2)">I 40%</text>
+<path d="M 70.0 420.0 L 98.8 420.0 L 127.7 420.0 L 156.5 422.4 L 185.3 424.7 L 214.1 427.1 L 243.0 429.4 L 271.8 431.8 L 300.6 434.2 L 329.4 436.5 L 358.3 438.9 L 387.1 441.2 L 415.9 443.6 L 444.8 446.0 L 473.6 448.3 L 502.4 449.5 L 531.2 449.5 L 560.1 449.5 L 588.9 449.5 L 617.7 449.5 L 646.6 449.5 L 675.4 449.5 L 704.2 449.5 L 733.0 449.5 L 761.9 449.5 L 790.7 449.5 L 819.5 449.5 L 848.3 449.5 L 877.2 449.5 L 906.0 449.5 L 906.0 490.8 L 877.2 490.8 L 848.3 490.8 L 819.5 490.8 L 790.7 490.8 L 761.9 490.8 L 733.0 490.8 L 704.2 490.8 L 675.4 490.8 L 646.6 490.8 L 617.7 490.8 L 588.9 490.8 L 560.1 490.8 L 531.2 490.8 L 502.4 490.8 L 473.6 490.8 L 444.8 490.8 L 415.9 490.8 L 387.1 490.8 L 358.3 490.8 L 329.4 483.7 L 300.6 476.6 L 271.8 469.6 L 243.0 462.5 L 214.1 455.4 L 185.3 448.3 L 156.5 441.2 L 127.7 434.2 L 98.8 427.1 L 70.0 420.0 Z" fill="var(--s2)" opacity="0.79"/>
+<text class="axm halo" x="912.0" y="474.1" fill="var(--ink2)">II 35%</text>
+<path d="M 70.0 420.0 L 98.8 420.0 L 127.7 420.0 L 156.5 420.0 L 185.3 420.0 L 214.1 420.0 L 243.0 420.0 L 271.8 420.3 L 300.6 420.5 L 329.4 420.8 L 358.3 421.1 L 387.1 421.4 L 415.9 421.6 L 444.8 421.9 L 473.6 422.2 L 502.4 422.4 L 531.2 422.7 L 560.1 423.0 L 588.9 423.3 L 617.7 423.5 L 646.6 423.8 L 675.4 424.1 L 704.2 424.3 L 733.0 424.6 L 761.9 424.9 L 790.7 425.2 L 819.5 425.4 L 848.3 425.7 L 877.2 426.0 L 906.0 426.2 L 906.0 449.5 L 877.2 449.5 L 848.3 449.5 L 819.5 449.5 L 790.7 449.5 L 761.9 449.5 L 733.0 449.5 L 704.2 449.5 L 675.4 449.5 L 646.6 449.5 L 617.7 449.5 L 588.9 449.5 L 560.1 449.5 L 531.2 449.5 L 502.4 449.5 L 473.6 448.3 L 444.8 446.0 L 415.9 443.6 L 387.1 441.2 L 358.3 438.9 L 329.4 436.5 L 300.6 434.2 L 271.8 431.8 L 243.0 429.4 L 214.1 427.1 L 185.3 424.7 L 156.5 422.4 L 127.7 420.0 L 98.8 420.0 L 70.0 420.0 Z" fill="var(--s3)" opacity="0.73"/>
+<text class="axm halo" x="912.0" y="441.9" fill="var(--ink2)">III 20%</text>
+<path d="M 70.0 420.0 L 98.8 420.0 L 127.7 420.0 L 156.5 420.0 L 185.3 420.0 L 214.1 420.0 L 243.0 420.0 L 271.8 420.0 L 300.6 420.0 L 329.4 420.0 L 358.3 420.0 L 387.1 420.0 L 415.9 420.0 L 444.8 420.0 L 473.6 420.0 L 502.4 420.0 L 531.2 420.0 L 560.1 420.0 L 588.9 420.0 L 617.7 420.0 L 646.6 420.0 L 675.4 420.0 L 704.2 420.0 L 733.0 420.0 L 761.9 420.0 L 790.7 420.0 L 819.5 420.0 L 848.3 420.0 L 877.2 420.0 L 906.0 420.0 L 906.0 426.2 L 877.2 426.0 L 848.3 425.7 L 819.5 425.4 L 790.7 425.2 L 761.9 424.9 L 733.0 424.6 L 704.2 424.3 L 675.4 424.1 L 646.6 423.8 L 617.7 423.5 L 588.9 423.3 L 560.1 423.0 L 531.2 422.7 L 502.4 422.4 L 473.6 422.2 L 444.8 421.9 L 415.9 421.6 L 387.1 421.4 L 358.3 421.1 L 329.4 420.8 L 300.6 420.5 L 271.8 420.3 L 243.0 420.0 L 214.1 420.0 L 185.3 420.0 L 156.5 420.0 L 127.7 420.0 L 98.8 420.0 L 70.0 420.0 Z" fill="var(--s4)" opacity="0.67"/>
+<text class="axm halo" x="912.0" y="427.1" fill="var(--ink2)">IV 5%</text>
+<text class="ax" x="70.0" y="554" text-anchor="middle">1</text>
+<text class="ax" x="185.3" y="554" text-anchor="middle">5</text>
+<text class="ax" x="329.4" y="554" text-anchor="middle">10</text>
+<text class="ax" x="473.6" y="554" text-anchor="middle">15</text>
+<text class="ax" x="617.7" y="554" text-anchor="middle">20</text>
+<text class="ax" x="761.9" y="554" text-anchor="middle">25</text>
+<text class="ax" x="906.0" y="554" text-anchor="middle">30</text>
+<text class="lbl" x="70" y="560" fill="var(--ink)">④ 收获属性相对第 1 波的倍数</text>
+<text class="note" x="70" y="722">前 20 波每波 ×1.05（累计 ×2.53），一进无尽立刻翻成每波 ×0.9</text>
+<line class="gl" x1="70" y1="692.0" x2="906" y2="692.0"/>
+<text class="axm" x="62" y="696.0" text-anchor="end">0.00×</text>
+<line class="gl" x1="70" y1="633.0" x2="906" y2="633.0"/>
+<text class="axm" x="62" y="637.0" text-anchor="end">1.40×</text>
+<line class="gl" x1="70" y1="574.0" x2="906" y2="574.0"/>
+<text class="axm" x="62" y="578.0" text-anchor="end">2.80×</text>
+<line x1="617.7" y1="574" x2="617.7" y2="692" stroke="var(--crit)" stroke-width="1.2" stroke-dasharray="4 4"/>
+<path class="ln" d="M 70.0 649.9 L 98.8 647.8 L 127.7 645.5 L 156.5 643.2 L 185.3 640.8 L 214.1 638.2 L 243.0 635.5 L 271.8 632.7 L 300.6 629.7 L 329.4 626.6 L 358.3 623.4 L 387.1 619.9 L 415.9 616.3 L 444.8 612.5 L 473.6 608.6 L 502.4 604.4 L 531.2 600.0 L 560.1 595.4 L 588.9 590.6 L 617.7 585.5 L 646.6 596.2 L 675.4 605.7 L 704.2 614.4 L 733.0 622.1 L 761.9 629.1 L 790.7 635.4 L 819.5 641.1 L 848.3 646.2 L 877.2 650.7 L 906.0 654.9" stroke="var(--s4)"/>
+<circle class="mk" cx="70.0" cy="649.9" r="3.4" fill="var(--s4)"/>
+<circle class="mk" cx="185.3" cy="640.8" r="3.4" fill="var(--s4)"/>
+<circle class="mk" cx="329.4" cy="626.6" r="3.4" fill="var(--s4)"/>
+<circle class="mk" cx="473.6" cy="608.6" r="3.4" fill="var(--s4)"/>
+<circle class="mk" cx="617.7" cy="585.5" r="3.4" fill="var(--s4)"/>
+<circle class="mk" cx="761.9" cy="629.1" r="3.4" fill="var(--s4)"/>
+<circle class="mk" cx="906.0" cy="654.9" r="3.4" fill="var(--s4)"/>
+<text class="axm halo" x="912.0" y="658.9" fill="var(--s4)">0.88×</text>
+<text class="ax" x="70.0" y="708" text-anchor="middle">1</text>
+<text class="ax" x="185.3" y="708" text-anchor="middle">5</text>
+<text class="ax" x="329.4" y="708" text-anchor="middle">10</text>
+<text class="ax" x="473.6" y="708" text-anchor="middle">15</text>
+<text class="ax" x="617.7" y="708" text-anchor="middle">20</text>
+<text class="ax" x="761.9" y="708" text-anchor="middle">25</text>
+<text class="ax" x="906.0" y="708" text-anchor="middle">30</text>
+</svg>

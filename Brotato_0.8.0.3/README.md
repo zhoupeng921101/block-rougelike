@@ -47,7 +47,11 @@ python 工具/brotato_config.py [资源目录] [文本目录] [配置目录]   #
 python 工具/brotato_builds.py [资源目录] [文本目录] [配置目录]   # -> 角色构筑/属性道具/套装武器 3 张表
 python 工具/brotato_loadouts.py [资源目录] [文本目录] [配置目录] # -> 武器协同/套装交集/最优组合 3 张表（穷举约 70 秒）
 python 工具/brotato_index.py  [配置目录]                  # 总表 -> 配置/总表索引.md
+python 工具/brotato_curve.py  [输出目录]                  # 总表 -> 图表/ 两张 SVG（分析脚本，不在 all 链路里）
 ```
+
+`brotato_curve.py` 和 Balatro 的 `balatro_curve.py` 一样是**独立的分析脚本**，
+不属于 `brotato_all.py` 的七步流程；它只读 `配置/配置CSV/`，改了总表重跑即可刷新图。
 
 ## 产物目录
 
@@ -59,6 +63,7 @@ python 工具/brotato_index.py  [配置目录]                  # 总表 -> 配�
 | `音频/` | 153 个 `.mp3` / `.ogg` / `.wav`，同样按原始路径，55 MB |
 | `文本/` | 13 语言 JSON + `_中英对照.csv`(691 行) + `_语言清单.csv` + `_覆盖率.txt` |
 | `配置/配置CSV/` | **21 张总表**（UTF-8 BOM，Excel 直开），见 `配置/总表索引.md` |
+| `图表/` | 2 张分析用 SVG：`需求曲线.svg`（每波总血量 / 所需 DPS）、`单自变量四曲线.svg`（时长/掉落率/档位/收获）；自带亮暗两套配色，可直接嵌进 Markdown |
 | `配置/配置JSON/` | 其中 17 张的 JSON 版（明细表只出 CSV） |
 | `角色构筑指南.md` | 38 个角色分九组的流派读法 + 属性物价表 + 套装选择 |
 | `武器搭配与套装组合.md` | 套装三条机制 + 24 族双套装武器 + 6 格穷举上限 + 武器间协同 + 合成取舍 |

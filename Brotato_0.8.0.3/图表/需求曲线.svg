@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 700" width="960" height="700" font-family="-apple-system,BlinkMacSystemFont,&quot;Segoe UI&quot;,&quot;Microsoft YaHei&quot;,&quot;PingFang SC&quot;,&quot;Noto Sans CJK SC&quot;,sans-serif"><style>
+svg{--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--ink3:#8a8984;--grid:#e8e7e3;--band:#dedcd6;--bandtxt:#6b6a65;
+--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--crit:#c02d2d;--rule:#9a9994;}
+@media (prefers-color-scheme:dark){svg{--surface:#1a1a19;--ink:#fff;--ink2:#c3c2b7;--ink3:#8f8e86;--grid:#2e2e2c;--band:#333330;--bandtxt:#a5a49b;
+--s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--crit:#e66767;--rule:#6d6c66;}}
+.bg{fill:var(--surface)} .ttl{fill:var(--ink);font-size:19px;font-weight:650}
+.sub{fill:var(--ink2);font-size:12.5px} .ax{fill:var(--ink2);font-size:11.5px}
+.axm{fill:var(--ink3);font-size:11px} .lbl{font-size:12.5px;font-weight:600}
+.note{fill:var(--ink3);font-size:11px}
+.halo{paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+.gl{stroke:var(--grid);stroke-width:1} .ln{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.mk{stroke:var(--surface);stroke-width:2}
+</style><rect class="bg" x="0" y="0" width="960" height="700"/>
+<text class="ttl" x="86" y="38">每波要打掉多少血，以及那意味着多少 DPS</text>
+<text class="sub" x="86" y="60">Brotato 0.8.0.3 · zone_1 · 数量取区间均值×出现概率的期望 · 不含精英/兽潮/召唤链（故为下界）· 纵轴对数</text>
+<text class="sub" x="86" y="78">第 20 波的跳变来自双 Boss（各 29900 血）；危险 5 时两只都上但各打 75 折，合计 1.5 倍而不是 2 倍</text>
+<text class="lbl" x="86" y="102" fill="var(--ink)">① 一波之内刷出来的敌人总血量</text>
+<line class="gl" x1="86" y1="306.8" x2="824" y2="306.8"/>
+<text class="axm" x="76" y="310.8" text-anchor="end">100</text>
+<line class="gl" x1="86" y1="259.6" x2="824" y2="259.6"/>
+<text class="axm" x="76" y="263.6" text-anchor="end">1k</text>
+<line class="gl" x1="86" y1="212.4" x2="824" y2="212.4"/>
+<text class="axm" x="76" y="216.4" text-anchor="end">10k</text>
+<line class="gl" x1="86" y1="165.2" x2="824" y2="165.2"/>
+<text class="axm" x="76" y="169.2" text-anchor="end">100k</text>
+<line class="gl" x1="86" y1="118.0" x2="824" y2="118.0"/>
+<text class="axm" x="76" y="122.0" text-anchor="end">1.00M</text>
+<path class="ln" d="M 86.0 308.0 L 124.8 297.1 L 163.7 276.6 L 202.5 262.8 L 241.4 255.1 L 280.2 244.5 L 319.1 232.9 L 357.9 226.1 L 396.7 223.2 L 435.6 212.3 L 474.4 206.6 L 513.3 207.0 L 552.1 202.2 L 590.9 209.1 L 629.8 202.9 L 668.6 195.7 L 707.5 184.0 L 746.3 193.1 L 785.2 181.9 L 824.0 178.0" stroke="var(--s1)"/>
+<circle class="mk" cx="86.0" cy="308.0" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="124.8" cy="297.1" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="163.7" cy="276.6" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="202.5" cy="262.8" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="241.4" cy="255.1" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="280.2" cy="244.5" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="319.1" cy="232.9" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="357.9" cy="226.1" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="396.7" cy="223.2" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="435.6" cy="212.3" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="474.4" cy="206.6" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="513.3" cy="207.0" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="552.1" cy="202.2" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="590.9" cy="209.1" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="629.8" cy="202.9" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="668.6" cy="195.7" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="707.5" cy="184.0" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="746.3" cy="193.1" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="785.2" cy="181.9" r="3.4" fill="var(--s1)"/>
+<circle class="mk" cx="824.0" cy="178.0" r="3.4" fill="var(--s1)"/>
+<line x1="834" y1="120.0" x2="852" y2="120.0" stroke="var(--s1)" stroke-width="2.4"/>
+<text class="lbl" x="858" y="124.0" fill="var(--s1)">危险 0</text>
+<text class="axm" x="834" y="139.0">第 20 波 54k</text>
+<path class="ln" d="M 86.0 301.1 L 124.8 290.2 L 163.7 265.1 L 202.5 248.2 L 241.4 243.0 L 280.2 231.0 L 319.1 223.9 L 357.9 214.6 L 396.7 210.3 L 435.6 203.9 L 474.4 196.2 L 513.3 197.4 L 552.1 187.9 L 590.9 200.5 L 629.8 193.0 L 668.6 186.2 L 707.5 175.1 L 746.3 184.6 L 785.2 170.6 L 824.0 166.0" stroke="var(--s2)"/>
+<circle class="mk" cx="86.0" cy="301.1" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="124.8" cy="290.2" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="163.7" cy="265.1" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="202.5" cy="248.2" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="241.4" cy="243.0" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="280.2" cy="231.0" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="319.1" cy="223.9" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="357.9" cy="214.6" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="396.7" cy="210.3" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="435.6" cy="203.9" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="474.4" cy="196.2" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="513.3" cy="197.4" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="552.1" cy="187.9" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="590.9" cy="200.5" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="629.8" cy="193.0" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="668.6" cy="186.2" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="707.5" cy="175.1" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="746.3" cy="184.6" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="785.2" cy="170.6" r="3.4" fill="var(--s2)"/>
+<circle class="mk" cx="824.0" cy="166.0" r="3.4" fill="var(--s2)"/>
+<line x1="834" y1="154.0" x2="852" y2="154.0" stroke="var(--s2)" stroke-width="2.4"/>
+<text class="lbl" x="858" y="158.0" fill="var(--s2)">危险 5</text>
+<text class="axm" x="834" y="173.0">第 20 波 96k</text>
+<text class="ax" x="86.0" y="374" text-anchor="middle">1</text>
+<text class="ax" x="163.7" y="374" text-anchor="middle">3</text>
+<text class="ax" x="241.4" y="374" text-anchor="middle">5</text>
+<text class="ax" x="319.1" y="374" text-anchor="middle">7</text>
+<text class="ax" x="396.7" y="374" text-anchor="middle">9</text>
+<text class="ax" x="474.4" y="374" text-anchor="middle">11</text>
+<text class="ax" x="552.1" y="374" text-anchor="middle">13</text>
+<text class="ax" x="629.8" y="374" text-anchor="middle">15</text>
+<text class="ax" x="707.5" y="374" text-anchor="middle">17</text>
+<text class="ax" x="785.2" y="374" text-anchor="middle">19</text>
+<text class="ax" x="824.0" y="374" text-anchor="middle">20</text>
+<text class="axm" x="455" y="392" text-anchor="middle">波次</text>
+<text class="lbl" x="86" y="414" fill="var(--ink)">② 打光它需要的平均 DPS（总血量 ÷ 波次时长）</text>
+<line class="gl" x1="86" y1="620.0" x2="824" y2="620.0"/>
+<text class="axm" x="76" y="624.0" text-anchor="end">1</text>
+<line class="gl" x1="86" y1="565.4" x2="824" y2="565.4"/>
+<text class="axm" x="76" y="569.4" text-anchor="end">10</text>
+<line class="gl" x1="86" y1="510.7" x2="824" y2="510.7"/>
+<text class="axm" x="76" y="514.7" text-anchor="end">100</text>
+<line class="gl" x1="86" y1="456.1" x2="824" y2="456.1"/>
+<text class="axm" x="76" y="460.1" text-anchor="end">1k</text>
+<line class="gl" x1="86" y1="430.0" x2="824" y2="430.0"/>
+<text class="axm" x="76" y="434.0" text-anchor="end">3k</text>
+<line x1="86" y1="482.2" x2="824" y2="482.2" stroke="var(--crit)" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text class="axm halo" x="94.0" y="474.2" fill="var(--crit)">Boss 检定线 332 DPS（29900 血 ÷ 90 秒）</text>
+<line x1="86" y1="508.9" x2="824" y2="508.9" stroke="var(--rule)" stroke-width="1.4" stroke-dasharray="3 4"/>
+<text class="axm halo" x="94.0" y="501.9" fill="var(--bandtxt)">T4 武器裸 DPS 上限 108</text>
+<path class="ln" d="M 86.0 583.1 L 124.8 575.9 L 163.7 556.4 L 202.5 544.2 L 241.4 538.4 L 280.2 528.9 L 319.1 518.0 L 357.9 512.4 L 396.7 511.1 L 435.6 498.5 L 474.4 491.9 L 513.3 492.3 L 552.1 486.8 L 590.9 494.8 L 629.8 487.6 L 668.6 479.3 L 707.5 465.8 L 746.3 476.2 L 785.2 463.3 L 824.0 468.3" stroke="var(--s1)"/>
+<circle class="mk" cx="86.0" cy="583.1" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="124.8" cy="575.9" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="163.7" cy="556.4" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="202.5" cy="544.2" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="241.4" cy="538.4" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="280.2" cy="528.9" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="319.1" cy="518.0" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="357.9" cy="512.4" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="396.7" cy="511.1" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="435.6" cy="498.5" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="474.4" cy="491.9" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="513.3" cy="492.3" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="552.1" cy="486.8" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="590.9" cy="494.8" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="629.8" cy="487.6" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="668.6" cy="479.3" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="707.5" cy="465.8" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="746.3" cy="476.2" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="785.2" cy="463.3" r="3.0" fill="var(--s1)"/>
+<circle class="mk" cx="824.0" cy="468.3" r="3.0" fill="var(--s1)"/>
+<line x1="834" y1="432.0" x2="852" y2="432.0" stroke="var(--s1)" stroke-width="2.4"/>
+<text class="lbl" x="858" y="436.0" fill="var(--s1)">危险 0</text>
+<text class="axm" x="834" y="451.0">峰值 738</text>
+<path class="ln" d="M 86.0 575.2 L 124.8 567.9 L 163.7 543.2 L 202.5 527.2 L 241.4 524.4 L 280.2 513.3 L 319.1 507.5 L 357.9 499.1 L 396.7 496.2 L 435.6 488.7 L 474.4 479.9 L 513.3 481.3 L 552.1 470.2 L 590.9 484.8 L 629.8 476.1 L 668.6 468.3 L 707.5 455.4 L 746.3 466.5 L 785.2 450.2 L 824.0 454.5" stroke="var(--s2)"/>
+<circle class="mk" cx="86.0" cy="575.2" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="124.8" cy="567.9" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="163.7" cy="543.2" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="202.5" cy="527.2" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="241.4" cy="524.4" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="280.2" cy="513.3" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="319.1" cy="507.5" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="357.9" cy="499.1" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="396.7" cy="496.2" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="435.6" cy="488.7" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="474.4" cy="479.9" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="513.3" cy="481.3" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="552.1" cy="470.2" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="590.9" cy="484.8" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="629.8" cy="476.1" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="668.6" cy="468.3" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="707.5" cy="455.4" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="746.3" cy="466.5" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="785.2" cy="450.2" r="3.0" fill="var(--s2)"/>
+<circle class="mk" cx="824.0" cy="454.5" r="3.0" fill="var(--s2)"/>
+<line x1="834" y1="466.0" x2="852" y2="466.0" stroke="var(--s2)" stroke-width="2.4"/>
+<text class="lbl" x="858" y="470.0" fill="var(--s2)">危险 5</text>
+<text class="axm" x="834" y="485.0">峰值 1282</text>
+<line x1="785.2" y1="457.3" x2="785.2" y2="443.3" stroke="var(--rule)" stroke-width="1"/>
+<text class="axm halo" x="785.2" y="438.3" text-anchor="middle" fill="var(--bandtxt)">峰值在第 19 波，不是第 20 波</text>
+<text class="ax" x="86.0" y="640" text-anchor="middle">1</text>
+<text class="ax" x="163.7" y="640" text-anchor="middle">3</text>
+<text class="ax" x="241.4" y="640" text-anchor="middle">5</text>
+<text class="ax" x="319.1" y="640" text-anchor="middle">7</text>
+<text class="ax" x="396.7" y="640" text-anchor="middle">9</text>
+<text class="ax" x="474.4" y="640" text-anchor="middle">11</text>
+<text class="ax" x="552.1" y="640" text-anchor="middle">13</text>
+<text class="ax" x="629.8" y="640" text-anchor="middle">15</text>
+<text class="ax" x="707.5" y="640" text-anchor="middle">17</text>
+<text class="ax" x="785.2" y="640" text-anchor="middle">19</text>
+<text class="ax" x="824.0" y="640" text-anchor="middle">20</text>
+<text class="axm" x="455" y="658" text-anchor="middle">波次</text>
+<text class="note" x="86" y="654">⚠ ② 是「把这一波刷出来的怪全部打光」所需的 DPS，杂兵波并不要求做到（可以靠走位躲到时间结束）；只有第 20 波的 Boss 是必须打死的硬检定。</text>
+<text class="note" x="86" y="670">口径 — 数量按「最少/最多」均值 × 单位概率 × 组出现概率；重复次数按 wave_manager.gd 逐次模拟（间隔每次减「间隔递减」，下限「最小间隔」）。</text>
+<text class="note" x="86" y="686">血量 =（生命 + 每波+生命 ×(波次-1)）×(1 + enemy_health/100)。危险 5 的 enemy_health = +40。不含精英、兽潮与死亡召唤，真实值高于此线。</text>
+</svg>
