@@ -43,7 +43,7 @@ python 工具/balatro_all.py --apk=D:\other.apk  # 换输入 APK
 | 查出牌之后按什么顺序结算（小丑顺序、乘区、重复触发） | [出牌结算管线.md](出牌结算管线.md) |
 | 查 20 个挑战各改了什么规则、怎么解锁 | [挑战模式.md](挑战模式.md) |
 | 查某一类内容的具体条目 | [配置/总表索引.md](配置/总表索引.md) → 对应总表 |
-| 和 Brotato 的机制对比 | [../Balatro与Brotato横向对比.md](../Balatro与Brotato横向对比.md) |
+| 和 Brotato / Block 的机制对比 | [../横向对比.md](../横向对比.md) |
 | 改脚本 / 排查解析问题 | [../工具文档/Balatro技术细节.md](../工具文档/Balatro技术细节.md) |
 
 ---
