@@ -2,36 +2,26 @@
 
 ## 核心用途与优先入口
 
-本项目以研究肉鸽游戏的玩法、构筑设计和数值系统为主要工作，当前包含《Balatro（小丑牌）》与《Brotato（土豆兄弟）》两套资料。拆包源码、数据表和 Python 工具用于支撑这些研究，也用于按需对比两款游戏的设计。
+本项目以研究肉鸽游戏的玩法、构筑设计和数值系统为主要工作，当前包含《Balatro（小丑牌）》《Brotato（土豆兄弟）》《Block（方块小游戏合集）》三套资料。前两款是肉鸽标杆；Block 不是肉鸽，作为商业化调优与 A/B 实验的对照组收录——它的「难度」是一套服务端下发的算法调度，可以对照肉鸽怎样安排随机性与压力。拆包源码、数据表和 Python 工具用于支撑这些研究，也用于按需横向对比。
 
-先根据用户关注的游戏选择目录，再按以下三个方向查阅。版本以目录为准，不将这些版本的结论直接推广到其他版本。
+先根据用户关注的游戏选择目录，再按下表路由。版本以目录为准，不将这些版本的结论直接推广到其他版本。
 
-| 想了解什么 | Balatro 1.0.1o | Brotato 0.8.0.3 |
-|---|---|---|
-| 肉鸽玩法和构筑设计 | [肉鸽玩法设计分析.md](Balatro_1.0.1o/肉鸽玩法设计分析.md)、[Boss盲注专题.md](Balatro_1.0.1o/Boss盲注专题.md)、[挑战模式.md](Balatro_1.0.1o/挑战模式.md) | [角色构筑指南.md](Brotato_0.8.0.3/角色构筑指南.md)、[武器搭配与套装组合.md](Brotato_0.8.0.3/武器搭配与套装组合.md)、[升级卡系统.md](Brotato_0.8.0.3/升级卡系统.md)、[敌人与威胁设计.md](Brotato_0.8.0.3/敌人与威胁设计.md) |
-| 具体数值、经济和概率 | [数值设计报告.md](Balatro_1.0.1o/数值设计报告.md)、[出牌结算管线.md](Balatro_1.0.1o/出牌结算管线.md) | [数值设计报告.md](Brotato_0.8.0.3/数值设计报告.md)、[效果系统.md](Brotato_0.8.0.3/效果系统.md) |
-| 各类卡牌、角色、武器和道具的详细数据 | [总表索引.md](Balatro_1.0.1o/配置/总表索引.md) | [总表索引.md](Brotato_0.8.0.3/配置/总表索引.md) |
-| 改脚本 / 排查解析问题 | [工具文档/Balatro技术细节.md](工具文档/Balatro技术细节.md) | [工具文档/Godot-Brotato技术细节.md](工具文档/Godot-Brotato技术细节.md) |
-| 两款之间的机制对比 | [Balatro与Brotato横向对比.md](Balatro与Brotato横向对比.md) | 同左 |
+| 想了解什么 | Balatro 1.0.1o | Brotato 0.8.0.3 | Block 1.3.28 |
+|---|---|---|---|
+| 玩法、构筑与难度设计 | [肉鸽玩法设计分析.md](Balatro_1.0.1o/肉鸽玩法设计分析.md)、[Boss盲注专题.md](Balatro_1.0.1o/Boss盲注专题.md)、[挑战模式.md](Balatro_1.0.1o/挑战模式.md) | [角色构筑指南.md](Brotato_0.8.0.3/角色构筑指南.md)、[武器搭配与套装组合.md](Brotato_0.8.0.3/武器搭配与套装组合.md)、[升级卡系统.md](Brotato_0.8.0.3/升级卡系统.md)、[敌人与威胁设计.md](Brotato_0.8.0.3/敌人与威胁设计.md) | [数值设计报告.md](Block_1.3.28/数值设计报告.md) 第二～三章（算法调度、兴趣曲线、发牌） |
+| 具体数值、经济和概率 | [数值设计报告.md](Balatro_1.0.1o/数值设计报告.md)、[出牌结算管线.md](Balatro_1.0.1o/出牌结算管线.md) | [数值设计报告.md](Brotato_0.8.0.3/数值设计报告.md)、[效果系统.md](Brotato_0.8.0.3/效果系统.md) | [数值设计报告.md](Block_1.3.28/数值设计报告.md) |
+| 各类内容的详细数据 | [总表索引.md](Balatro_1.0.1o/配置/总表索引.md) | [总表索引.md](Brotato_0.8.0.3/配置/总表索引.md) | [README.md](Block_1.3.28/README.md) 的「产物目录」、[_算法总表.csv](Block_1.3.28/配置/_算法总表.csv) |
+| 美术与动画资产 | — | — | [动画总览.md](Block_1.3.28/动画/动画总览.md) |
+| 改脚本 / 排查解析问题 | [工具文档/Balatro技术细节.md](工具文档/Balatro技术细节.md) | [工具文档/Godot-Brotato技术细节.md](工具文档/Godot-Brotato技术细节.md) | 工具链与技术细节文档未随产物入库，见 [README.md](Block_1.3.28/README.md) |
+| 游戏之间的机制对比 | [Balatro与Brotato横向对比.md](Balatro与Brotato横向对比.md) | 同左 | 暂无 |
 
-### 肉鸽玩法和构筑设计
+### 查之前先知道这三条
 
-围绕局内循环、决策取舍、成长方式、流派组合、Boss 限制和局外解锁展开分析。Balatro 重点看小丑配合、牌型与牌组构筑，28 个 Boss 盲注的压制面、抽取轮转和反制手段单列在 [Boss盲注专题.md](Balatro_1.0.1o/Boss盲注专题.md)，20 个挑战的规则拆解与解锁机制单列在 [挑战模式.md](Balatro_1.0.1o/挑战模式.md)；Brotato 重点看角色限制、属性收益、武器协同、套装组合和波次生存，升级卡抽取与保底规则单列在 [升级卡系统.md](Brotato_0.8.0.3/升级卡系统.md)，敌人行为、Boss／精英状态机与刷怪投放单列在 [敌人与威胁设计.md](Brotato_0.8.0.3/敌人与威胁设计.md)。优先解释机制如何影响玩家选择，以及这些机制之间如何配合；涉及具体条目和参数时，再查总表与源码。
+1. **权重不是概率**。抽取权重要过池子、保底和重复规则，别直接当最终出现率报出去。
+2. **Block 的数值只是客户端默认分支**。服务端可动态下发覆盖，包内又只是构建基线、线上随时被热更替换——引用它的任何数值都要带上这两条前提。
+3. **资源存在 ≠ 进了池子**。三套资料都有登记了却没接进池子的内容，核对某条是否真在游戏里，要从消费端（数组、池、引用方）倒着查，不能只看资源目录或导出表的行数。
 
-### 具体数值、经济和概率
-
-围绕成长曲线、商店经济、价格、稀有度、出现概率和抽取权重展开分析。Balatro 重点核对得分公式与盲注需求；Brotato 重点核对伤害与属性加成、敌人每波成长、刷怪规则、材料收益和危险等级。说明数值所处的版本、触发条件和计算口径，区分初始值、成长值与实际局内效果；不要把权重直接当作最终概率。
-
-### 各类内容的详细数据
-
-从对应游戏的总表索引定位条目，再查该游戏目录下的 `配置/配置CSV/` 或 `配置/配置JSON/`。
-
-- Balatro：小丑、塔罗、幽灵牌、优惠券、牌组、标签、盲注、补充包、强化牌、版本和蜡封等。
-- Brotato：角色、武器、道具、敌人、波次、刷怪组、套装、升级、挑战、难度与属性等；构筑问题继续查角色构筑、属性道具、套装武器、武器协同和套装组合等派生表。`_效果总表.csv` 是所有内容条目的最小单位，它的字段含义、三种存储方式与消费端见 [效果系统.md](Brotato_0.8.0.3/效果系统.md)。
-
-两边都有「资源存在但没接进池子」的情况（Brotato 的 14 张升级卡、敌人 `009`，Balatro 的若干死配置字段），核对某条内容是否真的在游戏里时，要从消费端（数组、池、引用方）倒着查，不能只看资源目录或导出表的行数。
-
-需要确认触发时机、结算顺序或特殊规则时，Balatro 追溯 `源码/` 中的 Lua；Brotato 结合 `资源/` 中的 `.tres` / `.tscn` 与 `源码/` 中还原的 GDScript 核对。
+每个方向具体怎么查、各游戏有哪些条目类别、怎么追回源码，见 [研究约定.md](研究约定.md)。
 
 ## 研究与回答原则
 
@@ -42,84 +32,36 @@
 - 区分游戏已有机制、分析推论和新的设计建议；提出可借鉴的方案时，说明适用条件与取舍。
 - 给出结论时尽量附上对应文档、数据表或源码位置，便于继续追查。
 - 研究和查询优先使用已有产物；仅在需要更新数据、修复解析或调整展示时运行或修改生成工具。
-- 当前目录主要是 Balatro 与 Brotato 的研究资料和工具，没有配置自研游戏的构建或启动流程。
+- 当前目录主要是 Balatro、Brotato、Block 的研究资料和工具，没有配置自研游戏的构建或启动流程。
 
 ## 工具与资料维护
 
-以下约定用于维护支撑研究的源码、数据及生成工具。
+总则一条：**改生成器，不改产物**；抽取得到的输入除非任务明确要求，否则原样保留。
 
-### Project Structure & Module Organization
+各游戏的流水线命令、目录含义和踩坑清单都写在自己的 README 里，共通的风格与提交约定单列一份，这里只放路由。
 
-Each game has its own extracted Android package and analysis tooling. Paths below are relative to the named game directory.
+### 按任务路由
 
-`Balatro_1.0.1o/`:
+| 要做什么 | Balatro 1.0.1o | Brotato 0.8.0.3 | Block 1.3.28 |
+|---|---|---|---|
+| 跑流水线 / 重跑某步 | [README](Balatro_1.0.1o/README.md) 的「快速开始」「流程」 | [README](Brotato_0.8.0.3/README.md) 的「一键重跑」 | [README](Block_1.3.28/README.md) 的「快速开始」 |
+| 工具脚本在哪 | `Balatro_1.0.1o/工具/`，`balatro_all.py` 串起全流程 | `Brotato_0.8.0.3/工具/`，`brotato_all.py` 串起七步 | 不在本仓库，只有产物 |
+| 改解析脚本前必读 | [Balatro技术细节.md](工具文档/Balatro技术细节.md) | [Godot-Brotato技术细节.md](工具文档/Godot-Brotato技术细节.md) | 缺，未随产物入库 |
+| 目录里哪个是什么 | [README](Balatro_1.0.1o/README.md) 的「目录」 | [README](Brotato_0.8.0.3/README.md) 的「产物目录」 | [README](Block_1.3.28/README.md) 的「产物目录」 |
+| 已知的坑 | [README](Balatro_1.0.1o/README.md) 的「几条容易踩的」、技术细节的「已知的坑」 | [README](Brotato_0.8.0.3/README.md) 的「踩坑清单」 | [README](Block_1.3.28/README.md) 的「几条容易踩的」 |
 
-- `工具/`: Python extraction, table generation, chart, and report scripts; `balatro_all.py` orchestrates the main pipeline.
-- `源码/`, `本地化/`, `资源/`: extracted Lua code, language packs, and original graphics/audio/shaders.
-- `配置/配置JSON/`, `配置/配置CSV/`, `文本/`, `图片资源/`: generated tables, text, and sprite crops.
-- `图表/`, `报告/`, and top-level analysis Markdown: charts and design reports.
-- `安卓壳/`, `原生库/`: Android wrapper, decompiled SDK code, and native libraries.
+### 工作区根目录
 
-`Brotato_0.8.0.3/`:
+| 条目 | 是什么 |
+|---|---|
+| `Balatro_1.0.1o/`、`Brotato_0.8.0.3/`、`Block_1.3.28/` | 三套拆包产物，各自带 README 作为二级入口 |
+| [工具文档/](工具文档/) | 各工具链的格式规范、解析取舍与已知坑，外加共通的 [维护约定.md](工具文档/维护约定.md)；改脚本前读 |
+| [研究约定.md](研究约定.md) | 三个方向各自怎么查、条目类别、源码追溯路径 |
+| [Balatro与Brotato横向对比.md](Balatro与Brotato横向对比.md) | 跨游戏对比结论与不可比量纲清单 |
+| `*.apk` | 源包，已 gitignore，不入库，原因与自备方式见 [维护约定.md](工具文档/维护约定.md) |
 
-- `工具/`: extraction, Godot format parsing, table generation, and build analysis scripts; `brotato_all.py` orchestrates the pipeline.
-- `资源/`: original Godot resources, including `.tres`, `.tscn`, `.gdc`, `.stex`, and `.translation`; `源码/` contains restored `.gd` scripts.
-- `配置/配置JSON/`, `配置/配置CSV/`, `文本/`: extracted tables, derived build/loadout tables, and localization outputs.
-- `图片资源/`, `音频/`: decoded textures and extracted audio; `安卓壳/` includes native libraries under `lib/`.
-- Top-level analysis Markdown and `配置/总表索引.md`: the primary research entry points above.
+三套产物形状相近：`配置/` 放数据表，`源码/` 或 `src/` 放代码，`资源/` 或 `assets/` 放原始资源，`文本/` 放本地化。差异是 Balatro 与 Brotato 各带 `工具/`，Block 不带但多一个 `动画/`。
 
-`工具文档/`（workspace root）:
+### 三套共通的约定
 
-- `Balatro技术细节.md` / `Godot-Brotato技术细节.md`: format specs, parser judgement calls, and known pitfalls for each toolchain. **Read the relevant one before changing any script under a game's `工具/`.** Each game's `README.md` links to it as `../工具文档/`.
-
-Prefer changing generators over manually editing generated files. Preserve extracted inputs unless the task specifically requires modifying them.
-
-### Build, Test, and Development Commands
-
-Use Python 3.12 with `lupa` and `Pillow`. Run these commands from `Balatro_1.0.1o/`:
-
-```powershell
-python -m pip install lupa Pillow
-python 工具/balatro_all.py --dry
-python 工具/balatro_all.py --skip=unpack
-python 工具/balatro_all.py --only=jokers,index
-python 工具/balatro_report.py
-```
-
-These install dependencies, preview the pipeline, regenerate from existing inputs, refresh selected tables, and rebuild the HTML report, respectively. Selected steps require existing upstream outputs. Run `config` before `text`, and `index` after table generation.
-
-Full extraction requires an APK, which is not committed (see the APK note below): `python 工具/balatro_all.py --apk="D:\path\game.apk"`. Optional `--jadx` requires Java and the expected external jadx installation. No packaged application build or local game launch workflow is configured.
-
-For Brotato, run from `Brotato_0.8.0.3/` (Python, plus Pillow for texture conversion):
-
-```powershell
-python 工具/brotato_all.py --dry
-python 工具/brotato_all.py --skip=unpack
-python 工具/brotato_all.py --only=config,index
-```
-
-The pipeline order is `unpack -> gdc -> text -> config -> builds -> loadouts -> index`. Selected steps require existing upstream outputs. Refresh affected build/loadout tables when their inputs change, then regenerate the index.
-
-**The source APKs are not in this repository.** They are gitignored (`*.apk`) because `tudouxiongdi.apk` is 103 MiB, past GitHub's 100 MiB per-file hard limit, and neither package is ours to redistribute. Supply your own copies and place them in the workspace root as `com.playstack.balatro.android.apk` and `tudouxiongdi.apk`; each toolchain resolves its default APK from the script location, so no path configuration is needed once they are there.
-
-Every pipeline step except `unpack` reads the extracted inputs that *are* committed, so a fresh clone can regenerate all tables without an APK. `brotato_all.py` only requires the APK when the plan actually includes `unpack`; `--skip=unpack` and `--dry` run without it. To extract a different APK, use `python 工具/brotato_unpack.py "D:\path\game.apk"`; do not assume the Balatro `--apk` flag works with `brotato_all.py`.
-
-### Coding Style & Naming Conventions
-
-Follow existing Python conventions: four-space indentation, `snake_case` functions, uppercase constants, and `balatro_<purpose>.py` or `brotato_<purpose>.py` filenames according to the game. Keep shared Godot format parsing in Brotato's `godot_fmt.py`. Resolve paths relative to the script location. Preserve Chinese directory names and Windows UTF-8 console handling.
-
-Write CSV with UTF-8 BOM (`utf-8-sig`); use UTF-8 for text and JSON. Explicitly stabilize column and key ordering when serializing Lua tables. No formatter or linter configuration is present.
-
-### Testing Guidelines
-
-No automated test framework or coverage threshold is configured. `Balatro_1.0.1o/源码/functions/test_functions.lua` contains game debugging helpers, not a standalone test suite.
-
-After generator changes, rerun affected steps and downstream consumers. Compare output hashes across two identical runs, check table counts and representative values, and inspect changed charts or reports visually. Explain intentional output differences.
-
-For Brotato parser or localization changes, also inspect extraction/decompilation error files and `文本/_覆盖率.txt`. Validate GDScript tokens against this package's Godot version; do not substitute Godot 4 mappings. Stabilize tie-breaking order in derived build/loadout tables.
-
-### Commit & Pull Request Guidelines
-
-This snapshot contains no Git metadata, so historical commit conventions cannot be verified. Use concise imperative subjects, such as `Fix deterministic joker table ordering`.
-
-In pull requests, describe the change, affected generators and outputs, validation commands and results, and any linked issue. Include screenshots for chart or report layout changes. Keep unrelated extracted assets out of the change.
+代码风格、编码口径、验证方式、源包不入库的原因、提交与 PR 规范，都在 [工具文档/维护约定.md](工具文档/维护约定.md)。**动手改脚本或提交之前读一遍**；只做研究问答不需要。
