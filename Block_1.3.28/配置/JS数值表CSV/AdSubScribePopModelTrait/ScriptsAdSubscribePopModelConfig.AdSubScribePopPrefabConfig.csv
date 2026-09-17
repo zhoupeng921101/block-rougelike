@@ -1,0 +1,5 @@
+﻿_key,name,url,bundleName,ease
+SubscribePanel,adSubScribePopSubscribePanel,prefabs/adSubScribePopSubscribePanel,@o.AD_SUBSCRIBE_POP_MODEL_BUNDLE_NAME,@hs.PanelScaleEase
+SetPanel,adSubScribePopSetPanel,prefabs/adSubScribePopSetPanel,@o.AD_SUBSCRIBE_POP_MODEL_BUNDLE_NAME,@hs.PanelScaleEase
+GameOverNode,adSubscribePopGameOverNode,prefabs/adSubscribePopGameOverNode,@o.AD_SUBSCRIBE_POP_MODEL_BUNDLE_NAME,
+PopItem,adSubScribePopItem,prefabs/adSubScribePopItem,@o.AD_SUBSCRIBE_POP_MODEL_BUNDLE_NAME,

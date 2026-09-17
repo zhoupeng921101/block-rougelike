@@ -1,0 +1,34 @@
+
+Fruit_08.png
+size: 1024, 512
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+Fruit_08_body_01
+  rotate: false
+  xy: 2, 27
+  size: 293, 318
+  orig: 295, 321
+  offset: 1, 2
+  index: -1
+Fruit_08_body_02
+  rotate: false
+  xy: 297, 27
+  size: 293, 318
+  orig: 295, 321
+  offset: 1, 2
+  index: -1
+Fruit_08_eye_01
+  rotate: false
+  xy: 2, 2
+  size: 49, 23
+  orig: 51, 26
+  offset: 1, 2
+  index: -1
+Fruit_08_mouth_01
+  rotate: false
+  xy: 592, 317
+  size: 35, 28
+  orig: 37, 30
+  offset: 1, 1
+  index: -1

@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/FeedBackView",
+ "cnName": "反馈弹窗",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

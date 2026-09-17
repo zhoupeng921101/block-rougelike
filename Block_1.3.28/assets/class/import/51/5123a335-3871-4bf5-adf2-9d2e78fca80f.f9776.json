@@ -1,0 +1,1 @@
+[1,0,0,[["cc.TextAsset",["_name","text"],1]],[[0,0,1,3]],[[0,"README","# 无尽模式 bundle\n * 无尽可以依赖 common bundle\n * 动态加载的资源放在 resources 目录下，静态引用的放于其它文件夹"]],0,0,[],[],[]]

@@ -1,0 +1,8 @@
+{
+ "jewelRoundNum": "fangkuaipintujewel#roundNum:number",
+ "jewelGameNum": "fangkuaipintujewel#gameNum:number",
+ "jewelScore": "fangkuaipintujewel#current_cord:number",
+ "jewelFaceBlocks": "fangkuaipintujewel#save_arr:object",
+ "jewelProducerBlocks": "fangkuaipintujewel#opera_arr:object",
+ "jewelHighScore": "fangkuaipintujewel#high_cord:number"
+}

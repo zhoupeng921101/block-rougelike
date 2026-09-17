@@ -1,0 +1,7 @@
+{
+ "BLOCKS": "textures/blocks/blocks",
+ "BLOCKS_DARK": "textures/blocks/blocks-dark",
+ "BLOCKS_LITE": "textures/blocks/blocks-lite",
+ "GEMS": "textures/blocks/Gems",
+ "SHADOW": "textures/blocks/shadow"
+}

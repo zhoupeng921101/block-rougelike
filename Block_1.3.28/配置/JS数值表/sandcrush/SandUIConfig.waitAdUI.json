@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/woodskin/waitAd",
+ "cnName": "等待广告界面",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

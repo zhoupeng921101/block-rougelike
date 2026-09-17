@@ -1,0 +1,11 @@
+{
+ "MainScene": "LayerGame",
+ "GameUI": "GameUI",
+ "MainUI": "LayerUI",
+ "PopUp": "HSLayerPopUp",
+ "Dialog": "HSLayerDialog",
+ "System": "LayerSystem",
+ "Notify": "HSLayerNotify",
+ "Guide": "LayerGuide",
+ "BlackMask": "BlackMask"
+}

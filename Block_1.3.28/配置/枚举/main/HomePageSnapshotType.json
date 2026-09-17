@@ -1,0 +1,6 @@
+{
+ "NONE": 0,
+ "HOME_PAGE": 1,
+ "MORE_GAME_POPUP_VIEW": 2,
+ "CHAPTER_GAME_OVER": 4
+}

@@ -1,0 +1,12 @@
+{
+ "FILL": 0,
+ "RANDOM_NO_DIE": 1,
+ "ADD3": 2,
+ "EASY_DIFF": 3,
+ "DIFF": 4,
+ "STRAIGHT_DEATH_DIFF": 5,
+ "CLEAR_ALL": 6,
+ "ALL_COMBINATION": 7,
+ "ORDER_FILL": 8,
+ "VERY_DIFF": 9
+}

@@ -1,0 +1,8 @@
+﻿day,amount,currencyType,adRewardScale,type
+1,10,@o.CurrencyType.DIAMOND,2,1
+2,15,@o.CurrencyType.DIAMOND,2,1
+3,20,@o.CurrencyType.DIAMOND,2,1
+4,25,@o.CurrencyType.DIAMOND,2,1
+5,30,@o.CurrencyType.DIAMOND,2,1
+6,35,@o.CurrencyType.DIAMOND,2,1
+7,40,@o.CurrencyType.DIAMOND,2,2

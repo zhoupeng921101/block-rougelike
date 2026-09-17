@@ -1,0 +1,16 @@
+{
+ "SETTING_PREFAB": "res/prefabs/UI/setting",
+ "BTN_BGM": "sand_setting_btn_BGM",
+ "BTN_COMMON": "sand_setting_btn_common",
+ "BTN_SOUND": "sand_setting_btn_sound",
+ "BTN_VIBRATION": "sand_setting_btn_vibration",
+ "BTN_OFF": "sand_setting_btn_off",
+ "ICON_HOME": "sand_setting_icon_home",
+ "ICON_MORE_SETTINGS": "sand_setting_icon_moreSettings",
+ "ICON_REPLAY": "sand_setting_icon_replay",
+ "TXT_HOME": "sand_setting_txt_home",
+ "TXT_MORE_SETTINGS": "sand_setting_txt_moreSettings",
+ "TXT_REPLAY": "sand_setting_txt_replay",
+ "TXT_TITLE": "sand_setting_txt_title",
+ "BG_LINE": "sand_setting_bg_line"
+}

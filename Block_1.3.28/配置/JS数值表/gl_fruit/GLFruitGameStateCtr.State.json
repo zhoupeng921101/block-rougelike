@@ -1,0 +1,9 @@
+{
+ "GLFruitLoadStateNode": "GLFruitLoadStateNode",
+ "GLFruitPlayStateNode": "GLFruitPlayStateNode",
+ "GLFruitFailStateNode": "GLFruitFailStateNode",
+ "GLFruitWinStateNode": "GLFruitWinStateNode",
+ "GLFruitBombStateNode": "GLFruitBombStateNode",
+ "GLFruitShakeStateNode": "GLFruitShakeStateNode",
+ "GLFruitGoldWatermelonStateNode": "GLFruitGoldWatermelonStateNode"
+}

@@ -1,0 +1,1 @@
+{"width": 133, "SubTexture": [{"width": 106, "y": 133, "height": 106, "name": "K", "x": 1}, {"frameY": -2, "y": 1, "frameWidth": 134, "frameHeight": 134, "width": 130, "height": 130, "name": "glowK", "frameX": -2, "x": 1}], "height": 241, "name": "gameplay_gemBlock", "imagePath": "gameplay_gemBlock_tex.png"}

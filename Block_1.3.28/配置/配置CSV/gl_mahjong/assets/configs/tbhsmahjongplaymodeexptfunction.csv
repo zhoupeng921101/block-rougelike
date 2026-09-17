@@ -1,0 +1,4 @@
+﻿Key,FunctionType,FunctionField,AndroidData,IOSData,AndroidDataExtra,IOSDataExtra
+1001,UIFunction,LogicType,1A,Default,[],[]
+1002,UIFunction,MaxDifficulty,2,2,[],[]
+1003,UIFunction,UIStyle,2,2,[],[]

@@ -1,0 +1,41 @@
+
+hcdxg_gameplat_yld.png
+size: 551,179
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gameplay_img_blueberry_line
+  rotate: false
+  xy: 451, 2
+  size: 79, 78
+  orig: 79, 78
+  offset: 0, 0
+  index: -1
+gameplay_img_lime_line
+  rotate: false
+  xy: 181, 25
+  size: 146, 152
+  orig: 146, 152
+  offset: 0, 0
+  index: -1
+gameplay_img_peach_line
+  rotate: false
+  xy: 2, 3
+  size: 177, 174
+  orig: 177, 174
+  offset: 0, 0
+  index: -1
+gameplay_img_raspberrry_line
+  rotate: true
+  xy: 451, 82
+  size: 95, 98
+  orig: 95, 98
+  offset: 0, 0
+  index: -1
+gameplay_img_strawberrry_line
+  rotate: false
+  xy: 329, 52
+  size: 120, 125
+  orig: 120, 125
+  offset: 0, 0
+  index: -1

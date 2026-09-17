@@ -1,0 +1,18 @@
+{
+ "ios_closeSelf": "closeSelf",
+ "ios_exit": "ios_exit",
+ "ios_sound": "ios_sound",
+ "ios_BGM": "ios_BGM",
+ "ios_vibration": "ios_vibration",
+ "ios_noads2": "ios_noads2",
+ "ios_home": "ios_home",
+ "ios_replay": "ios_replay",
+ "ios_moreGames": "ios_moreGames",
+ "ios_moreSettings": "ios_moreSettings",
+ "ios_SetAddRandomSwitch": "ios_SetAddRandomSwitch",
+ "ios_SetAddDefultSkinBtn": "ios_SetAddDefultSkinBtn",
+ "ios_share": "ios_share",
+ "ios_ActivityEnter": "ios_ActivityEnter",
+ "ios_accountPlayerHead": "ios_accountPlayerHead",
+ "ios_account": "ios_account"
+}

@@ -1,0 +1,27 @@
+
+dianzan.png
+size: 2048,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: false
+  xy: 454, 31
+  size: 92, 169
+  orig: 92, 169
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 2, 2
+  size: 450, 198
+  orig: 450, 198
+  offset: 0, 0
+  index: -1
+大西瓜-combo点赞词/方案1combo点赞词/Luscious!
+  rotate: false
+  xy: 548, 56
+  size: 682, 144
+  orig: 682, 144
+  offset: 0, 0
+  index: -1

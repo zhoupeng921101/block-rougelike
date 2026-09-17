@@ -1,0 +1,104 @@
+[
+ {
+  "id": "@y.ALGO_COMBINE",
+  "data": {
+   "ways": [
+    {
+     "algoName": "测试",
+     "blocks1": [
+      {
+       "id": "@y.BLOCK_RESET",
+       "data": {
+        "blocks": [
+         13,
+         36,
+         35,
+         22,
+         11,
+         17,
+         7
+        ]
+       }
+      }
+     ],
+     "blocks2": [
+      {
+       "id": "@y.BLOCK_RESET",
+       "data": {
+        "blocks": [
+         9,
+         5,
+         4,
+         3,
+         2
+        ]
+       }
+      }
+     ],
+     "blocks3": [
+      {
+       "id": "@y.BLOCK_RESET",
+       "data": {
+        "blocks": [
+         13,
+         36,
+         35,
+         22,
+         11,
+         17,
+         7
+        ]
+       }
+      }
+     ],
+     "selectCombs": [
+      {
+       "compId": "@y.COM_BLOCK_MAX_DUP",
+       "data": {
+        "count": 2
+       }
+      },
+      {
+       "compId": "COM_BLOCK_900007",
+       "data": {
+        "count": 2
+       }
+      }
+     ],
+     "putOrderDatas": [
+      {
+       "order": 0,
+       "liveWay": 1
+      }
+     ],
+     "selectLive": 1,
+     "select": {
+      "collectCompId": "@y.COLLECT_COMBINE_CLEAR",
+      "key": "@h.CLEAR",
+      "clear": true,
+      "operator": "@g.MIN",
+      "count": 3,
+      "clears": [
+       true,
+       true,
+       true
+      ],
+      "success": {
+       "collectCompId": "@y.COLLECT_COMBINE_EDGE",
+       "key": "@h.EDGE",
+       "clear": false,
+       "operator": "@g.MAX",
+       "count": 3,
+       "clears": [
+        false,
+        false,
+        false
+       ]
+      }
+     },
+     "overTime": 100
+    }
+   ]
+  }
+ }
+]

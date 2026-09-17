@@ -1,0 +1,66 @@
+{
+ "10001001": {
+  "scorerateUnitID": 2,
+  "sandalgoUnitID": 1,
+  "triggeralgoUnitID": 1,
+  "long_term_color": [
+   3000.0,
+   10000.0,
+   20000.0,
+   40000.0
+  ],
+  "peak_open": true,
+  "dead_line_Height": 83,
+  "clear_board": true,
+  "huge_eliminate": 800,
+  "chain_eliminate": true
+ },
+ "10001002": {
+  "scorerateUnitID": 3,
+  "sandalgoUnitID": 2,
+  "triggeralgoUnitID": 1,
+  "long_term_color": [
+   50000.0,
+   100000.0,
+   250000.0,
+   500000.0
+  ],
+  "peak_open": false,
+  "dead_line_Height": 85,
+  "clear_board": true,
+  "huge_eliminate": 800,
+  "chain_eliminate": true
+ },
+ "20001001": {
+  "scorerateUnitID": 2,
+  "sandalgoUnitID": 1,
+  "triggeralgoUnitID": 1,
+  "long_term_color": [
+   3000.0,
+   10000.0,
+   20000.0,
+   40000.0
+  ],
+  "peak_open": true,
+  "dead_line_Height": 83,
+  "clear_board": true,
+  "huge_eliminate": 800,
+  "chain_eliminate": true
+ },
+ "20001002": {
+  "scorerateUnitID": 3,
+  "sandalgoUnitID": 2,
+  "triggeralgoUnitID": 1,
+  "long_term_color": [
+   50000.0,
+   100000.0,
+   250000.0,
+   500000.0
+  ],
+  "peak_open": false,
+  "dead_line_Height": 85,
+  "clear_board": true,
+  "huge_eliminate": 800,
+  "chain_eliminate": true
+ }
+}

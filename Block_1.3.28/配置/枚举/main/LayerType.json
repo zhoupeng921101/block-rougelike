@@ -1,0 +1,13 @@
+{
+ "PRELOAD": "preload",
+ "SCENE": "scene",
+ "GAME_UI": "gameUI",
+ "GAME_EFFECT": "gameEffect",
+ "GUIDE": "guide",
+ "LOADING": "loading",
+ "UI": "ui",
+ "GAME_ALERT": "gameAlert",
+ "ALERT": "alert",
+ "EFFECT": "effect",
+ "TIP": "tip"
+}

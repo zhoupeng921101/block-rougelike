@@ -1,0 +1,25 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.spineRowAndColumn",
+  "params": {
+   "effectConfig": "eliminate_effect",
+   "animConfig": {
+    "color_1_x": "blue",
+    "color_1_y": "blue",
+    "color_2_x": "purple",
+    "color_2_y": "purple",
+    "color_3_x": "red",
+    "color_3_y": "red",
+    "color_4_x": "orange",
+    "color_4_y": "orange",
+    "color_5_x": "green",
+    "color_5_y": "green",
+    "color_6_x": "blue",
+    "color_6_y": "blue",
+    "color_7_x": "purple",
+    "color_7_y": "purple"
+   },
+   "needRotate": true
+  }
+ }
+]

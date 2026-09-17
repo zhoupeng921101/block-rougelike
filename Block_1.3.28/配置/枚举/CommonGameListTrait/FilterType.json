@@ -1,0 +1,8 @@
+{
+ "ALL": "all",
+ "NEW": "new",
+ "PLAYED": "played",
+ "PERSISTENT": "persistent",
+ "TIME_LIMITED": "timeLimited",
+ "SPECIFIED": "specified"
+}

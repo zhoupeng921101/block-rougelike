@@ -1,0 +1,34 @@
+
+hcdxg_Prompteff.png
+size: 226,273
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+glow_1
+  rotate: true
+  xy: 148, 194
+  size: 77, 76
+  orig: 79, 78
+  offset: 1, 1
+  index: -1
+glow_2
+  rotate: false
+  xy: 126, 24
+  size: 91, 95
+  orig: 93, 97
+  offset: 1, 1
+  index: -1
+glow_3
+  rotate: true
+  xy: 2, 2
+  size: 117, 122
+  orig: 119, 124
+  offset: 1, 1
+  index: -1
+glow_4
+  rotate: false
+  xy: 2, 121
+  size: 144, 150
+  orig: 146, 152
+  offset: 1, 1
+  index: -1

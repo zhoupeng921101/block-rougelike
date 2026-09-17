@@ -1,0 +1,24 @@
+{
+ "HardLevelRedUI_revivieShuzi": {
+  "bundleName": "Remote_HardLevelRedUI",
+  "dragonAssetUrl": "dragonbones/fuhuoshuzired_ske",
+  "dragonAtlasAssetUrl": "dragonbones/fuhuoshuzired_tex"
+ },
+ "HardLevelRedUI_revivieBtn": {
+  "bundleName": "Remote_HardLevelRedUI",
+  "dragonAssetUrl": "dragonbones/revive_btn_revive_ske",
+  "dragonAtlasAssetUrl": "dragonbones/revive_btn_revive_tex"
+ },
+ "heightFeelShow": {
+  "bundleName": "chapter",
+  "dragonAssetUrl": "dragonbones/gameOver/traits/30598_f_heightFeelShow/gameplay_peakVicotory_ske",
+  "dragonAtlasAssetUrl": "dragonbones/gameOver/traits/30598_f_heightFeelShow/gameplay_peakVicotory_tex",
+  "platform": "ios"
+ },
+ "mapcup_ios": {
+  "bundleName": "chapter",
+  "dragonAssetUrl": "dragonbones/chapterList/mapcup_ske",
+  "dragonAtlasAssetUrl": "dragonbones/chapterList/mapcup_tex",
+  "platform": "ios"
+ }
+}

@@ -1,0 +1,9 @@
+﻿成员,值
+OuterBoundary,outer_boundary
+RespBlockedEid,resp_blocked_eid
+RespFeatureKeyMissing,resp_feature_key_missing
+RespInvalidData,resp_invalid_data
+RespPolicyBlocked,resp_policy_blocked
+RespTimeout,resp_timeout
+StableFeatureKeyMissing,stable_feature_key_missing
+StableInvalid,stable_invalid

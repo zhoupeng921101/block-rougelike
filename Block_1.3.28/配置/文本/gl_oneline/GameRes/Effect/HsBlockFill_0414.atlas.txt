@@ -1,0 +1,62 @@
+
+HsBlockFill_0414.png
+size: 446,660
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+circle
+  rotate: false
+  xy: 179, 2
+  size: 114, 114
+  orig: 114, 114
+  offset: 0, 0
+  index: -1
+circle2
+  rotate: false
+  xy: 2, 194
+  size: 210, 210
+  orig: 210, 210
+  offset: 0, 0
+  index: -1
+icon_crown
+  rotate: false
+  xy: 295, 54
+  size: 82, 62
+  orig: 90, 90
+  offset: 4, 18
+  index: -1
+icon_crown2
+  rotate: false
+  xy: 2, 406
+  size: 252, 252
+  orig: 256, 256
+  offset: 2, 2
+  index: -1
+wangge
+  rotate: true
+  xy: 256, 290
+  size: 170, 175
+  orig: 200, 200
+  offset: 15, 12
+  index: -1
+wangge02
+  rotate: true
+  xy: 214, 118
+  size: 170, 175
+  orig: 200, 200
+  offset: 15, 12
+  index: -1
+wangge4_2
+  rotate: true
+  xy: 2, 22
+  size: 170, 175
+  orig: 200, 200
+  offset: 15, 12
+  index: -1
+wangge_guang
+  rotate: false
+  xy: 256, 462
+  size: 188, 196
+  orig: 200, 200
+  offset: 6, 0
+  index: -1

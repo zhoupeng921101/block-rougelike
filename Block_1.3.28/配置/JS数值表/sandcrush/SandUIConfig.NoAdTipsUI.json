@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/noAdTipsUI",
+ "cnName": "无广告提示弹窗",
+ "layer": "@o.HSLayerType.MainUI",
+ "cache": false
+}

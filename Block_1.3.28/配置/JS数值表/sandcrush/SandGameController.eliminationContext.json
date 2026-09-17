@@ -1,0 +1,15 @@
+{
+ "placementCount": 0,
+ "sandCount": 0,
+ "isCombo": false,
+ "comboCount": 0,
+ "isChain": false,
+ "chainCount": 0,
+ "isHuge": false,
+ "isClear": false,
+ "eliminatedPositions": [],
+ "currentColor": 1,
+ "isNewHighScore": false,
+ "contactPositions": [],
+ "curOptionSandCount": 0
+}

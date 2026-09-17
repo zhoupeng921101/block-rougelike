@@ -1,0 +1,290 @@
+[
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 0,
+   "ways": [
+    {
+     "algoName": "测试",
+     "blocks": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "@y.COLLECT_EDGE_DIFF",
+      "key": "@h.EDGE_DIFF",
+      "clear": true,
+      "operator": "@g.EQUAL",
+      "value": 10
+     },
+     "blockOrders": [
+      "@c.AREA_EMPTY",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": true,
+     "clear": true,
+     "remove": false
+    },
+    {
+     "algoName": "测试",
+     "blocks": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "@y.COLLECT_POS",
+      "key": "@h.POS",
+      "clear": false,
+      "operator": "@g.GREATER",
+      "value": 21,
+      "success": {
+       "collectCompId": "@y.COLLECT_SERIES_EDGE_DIFF",
+       "key": "@h.SERIES_EDGE_DIFF",
+       "clear": true,
+       "operator": "@g.MAX"
+      },
+      "failBackLast": true
+     },
+     "blockOrders": [
+      "@c.AREA_EMPTY",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": true,
+     "clear": true,
+     "remove": false
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 1,
+   "ways": [
+    {
+     "algoName": "测试",
+     "blocks": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "@y.COLLECT_EDGE_RATE",
+      "key": "@h.EDGE_RATE",
+      "clear": true,
+      "operator": "@g.MAX"
+     },
+     "blockOrders": [
+      "@c.AREA_EMPTY",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": true,
+     "clear": true,
+     "remove": false
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 2,
+   "ways": [
+    {
+     "algoName": "测试",
+     "blocks": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "@y.COLLECT_EDGE_RATE",
+      "key": "@h.EDGE_RATE",
+      "clear": true,
+      "operator": "@g.MAX"
+     },
+     "blockOrders": [
+      "@c.AREA_EMPTY",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": true,
+     "clear": true,
+     "remove": false
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.ALGO_COMBINE",
+  "data": {
+   "ways": [
+    {
+     "algoName": "测试",
+     "blocks1": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "blocks2": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "@y.COLLECT_COMBINE_POS",
+      "key": "@h.POS",
+      "clear": true,
+      "operator": "@g.GREATER",
+      "value": 10,
+      "count": 3,
+      "clears": [
+       true,
+       true,
+       true
+      ],
+      "success": {
+       "collectCompId": "@y.COLLECT_COMBINE_EDGE_BOARD",
+       "key": "@h.EDGE",
+       "clear": true,
+       "operator": "@g.MAX",
+       "count": 3,
+       "clears": [
+        true,
+        true,
+        true
+       ]
+      },
+      "failBackEmpty": true
+     },
+     "overTime": 100
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.ALGO_COMBINE",
+  "data": {
+   "ways": [
+    {
+     "algoName": "测试",
+     "blocks1": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "blocks2": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "blocks3": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "@y.COLLECT_COMBINE_POS",
+      "key": "@h.POS",
+      "clear": true,
+      "operator": "@g.MAX",
+      "count": 2,
+      "clears": [
+       true,
+       true,
+       true
+      ],
+      "success": {
+       "collectCompId": "@y.COLLECT_COMBINE_EDGE_BOARD",
+       "key": "@h.EDGE",
+       "clear": true,
+       "operator": "@g.MAX",
+       "count": 3,
+       "clears": [
+        true,
+        true,
+        true
+       ]
+      },
+      "failBackEmpty": true
+     },
+     "overTime": 100
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.SAFETY_NO_DIE"
+ }
+]

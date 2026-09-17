@@ -1,0 +1,39 @@
+{
+ "again": {
+  "icon": 0,
+  "title": "@o.default.FRUIT_POPUP_RESTART_TITLE",
+  "content": "@o.default.FRUIT_POPUP_RESTART_DESC",
+  "btnText1": "@o.default.FRUIT_POPUP_RESTART_BUTTON_YES",
+  "btnText2": "@o.default.FRUIT_POPUP_RESTART_BUTTON_NO",
+  "hideCloseBtn": false
+ },
+ "bomb": {
+  "icon": 6,
+  "title": "@o.default.FRUIT_POPUP_BOMB_TITLE",
+  "content": "",
+  "btnText1": "@o.default.FRUIT_POPUP_BOMB_BUTTON_YES",
+  "btnText2": "@o.default.FRUIT_POPUP_BOMB_BUTTON_NO",
+  "hideCloseBtn": false,
+  "isBtn1Video": true,
+  "propId": "@r.GLFruitPropIdDefine.Bomb"
+ },
+ "shake": {
+  "icon": 5,
+  "title": "@o.default.FRUIT_POPUP_SHAKE_TITLE",
+  "content": "",
+  "btnText1": "@o.default.FRUIT_POPUP_SHAKE_BUTTON_YES",
+  "btnText2": "@o.default.FRUIT_POPUP_SHAKE_BUTTON_NO",
+  "hideCloseBtn": false,
+  "isBtn1Video": true,
+  "propId": "@r.GLFruitPropIdDefine.Shake"
+ },
+ "deathRevive": {
+  "icon": 5,
+  "title": "看视频复活",
+  "content": "看激励视频复活并获得一次震荡机会",
+  "btnText1": "看视频复活",
+  "btnText2": "放弃",
+  "hideCloseBtn": false,
+  "isBtn1Video": true
+ }
+}

@@ -1,0 +1,26 @@
+{
+ "streak_rock1": {
+  "url": "audios/eliminate/comboRainbow/streak_rock1",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "mainTraits"
+ },
+ "streak_rock2": {
+  "url": "audios/eliminate/comboRainbow/streak_rock2",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "mainTraits"
+ },
+ "streak_rock3": {
+  "url": "audios/eliminate/comboRainbow/streak_rock3",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "mainTraits"
+ },
+ "clearComboAnim": {
+  "url": "audios/boardEffect/clearComboAnim/all_clean_djh",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "mainTraits"
+ }
+}

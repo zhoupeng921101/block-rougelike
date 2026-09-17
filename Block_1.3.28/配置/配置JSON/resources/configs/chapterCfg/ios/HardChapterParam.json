@@ -1,0 +1,97 @@
+{
+ "5": {
+  "LevelId": 5,
+  "FailContent": "0.4",
+  "WinContent": "0.6"
+ },
+ "9": {
+  "LevelId": 9,
+  "FailContent": "0.3",
+  "WinContent": "0.7"
+ },
+ "15": {
+  "LevelId": 15,
+  "FailContent": "0.25",
+  "WinContent": "0.75"
+ },
+ "19": {
+  "LevelId": 19,
+  "FailContent": "0.2",
+  "WinContent": "0.8"
+ },
+ "25": {
+  "LevelId": 25,
+  "FailContent": "0.16",
+  "WinContent": "0.84"
+ },
+ "29": {
+  "LevelId": 29,
+  "FailContent": "0.15",
+  "WinContent": "0.85"
+ },
+ "35": {
+  "LevelId": 35,
+  "FailContent": "0.14",
+  "WinContent": "0.86"
+ },
+ "39": {
+  "LevelId": 39,
+  "FailContent": "0.12",
+  "WinContent": "0.88"
+ },
+ "45": {
+  "LevelId": 45,
+  "FailContent": "0.11",
+  "WinContent": "0.89"
+ },
+ "49": {
+  "LevelId": 49,
+  "FailContent": "0.1",
+  "WinContent": "0.9"
+ },
+ "55": {
+  "LevelId": 55,
+  "FailContent": "0.09",
+  "WinContent": "0.91"
+ },
+ "59": {
+  "LevelId": 59,
+  "FailContent": "0.08",
+  "WinContent": "0.92"
+ },
+ "65": {
+  "LevelId": 65,
+  "FailContent": "0.07",
+  "WinContent": "0.93"
+ },
+ "69": {
+  "LevelId": 69,
+  "FailContent": "0.06",
+  "WinContent": "0.94"
+ },
+ "75": {
+  "LevelId": 75,
+  "FailContent": "0.05",
+  "WinContent": "0.95"
+ },
+ "79": {
+  "LevelId": 79,
+  "FailContent": "0.04",
+  "WinContent": "0.96"
+ },
+ "85": {
+  "LevelId": 85,
+  "FailContent": "0.03",
+  "WinContent": "0.97"
+ },
+ "89": {
+  "LevelId": 89,
+  "FailContent": "0.02",
+  "WinContent": "0.98"
+ },
+ "95": {
+  "LevelId": 95,
+  "FailContent": "0.01",
+  "WinContent": "0.99"
+ }
+}

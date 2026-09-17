@@ -1,0 +1,20 @@
+
+oneline_gameplay_warning.png
+size: 347,177
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gameplay_point_kuang1
+  rotate: false
+  xy: 2, 2
+  size: 173, 173
+  orig: 173, 173
+  offset: 0, 0
+  index: -1
+gameplay_point_redbg
+  rotate: false
+  xy: 177, 7
+  size: 168, 168
+  orig: 168, 168
+  offset: 0, 0
+  index: -1

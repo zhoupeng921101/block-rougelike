@@ -1,0 +1,18 @@
+{
+ "preClearSingle": {
+  "initSize": 8,
+  "maxSize": 64
+ },
+ "clearX": {
+  "initSize": 1,
+  "maxSize": 8
+ },
+ "clearY": {
+  "initSize": 1,
+  "maxSize": 8
+ },
+ "preClearLoop": {
+  "initSize": 8,
+  "maxSize": 8
+ }
+}

@@ -1,0 +1,12 @@
+[
+ "ChapterCollectWin",
+ "ChapterCollectFail",
+ "ChapterScoreFail",
+ "ChapterScoreWin",
+ "ClassWin",
+ "ClassFail",
+ "ChapterReduceScoreWin",
+ "ChapterReduceScoreFail",
+ "ChapterReduceCollectWin",
+ "ChapterReduceCollectFail"
+]

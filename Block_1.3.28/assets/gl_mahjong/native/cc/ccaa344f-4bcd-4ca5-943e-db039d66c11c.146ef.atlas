@@ -1,0 +1,27 @@
+
+Mahjong_Combo.png
+size: 561,236
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+glow_1
+  rotate: false
+  xy: 2, 2
+  size: 232, 232
+  orig: 256, 256
+  offset: 12, 12
+  index: -1
+glow_2
+  rotate: false
+  xy: 456, 131
+  size: 103, 103
+  orig: 127, 127
+  offset: 12, 12
+  index: -1
+glow_3
+  rotate: true
+  xy: 236, 15
+  size: 219, 218
+  orig: 256, 256
+  offset: 20, 20
+  index: -1

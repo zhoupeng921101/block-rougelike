@@ -1,0 +1,34 @@
+{
+ "Eliminate": {
+  "dragonAssetUrl": "dragonbones/eliminate/xc_ske",
+  "dragonAtlasAssetUrl": "dragonbones/eliminate/xc_tex",
+  "frameSplitting": true
+ },
+ "BlockProducerItemShowEffect": {
+  "dragonAssetUrl": "dragonbones/blockProducer/CK_ske",
+  "dragonAtlasAssetUrl": "dragonbones/blockProducer/CK_tex",
+  "frameSplitting": true
+ },
+ "new_clear_effectBg": {
+  "dragonAssetUrl": "dragonbones/boardEffect/trait/new_clear_effect/gameplay_moreEliminate_bgPar_ske",
+  "dragonAtlasAssetUrl": "dragonbones/boardEffect/trait/new_clear_effect/gameplay_moreEliminate_bgPar_tex",
+  "frameSplitting": true
+ },
+ "new_clear_effectFrame": {
+  "dragonAssetUrl": "dragonbones/boardEffect/trait/new_clear_effect/gameplay_moreEliminate_tilemapFrame_ske",
+  "dragonAtlasAssetUrl": "dragonbones/boardEffect/trait/new_clear_effect/gameplay_moreEliminate_tilemapFrame_tex",
+  "frameSplitting": true
+ },
+ "addOutEff": {
+  "dragonAssetUrl": "dragonbones/blockProducer/trait/addOutEff/gameplay_bg_chukuailizi_ske",
+  "dragonAtlasAssetUrl": "dragonbones/blockProducer/trait/addOutEff/gameplay_bg_chukuailizi_tex",
+  "frameSplitting": true,
+  "platform": "ios"
+ },
+ "PuzzleCautionEffect": {
+  "dragonAssetUrl": "dragonbones/gameplay_blockkuang_ske",
+  "dragonAtlasAssetUrl": "dragonbones/gameplay_blockkuang_tex",
+  "frameSplitting": true,
+  "platform": "gp"
+ }
+}

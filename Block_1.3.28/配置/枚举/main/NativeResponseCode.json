@@ -1,0 +1,6 @@
+{
+ "Success": 200,
+ "NotLoggedIn": 300,
+ "Unauthorized": 401,
+ "CancelledByUser": 2003
+}

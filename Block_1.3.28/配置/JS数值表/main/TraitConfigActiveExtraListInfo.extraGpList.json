@@ -1,0 +1,16 @@
+[
+ {
+  "id": 146100403,
+  "name": "CTAgloNameTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100424,
+  "name": "CTMergeBlocksAgloNameTrait",
+  "param": {
+   "firing": 1
+  }
+ }
+]

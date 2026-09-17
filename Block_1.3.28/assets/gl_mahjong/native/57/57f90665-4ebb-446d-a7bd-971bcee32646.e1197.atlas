@@ -1,0 +1,27 @@
+
+mahjong_gameplay_tips.png
+size: 510,197
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Selected_8
+  rotate: false
+  xy: 485, 96
+  size: 23, 99
+  orig: 23, 106
+  offset: 0, 5
+  index: -1
+gameplay_cube_green
+  rotate: true
+  xy: 245, 6
+  size: 189, 238
+  orig: 189, 238
+  offset: 0, 0
+  index: -1
+gameplay_cube_outline
+  rotate: true
+  xy: 2, 2
+  size: 193, 241
+  orig: 193, 241
+  offset: 0, 0
+  index: -1

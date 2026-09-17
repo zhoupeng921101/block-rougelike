@@ -1,0 +1,6 @@
+{
+ "ScoreFail": 0,
+ "ScoreWin": 1,
+ "CollectFail": 2,
+ "CollectWin": 3
+}

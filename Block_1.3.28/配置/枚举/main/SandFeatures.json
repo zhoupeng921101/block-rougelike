@@ -1,0 +1,6 @@
+{
+ "SAND_CRUSH_OPEN": "sandcrushopen",
+ "STOP_LOADER": "sand_stop_loader_status",
+ "SILENT_DOWNLOAD": "sliencedownload",
+ "CLICK_DOWNLOAD": "clickdownload"
+}

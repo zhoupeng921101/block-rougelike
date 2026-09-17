@@ -1,0 +1,132 @@
+
+gameplay_jlc_WellDone.png
+size: 910,577
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+glow/caihong
+  rotate: false
+  xy: 449, 402
+  size: 431, 173
+  orig: 448, 200
+  offset: 7, 23
+  index: -1
+glow/glow_xuanzhuan
+  rotate: false
+  xy: 2, 130
+  size: 445, 445
+  orig: 471, 471
+  offset: 13, 13
+  index: -1
+glow/guang_1
+  rotate: true
+  xy: 614, 17
+  size: 135, 127
+  orig: 135, 127
+  offset: 0, 0
+  index: -1
+glow/shou
+  rotate: false
+  xy: 687, 174
+  size: 216, 226
+  orig: 238, 248
+  offset: 11, 14
+  index: -1
+glow/shou2
+  rotate: true
+  xy: 466, 11
+  size: 141, 146
+  orig: 400, 400
+  offset: 129, 127
+  index: -1
+glow/shouyy
+  rotate: false
+  xy: 449, 154
+  size: 236, 246
+  orig: 238, 248
+  offset: 1, 1
+  index: -1
+glow/xingxing1
+  rotate: false
+  xy: 840, 107
+  size: 65, 65
+  orig: 73, 73
+  offset: 4, 4
+  index: -1
+glow/xingxingshan
+  rotate: false
+  xy: 80, 11
+  size: 30, 30
+  orig: 30, 30
+  offset: 0, 0
+  index: -1
+paper_01
+  rotate: false
+  xy: 882, 431
+  size: 21, 65
+  orig: 21, 65
+  offset: 0, 0
+  index: -1
+paper_02
+  rotate: false
+  xy: 449, 135
+  size: 14, 17
+  orig: 14, 17
+  offset: 0, 0
+  index: -1
+txt/1
+  rotate: false
+  xy: 743, 99
+  size: 95, 73
+  orig: 120, 78
+  offset: 13, 2
+  index: -1
+txt/2
+  rotate: false
+  xy: 857, 53
+  size: 51, 52
+  orig: 120, 78
+  offset: 35, 0
+  index: -1
+txt/3
+  rotate: true
+  xy: 2, 21
+  size: 20, 76
+  orig: 120, 78
+  offset: 51, 2
+  index: -1
+txt/5
+  rotate: false
+  xy: 743, 24
+  size: 58, 73
+  orig: 120, 78
+  offset: 32, 2
+  index: -1
+txt/6
+  rotate: true
+  xy: 803, 42
+  size: 55, 52
+  orig: 120, 78
+  offset: 33, 0
+  index: -1
+txt/7
+  rotate: true
+  xy: 857, 2
+  size: 49, 50
+  orig: 120, 78
+  offset: 36, 2
+  index: -1
+txt/9
+  rotate: false
+  xy: 882, 498
+  size: 24, 77
+  orig: 120, 78
+  offset: 49, 1
+  index: -1
+txt/ban
+  rotate: false
+  xy: 2, 43
+  size: 462, 85
+  orig: 462, 85
+  offset: 0, 0
+  index: -1

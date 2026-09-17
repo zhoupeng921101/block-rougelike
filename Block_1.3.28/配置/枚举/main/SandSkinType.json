@@ -1,0 +1,9 @@
+{
+ "NON_PIXEL": 3,
+ "NEON": 4,
+ "WOOD2_SAND": 5,
+ "LIGHT_SKIN": 6,
+ "LIQUID_SKIN": 7,
+ "DARK_SKIN": 8,
+ "GREEN_SKIN": 9
+}

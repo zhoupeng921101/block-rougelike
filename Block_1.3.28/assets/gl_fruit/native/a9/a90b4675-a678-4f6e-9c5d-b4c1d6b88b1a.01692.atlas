@@ -1,0 +1,69 @@
+
+BoardFullPanel.png
+size: 2048,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+s_1
+  rotate: false
+  xy: 363, 2
+  size: 149, 73
+  orig: 149, 77
+  offset: 0, 4
+  index: -1
+s_2
+  rotate: false
+  xy: 1047, 104
+  size: 138, 146
+  orig: 138, 146
+  offset: 0, 0
+  index: -1
+s_3
+  rotate: false
+  xy: 1187, 113
+  size: 131, 137
+  orig: 132, 138
+  offset: 0, 0
+  index: -1
+s_4
+  rotate: false
+  xy: 514, 9
+  size: 134, 66
+  orig: 134, 70
+  offset: 0, 4
+  index: -1
+s_5
+  rotate: false
+  xy: 1047, 17
+  size: 174, 85
+  orig: 174, 90
+  offset: 0, 5
+  index: -1
+s_6
+  rotate: true
+  xy: 774, 30
+  size: 220, 271
+  orig: 220, 271
+  offset: 0, 0
+  index: -1
+s_7
+  rotate: false
+  xy: 2, 77
+  size: 770, 173
+  orig: 770, 173
+  offset: 0, 0
+  index: -1
+s_8
+  rotate: false
+  xy: 650, 45
+  size: 30, 30
+  orig: 40, 40
+  offset: 5, 5
+  index: -1
+wenzi_1
+  rotate: false
+  xy: 2, 2
+  size: 359, 73
+  orig: 359, 73
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,7 @@
+[
+ {
+  "name": "@l.PrefabConfig.Setup.name",
+  "url": "@l.PrefabConfig.Setup.url",
+  "type": "@s.UIType.SETUP"
+ }
+]

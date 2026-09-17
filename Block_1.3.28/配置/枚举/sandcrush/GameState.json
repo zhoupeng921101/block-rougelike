@@ -1,0 +1,15 @@
+{
+ "IDLE": "idle",
+ "INIT": "init",
+ "RUNNING": "running",
+ "PAUSED": "paused",
+ "GAME_OVER": "gameover",
+ "DEATH_ANIMATION": "deathAnimation",
+ "REVIVE": "revive",
+ "REVIVE_PROCESS": "reviveProcess",
+ "AD_PLAYING": "adPlaying",
+ "GAME_RESULT": "gameResult",
+ "DATA_PROCESSING": "dataProcessing",
+ "LEVEL_SUCCESS": "LEVEL_SUCCESS",
+ "LEVEL_FAIL": "LEVEL_FAIL"
+}

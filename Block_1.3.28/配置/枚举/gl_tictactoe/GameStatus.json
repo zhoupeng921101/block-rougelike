@@ -1,0 +1,6 @@
+{
+ "NoGame": 0,
+ "GameIng": 1,
+ "Interrupt": 2,
+ "GameOver": 3
+}

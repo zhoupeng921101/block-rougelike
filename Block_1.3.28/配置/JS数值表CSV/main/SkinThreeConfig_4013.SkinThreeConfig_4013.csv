@@ -1,0 +1,32 @@
+﻿_key,assetPath,platform,bundleName,fontLayout
+block_1_normal,res/game_cube_1_material_4013,gp,Remote_Skin_Material_4013,
+block_2_normal,res/game_cube_2_material_4013,gp,Remote_Skin_Material_4013,
+block_3_normal,res/game_cube_1_material_4013,gp,Remote_Skin_Material_4013,
+block_4_normal,res/game_cube_2_material_4013,gp,Remote_Skin_Material_4013,
+block_5_normal,res/game_cube_1_material_4013,gp,Remote_Skin_Material_4013,
+block_6_normal,res/game_cube_2_material_4013,gp,Remote_Skin_Material_4013,
+block_7_normal,res/game_cube_1_material_4013,gp,Remote_Skin_Material_4013,
+block_put_spine_effect,effect/gameplay_light_startBlock_4013,gp,Remote_Skin_Material_4013,
+block_shadow,res/game_cube_shadow_material_4013,gp,Remote_Skin_Material_4013,
+board_bg,res/backgroundkuai2-8x8_material_4013,gp,Remote_Skin_Material_4013,
+combo_spine,effect/gameplay_combo_4013,gp,Remote_Skin_Material_4013,
+combo_spine_font,font/gameplay_combo_fnt_material_4013,gp,Remote_Skin_Material_4013,"{""spacingX"": -15, ""fontSize"": 150, ""position"": {""x"": 30, ""y"": -60}, ""lineHeight"": 50}"
+combo_spine_sprite,res/gameplay_combo_txt_material_4013,gp,Remote_Skin_Material_4013,
+combotips_spine_effect,effect/gameplay_comboTips_4013,gp,Remote_Skin_Material_4013,
+crown,res/backgroundscore_highest3_material_4013,gp,Remote_Skin_Material_4013,
+eliminate_effect,effect/gameplay_eliminate_4013,gp,Remote_Skin_Material_4013,
+eliminate_prompt_effect,effect/gameplay_ready_eliminate_4013,gp,Remote_Skin_Material_4013,
+encourage_spine_effect,effect/gameplay_word_4013,gp,Remote_Skin_Material_4013,
+game_bg,res/backgroundbg_material_4013,gp,Remote_Skin_Material_4013,
+revive_round_bg,res/die_quan_bg_material_4013,gp,Remote_Skin_Material_4013,
+revive_spine_countdown,effect/revive_countdown_4013,gp,Remote_Skin_Material_4013,
+setting_btn,res/backgroundstop_material_4013,gp,Remote_Skin_Material_4013,
+setting_close_btn,res/set_btn_close_material_4013,gp,Remote_Skin_Material_4013,
+setting_in_bg,res/set_bg_2_material_4013,gp,Remote_Skin_Material_4013,
+setting_line,res/set_bg_line_material_4013,gp,Remote_Skin_Material_4013,
+setting_out_bg,res/setting_bg_common_material_4013,gp,Remote_Skin_Material_4013,
+sound_clear,sound/bread_streak,gp,Remote_Skin_Material_4013,
+spine_comboscoretip_font,font/gameplay_num_grade_material_4013,gp,Remote_Skin_Material_4013,"{""spacingX"": -5, ""fontSize"": 80, ""position"": {""x"": 0, ""y"": 0}, ""lineHeight"": 160}"
+spine_highscore_font,font/typefacehigh_material_4013,gp,Remote_Skin_Material_4013,"{""spacingX"": -17, ""fontSize"": 90, ""position"": {""x"": 51, ""y"": 0}, ""lineHeight"": 70}"
+spine_score_font,font/typeFaceCurrent_material_4013,gp,Remote_Skin_Material_4013,"{""spacingX"": 0, ""fontSize"": 80, ""position"": {""x"": 0, ""y"": -20}, ""lineHeight"": 50}"
+unbelievable_spine_effect,effect/gameplay_clear_unbelievable_4013,gp,Remote_Skin_Material_4013,

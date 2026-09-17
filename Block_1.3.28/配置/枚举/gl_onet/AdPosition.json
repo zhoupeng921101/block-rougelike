@@ -1,0 +1,6 @@
+{
+ "FrontInterpolation": 0,
+ "BackInterpolation": 1,
+ "PlayingInterpolation": 2,
+ "PlayingReward": 3
+}

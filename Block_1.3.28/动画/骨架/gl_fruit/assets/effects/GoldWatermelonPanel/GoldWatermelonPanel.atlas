@@ -1,0 +1,48 @@
+
+GoldWatermelonPanel.png
+size: 512,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+jin_1
+  rotate: true
+  xy: 225, 56
+  size: 166, 167
+  orig: 200, 200
+  offset: 17, 14
+  index: -1
+jin_2
+  rotate: true
+  xy: 2, 3
+  size: 219, 221
+  orig: 256, 256
+  offset: 18, 18
+  index: -1
+jin_3
+  rotate: false
+  xy: 2, 224
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+jin_4
+  rotate: false
+  xy: 225, 2
+  size: 117, 52
+  orig: 117, 52
+  offset: 0, 0
+  index: -1
+jin_5
+  rotate: false
+  xy: 260, 387
+  size: 93, 93
+  orig: 128, 128
+  offset: 17, 17
+  index: -1
+trail_01
+  rotate: false
+  xy: 344, 38
+  size: 50, 16
+  orig: 50, 16
+  offset: 0, 0
+  index: -1

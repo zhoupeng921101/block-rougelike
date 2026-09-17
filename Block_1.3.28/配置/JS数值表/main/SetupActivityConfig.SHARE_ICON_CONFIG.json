@@ -1,0 +1,46 @@
+[
+ {
+  "id": 1,
+  "name": "youtube"
+ },
+ {
+  "id": 2,
+  "name": "x"
+ },
+ {
+  "id": 3,
+  "name": "facebook"
+ },
+ {
+  "id": 4,
+  "name": "tiktok"
+ },
+ {
+  "id": 5,
+  "name": "discord"
+ },
+ {
+  "id": 6,
+  "name": "official"
+ },
+ {
+  "id": 7,
+  "name": "instagram"
+ },
+ {
+  "id": 8,
+  "name": "vk"
+ },
+ {
+  "id": 9,
+  "name": "telegram"
+ },
+ {
+  "id": 10,
+  "name": "whatsapp"
+ },
+ {
+  "id": 11,
+  "name": "kakao"
+ }
+]

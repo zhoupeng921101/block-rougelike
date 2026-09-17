@@ -1,0 +1,9 @@
+{
+ "HSGAME": "hsgame",
+ "SANDCRUSH": "sandcrush",
+ "SAND_PREFAB": "sand_prefab",
+ "SAND_AUDIO": "sand_audio",
+ "BOARD_PATTERN": "board_pattern",
+ "SAND_MINI": "sand_mini",
+ "SAND_GM": "sandgm"
+}

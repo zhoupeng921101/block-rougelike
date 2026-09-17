@@ -1,0 +1,16 @@
+{
+ "AdShowLoad": "AdService.ShowLoad",
+ "AdCallNative": "AdService.CallNativeAd",
+ "AdClearLowEcpmAd": "AdService.ClearLowEcpmAd",
+ "AdGetMaxEcpm": "AdService.GetMaxEcpm",
+ "AdCutPreEcpm": "AdService.CutPreEcpm",
+ "AdHideBanner": "AdService.HideBanner",
+ "AdGetReadyByAdType": "AdService.GetReadyByAdType",
+ "AdCheckLoadingAd": "AdService.CheckLoadingAd",
+ "AdNativeAdCallback": "AdService.NativeAdCallback",
+ "AdNativeAdCallback2": "AdService.NativeAdCallback2",
+ "AdNativeRewardCallback": "AdService.NativeRewardCallback",
+ "AdNativeCutCallback": "AdService.NativeCutCallback",
+ "AdNativeGetFirstAdEcpm": "AdService.NativeGetFirstAdEcpm",
+ "AdNativeOnAdIncome": "AdService.NativeOnAdIncome"
+}

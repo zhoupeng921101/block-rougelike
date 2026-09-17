@@ -1,0 +1,5 @@
+{
+ "LOCAL": "local",
+ "DEBUG": "debug",
+ "RELEASE": "release"
+}

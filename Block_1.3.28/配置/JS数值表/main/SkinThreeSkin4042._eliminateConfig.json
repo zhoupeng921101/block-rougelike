@@ -1,0 +1,9 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.skin4042CustomEliminate",
+  "params": {
+   "effectConfig": "eliminate_effect",
+   "isAboveBlocks": true
+  }
+ }
+]

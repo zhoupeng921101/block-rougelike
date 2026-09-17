@@ -1,0 +1,6 @@
+{
+ "Idle": 1,
+ "WaitingFeatureReady": 2,
+ "FeatureReady": 3,
+ "OriginalWorldBooted": 4
+}

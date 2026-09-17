@@ -1,0 +1,9 @@
+{
+ "GameStart": "GameStart",
+ "GameOver": "GameOver",
+ "BoardAddErrorTipsAddError": "BoardAddErrorTipsAddError",
+ "BoardAddErrorTipsShowError": "BoardAddErrorTipsShowError",
+ "BoardAddErrorTipsReset": "BoardAddErrorTipsReset",
+ "LSNumberShowTips": "LSNumberShowTips",
+ "LSNumberShowTipsReset": "LSNumberShowTipsReset"
+}

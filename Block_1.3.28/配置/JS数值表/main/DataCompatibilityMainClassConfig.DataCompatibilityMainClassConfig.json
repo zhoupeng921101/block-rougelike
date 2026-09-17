@@ -1,0 +1,10 @@
+{
+ "classGuideStep": "fangkuaipintu#guide:number",
+ "classScore": "fangkuaipintu#current_cord:number",
+ "classRoundNum": "fangkuaipintu#roundNum:number",
+ "classGameNum": "fangkuaipintu#gameNum:number",
+ "classFaceBlocks": "fangkuaipintu#save_arr:object",
+ "classProducerBlocks": "fangkuaipintu#opera_arr:object",
+ "classColorLists": "fangkuaipintu#opera_color_arr:object",
+ "classZiMuShangZengCount": "fangkuaipintu#ziMuShangZengCount:number"
+}

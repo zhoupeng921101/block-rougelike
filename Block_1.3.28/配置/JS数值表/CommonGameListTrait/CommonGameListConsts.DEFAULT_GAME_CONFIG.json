@@ -1,0 +1,50 @@
+{
+ "gl_blockslide": {
+  "type": "@n.CommonGameListTypes.GameType.LEGACY",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "gl_watersort": {
+  "type": "@n.CommonGameListTypes.GameType.LEGACY",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "gl_oneline": {
+  "type": "@n.CommonGameListTypes.GameType.LEGACY",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "gl_mahjong": {
+  "type": "@n.CommonGameListTypes.GameType.LEGACY",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "gl_onet": {
+  "type": "@n.CommonGameListTypes.GameType.LEGACY",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "gl_fruit": {
+  "type": "@n.CommonGameListTypes.GameType.LEGACY",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "gl_tictactoe": {
+  "type": "@n.CommonGameListTypes.GameType.LEGACY",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "gl_sudoku": {
+  "type": "@n.CommonGameListTypes.GameType.LEGACY",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "G2": {
+  "type": "@n.CommonGameListTypes.GameType.ATOM",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "G3": {
+  "type": "@n.CommonGameListTypes.GameType.ATOM",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "G5": {
+  "type": "@n.CommonGameListTypes.GameType.ATOM",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ },
+ "gl_sand": {
+  "type": "@n.CommonGameListTypes.GameType.SAND",
+  "trigger": "@n.CommonGameListTypes.DownloadTrigger.DEFAULT"
+ }
+}

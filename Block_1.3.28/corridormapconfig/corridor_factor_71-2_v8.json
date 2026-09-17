@@ -1,0 +1,1622 @@
+[
+  {
+    "conditions": {
+      "country": ["US"],
+      "abtest": ["fs71024","rv71024"],
+      "adwaynum": ["71024"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "in_24h": {
+          "floor1": 45
+        },
+        "24h_out": {
+          "floor1": 25
+        }
+      },
+      "afe53469a2b9298c": {
+        "in_24h": {
+          "floor1": 22
+        },
+        "24h_out": {
+          "floor1": 12
+        }
+      },
+      "ab18eea0331c9f88": {
+        "in_24h": {
+          "floor1": 80
+        },
+        "24h_out": {
+          "floor1": 50
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "in_24h": {
+          "floor1": 40
+        },
+        "24h_out": {
+          "floor1": 25
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AU","CA","GB","JP","KR","NZ"],
+      "abtest": ["fs71024","rv71024"],
+      "adwaynum": ["71024"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "in_24h": {
+          "floor1": 30
+        },
+        "24h_out": {
+          "floor1": 18
+        }
+      },
+      "afe53469a2b9298c": {
+        "in_24h": {
+          "floor1": 15
+        },
+        "24h_out": {
+          "floor1": 9
+        }
+      },
+      "ab18eea0331c9f88": {
+        "in_24h": {
+          "floor1": 60
+        },
+        "24h_out": {
+          "floor1": 30
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "in_24h": {
+          "floor1": 30
+        },
+        "24h_out": {
+          "floor1": 15
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AT","BE","BG","CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HK", "HR", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK"],
+      "abtest": ["fs71024","rv71024"],
+      "adwaynum": ["71024"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "in_24h": {
+          "floor1": 9
+        },
+        "24h_out": {
+          "floor1": 6
+        }
+      },
+      "afe53469a2b9298c": {
+        "in_24h": {
+          "floor1": 4.5
+        },
+        "24h_out": {
+          "floor1": 3
+        }
+      },
+      "ab18eea0331c9f88": {
+        "in_24h": {
+          "floor1": 18
+        },
+        "24h_out": {
+          "floor1": 12
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "in_24h": {
+          "floor1": 9
+        },
+        "24h_out": {
+          "floor1": 6
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BN", "BT", "CN", "KH", "KP", "LA", "LK", "MM", "MN", "MV", "NP", "RU", "SG", "TL", "TW", "VN"],
+      "abtest": ["fs71024","rv71024"],
+      "adwaynum": ["71024"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "in_24h": {
+          "floor1": 3
+        },
+        "24h_out": {
+          "floor1": 2
+        }
+      },
+      "afe53469a2b9298c": {
+        "in_24h": {
+          "floor1": 1.5
+        },
+        "24h_out": {
+          "floor1": 1
+        }
+      },
+      "ab18eea0331c9f88": {
+        "in_24h": {
+          "floor1": 5
+        },
+        "24h_out": {
+          "floor1": 4
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "in_24h": {
+          "floor1": 2.5
+        },
+        "24h_out": {
+          "floor1": 2
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BL", "BO", "BZ", "CL", "CR", "CU", "DO", "EC", "GF", "GP", "GT", "GY", "HN", "HT", "MF", "MQ", "NI", "PA", "PE", "PR", "PY", "SR", "SV", "UY", "VE"],
+      "abtest": ["fs71024","rv71024"],
+      "adwaynum": ["71024"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "in_24h": {
+          "floor1": 3
+        },
+        "24h_out": {
+          "floor1": 2
+        }
+      },
+      "afe53469a2b9298c": {
+        "in_24h": {
+          "floor1": 1.5
+        },
+        "24h_out": {
+          "floor1": 1
+        }
+      },
+      "ab18eea0331c9f88": {
+        "in_24h": {
+          "floor1": 6
+        },
+        "24h_out": {
+          "floor1": 4
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "in_24h": {
+          "floor1": 3
+        },
+        "24h_out": {
+          "floor1": 2
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["DZ", "EG", "KZ", "BD", "IN"],
+      "abtest": ["fs71024","rv71024"],
+      "adwaynum": ["71024"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "in_24h": {
+          "floor1": 1
+        },
+        "24h_out": {
+          "floor1": 0.8
+        }
+      },
+      "afe53469a2b9298c": {
+        "in_24h": {
+          "floor1": 0.5
+        },
+        "24h_out": {
+          "floor1": 0.4
+        }
+      },
+      "ab18eea0331c9f88": {
+        "in_24h": {
+          "floor1": 1.8
+        },
+        "24h_out": {
+          "floor1": 1.5
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "in_24h": {
+          "floor1": 0.9
+        },
+        "24h_out": {
+          "floor1": 0.7
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["ID", "TR", "RS", "PK", "GE"],
+      "abtest": ["fs71024","rv71024"],
+      "adwaynum": ["71024"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "in_24h": {
+          "floor1": 1
+        },
+        "24h_out": {
+          "floor1": 0.8
+        }
+      },
+      "afe53469a2b9298c": {
+        "in_24h": {
+          "floor1": 0.5
+        },
+        "24h_out": {
+          "floor1": 0.4
+        }
+      },
+      "ab18eea0331c9f88": {
+        "in_24h": {
+          "floor1": 2.5
+        },
+        "24h_out": {
+          "floor1": 1.8
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "in_24h": {
+          "floor1": 1.2
+        },
+        "24h_out": {
+          "floor1": 0.9
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["TH", "AR", "PH", "MY"],
+      "abtest": ["fs71024","rv71024"],
+      "adwaynum": ["71024"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "in_24h": {
+          "floor1": 3
+        },
+        "24h_out": {
+          "floor1": 2
+        }
+      },
+      "afe53469a2b9298c": {
+        "in_24h": {
+          "floor1": 1.5
+        },
+        "24h_out": {
+          "floor1": 1
+        }
+      },
+      "ab18eea0331c9f88": {
+        "in_24h": {
+          "floor1": 5
+        },
+        "24h_out": {
+          "floor1": 4
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "in_24h": {
+          "floor1": 2.5
+        },
+        "24h_out": {
+          "floor1": 2
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BR", "CO", "MX", "ZA"],
+      "abtest": ["fs71024","rv71024"],
+      "adwaynum": ["71024"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "in_24h": {
+          "floor1": 5
+        },
+        "24h_out": {
+          "floor1": 3
+        }
+      },
+      "afe53469a2b9298c": {
+        "in_24h": {
+          "floor1": 2.5
+        },
+        "24h_out": {
+          "floor1": 1.5
+        }
+      },
+      "ab18eea0331c9f88": {
+        "in_24h": {
+          "floor1": 8
+        },
+        "24h_out": {
+          "floor1": 6
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "in_24h": {
+          "floor1": 4
+        },
+        "24h_out": {
+          "floor1": 3
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["US"],
+      "abtest": ["fs71025","rv71025","fs71026","rv71026"],
+      "adwaynum": ["71025","71026"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 70,
+            "floor2": 35
+          },
+          "24h_out": {
+            "floor1": 30,
+            "floor2": 15
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 35,
+            "floor2": 17
+          },
+          "24h_out": {
+            "floor1": 20,
+            "floor2": 10
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 25,
+            "floor2": 12
+          },
+          "24h_out": {
+            "floor1": 15,
+            "floor2": 7
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 30,
+            "floor2": 15
+          },
+          "24h_out": {
+            "floor1": 15,
+            "floor2": 7
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 16,
+            "floor2": 8
+          },
+          "24h_out": {
+            "floor1": 10,
+            "floor2": 5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 10,
+            "floor2": 5
+          },
+          "24h_out": {
+            "floor1": 7,
+            "floor2": 3
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 100,
+            "floor2": 50
+          },
+          "24h_out": {
+            "floor1": 50,
+            "floor2": 25
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 60,
+            "floor2": 30
+          },
+          "24h_out": {
+            "floor1": 35,
+            "floor2": 17
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 40,
+            "floor2": 20
+          },
+          "24h_out": {
+            "floor1": 25,
+            "floor2": 12
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 50,
+            "floor2": 25
+          },
+          "24h_out": {
+            "floor1": 25,
+            "floor2": 12
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 30,
+            "floor2": 15
+          },
+          "24h_out": {
+            "floor1": 17,
+            "floor2": 8
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 20,
+            "floor2": 10
+          },
+          "24h_out": {
+            "floor1": 12,
+            "floor2": 6
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AU","CA","GB","JP","KR","NZ"],
+      "abtest": ["fs71025","rv71025","fs71026","rv71026"],
+      "adwaynum": ["71025","71026"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 45,
+            "floor2": 22
+          },
+          "24h_out": {
+            "floor1": 20,
+            "floor2": 10
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 25,
+            "floor2": 12
+          },
+          "24h_out": {
+            "floor1": 15,
+            "floor2": 7
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 15,
+            "floor2": 7
+          },
+          "24h_out": {
+            "floor1": 10,
+            "floor2": 5
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 20,
+            "floor2": 10
+          },
+          "24h_out": {
+            "floor1": 10,
+            "floor2": 5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 12,
+            "floor2": 6
+          },
+          "24h_out": {
+            "floor1": 6,
+            "floor2": 3
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6,
+            "floor2": 3
+          },
+          "24h_out": {
+            "floor1": 5,
+            "floor2": 2
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 80,
+            "floor2": 40
+          },
+          "24h_out": {
+            "floor1": 45,
+            "floor2": 22
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 50,
+            "floor2": 25
+          },
+          "24h_out": {
+            "floor1": 25,
+            "floor2": 12
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 30,
+            "floor2": 15
+          },
+          "24h_out": {
+            "floor1": 20,
+            "floor2": 10
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 40,
+            "floor2": 20
+          },
+          "24h_out": {
+            "floor1": 22,
+            "floor2": 11
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 25,
+            "floor2": 12
+          },
+          "24h_out": {
+            "floor1": 12,
+            "floor2": 6
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 15,
+            "floor2": 7
+          },
+          "24h_out": {
+            "floor1": 10,
+            "floor2": 5
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AT","BE","BG","CH","CY","CZ","DE","DK","EE","ES","FI","FR","GR","HK","HR","HU","IE","IS","IT","LI","LT","LU","LV","MT","NL","NO","PL","PT","RO","SE","SI","SK"],
+      "abtest": ["fs71025","rv71025","fs71026","rv71026"],
+      "adwaynum": ["71025","71026"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 15,
+            "floor2": 7
+          },
+          "24h_out": {
+            "floor1": 8,
+            "floor2": 4
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 7,
+            "floor2": 3.5
+          },
+          "24h_out": {
+            "floor1": 5,
+            "floor2": 2.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6,
+            "floor2": 3
+          },
+          "24h_out": {
+            "floor1": 4,
+            "floor2": 2
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 7,
+            "floor2": 3
+          },
+          "24h_out": {
+            "floor1": 4,
+            "floor2": 2
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 3,
+            "floor2": 1.5
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 2.5,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 30,
+            "floor2": 15
+          },
+          "24h_out": {
+            "floor1": 18,
+            "floor2": 9
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 15,
+            "floor2": 7
+          },
+          "24h_out": {
+            "floor1": 8,
+            "floor2": 4
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 12,
+            "floor2": 6
+          },
+          "24h_out": {
+            "floor1": 7,
+            "floor2": 3
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 15,
+            "floor2": 7
+          },
+          "24h_out": {
+            "floor1": 9,
+            "floor2": 4
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 7,
+            "floor2": 3.5
+          },
+          "24h_out": {
+            "floor1": 4,
+            "floor2": 2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6,
+            "floor2": 3
+          },
+          "24h_out": {
+            "floor1": 3,
+            "floor2": 1.5
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BN","BT","CN","KH","KP","LA","LK","MM","MN","MV","NP","RU","SG","TL","TW","VN"],
+      "abtest": ["fs71025","rv71025","fs71026","rv71026"],
+      "adwaynum": ["71025","71026"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 5,
+            "floor2": 2.5
+          },
+          "24h_out": {
+            "floor1": 3.5,
+            "floor2": 1.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3.5,
+            "floor2": 1.5
+          },
+          "24h_out": {
+            "floor1": 3,
+            "floor2": 1.2
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1,
+            "floor2": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.8,
+            "floor2": 0.4
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          },
+          "24h_out": {
+            "floor1": 1,
+            "floor2": 0.5
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 8,
+            "floor2": 4
+          },
+          "24h_out": {
+            "floor1": 6,
+            "floor2": 3
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 4,
+            "floor2": 2
+          },
+          "24h_out": {
+            "floor1": 2.5,
+            "floor2": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6,
+            "floor2": 3
+          },
+          "24h_out": {
+            "floor1": 4,
+            "floor2": 2
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 4,
+            "floor2": 2
+          },
+          "24h_out": {
+            "floor1": 3,
+            "floor2": 1.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1,
+            "floor2": 0.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3,
+            "floor2": 1.5
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BL","BO","BZ","CL","CR","CU","DO","EC","GF","GP","GT","GY","HN","HT","MF","MQ","NI","PA","PE","PR","PY","SR","SV","UY","VE"],
+      "abtest": ["fs71025","rv71025","fs71026","rv71026"],
+      "adwaynum": ["71025","71026"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 5,
+            "floor2": 2.5
+          },
+          "24h_out": {
+            "floor1": 3,
+            "floor2": 1.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1,
+            "floor2": 0.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 2.5,
+            "floor2": 1.2
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 2.5,
+            "floor2": 1.2
+          },
+          "24h_out": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1,
+            "floor2": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.5,
+            "floor2": 0.2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1.2,
+            "floor2": 0.6
+          },
+          "24h_out": {
+            "floor1": 0.8,
+            "floor2": 0.4
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 9,
+            "floor2": 4
+          },
+          "24h_out": {
+            "floor1": 6.5,
+            "floor2": 3
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 4,
+            "floor2": 2
+          },
+          "24h_out": {
+            "floor1": 2.5,
+            "floor2": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6,
+            "floor2": 3
+          },
+          "24h_out": {
+            "floor1": 4,
+            "floor2": 2
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 4,
+            "floor2": 2
+          },
+          "24h_out": {
+            "floor1": 3,
+            "floor2": 1.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1,
+            "floor2": 0.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3,
+            "floor2": 1.5
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["DZ","EG","KZ","BD","IN"],
+      "abtest": ["fs71025","rv71025","fs71026","rv71026"],
+      "adwaynum": ["71025","71026"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 1,
+            "floor2": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.8,
+            "floor2": 0.4
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 0.7,
+            "floor2": 0.3
+          },
+          "24h_out": {
+            "floor1": 0.5,
+            "floor2": 0.2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 0.8,
+            "floor2": 0.4
+          },
+          "24h_out": {
+            "floor1": 0.6,
+            "floor2": 0.3
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 0.5,
+            "floor2": 0.2
+          },
+          "24h_out": {
+            "floor1": 0.4,
+            "floor2": 0.2
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 0.3,
+            "floor2": 0.15
+          },
+          "24h_out": {
+            "floor1": 0.2,
+            "floor2": 0.1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 0.4,
+            "floor2": 0.2
+          },
+          "24h_out": {
+            "floor1": 0.3,
+            "floor2": 0.15
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1,
+            "floor2": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.7,
+            "floor2": 0.3
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1,
+            "floor2": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.7,
+            "floor2": 0.3
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 1,
+            "floor2": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.7,
+            "floor2": 0.3
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 0.5,
+            "floor2": 0.2
+          },
+          "24h_out": {
+            "floor1": 0.3,
+            "floor2": 0.1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 0.5,
+            "floor2": 0.2
+          },
+          "24h_out": {
+            "floor1": 0.3,
+            "floor2": 0.1
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["ID","TR","RS","PK","GE"],
+      "abtest": ["fs71025","rv71025","fs71026","rv71026"],
+      "adwaynum": ["71025","71026"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 3,
+            "floor2": 1.5
+          },
+          "24h_out": {
+            "floor1": 1.8,
+            "floor2": 0.8
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 0.8,
+            "floor2": 0.4
+          },
+          "24h_out": {
+            "floor1": 0.6,
+            "floor2": 0.3
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1,
+            "floor2": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.7,
+            "floor2": 0.35
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          },
+          "24h_out": {
+            "floor1": 0.9,
+            "floor2": 0.4
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 0.4,
+            "floor2": 0.2
+          },
+          "24h_out": {
+            "floor1": 0.3,
+            "floor2": 0.1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 0.5,
+            "floor2": 0.25
+          },
+          "24h_out": {
+            "floor1": 0.35,
+            "floor2": 0.15
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 8,
+            "floor2": 4
+          },
+          "24h_out": {
+            "floor1": 4,
+            "floor2": 2
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1,
+            "floor2": 0.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3,
+            "floor2": 1.5
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 4,
+            "floor2": 2
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1,
+            "floor2": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.5,
+            "floor2": 0.2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          },
+          "24h_out": {
+            "floor1": 1,
+            "floor2": 0.5
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["TH","AR","PH","MY"],
+      "abtest": ["fs71025","rv71025","fs71026","rv71026"],
+      "adwaynum": ["71025","71026"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 4,
+            "floor2": 2
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1.2,
+            "floor2": 0.6
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3,
+            "floor2": 1.5
+          },
+          "24h_out": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1,
+            "floor2": 0.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1,
+            "floor2": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.5,
+            "floor2": 0.2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          },
+          "24h_out": {
+            "floor1": 0.7,
+            "floor2": 0.3
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 7,
+            "floor2": 3.5
+          },
+          "24h_out": {
+            "floor1": 4,
+            "floor2": 2
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 4,
+            "floor2": 2
+          },
+          "24h_out": {
+            "floor1": 2.5,
+            "floor2": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6,
+            "floor2": 3
+          },
+          "24h_out": {
+            "floor1": 3.5,
+            "floor2": 1.5
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 3.5,
+            "floor2": 1.7
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1,
+            "floor2": 0.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3,
+            "floor2": 1.5
+          },
+          "24h_out": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BR", "CO", "MX", "ZA"],
+      "abtest": ["fs71025", "rv71025", "fs71026", "rv71026"],
+      "adwaynum": ["71025", "71026"],
+      "low_api_version": 121
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 8,
+            "floor2": 4
+          },
+          "24h_out": {
+            "floor1": 5,
+            "floor2": 2.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 3,
+            "floor2": 1.5
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 4,
+            "floor2": 2
+          },
+          "24h_out": {
+            "floor1": 3,
+            "floor2": 1.5
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 4,
+            "floor2": 2
+          },
+          "24h_out": {
+            "floor1": 2.5,
+            "floor2": 1.2
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          },
+          "24h_out": {
+            "floor1": 1,
+            "floor2": 0.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 2,
+            "floor2": 1
+          },
+          "24h_out": {
+            "floor1": 1.5,
+            "floor2": 0.7
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 15,
+            "floor2": 7
+          },
+          "24h_out": {
+            "floor1": 8,
+            "floor2": 4
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 5,
+            "floor2": 2.5
+          },
+          "24h_out": {
+            "floor1": 4,
+            "floor2": 2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 8,
+            "floor2": 4
+          },
+          "24h_out": {
+            "floor1": 6,
+            "floor2": 3
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 7,
+            "floor2": 3.5
+          },
+          "24h_out": {
+            "floor1": 4,
+            "floor2": 2
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2.5,
+            "floor2": 1.2
+          },
+          "24h_out": {
+            "floor1": 2,
+            "floor2": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 4,
+            "floor2": 2
+          },
+          "24h_out": {
+            "floor1": 3,
+            "floor2": 1.5
+          }
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,66 @@
+{
+ "gl_sudoku": {
+  "maskColor": [
+   64,
+   98,
+   168,
+   255
+  ]
+ },
+ "gl_blockslide": {
+  "maskColor": [
+   36,
+   45,
+   100,
+   255
+  ]
+ },
+ "gl_tictactoe": {
+  "maskColor": [
+   70,
+   123,
+   152,
+   255
+  ]
+ },
+ "gl_oneline": {
+  "maskColor": [
+   58,
+   57,
+   57,
+   255
+  ]
+ },
+ "gl_mahjong": {
+  "maskColor": [
+   38,
+   69,
+   102,
+   255
+  ]
+ },
+ "gl_watersort": {
+  "maskColor": [
+   99,
+   69,
+   167,
+   255
+  ]
+ },
+ "gl_fruit": {
+  "maskColor": [
+   164,
+   88,
+   58,
+   255
+  ]
+ },
+ "gl_onet": {
+  "maskColor": [
+   103,
+   56,
+   66,
+   255
+  ]
+ }
+}

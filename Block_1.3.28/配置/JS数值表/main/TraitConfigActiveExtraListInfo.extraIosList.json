@@ -1,0 +1,30 @@
+[
+ {
+  "id": 146100403,
+  "name": "CTAgloNameIOSTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 19243001,
+  "name": "CTkeepBottomAlgoTravelTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 19248001,
+  "name": "CTFirstAlgoIOSTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100437,
+  "name": "CTHighScoreDecayFixTrait",
+  "param": {
+   "firing": 1
+  }
+ }
+]

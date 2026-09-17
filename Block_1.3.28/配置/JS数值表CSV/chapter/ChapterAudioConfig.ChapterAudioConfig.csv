@@ -1,0 +1,13 @@
+﻿_key,url,bundleName,platform
+travel_game_collect_item1,audios/collects/travel_game_collect_item1,chapter,
+travel_game_collect_item2,audios/collects/travel_game_collect_item2,chapter,
+travel_targetui_show,audios/travel_targetui_show,chapter,
+travel_score_change,audios/travel_score_change,chapter,
+travel_score_suc,audios/travel_score_suc,chapter,
+travel_overui_score_suc,audios/travel_overui_score_suc,chapter,
+travel_overui_show_btn,audios/travel_overui_show_btn,chapter,ios
+travel_win_logo,audios/travel_win_logo,chapter,
+travel_overui_collect_items,audios/travel_overui_collect_items,chapter,
+travel_cup_award,audios/travel_cup_award,chapter,
+travel_unlock_lvmark,audios/travel_unlock_lvmark,chapter,
+travel_collect_suc,audios/travel_collect_suc,chapter,ios

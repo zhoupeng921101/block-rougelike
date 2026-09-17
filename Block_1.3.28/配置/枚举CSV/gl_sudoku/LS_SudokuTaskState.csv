@@ -1,0 +1,7 @@
+﻿成员,值
+Ready,0
+Start,1
+Running,2
+Success,3
+Failed,4
+GiveUp,5

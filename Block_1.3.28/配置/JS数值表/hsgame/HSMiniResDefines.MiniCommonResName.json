@@ -1,0 +1,8 @@
+{
+ "COMMON_BG_DOWN": "sand_common_bg_down",
+ "COMMON_BG_UP": "sand_common_bg_up",
+ "COMMON_BTN_CLOSE": "sand_common_btn_close",
+ "COMMON_NUM_FONT": "sand_common_num_font",
+ "COMMON_NUM_SPECIAL_FONT": "sand_common_num_special_font",
+ "COMBO_TEXTURE": "sand_common_combo_texture"
+}

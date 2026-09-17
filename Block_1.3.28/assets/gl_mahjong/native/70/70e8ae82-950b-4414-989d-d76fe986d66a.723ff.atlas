@@ -1,0 +1,55 @@
+
+Mahjong_Selected_V2.png
+size: 766,306
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Selected_1
+  rotate: false
+  xy: 579, 71
+  size: 187, 235
+  orig: 187, 235
+  offset: 0, 0
+  index: -1
+Selected_2
+  rotate: true
+  xy: 0, 0
+  size: 306, 360
+  orig: 322, 376
+  offset: 8, 8
+  index: -1
+Selected_3
+  rotate: false
+  xy: 362, 43
+  size: 215, 263
+  orig: 219, 267
+  offset: 2, 2
+  index: -1
+Selected_4
+  rotate: false
+  xy: 685, 29
+  size: 40, 40
+  orig: 48, 48
+  offset: 4, 4
+  index: -1
+Selected_5
+  rotate: false
+  xy: 579, 3
+  size: 70, 66
+  orig: 70, 66
+  offset: 0, 0
+  index: -1
+Selected_7
+  rotate: false
+  xy: 651, 5
+  size: 32, 64
+  orig: 32, 64
+  offset: 0, 0
+  index: -1
+Selected_8
+  rotate: true
+  xy: 362, 15
+  size: 26, 111
+  orig: 26, 118
+  offset: 0, 5
+  index: -1

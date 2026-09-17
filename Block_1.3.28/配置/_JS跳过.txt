@@ -1,0 +1,185 @@
+DualColorMoreColorPriorityTrait	DualColorMoreColorPriorityTrait	returnValue	键名不认识
+DualColorMoreColorPriorityTrait	DualColorMoreColorPriorityTrait	returnValue	键名不认识
+IsOpenClassMusicBlockTrait	BoardEffectMusicBlockEff	boardPos	键名不认识
+NatureDefaultBoardTrait	NatureDefaultBoardTrait	blockNewCenterOffsetMap	键名不认识
+NewGuideBoostTrait	NewGuideBoostComponent	putPos	不是字面量: '(5, 3), cc.v2(5, 4),'
+ShapeColorProposal1Trait	ShapeColorProposal1Trait	colorMap	键名不认识
+ShapeColorProposal2Trait	ShapeColorProposal2Trait	colorMap	键名不认识
+UEExplorePopViewGuideTrait	UEExplorePopViewGuideTrait	_colorfulEffect	不是字面量: '(r, a), e.createEliE'
+chapter	ChapterHardLevelDefeat	jumpPoslist	不是字面量: '(-228, -83), cc.v2(-'
+chapter	GameplayAniAllChangeCtrlTraitAM	lastPreEliminateState	不是字面量: new
+chapter	SkinThreeChapterFailUIApplier	CHAPTER_COLLECT_FAIL_ENTRIES	不是字面量: function
+chapter	SkinThreeChapterFailUIApplier	CHAPTER_SCORE_FAIL_ENTRIES	不是字面量: function
+chapter	SkinThreeChapterGoalUIApplier	CHAPTER_GOAL_COLLECT_ENTRIES	不是字面量: function
+chapter	SkinThreeChapterGoalUIApplier	CHAPTER_GOAL_SCORE_ENTRIES	不是字面量: function
+chapter	SkinThreeChapterGoalWellDone	scoreOriginalStyle	键名不认识
+chapter	SkinThreeChapterUIApplier	CHAPTER_TOP_INFO_SCORE_ENTRIES	不是字面量: function
+chapter	SkinThreeChapterWinUIApplier	CHAPTER_COLLECT_WIN_ENTRIES	不是字面量: function
+chapter	SkinThreeChapterWinUIApplier	CHAPTER_SCORE_WIN_ENTRIES	不是字面量: function
+class	$30681_f_supplementalLowScoreTrait	supplementalLowScorerInfo	键名不认识
+class	ClearScreenAIModelTrait	modelData	键名不认识
+class	DataCollectJudgeCheatScoreConfigInfo	judgeCheatScoreCtrlConfigData	不是字面量: function
+class	IsOpenMoreCleanTrait	TkxcMoreClean	! 后不是数字
+class	TfliteCdnDownloadTrait	modelData	键名不认识
+gl_fruit	GLFruitComboCtr	ComboColor1	不是字面量: new
+gl_fruit	GLFruitComboCtr	ComboColor2	不是字面量: new
+gl_fruit	GLFruitComboCtr	ComboColor3	不是字面量: new
+gl_oneline	GLBFGuideView	bfGuideArgument	键名不认识
+gl_oneline	GLOneLineHintBtnTip	_data	键名不认识
+gl_onet	HsOnetADUtil	adRecord	键名不认识
+gl_onet	MapHandle	random	不是字面量: function
+gl_onet	UIGamePlayControl	SaveLeveData	键名不认识
+gl_onet	UIGamePlayView	starAniSet	键名不认识
+gl_sudoku	LS_SudokuData	difficultyDataArr	不是字面量: new
+gl_sudoku	LS_SudokuModel	difficultyDataArr	不是字面量: new
+gl_sudoku	LS_SudokuScoreModel	levelConfigs	不是字面量: new
+gl_sudoku	NewPlayerGuideConfig6x6	guideSteps	键名不认识
+gl_tictactoe	GLTictactoeChangeSkinTs	sprites	不是字面量: '(cc.Sprite), i.getCo'
+gl_tictactoe	GLTictactoeGameModel	clickSaveData	不是字面量: '(i = {}, i[l.default'
+gl_tictactoe	GLTictactoeGameModel	data	不是字面量: '(e = {}, e[l.default'
+gl_watersort	GLWaterItem	_frameTimes	不是字面量: '/ 30 ],\n"0_2": [ 0, '
+hsgame	HSTaskList	onBegin	不是字面量: function
+hsgame	HSTaskList	onCompleted	不是字面量: function
+hsgame	HSTaskList	onError	不是字面量: function
+hsgame	HSTaskList	onProgress	不是字面量: function
+hsgame	HsUIUtils	HsUIUtils	不是字面量: function
+main	AlgorithmBlockConfig	BlockShapeInfo	不是字面量: '(0, -1) ], [ cc.v2(1'
+main	ButtonClickInfo	buttonSoundRegistry	不是字面量: new
+main	ButtonClickInfo	buttonclickRegistry	不是字面量: new
+main	DataCompatibilityMain_Ios_Proxy	storageEvents	键名不认识
+main	Dot	active_waynum	键名不认识
+main	Dot	new_waynum	键名不认识
+main	GameLobby_miniGameStorageInfo	miniGameWaterSortDefaultGameInfo	键名不认识
+main	GameWayInfo	ab	键名不认识
+main	HolidayMosaicInfo	_configCache	键名不认识
+main	HolidayMosaicInfo	_configCache	键名不认识
+main	NativeReceivedNative	IPAUtils	不是字面量: function
+main	NativeUtils	PLATFORM	键名不认识
+main	PerformanceTieringConfig	performanceTieringConfig	不是字面量: '(r = {}, r[i.Perform'
+main	PlaybackInfo	_igorneNodes	不是字面量: '+ "/gameUiLayer/Laun'
+main	PlaybackInfo	_lastRecordData	键名不认识
+main	PreloadStrategyConfig	preloadStrtegyConfig	不是字面量: '(i.chapterListItemPo'
+main	PuzzleUtil	blockIds	不是字面量: '(Math.random() * B.l'
+main	SetupConfig	SetupConfig	不是字面量: '(i = {}, i[o.sound] '
+main	SetupIosConfig	SetupIosConfig	不是字面量: '(r = {}, r[n.ios_sou'
+main	SkinAtlas	skinBgSpriteInfo	不是字面量: '(P = {}, P[i] = {\nx:'
+main	SkinAtlas	skinBoardSpriteInfo	不是字面量: '(B = {}, B[i] = {\nx:'
+main	SkinRandomInfo	_usedSkinAry	不是字面量: '(n.skinInfo.originSk'
+main	SkinThreeConfig_2026	SkinThreeConfig_2026	键名不认识
+main	SkinThreeConfig_2028	SkinThreeConfig_2028	键名不认识
+main	SkinThreeConfig_2032	SkinThreeConfig_2032	键名不认识
+main	SkinThreeConfig_2037	SkinThreeConfig_2037	键名不认识
+main	SkinThreeConfig_3033	SkinThreeConfig_3033	键名不认识
+main	SkinThreeConfig_4035	SkinThreeConfig_4035	键名不认识
+main	SkinThreeDefaultResConfig	SkinThreeDefaultRes	键名不认识
+main	SkinThreeSkin2004	_eliminateConfig	键名不认识
+main	SkinThreeSkin2004	_preEliminateConfig	键名不认识
+main	SkinThreeSkin2005	_eliminateConfig	键名不认识
+main	SkinThreeSkin2006	_eliminateConfig	键名不认识
+main	SkinThreeSkin2006	_preEliminateConfig	键名不认识
+main	SkinThreeSkin2011	_eliminateConfig	键名不认识
+main	SkinThreeSkin2011	_preEliminateConfig	键名不认识
+main	SkinThreeSkin2012	_eliminateConfig	键名不认识
+main	SkinThreeSkin2012	_preEliminateConfig	键名不认识
+main	SkinThreeSkin2014	_eliminateConfig	键名不认识
+main	SkinThreeSkin2015	_eliminateConfig	键名不认识
+main	SkinThreeSkin2015	_preEliminateConfig	键名不认识
+main	SkinThreeSkin2017	_eliminateConfig	键名不认识
+main	SkinThreeSkin2017	_preEliminateConfig	键名不认识
+main	SkinThreeSkin2018	_eliminateConfig	键名不认识
+main	SkinThreeSkin2018	_preEliminateConfig	键名不认识
+main	SkinThreeSkin2019	_eliminateConfig	键名不认识
+main	SkinThreeSkin2021	_eliminateConfig	键名不认识
+main	SkinThreeSkin2021	_preEliminateConfig	键名不认识
+main	SkinThreeSkin2026	_eliminateConfig	键名不认识
+main	SkinThreeSkin2030	_eliminateConfig	键名不认识
+main	SkinThreeSkin2030	_preEliminateConfig	键名不认识
+main	SkinThreeSkin2033	_eliminateConfig	键名不认识
+main	SkinThreeSkin2035	_eliminateConfig	键名不认识
+main	SkinThreeSkin2037	_eliminateConfig	键名不认识
+main	SkinThreeSkin3012	_eliminateConfig	键名不认识
+main	TraitConfig_Proxy	LoadingTieringTrait	不是字面量: '(E = {}, E[g.Perform'
+main	TraitSafePropsMap	TraitSafeParamMap	不是字面量: new
+main	TraitSequence	shareTraitTarget	不是字面量: function
+main	TraitSequence	shareTraitTarget	键名不认识
+main	TraitSequence	shareTraitTarget	键名不认识
+main	VersionConfigParser	ops	不是字面量: function
+main	algoPuzzle	blockB	键名不认识
+main	algoPuzzle	blockB	键名不认识
+main	algoPuzzle	blockC	键名不认识
+main	algoPuzzle	cols	不是字面量: '.block1Pos.x, T[0].b'
+main	algoPuzzle	cols	不是字面量: '.col, m.poses[1].col'
+main	algoPuzzle	cols	不是字面量: '.col, m.poses[1].col'
+main	algoPuzzle	cols	不是字面量: '.col, u.poses[1].col'
+main	algoPuzzle	cols	不是字面量: '.pos.x, i[0][1].pos.'
+main	algoPuzzle	cols	不是字面量: '.pos1.x, s[0].pos2.x'
+main	algoPuzzle	cols	不是字面量: '.x ];\nbreak e;\n}\n}\n}'
+main	algoPuzzle	cols	不是字面量: '.x ];\ne.names = [ a,'
+main	algoPuzzle	cols	不是字面量: '.x ];\nreturn t;\n}\na.'
+main	algoPuzzle	cols	不是字面量: '.x, f[1].x ];\n} else'
+main	algoPuzzle	cols	不是字面量: '.x, f[1].x ];\n} else'
+main	algoPuzzle	cols	不是字面量: '.x, f[1].x ];\n}\n}\n}\n'
+main	algoPuzzle	cols	不是字面量: '.x, k.pos.x, B.pos.x'
+main	algoPuzzle	cols	不是字面量: '.x, k[N].x, A[I].x ]'
+main	algoPuzzle	cols	不是字面量: '.x, m.blockPosArr[0]'
+main	algoPuzzle	cols	不是字面量: '.x, m[1].x, N.x ];\n}'
+main	algoPuzzle	cols	不是字面量: '.x, t.pos[1].x, -1 ]'
+main	algoPuzzle	cols	不是字面量: '.x, v[1].x ];\n} else'
+main	algoPuzzle	cols	不是字面量: '.x, v[1].x ];\n} else'
+main	algoPuzzle	cols	不是字面量: '.x, v[1].x ];\n}\n}\n}\n'
+main	algoPuzzle	cols	不是字面量: '.x, y[1].x, y[2].x ]'
+main	algoPuzzle	config	键名不认识
+main	algoPuzzle	data	不是字面量: '(E, null) ];\n} else '
+main	algoPuzzle	dispatcher	键名不认识
+main	algoPuzzle	ids	不是字面量: '.block1, T[0].block2'
+main	algoPuzzle	ids	不是字面量: '.block1, s[0].block2'
+main	algoPuzzle	names	不是字面量: '+ F + "_a_" + s, "难题'
+main	algoPuzzle	names	不是字面量: '+ F + "_b_" + s, "难题'
+main	algoPuzzle	names	不是字面量: '+ F + "_c_" + s, "难题'
+main	algoPuzzle	names	不是字面量: '+ F + "_d_" + s, "难题'
+main	algoPuzzle	names	不是字面量: '? "关卡首轮消除" : "关卡首轮随机'
+main	algoPuzzle	pos	键名不认识
+main	algoPuzzle	rows	不是字面量: '.block1Pos.y, T[0].b'
+main	algoPuzzle	rows	不是字面量: '.pos.y, i[0][1].pos.'
+main	algoPuzzle	rows	不是字面量: '.pos1.y, s[0].pos2.y'
+main	algoPuzzle	rows	不是字面量: '.row, m.poses[1].row'
+main	algoPuzzle	rows	不是字面量: '.row, m.poses[1].row'
+main	algoPuzzle	rows	不是字面量: '.row, u.poses[1].row'
+main	algoPuzzle	rows	不是字面量: '.y ];\ne.cols = [ i.p'
+main	algoPuzzle	rows	不是字面量: '.y ];\nt.cols = [ c.x'
+main	algoPuzzle	rows	不是字面量: '.y ];\nu.cols = [ y.x'
+main	algoPuzzle	rows	不是字面量: '.y, f[1].y ];\ne.cols'
+main	algoPuzzle	rows	不是字面量: '.y, f[1].y ];\ne.cols'
+main	algoPuzzle	rows	不是字面量: '.y, f[1].y ];\ne.cols'
+main	algoPuzzle	rows	不是字面量: '.y, k.pos.y, B.pos.y'
+main	algoPuzzle	rows	不是字面量: '.y, k[N].y, A[I].y ]'
+main	algoPuzzle	rows	不是字面量: '.y, m.blockPosArr[0]'
+main	algoPuzzle	rows	不是字面量: '.y, m[1].y, N.y ];\nl'
+main	algoPuzzle	rows	不是字面量: '.y, t.pos[1].y, -1 ]'
+main	algoPuzzle	rows	不是字面量: '.y, v[1].y ];\na.cols'
+main	algoPuzzle	rows	不是字面量: '.y, v[1].y ];\na.cols'
+main	algoPuzzle	rows	不是字面量: '.y, v[1].y ];\na.cols'
+main	algoPuzzle	rows	不是字面量: '.y, y[1].y, y[2].y ]'
+main	atomengine-sdk	delegate	键名不认识
+main	atomengine-sdk	prototype	不是字面量: function
+mainTraits	AddFaqFuncTrait	returnValue	键名不认识
+mainTraits	AddGameSpeedTrait	_cacheData	键名不认识
+mainTraits	AlgoFillSortEdgeIOSTrait	algoGathers	键名不认识
+mainTraits	IsOpenReviveSpecialTrait	clearInfo	键名不认识
+mainTraits	Param230012Trait	paramStrategies	不是字面量: function
+mainTraits	SkinThemeDownloadTrait	returnValue	不是字面量: '+ t ];\ne.returnState'
+sandcrush	BaseDragHighlightManager	COLOR_MAP	键名不认识
+sandcrush	BoardSimilarityHelper	previousBoardState	键名不认识
+sandcrush	GameStatistics	cachePlacementReportData	键名不认识
+sandcrush	GameStatistics	cacheRoundReportData	键名不认识
+sandcrush	HSUIMgrAdapter	HSUIMgrAdapter	不是字面量: function
+sandcrush	MotivationalComponentFactory	COMPONENT_CONFIGS	不是字面量: function
+sandcrush	PlacementStrategy	dragData	键名不认识
+sandcrush	SandActionGMColor	colors	不是字面量: '+ 1, n + 1, o + 1 ];'
+sandcrush	SandAdNewPlayerReductionTrigger	data	键名不认识
+sandcrush	SandDefines	Eight_Direction	不是字面量: '(1, 0), cc.v3(0, -1)'
+sandcrush	SandDefines	Four_Direction	不是字面量: '(1, 0), cc.v3(0, -1)'
+sandcrush	SandGameController	eliminationContext	键名不认识
+sandcrush	SandLevelModeGem	gemCountList	键名不认识
+sandcrush	SandLogicFastBoard	cachedPrediction	键名不认识
+sandcrush	SandTutorialHelper	TutorialBlockConfig	键名不认识

@@ -1,0 +1,13 @@
+{
+ "Default": 0,
+ "ProductSuccess": 1,
+ "ProductFail": 2,
+ "PaymentSuccess": 3,
+ "PaymentFail": 4,
+ "PaymentRenew": 5,
+ "PaymentCancel": 6,
+ "RestoreSuccess": 7,
+ "RestoreFail": 8,
+ "GetVipStateAsync": 9,
+ "PayPull": 10
+}

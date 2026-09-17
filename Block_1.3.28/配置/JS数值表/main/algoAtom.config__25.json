@@ -1,0 +1,191 @@
+[
+ {
+  "id": "@y.IF",
+  "data": {
+   "configs": [
+    {
+     "conditionConfig": {
+      "id": "CONDITION_REGULAR_BLOCK_900146",
+      "data": {
+       "retKey": "@_.IF"
+      }
+     },
+     "ifKey": "@_.IF",
+     "logicConfig": {
+      "id": "@y.ALGO_COMBINE",
+      "data": {
+       "ways": [
+        {
+         "algoName": "规整块难题",
+         "blocks1": [
+          {
+           "id": "@y.BLOCK_RESET",
+           "data": {
+            "blocks": "@t.SELECT1_BLOCK_POOL"
+           }
+          }
+         ],
+         "blocks2": [
+          {
+           "id": "@y.BLOCK_RESET",
+           "data": {
+            "blocks": "@t.SELECT1_BLOCK_POOL"
+           }
+          }
+         ],
+         "blocks3": [
+          {
+           "id": "@y.BLOCK_RESET",
+           "data": {
+            "blocks": "@t.SELECT1_BLOCK_POOL"
+           }
+          }
+         ],
+         "selectCombs": [
+          {
+           "compId": "@y.COM_BLOCK_MAX_DUP",
+           "data": {
+            "count": 2
+           }
+          }
+         ],
+         "putOrderDatas": [
+          {
+           "order": 0,
+           "liveWay": "@l.HAS_LIVE"
+          }
+         ],
+         "select": {
+          "collectCompId": "@y.COLLECT_COMBINE_LIVE_RATE",
+          "key": "@h.LIVE_WAY_RATE",
+          "clear": true,
+          "operator": "@g.MIN",
+          "count": 3,
+          "clears": [
+           true,
+           true,
+           true
+          ],
+          "data": {
+           "key": "@h.LIVE_WAY"
+          },
+          "success": {
+           "collectCompId": "COLLECT_COMBINE_REGULAR_WEIGHT_900146",
+           "key": "@h.TOTAL_PROFIT",
+           "clear": true,
+           "operator": "@g.MAX",
+           "count": 3,
+           "clears": [
+            true,
+            true,
+            true
+           ]
+          }
+         },
+         "overTime": 100
+        }
+       ]
+      }
+     }
+    },
+    {
+     "ifKey": "@_.TRUE",
+     "logicConfig": {
+      "id": "@y.ALGO_COMBINE",
+      "data": {
+       "ways": [
+        {
+         "algoName": "规整块难题",
+         "blocks1": [
+          {
+           "id": "@y.BLOCK_RESET",
+           "data": {
+            "blocks": "@t.FULL_BLOCK_POOL"
+           }
+          },
+          {
+           "id": "@y.BLOCK_SEL",
+           "data": {
+            "filterType": "@p.NO_PUT"
+           }
+          }
+         ],
+         "blocks2": [
+          {
+           "id": "@y.BLOCK_RESET",
+           "data": {
+            "blocks": "@t.FULL_BLOCK_POOL"
+           }
+          },
+          {
+           "id": "@y.BLOCK_SEL",
+           "data": {
+            "filterType": "@p.CAN_PUT"
+           }
+          }
+         ],
+         "blocks3": [
+          {
+           "id": "@y.BLOCK_RESET",
+           "data": {
+            "blocks": "@t.FULL_BLOCK_POOL"
+           }
+          },
+          {
+           "id": "@y.BLOCK_SEL",
+           "data": {
+            "filterType": "@p.CAN_PUT"
+           }
+          }
+         ],
+         "selectCombs": [
+          {
+           "compId": "@y.COM_BLOCK_MAX_DUP",
+           "data": {
+            "count": 2
+           }
+          }
+         ],
+         "putOrderDatas": [
+          {
+           "order": 0,
+           "liveWay": "@l.HAS_LIVE"
+          }
+         ],
+         "select": {
+          "collectCompId": "@y.COLLECT_COMBINE_LIVE_RATE",
+          "key": "@h.LIVE_WAY_RATE",
+          "clear": true,
+          "operator": "@g.MIN",
+          "count": 3,
+          "clears": [
+           true,
+           true,
+           true
+          ],
+          "data": {
+           "key": "@h.LIVE_WAY"
+          },
+          "success": {
+           "collectCompId": "COLLECT_COMBINE_REGULAR_WEIGHT_900146",
+           "key": "@h.TOTAL_PROFIT",
+           "clear": true,
+           "operator": "@g.MAX",
+           "count": 3,
+           "clears": [
+            true,
+            true,
+            true
+           ]
+          }
+         },
+         "overTime": 100
+        }
+       ]
+      }
+     }
+    }
+   ]
+  }
+ }
+]

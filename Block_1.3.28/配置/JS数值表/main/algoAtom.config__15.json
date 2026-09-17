@@ -1,0 +1,21 @@
+[
+ {
+  "id": "@y.BLOCK_SEQ",
+  "data": {
+   "startBlockId": 2,
+   "endBlockId": 42
+  }
+ },
+ {
+  "id": "@y.BLOCK_SORT",
+  "data": {
+   "sort": "@f.RANDOM"
+  }
+ },
+ {
+  "id": "SELECT_BLOCK_724001",
+  "data": {
+   "overTime": 100
+  }
+ }
+]

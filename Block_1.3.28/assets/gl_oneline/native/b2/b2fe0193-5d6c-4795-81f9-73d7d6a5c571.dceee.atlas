@@ -1,0 +1,27 @@
+
+oneLine_gameplay_crownTips.png
+size: 268,204
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+line
+  rotate: false
+  xy: 204, 73
+  size: 4, 45
+  orig: 4, 45
+  offset: 0, 0
+  index: -1
+oneLine_img_crown
+  rotate: true
+  xy: 204, 120
+  size: 82, 62
+  orig: 144, 144
+  offset: 31, 45
+  index: -1
+wangge
+  rotate: false
+  xy: 2, 2
+  size: 200, 200
+  orig: 200, 200
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,8 @@
+{
+ "LineMaxScale": 1.5,
+ "LingMaxDelayTime": 500,
+ "LingMaxWaitDelayTime": 800,
+ "LingMinDelayTime": 500,
+ "LineMaxAnimationCurve": null,
+ "LineMinAnimationCurve": null
+}

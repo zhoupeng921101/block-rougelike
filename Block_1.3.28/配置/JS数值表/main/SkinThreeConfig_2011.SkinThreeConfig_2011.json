@@ -1,0 +1,218 @@
+{
+ "block_1_normal": {
+  "assetPath": "res/game_cube_1_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "block_2_normal": {
+  "assetPath": "res/game_cube_2_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "block_3_normal": {
+  "assetPath": "res/game_cube_3_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "block_4_normal": {
+  "assetPath": "res/game_cube_4_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "block_5_normal": {
+  "assetPath": "res/game_cube_5_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "block_6_normal": {
+  "assetPath": "res/game_cube_6_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "block_7_normal": {
+  "assetPath": "res/game_cube_7_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "block_shadow": {
+  "assetPath": "res/block_shadow_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "board_bg": {
+  "assetPath": "res/gameplay_board_bg",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "game_bg": {
+  "assetPath": "res/gameplay_bg",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "crown": {
+  "assetPath": "res/backgroundscore_highest3_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "score_bg": {
+  "assetPath": "res/score_bg_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "score_font": {
+  "assetPath": "font/num_score",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn": {
+  "assetPath": "res/backgroundstop_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_close_btn": {
+  "assetPath": "res/set_btn_close_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_title": {
+  "assetPath": "res/setting_txt_settings_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_line": {
+  "assetPath": "res/setting_bg_line_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_out_bg": {
+  "assetPath": "res/set_up_bg_out",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_in_bg": {
+  "assetPath": "res/set_up_bg_in",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_bottom_btn_bg": {
+  "assetPath": "res/btn_setCommonup_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn_home_txt": {
+  "assetPath": "res/setting_txt_homeUp_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn_home_icon": {
+  "assetPath": "res/setting_icon_homeUp_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn_moreGames_txt": {
+  "assetPath": "res/setting_txt_moreGamesup_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn_moreGames_icon": {
+  "assetPath": "res/setting_icon_moreGamesup_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn_moreSettings_txt": {
+  "assetPath": "res/setting_txt_moreSettingsup_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn_moreSettings_icon": {
+  "assetPath": "res/setting_icon_moreSettingsup",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn_replay_txt": {
+  "assetPath": "res/setting_txt_replayUp_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn_replay_icon": {
+  "assetPath": "res/setting_icon_replayUp_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn_SetAddDefultSkinBtn_txt": {
+  "assetPath": "res/setting_txt_defauilSkinup_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "setting_btn_SetAddDefultSkinBtn_icon": {
+  "assetPath": "res/setting_icon_defauilSkinup_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "revive_btn_effect": {
+  "assetPath": "effect/shipinbt_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "revive_round_bg": {
+  "assetPath": "res/die_quan_bg_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "revive_round_progress": {
+  "assetPath": "res/die_quan_material_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "combo_sprite": {
+  "assetPath": "res/combo",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "combo_font": {
+  "assetPath": "font/num_combo",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "high_score_font": {
+  "assetPath": "font/num_highScore",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "ck_effect": {
+  "assetPath": "effect/CK_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "combo_effect": {
+  "assetPath": "effect/comb_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011",
+  "armatureName": "Armature"
+ },
+ "encourage_effect": {
+  "assetPath": "effect/encourage_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "revive_effect": {
+  "assetPath": "effect/fuhuoshuzi_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "combo_tips_effect": {
+  "assetPath": "effect/comnb_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "eliminate_prompt_effect": {
+  "assetPath": "effect/gameplay_eliminatePrompt_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ },
+ "eliminate_effect": {
+  "assetPath": "effect/xc_011",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2011"
+ }
+}

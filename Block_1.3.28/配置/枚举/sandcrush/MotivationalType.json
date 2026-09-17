@@ -1,0 +1,18 @@
+{
+ "BASIC": "basic",
+ "COMBO": "combo",
+ "HUGE_BLAST": "huge_blast",
+ "SERIAL_BLAST": "serial_blast",
+ "ALL_CLEAR": "all_clear",
+ "NEW_HIGH_SCORE": "new_high_score",
+ "EliminationScore": "elimination_score",
+ "PlacementScore": "placement_Score",
+ "DEADLINE": "deadline",
+ "COMBO_LIKE": "combo_like",
+ "THREE_BLOCK_CLEAR": "THREE_BLOCK_CLEAR",
+ "ENCOURAGE_WORD": "encourage_word",
+ "FIRST_SERIAL_BLAST": "first_serial_blast",
+ "FIRST_HUGE_BLAST": "first_huge_blast",
+ "COMBO_AND_SERIAL": "combo_and_serial",
+ "PERFECT": "perfect"
+}

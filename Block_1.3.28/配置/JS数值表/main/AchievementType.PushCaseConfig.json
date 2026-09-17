@@ -1,0 +1,86 @@
+{
+ "17": {
+  "key": "achieve_high_score",
+  "achievementTargetType": 1,
+  "cjpushcftype": "highscores",
+  "scheme": "cj17"
+ },
+ "18": {
+  "key": "achieve_high_score",
+  "achievementTargetType": 1,
+  "cjpushcftype": "highscores",
+  "scheme": "cj18"
+ },
+ "19": {
+  "key": "achieve_win_streak",
+  "achievementTargetType": 2,
+  "cjpushcftype": "travelwinning",
+  "scheme": "cj19"
+ },
+ "20": {
+  "key": "achieve_win_streak",
+  "achievementTargetType": 2,
+  "cjpushcftype": "travelwinning",
+  "scheme": "cj20"
+ },
+ "21": {
+  "key": "achieve_all_levels",
+  "achievementTargetType": 4,
+  "cjpushcftype": "levescompleted",
+  "scheme": "cj21"
+ },
+ "22": {
+  "key": "achieve_all_levels",
+  "achievementTargetType": 4,
+  "cjpushcftype": "levescompleted",
+  "scheme": "cj22"
+ },
+ "23": {
+  "key": "achieve_adventure_map",
+  "achievementTargetType": 8,
+  "cjpushcftype": "mosaicmaps",
+  "scheme": "cj23"
+ },
+ "24": {
+  "key": "achieve_adventure_map",
+  "achievementTargetType": 8,
+  "cjpushcftype": "mosaicmaps",
+  "scheme": "cj24"
+ },
+ "25": {
+  "key": "achieve_elimination_multi",
+  "achievementTargetType": 5,
+  "cjpushcftype": "clear_master",
+  "scheme": "cj25"
+ },
+ "26": {
+  "key": "achieve_elimination_multi",
+  "achievementTargetType": 5,
+  "cjpushcftype": "clear_master",
+  "scheme": "cj26"
+ },
+ "27": {
+  "key": "achieve_elimination_block",
+  "achievementTargetType": 9,
+  "cjpushcftype": "master_cleaner",
+  "scheme": "cj27"
+ },
+ "28": {
+  "key": "achieve_elimination_block",
+  "achievementTargetType": 9,
+  "cjpushcftype": "master_cleaner",
+  "scheme": "cj28"
+ },
+ "29": {
+  "key": "achieve_collect_gem",
+  "achievementTargetType": 6,
+  "cjpushcftype": "jewelry_tycoon",
+  "scheme": "cj29"
+ },
+ "30": {
+  "key": "achieve_collect_gem",
+  "achievementTargetType": 6,
+  "cjpushcftype": "jewelry_tycoon",
+  "scheme": "cj30"
+ }
+}

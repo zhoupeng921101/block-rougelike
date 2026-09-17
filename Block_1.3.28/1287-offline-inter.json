@@ -1,0 +1,632 @@
+{
+    "code": 0,
+    "message": "",
+    "encryption": false,
+    "data": {
+        "abcfgs": "{\"ad_id_info\":[{\"exp_id\":557,\"exp_utype\":3,\"group_id\":4760,\"group_name\":\"对照组a\",\"layer_id\":268,\"pid\":6},{\"exp_id\":558,\"exp_utype\":3,\"group_id\":4762,\"group_name\":\"实验组a\",\"layer_id\":269,\"pid\":6},{\"exp_id\":764,\"exp_utype\":3,\"group_id\":8591,\"group_name\":\"对照11\",\"layer_id\":277,\"pid\":6},{\"exp_id\":629,\"exp_utype\":3,\"group_id\":5725,\"group_name\":\"对照组\",\"layer_id\":315,\"pid\":6},{\"exp_id\":809,\"exp_utype\":3,\"group_id\":8021,\"group_name\":\"实验组c\",\"layer_id\":382,\"pid\":6},{\"exp_id\":808,\"exp_utype\":3,\"group_id\":8015,\"group_name\":\"实验组b\",\"layer_id\":383,\"pid\":6},{\"exp_id\":817,\"exp_utype\":3,\"group_id\":8606,\"group_name\":\"实验15\",\"layer_id\":393,\"pid\":6},{\"exp_id\":913,\"exp_utype\":3,\"group_id\":9057,\"group_name\":\"实验组c\",\"layer_id\":414,\"pid\":6},{\"exp_id\":916,\"exp_utype\":3,\"group_id\":9100,\"group_name\":\"实验组j\",\"layer_id\":417,\"pid\":6},{\"exp_id\":952,\"exp_utype\":3,\"group_id\":9344,\"group_name\":\"exp1\",\"layer_id\":583,\"pid\":6}],\"algo_coef_bid\":1,\"algo_is_cvr_model\":true,\"algo_is_pctcvr_filter\":true,\"algo_model_adapter_predict_ecpm\":1,\"algo_pctcvr_threshold\":0.0024,\"algo_predict_ecpm_rank\":1,\"algorithm_predict_model_conf\":{\"layer_id\":\"predict_model\",\"para\":\"{\\\"model_conf\\\":{\\\"ctr\\\":\\\"ctr_v4\\\",\\\"cvr\\\":\\\"cvr_v4\\\"}}\",\"test_id\":\"\"},\"dmp_0616\":\"101\",\"fs_click_0611\":\"false\",\"imp_frequency_0721\":3,\"imp_period_day_0722\":\"14\",\"imp_period_limit_0722\":\"20\",\"install_color_0701\":\"image03\",\"install_style_0701\":\"zoom\",\"inter_ecpm_pct\":40,\"is_muted_0611\":\"false\",\"reward_ecpm_pct\":40}",
+        "placements": [
+            {
+                "code": 200,
+                "placement": "1287",
+                "creatives": [
+                    {
+                        "crid": "101032",
+                        "a_id": null,
+                        "tag_id": null,
+                        "title": null,
+                        "description": null,
+                        "material_type": 7,
+                        "icon": null,
+                        "images": null,
+                        "video": null,
+                        "playable": null,
+                        "uni_tmpl": {
+                            "is_playable": 1,
+                            "is_mute": 1,
+                            "sections": [
+                                {
+                                    "materials": [
+                                        {
+                                            "playable": {
+                                                "control_btn": {
+                                                    "show_delay_ms": 1,
+                                                    "size": "",
+                                                    "style": ""
+                                                },
+                                                "is_muted": 1,
+                                                "type": 1,
+                                                "url": "PA_003_mj_Hungry.html"
+                                            },
+                                            "type": 2
+                                        }
+                                    ],
+                                    "reward_min_play": 0,
+                                    "skip_delay": 5,
+                                    "type": 1
+                                },
+                                {
+                                    "materials": [
+                                        {
+                                            "image": {
+                                                "clickable_area_pct": 100,
+                                                "type": 1,
+                                                "url": "http://hungry-cross.afafb.com/20250725/381b4574142f4ae9e59d82e98e150d68.jpeg"
+                                            },
+                                            "type": 5
+                                        }
+                                    ],
+                                    "skip_delay": 3,
+                                    "type": 2
+                                },
+                                {
+                                    "close_delay": 1,
+                                    "materials": [
+                                        {
+                                            "endcard": {
+                                                "btn_txt": "",
+                                                "clickable_area_pct": 0,
+                                                "control_btn": {
+                                                    "show_delay_ms": 1,
+                                                    "size": "25",
+                                                    "style": "Close"
+                                                },
+                                                "cta": {
+                                                    "background_color": "",
+                                                    "background_icon": "image03",
+                                                    "text": "",
+                                                    "text_color": "#ffffff"
+                                                },
+                                                "desc": "",
+                                                "icon": "",
+                                                "icon_clickable": 1,
+                                                "image": "http://hungry-cross.afafb.com/20250725/0c8be7de23a9663e43a34d4cf6b91f96.jpeg",
+                                                "image_btn": "http://hungry-cross.afafb.com/20250725/5bbb255c580bd51d6f5ceea23527939e.png",
+                                                "text_clickable": 1,
+                                                "title": "",
+                                                "type": 2,
+                                                "variant": "zoom_03"
+                                            },
+                                            "type": 4
+                                        }
+                                    ],
+                                    "type": 3
+                                }
+                            ]
+                        },
+                        "banner": null,
+                        "web_html": null,
+                        "dsp_name": "cross_ad",
+                        "bid_price": 21750,
+                        "expired_interval": 43200,
+                        "deeplink_url": "https://play.google.com/store/apps/details?id=Y29tLm5lYnVsYS5tYWhqb25ndGlsZQ==",
+                        "landing_url": null,
+                        "open_app": "Y29tLm5lYnVsYS5tYWhqb25ndGlsZQ==",
+                        "base_pkg_name": "Y29tLm5lYnVsYS5tYWhqb25ndGlsZQ==",
+                        "impression_urls": [
+                            "https://hella-ping.afafb.com/v1/cross-imp?ad_type=${ad_type}&bundle_id=${bundle_id}&campaign_id=${campaign_id}&country=${country}&crid=${crid}&cst=${cst}&devicetype=${devicetype}&distinct_id=${distinct_id}&dsp_group_id=cross_ad&dsp_id=7&dsp_name=cross_ad&gaid=${gaid}&idfa=${idfa}&idfv=${idfv}&game_program_id=${game_program_id}&language=${language}&model=${model}&os=${os}&os_version=${os_version}&p_type=${p_type}&pid=${pid}&program_id=${program_id}&rid=${rid}&sdk_ver=${sdk_ver}&sid=${sid}&ua=${ua}&vendor=${vendor}&ver=${ver}&ver_n=${ver_n}&ecpm=0"
+                        ],
+                        "adm_impression_urls": null,
+                        "click_urls": [
+                            "https://hella-ping.afafb.com/v1/cross-click?ad_type=${ad_type}&bundle_id=${bundle_id}&campaign_id=${campaign_id}&country=${country}&crid=${crid}&cst=${cst}&devicetype=${devicetype}&distinct_id=${distinct_id}&dsp_group_id=cross_ad&dsp_id=7&dsp_name=cross_ad&gaid=${gaid}&idfa=${idfa}&idfv=${idfv}&game_program_id=${game_program_id}&language=${language}&model=${model}&os=${os}&os_version=${os_version}&p_type=${p_type}&pid=${pid}&program_id=${program_id}&rid=${rid}&sdk_ver=${sdk_ver}&sid=${sid}&ua=${ua}&vendor=${vendor}&ver=${ver}&ver_n=${ver_n}&ecpm=0",
+                            "https://app.appsflyer.com/Y29tLm5lYnVsYS5tYWhqb25ndGlsZQ==?pid=hungryads_int&af_siteid=feed&c=Mahjong-ww-zyh-adxic0725-1283-IN-A-AND-250725-bendihuancun-PA_003&af_c_id=250725000002&af_ad_id=101032&af_adset=_DEFAULT&af_click_lookback=7d&af_ip=&af_ua={ua}&mmp=001&clickid={clickid}&advertising_id={gaid}&android_id=&idfa=&af_model={af_model}&af_os_version={af_os_version}&imei=&af_ad=PA_003改_zhb_Hungry&af_ad_type=interstitial&af_channel=hungry&af_click_lookback=7d&af_lang={lang}&redirect=false&program_id={program_id}&game_program_id={game_program_id}&distinct_id={distinct_id}"
+                        ],
+                        "burls": null,
+                        "nurls": null,
+                        "lurls": null,
+                        "ext": {
+                            "display_tmpl": 0,
+                            "endcard_tmpl": 0,
+                            "close_delay": 1,
+                            "play_skip_duration": 5,
+                            "rewarded_mix_play": 0,
+                            "video_mute": 1,
+                            "btn": "",
+                            "ext_info": null,
+                            "max_bid_cnt": 3,
+                            "enable_loss_macro_rep": 0,
+                            "skadn": null,
+                            "omsdk_enabled": null,
+                            "omsdk_native_vendorKey": null,
+                            "omsdk_native_script": null,
+                            "omsdk_native_param": null,
+                            "skoverlay": null,
+                            "skautostoreview": null,
+                            "cross_ad_campaign_id": "Mahjong-ww-zyh-adxic0725-1283-IN-A-AND-250725-bendihuancun-PA_003",
+                            "cross_ad_camp_id": "250725000002",
+                            "cross_ad_camp_name": "Mahjong-ww-zyh-adxic0725-1283-IN-A-AND-250725-bendihuancun-PA_003",
+                            "creative_id": "101032",
+                            "creative_name": "PA_003改_zhb_Hungry",
+                            "ad_params": "",
+                            "cross_params": {
+                                "af_ad": "PA_003改_zhb_Hungry",
+                                "af_ad_id": "101032",
+                                "af_ad_type": "interstitial",
+                                "af_adset": "_DEFAULT",
+                                "af_c_id": "250725000002",
+                                "af_channel": "block",
+                                "af_click_lookback": "7d",
+                                "af_ip": "77.247.126.189",
+                                "bundle_id": "com.block.juggle",
+                                "clickid": "1c498a41-2501-495d-bc67-d1a850ddb764",
+                                "distinct_id": "639d5ce2-b278-424b-b042-25a0d2bbdeed",
+                                "game_id": "",
+                                "is_playable": "false",
+                                "pid": "hungrycross_int",
+                                "sid": "99809f3f-1c4b-48be-b2ed-cb7ad248bcab"
+                            },
+                            "cross_app_id": "Y29tLm5lYnVsYS5tYWhqb25ndGlsZQ==",
+                            "is_mmp_attr": 1,
+                            "mmp_pid": "hungryads_int"
+                        },
+                        "is_cross_ad": 1,
+                        "is_fs_click": 0,
+                        "is_offline_ad": 1
+                    },
+                    {
+                        "crid": "101033",
+                        "a_id": null,
+                        "tag_id": null,
+                        "title": null,
+                        "description": null,
+                        "material_type": 7,
+                        "icon": null,
+                        "images": null,
+                        "video": null,
+                        "playable": null,
+                        "uni_tmpl": {
+                            "is_playable": 1,
+                            "is_mute": 1,
+                            "sections": [
+                                {
+                                    "materials": [
+                                        {
+                                            "playable": {
+                                                "control_btn": {
+                                                    "show_delay_ms": 1,
+                                                    "size": "",
+                                                    "style": ""
+                                                },
+                                                "is_muted": 1,
+                                                "type": 1,
+                                                "url": "PA_SD039_sd_hungry.html"
+                                            },
+                                            "type": 2
+                                        }
+                                    ],
+                                    "reward_min_play": 0,
+                                    "skip_delay": 5,
+                                    "type": 1
+                                },
+                                {
+                                    "materials": [
+                                        {
+                                            "image": {
+                                                "clickable_area_pct": 100,
+                                                "type": 1,
+                                                "url": "http://hungry-cross.afafb.com/20250725/085872e3d40a65503afa40eb982aec3a.png"
+                                            },
+                                            "type": 5
+                                        }
+                                    ],
+                                    "skip_delay": 3,
+                                    "type": 2
+                                },
+                                {
+                                    "close_delay": 1,
+                                    "materials": [
+                                        {
+                                            "endcard": {
+                                                "btn_txt": "",
+                                                "clickable_area_pct": 0,
+                                                "control_btn": {
+                                                    "show_delay_ms": 1,
+                                                    "size": "25",
+                                                    "style": "Close"
+                                                },
+                                                "cta": {
+                                                    "background_color": "",
+                                                    "background_icon": "image03",
+                                                    "text": "",
+                                                    "text_color": "#ffffff"
+                                                },
+                                                "desc": "",
+                                                "icon": "",
+                                                "icon_clickable": 1,
+                                                "image": "http://hungry-cross.afafb.com/20250725/948c85ece8d903a4907289541353be5c.png",
+                                                "image_btn": "http://hungry-cross.afafb.com/20250725/5bbb255c580bd51d6f5ceea23527939e.png",
+                                                "text_clickable": 1,
+                                                "title": "",
+                                                "type": 2,
+                                                "variant": "zoom_03"
+                                            },
+                                            "type": 4
+                                        }
+                                    ],
+                                    "type": 3
+                                }
+                            ]
+                        },
+                        "banner": null,
+                        "web_html": null,
+                        "dsp_name": "cross_ad",
+                        "bid_price": 18999,
+                        "expired_interval": 43200,
+                        "deeplink_url": "https://play.google.com/store/apps/details?id=com.mathbrain.sudoku",
+                        "landing_url": null,
+                        "open_app": "com.mathbrain.sudoku",
+                        "impression_urls": [
+                            "https://hella-ping.afafb.com/v1/cross-imp?ad_type=${ad_type}&bundle_id=${bundle_id}&campaign_id=${campaign_id}&country=${country}&crid=${crid}&cst=${cst}&devicetype=${devicetype}&distinct_id=${distinct_id}&dsp_group_id=cross_ad&dsp_id=7&dsp_name=cross_ad&gaid=${gaid}&idfa=${idfa}&idfv=${idfv}&game_program_id=${game_program_id}&language=${language}&model=${model}&os=${os}&os_version=${os_version}&p_type=${p_type}&pid=${pid}&program_id=${program_id}&rid=${rid}&sdk_ver=${sdk_ver}&sid=${sid}&ua=${ua}&vendor=${vendor}&ver=${ver}&ver_n=${ver_n}&ecpm=0"
+                        ],
+                        "adm_impression_urls": null,
+                        "click_urls": [
+                            "https://hella-ping.afafb.com/v1/cross-click?ad_type=${ad_type}&bundle_id=${bundle_id}&campaign_id=${campaign_id}&country=${country}&crid=${crid}&cst=${cst}&devicetype=${devicetype}&distinct_id=${distinct_id}&dsp_group_id=cross_ad&dsp_id=7&dsp_name=cross_ad&gaid=${gaid}&idfa=${idfa}&idfv=${idfv}&game_program_id=${game_program_id}&language=${language}&model=${model}&os=${os}&os_version=${os_version}&p_type=${p_type}&pid=${pid}&program_id=${program_id}&rid=${rid}&sdk_ver=${sdk_ver}&sid=${sid}&ua=${ua}&vendor=${vendor}&ver=${ver}&ver_n=${ver_n}&ecpm=0",
+                            "https://app.appsflyer.com/com.mathbrain.sudoku?pid=hungryads_int&af_siteid=feed&c=Sudoku-wwnoT1-zbr-adxic11-1285128712911293-soloPASD039-new-AND-250725-load-3qi&af_c_id=250725000004&af_ad_id=101033&af_adset=_DEFAULT&af_click_lookback=7d&af_ip=&&af_ad=PA_SD039&af_ua={ua}&mmp=001&clickid={clickid}&advertising_id={gaid}&android_id=&idfa=&af_model={af_model}&af_os_version={af_os_version}&imei=&af_ad_type=interstitial&af_channel=hungry&af_click_lookback=7d&af_lang={lang}&redirect=false&program_id={program_id}&game_program_id={game_program_id}&distinct_id={distinct_id}"
+                        ],
+                        "burls": null,
+                        "nurls": null,
+                        "lurls": null,
+                        "ext": {
+                            "display_tmpl": 0,
+                            "endcard_tmpl": 0,
+                            "close_delay": 1,
+                            "play_skip_duration": 5,
+                            "rewarded_mix_play": 0,
+                            "video_mute": 1,
+                            "btn": "",
+                            "ext_info": null,
+                            "max_bid_cnt": 3,
+                            "enable_loss_macro_rep": 0,
+                            "skadn": null,
+                            "omsdk_enabled": null,
+                            "omsdk_native_vendorKey": null,
+                            "omsdk_native_script": null,
+                            "omsdk_native_param": null,
+                            "skoverlay": null,
+                            "skautostoreview": null,
+                            "cross_ad_campaign_id": "Sudoku-wwnoT1-zbr-adxic11-1285128712911293-soloPASD039-new-AND-250725-load-3qi",
+                            "cross_ad_camp_id": "250725000004",
+                            "cross_ad_camp_name": "Sudoku-wwnoT1-zbr-adxic11-1285128712911293-soloPASD039-new-AND-250725-load-3qi",
+                            "creative_id": "101033",
+                            "creative_name": "PA_SD039",
+                            "ad_params": "",
+                            "cross_params": {
+                                "af_ad": "PA_SD039",
+                                "af_ad_id": "101033",
+                                "af_ad_type": "interstitial",
+                                "af_adset": "_DEFAULT",
+                                "af_c_id": "250725000004",
+                                "af_channel": "block",
+                                "af_click_lookback": "7d",
+                                "af_ip": "77.247.126.189",
+                                "bundle_id": "com.block.juggle",
+                                "clickid": "1c498a41-2501-495d-bc67-d1a850ddb764",
+                                "distinct_id": "639d5ce2-b278-424b-b042-25a0d2bbdeed",
+                                "game_id": "",
+                                "is_playable": "false",
+                                "pid": "hungrycross_int",
+                                "sid": "99809f3f-1c4b-48be-b2ed-cb7ad248bcab"
+                            },
+                            "cross_app_id": "com.mathbrain.sudoku",
+                            "is_mmp_attr": 1,
+                            "mmp_pid": "hungryads_int"
+                        },
+                        "is_cross_ad": 1,
+                        "is_fs_click": 0,
+                        "is_offline_ad": 1
+                    },
+                    {
+                        "crid": "101034",
+                        "a_id": null,
+                        "tag_id": null,
+                        "title": null,
+                        "description": null,
+                        "material_type": 7,
+                        "icon": null,
+                        "images": null,
+                        "video": null,
+                        "playable": null,
+                        "uni_tmpl": {
+                            "is_playable": 1,
+                            "is_mute": 1,
+                            "sections": [
+                                {
+                                    "materials": [
+                                        {
+                                            "playable": {
+                                                "control_btn": {
+                                                    "show_delay_ms": 1,
+                                                    "size": "",
+                                                    "style": ""
+                                                },
+                                                "is_muted": 1,
+                                                "type": 1,
+                                                "url": "PA_005_mj_Hungry.html"
+                                            },
+                                            "type": 2
+                                        }
+                                    ],
+                                    "reward_min_play": 0,
+                                    "skip_delay": 5,
+                                    "type": 1
+                                },
+                                {
+                                    "materials": [
+                                        {
+                                            "image": {
+                                                "clickable_area_pct": 100,
+                                                "type": 1,
+                                                "url": "http://hungry-cross.afafb.com/20250725/381b4574142f4ae9e59d82e98e150d68.jpeg"
+                                            },
+                                            "type": 5
+                                        }
+                                    ],
+                                    "skip_delay": 3,
+                                    "type": 2
+                                },
+                                {
+                                    "close_delay": 1,
+                                    "materials": [
+                                        {
+                                            "endcard": {
+                                                "btn_txt": "",
+                                                "clickable_area_pct": 0,
+                                                "control_btn": {
+                                                    "show_delay_ms": 1,
+                                                    "size": "25",
+                                                    "style": "Close"
+                                                },
+                                                "cta": {
+                                                    "background_color": "",
+                                                    "background_icon": "image03",
+                                                    "text": "",
+                                                    "text_color": "#ffffff"
+                                                },
+                                                "desc": "",
+                                                "icon": "",
+                                                "icon_clickable": 1,
+                                                "image": "http://hungry-cross.afafb.com/20250725/0c8be7de23a9663e43a34d4cf6b91f96.jpeg",
+                                                "image_btn": "http://hungry-cross.afafb.com/20250725/5bbb255c580bd51d6f5ceea23527939e.png",
+                                                "text_clickable": 1,
+                                                "title": "",
+                                                "type": 2,
+                                                "variant": "zoom_03"
+                                            },
+                                            "type": 4
+                                        }
+                                    ],
+                                    "type": 3
+                                }
+                            ]
+                        },
+                        "banner": null,
+                        "web_html": null,
+                        "dsp_name": "cross_ad",
+                        "bid_price": 18006,
+                        "expired_interval": 43200,
+                        "deeplink_url": "https://play.google.com/store/apps/details?id=Y29tLm5lYnVsYS5tYWhqb25ndGlsZQ==",
+                        "landing_url": null,
+                        "open_app": "Y29tLm5lYnVsYS5tYWhqb25ndGlsZQ==",
+                        "base_pkg_name": "Y29tLm5lYnVsYS5tYWhqb25ndGlsZQ==",
+                        "impression_urls": [
+                            "https://hella-ping.afafb.com/v1/cross-imp?ad_type=${ad_type}&bundle_id=${bundle_id}&campaign_id=${campaign_id}&country=${country}&crid=${crid}&cst=${cst}&devicetype=${devicetype}&distinct_id=${distinct_id}&dsp_group_id=cross_ad&dsp_id=7&dsp_name=cross_ad&gaid=${gaid}&idfa=${idfa}&idfv=${idfv}&game_program_id=${game_program_id}&language=${language}&model=${model}&os=${os}&os_version=${os_version}&p_type=${p_type}&pid=${pid}&program_id=${program_id}&rid=${rid}&sdk_ver=${sdk_ver}&sid=${sid}&ua=${ua}&vendor=${vendor}&ver=${ver}&ver_n=${ver_n}&ecpm=0"
+                        ],
+                        "adm_impression_urls": null,
+                        "click_urls": [
+                            "https://hella-ping.afafb.com/v1/cross-click?ad_type=${ad_type}&bundle_id=${bundle_id}&campaign_id=${campaign_id}&country=${country}&crid=${crid}&cst=${cst}&devicetype=${devicetype}&distinct_id=${distinct_id}&dsp_group_id=cross_ad&dsp_id=7&dsp_name=cross_ad&gaid=${gaid}&idfa=${idfa}&idfv=${idfv}&game_program_id=${game_program_id}&language=${language}&model=${model}&os=${os}&os_version=${os_version}&p_type=${p_type}&pid=${pid}&program_id=${program_id}&rid=${rid}&sdk_ver=${sdk_ver}&sid=${sid}&ua=${ua}&vendor=${vendor}&ver=${ver}&ver_n=${ver_n}&ecpm=0",
+                            "https://app.appsflyer.com/Y29tLm5lYnVsYS5tYWhqb25ndGlsZQ==?pid=hungryads_int&af_siteid=feed&c=Mahjong-ww-zyh-adxic0725-1283-IN-A-AND-250725-bendihuancun-PA_005&af_c_id=250725000005&af_ad_id=101034&af_adset=_DEFAULT&af_click_lookback=7d&af_ip=&af_ua={ua}&mmp=001&clickid={clickid}&advertising_id={gaid}&android_id=&idfa=&af_model={af_model}&af_os_version={af_os_version}&imei=&af_ad=PA_005改_zhb_Hungry&af_ad_type=interstitial&af_channel=hungry&af_click_lookback=7d&af_lang={lang}&redirect=false&program_id={program_id}&game_program_id={game_program_id}&distinct_id={distinct_id}"
+                        ],
+                        "burls": null,
+                        "nurls": null,
+                        "lurls": null,
+                        "ext": {
+                            "display_tmpl": 0,
+                            "endcard_tmpl": 0,
+                            "close_delay": 1,
+                            "play_skip_duration": 5,
+                            "rewarded_mix_play": 0,
+                            "video_mute": 1,
+                            "btn": "",
+                            "ext_info": null,
+                            "max_bid_cnt": 3,
+                            "enable_loss_macro_rep": 0,
+                            "skadn": null,
+                            "omsdk_enabled": null,
+                            "omsdk_native_vendorKey": null,
+                            "omsdk_native_script": null,
+                            "omsdk_native_param": null,
+                            "skoverlay": null,
+                            "skautostoreview": null,
+                            "cross_ad_campaign_id": "Mahjong-ww-zyh-adxic0725-1283-IN-A-AND-250725-bendihuancun-PA_005",
+                            "cross_ad_camp_id": "250725000005",
+                            "cross_ad_camp_name": "Mahjong-ww-zyh-adxic0725-1283-IN-A-AND-250725-bendihuancun-PA_005",
+                            "creative_id": "101034",
+                            "creative_name": "PA_005改_zhb_Hungry",
+                            "ad_params": "",
+                            "cross_params": {
+                                "af_ad": "PA_005改_zhb_Hungry",
+                                "af_ad_id": "101034",
+                                "af_ad_type": "interstitial",
+                                "af_adset": "_DEFAULT",
+                                "af_c_id": "250725000005",
+                                "af_channel": "block",
+                                "af_click_lookback": "7d",
+                                "af_ip": "77.247.126.189",
+                                "bundle_id": "com.block.juggle",
+                                "clickid": "1c498a41-2501-495d-bc67-d1a850ddb764",
+                                "distinct_id": "639d5ce2-b278-424b-b042-25a0d2bbdeed",
+                                "game_id": "",
+                                "is_playable": "false",
+                                "pid": "hungrycross_int",
+                                "sid": "99809f3f-1c4b-48be-b2ed-cb7ad248bcab"
+                            },
+                            "cross_app_id": "Y29tLm5lYnVsYS5tYWhqb25ndGlsZQ==",
+                            "is_mmp_attr": 1,
+                            "mmp_pid": "hungryads_int"
+                        },
+                        "is_cross_ad": 1,
+                        "is_fs_click": 0,
+                        "is_offline_ad": 1
+                    },
+                    {
+                        "crid": "101035",
+                        "a_id": null,
+                        "tag_id": null,
+                        "title": null,
+                        "description": null,
+                        "material_type": 7,
+                        "icon": null,
+                        "images": null,
+                        "video": null,
+                        "playable": null,
+                        "uni_tmpl": {
+                            "is_playable": 1,
+                            "is_mute": 1,
+                            "sections": [
+                                {
+                                    "materials": [
+                                        {
+                                            "playable": {
+                                                "control_btn": {
+                                                    "show_delay_ms": 1,
+                                                    "size": "",
+                                                    "style": ""
+                                                },
+                                                "is_muted": 1,
+                                                "type": 1,
+                                                "url": "PA_SD040_sd_hungry.html"
+                                            },
+                                            "type": 2
+                                        }
+                                    ],
+                                    "reward_min_play": 0,
+                                    "skip_delay": 5,
+                                    "type": 1
+                                },
+                                {
+                                    "materials": [
+                                        {
+                                            "image": {
+                                                "clickable_area_pct": 100,
+                                                "type": 1,
+                                                "url": "http://hungry-cross.afafb.com/20250725/085872e3d40a65503afa40eb982aec3a.png"
+                                            },
+                                            "type": 5
+                                        }
+                                    ],
+                                    "skip_delay": 3,
+                                    "type": 2
+                                },
+                                {
+                                    "close_delay": 1,
+                                    "materials": [
+                                        {
+                                            "endcard": {
+                                                "btn_txt": "",
+                                                "clickable_area_pct": 0,
+                                                "control_btn": {
+                                                    "show_delay_ms": 1,
+                                                    "size": "25",
+                                                    "style": "Close"
+                                                },
+                                                "cta": {
+                                                    "background_color": "",
+                                                    "background_icon": "image03",
+                                                    "text": "",
+                                                    "text_color": "#ffffff"
+                                                },
+                                                "desc": "",
+                                                "icon": "",
+                                                "icon_clickable": 1,
+                                                "image": "http://hungry-cross.afafb.com/20250725/948c85ece8d903a4907289541353be5c.png",
+                                                "image_btn": "http://hungry-cross.afafb.com/20250725/5bbb255c580bd51d6f5ceea23527939e.png",
+                                                "text_clickable": 1,
+                                                "title": "",
+                                                "type": 2,
+                                                "variant": "zoom_03"
+                                            },
+                                            "type": 4
+                                        }
+                                    ],
+                                    "type": 3
+                                }
+                            ]
+                        },
+                        "banner": null,
+                        "web_html": null,
+                        "dsp_name": "cross_ad",
+                        "bid_price": 17975,
+                        "expired_interval": 43200,
+                        "deeplink_url": "https://play.google.com/store/apps/details?id=com.mathbrain.sudoku",
+                        "landing_url": null,
+                        "open_app": "com.mathbrain.sudoku",
+                        "impression_urls": [
+                            "https://hella-ping.afafb.com/v1/cross-imp?ad_type=${ad_type}&bundle_id=${bundle_id}&campaign_id=${campaign_id}&country=${country}&crid=${crid}&cst=${cst}&devicetype=${devicetype}&distinct_id=${distinct_id}&dsp_group_id=cross_ad&dsp_id=7&dsp_name=cross_ad&gaid=${gaid}&idfa=${idfa}&idfv=${idfv}&game_program_id=${game_program_id}&language=${language}&model=${model}&os=${os}&os_version=${os_version}&p_type=${p_type}&pid=${pid}&program_id=${program_id}&rid=${rid}&sdk_ver=${sdk_ver}&sid=${sid}&ua=${ua}&vendor=${vendor}&ver=${ver}&ver_n=${ver_n}&ecpm=0"
+                        ],
+                        "adm_impression_urls": null,
+                        "click_urls": [
+                            "https://hella-ping.afafb.com/v1/cross-click?ad_type=${ad_type}&bundle_id=${bundle_id}&campaign_id=${campaign_id}&country=${country}&crid=${crid}&cst=${cst}&devicetype=${devicetype}&distinct_id=${distinct_id}&dsp_group_id=cross_ad&dsp_id=7&dsp_name=cross_ad&gaid=${gaid}&idfa=${idfa}&idfv=${idfv}&game_program_id=${game_program_id}&language=${language}&model=${model}&os=${os}&os_version=${os_version}&p_type=${p_type}&pid=${pid}&program_id=${program_id}&rid=${rid}&sdk_ver=${sdk_ver}&sid=${sid}&ua=${ua}&vendor=${vendor}&ver=${ver}&ver_n=${ver_n}&ecpm=0",
+                            "https://app.appsflyer.com/com.mathbrain.sudoku?pid=hungryads_int&af_siteid=feed&c=Sudoku-wwnoT1-zbr-adxic12-1285128712911293-soloPASD040-new-AND-250725-load-3qi%0A&af_c_id=250725000006&af_ad_id=101035&af_adset=_DEFAULT&af_click_lookback=7d&af_ip=&af_ad=PA_SD040&af_ua={ua}&mmp=001&clickid={clickid}&advertising_id={gaid}&android_id=&idfa=&af_model={af_model}&af_os_version={af_os_version}&imei=&af_ad_type=interstitial&af_channel=hungry&af_click_lookback=7d&af_lang={lang}&redirect=false&program_id={program_id}&game_program_id={game_program_id}&distinct_id={distinct_id}"
+                        ],
+                        "burls": null,
+                        "nurls": null,
+                        "lurls": null,
+                        "ext": {
+                            "display_tmpl": 0,
+                            "endcard_tmpl": 0,
+                            "close_delay": 1,
+                            "play_skip_duration": 5,
+                            "rewarded_mix_play": 0,
+                            "video_mute": 1,
+                            "btn": "",
+                            "ext_info": null,
+                            "max_bid_cnt": 3,
+                            "enable_loss_macro_rep": 0,
+                            "skadn": null,
+                            "omsdk_enabled": null,
+                            "omsdk_native_vendorKey": null,
+                            "omsdk_native_script": null,
+                            "omsdk_native_param": null,
+                            "skoverlay": null,
+                            "skautostoreview": null,
+                            "cross_ad_campaign_id": "Sudoku-wwnoT1-zbr-adxic12-1285128712911293-soloPASD040-new-AND-250725-load-3qi\n",
+                            "cross_ad_camp_id": "250725000006",
+                            "cross_ad_camp_name": "Sudoku-wwnoT1-zbr-adxic12-1285128712911293-soloPASD040-new-AND-250725-load-3qi\n",
+                            "creative_id": "101035",
+                            "creative_name": "PA_SD040",
+                            "ad_params": "",
+                            "cross_params": {
+                                "af_ad": "PA_SD040",
+                                "af_ad_id": "101035",
+                                "af_ad_type": "interstitial",
+                                "af_adset": "_DEFAULT",
+                                "af_c_id": "250725000006",
+                                "af_channel": "block",
+                                "af_click_lookback": "7d",
+                                "af_ip": "77.247.126.189",
+                                "bundle_id": "com.block.juggle",
+                                "clickid": "1c498a41-2501-495d-bc67-d1a850ddb764",
+                                "distinct_id": "639d5ce2-b278-424b-b042-25a0d2bbdeed",
+                                "game_id": "",
+                                "is_playable": "false",
+                                "pid": "hungrycross_int",
+                                "sid": "99809f3f-1c4b-48be-b2ed-cb7ad248bcab"
+                            },
+                            "cross_app_id": "com.mathbrain.sudoku",
+                            "is_mmp_attr": 1,
+                            "mmp_pid": "hungryads_int"
+                        },
+                        "is_cross_ad": 1,
+                        "is_fs_click": 0,
+                        "is_offline_ad": 1
+                    }
+                ]
+            }
+        ],
+        "debug_info": {
+            "filter_ad_campaign_list": null
+        }
+    },
+    "s_r_t": 1753452100218,
+    "s_s_t": 1753452100237,
+    "trace_id": "1c498a41-2501-495d-bc67-d1a850ddb764"
+}

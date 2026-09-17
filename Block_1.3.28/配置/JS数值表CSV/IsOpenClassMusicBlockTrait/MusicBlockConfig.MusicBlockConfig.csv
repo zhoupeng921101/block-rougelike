@@ -1,0 +1,23 @@
+﻿_key,url,type,volume,bundleName
+MusicBlock1,audios/note 1,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlock2,audios/note 2,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlock3,audios/note 3,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlock4,audios/note 4,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlock5,audios/note 5,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlock6,audios/note 6,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlock7,audios/note 7,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockPlus1,audios/note+1,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockPlus2,audios/note+2,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockPlus3,audios/note+3,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockPlus4,audios/note+4,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockPlus5,audios/note+5,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockPlus6,audios/note+6,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockPlus7,audios/note+7,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockMinus1,audios/note-1,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockMinus2,audios/note-2,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockMinus3,audios/note-3,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockMinus4,audios/note-4,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockMinus5,audios/note-5,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockMinus6,audios/note-6,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockMinus7,audios/note-7,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait
+MusicBlockTime,audios/music_time,@hs.AudioType.EFFECT,1,IsOpenClassMusicBlockTrait

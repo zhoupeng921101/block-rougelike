@@ -1,0 +1,22 @@
+{
+ "1": "PuzzleUI",
+ "2": "MosaicUI",
+ "4": "AdventureProcessUI",
+ "5": "TetrisUI",
+ "6": "ChaosUI",
+ "7": "MosaicCoverUI",
+ "8": "MosaicInsertUI",
+ "9": "MosaicInsertUI",
+ "10": "ClearPicUI",
+ "11": "FillColorUI",
+ "12": "RouteUI",
+ "13": "MosaicRandomUI",
+ "14": "PathUI",
+ "15": "StoryUI",
+ "16": "MosaicNoticeUI",
+ "17": "ClearPicMosaicUI",
+ "18": "MosaicClipUI",
+ "19": "RaffleUI",
+ "20": "StepUI",
+ "21": "PuzzleGameUI"
+}

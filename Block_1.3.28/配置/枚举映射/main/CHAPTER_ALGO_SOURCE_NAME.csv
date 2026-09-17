@@ -1,0 +1,14 @@
+﻿键成员,键值,映射值,值来源
+TravelStageNone,0,无策略出题,字面量
+TravelStage1,100,三段式 第一阶段出题,字面量
+TravelStage2_simple,101,三段式 第二阶段简单出题,字面量
+TravelStage2_hard,102,三段式 第二阶段困难出题,字面量
+TravelStage3,103,三段式 第三阶段出题,字面量
+TravelBase,106,底板出题,字面量
+TravelRevive,104,复活出题,字面量
+TravelReviveTrait,105,复活特性出题,字面量
+TravelTrait,107,特性出题,字面量
+Priority,108,最高优先级出题,字面量
+TravelFirstRound,109,首轮出题,字面量
+AlgoNoReplaceBottom,110,无替换底板出题,字面量
+RatoChapter,111,关卡节奏调整,字面量

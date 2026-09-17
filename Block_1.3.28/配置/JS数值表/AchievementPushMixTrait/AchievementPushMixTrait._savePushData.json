@@ -1,0 +1,6 @@
+{
+ "pushCurrentType": "@e",
+ "pushCurrentEndTimeMs": "@t",
+ "isTodayPush": false,
+ "pushCurrentTriggerTimeMs": 0
+}

@@ -1,0 +1,27 @@
+
+HsFruitMerge_Click_fx_01_B.png
+size: 512,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Click_1
+  rotate: false
+  xy: 236, 8
+  size: 224, 224
+  orig: 256, 256
+  offset: 16, 16
+  index: -1
+Click_2
+  rotate: false
+  xy: 2, 2
+  size: 232, 230
+  orig: 256, 256
+  offset: 12, 14
+  index: -1
+Click_3
+  rotate: false
+  xy: 462, 198
+  size: 34, 34
+  orig: 34, 34
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,7 @@
+{
+ "bundle": "woodskin",
+ "prefab": "prefabs/diamond/reviveDiamondUI",
+ "cnName": "钻石复活界面",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

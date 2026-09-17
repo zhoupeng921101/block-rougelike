@@ -1,0 +1,10 @@
+﻿成员,值
+BlackMask,BlackMask
+GameUI,GameUI
+Dialog,HSLayerDialog
+Notify,HSLayerNotify
+PopUp,HSLayerPopUp
+MainScene,LayerGame
+Guide,LayerGuide
+System,LayerSystem
+MainUI,LayerUI

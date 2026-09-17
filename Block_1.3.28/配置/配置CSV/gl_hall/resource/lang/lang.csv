@@ -1,0 +1,219 @@
+﻿_key,KO,PT_BR,ID,EN_US,EN_GB
+GL_LANG_GAME_NAME_TICTACTOE,틱택토,JOGO DO GALO,TIC TAC TOE,Tic Tac Toe,Tic Tac Toe
+GL_LANG_GAME_NAME_MAHJONG,마작,MAHJONG,MAHJONG,Mahjong,Mahjong
+GL_LANG_GAME_NAME_ONET,오넷,ONET,ONET,Onet,Onet
+GL_LANG_GAME_NAME_ONELINE,한 줄 매칭,UMA LINHA,SATU GARIS,One Line,One Line
+GL_LANG_GAME_NAME_WATER,워터 소트,CLASSIFICAR ÁGUA,PENYARINGAN AIR,Water Sort,Water Sort
+GL_LANG_GAME_NAME_FRUIT,과일 합치기,FUSÃO DE FRUTAS,FUSI BUAH,Fruit Merge,Fruit Merge
+GL_LANG_GAME_NAME_SUDOKU,스도쿠,SUDOKU,SUDOKU,Sudoku,Sudoku
+GL_LANG_TICTACTOE_SKIP,건너뛰기,Pular,Lewati,Skip,Skip
+GL_LANG_TICTACTOE_GUIDE_1,"빈 칸을 터치하여 표시를 
+놓으세요",Toque em um quadrado vazio para colocar sua marca.,"Ketuk kotak kosong untuk 
+menempatkan tanda Anda.",Tap an empty square to place your mark,Tap an empty square to place your mark
+GL_LANG_TICTACTOE_GUIDE_2,상대가 줄을 완성하지 못하도록 막으세요,Bloqueie seu oponente de completar a linha dele.,Halangi lawan Anda menyelesaikan baris mereka.,Block your opponent from completing their row,Block your opponent from completing their row
+GL_LANG_TICTACTOE_GUIDE_3,"가로, 세로, 대각선 3개 표시를 먼저 만들면 승리!",Consiga três marcas seguidas para ganhar!,"Dapatkan tiga tanda 
+berturut-turut untuk
+ menang!",Get three marks in a row to win!,Get three marks in a row to win!
+GL_LANG_TICTACTOE_GUIDE_4,"가로, 세로, 대각선 4개 표시를 먼저 만들면 승리!",Consiga quatro marcas seguidas para ganhar!,Dapatkan empat tanda berturut-turut untuk menang!,Get four marks in a row to win!,Get four marks in a row to win!
+GL_LANG_TICTACTOE_GUIDE_5,"가로, 세로, 대각선 5개 표시를 먼저 만들면 승리!",Consiga cinco marcas seguidas para ganhar!,Dapatkan lima tanda berturut-turut untuk menang!,Get five marks in a row to win!,Get five marks in a row to win!
+GL_LANG_TICTACTOE_GUIDE_LAST,잘했어요! 이제 다음 라운드로!,"Boa! Agora, para a próxima rodada!",Bagus! Sekarang lanjut ke babak berikutnya!,"Way to go! Now, onto the next round!","Way to go! Now, onto the next round!"
+GL_LANG_TICTACTOE_POPUP_RESTART_TITLE,"게임을 다시 
+시작하시겠습니까?",Reiniciar Jogo?,Mulai ulang permainan?,Restart Game?,Restart Game?
+GL_LANG_TICTACTOE_POPUP_RESTART_DESC,현재 진행 상황을 잃고 이 게임은 패배로 처리됩니다!,"Você perderá seu progresso atual, e este jogo será contado como uma derrota!","Kamu akan kehilangan kemajuan
+ saat ini, dan permainan ini akan
+ dihitung sebagai kekalahan!","You'll lose your current progress, and this game will be counted as a Loss!","You'll lose your current progress, and this game will be counted as a Loss!"
+GL_LANG_TICTACTOE_POPUP_RESTART_BUTTON_YES,다시 시작,Reiniciar,Mulai ulang,Restart,Restart
+GL_LANG_TICTACTOE_POPUP_RESTART_BUTTON_NO,취소,Cancelar,Batal,Cancel,Cancel
+GL_LANG_MAHJONG_FULL_COMBO,풀 콤보!,Combinação Completa!,Kombinasi Penuh!,Full Combo!,Full Combo!
+GL_LANG_MAHJONG_SKIP,건너뛰기,Pular,Lewati,Skip,Skip
+GL_LANG_MAHJONG_TITLE_LEVEL,레벨,LEVEL,TINGKAT,LEVEL,LEVEL
+GL_LANG_MAHJONG_TITLE_MATCHES,매치 수,MATCHES,COCOK,MATCHES,MATCHES
+GL_LANG_MAHJONG_TIP_1,상단 타일 먼저 제거,Remover as peças que bloqueiam o topo primeiro,"Hapus ubin yang memblokir 
+bagian atas terlebih dahulu",Remove tiles blocking the top first,Remove tiles blocking the top first
+GL_LANG_MAHJONG_TIP_2,좌우 측면 타일 먼저 제거,Remova as peças dos lados esquerdo e direito primeiro,"Hapus ubin di sisi kiri dan 
+kanan terlebih dahulu",Remove tiles on the left and right sides first,Remove tiles on the left and right sides first
+GL_LANG_MAHJONG_TIP_3,현재 사용 불가. 실행 취소할 수 있는 동작이 없습니다!,Atualmente indisponível. Não há movimentos desfeitos,Saat ini tidak tersedia. Tidak ada langkah yang dapat dibatalkan,Currently unavailable. There are no undoable moves!,Currently unavailable. There are no undoable moves!
+GL_LANG_MAHJONG_POPUP_AGAIN_TITLE,"게임을 다시 
+시작하시겠습니까?",Reiniciar Jogo?,Mulai ulang permainan?,Restart Game?,Restart Game?
+GL_LANG_MAHJONG_POPUP_AGAIN_DESC,현재 진행 상황이 모두 사라집니다!,Você perderá seu progresso atual!,"Anda akan kehilangan kemajuan 
+Anda saat ini!",You'll lose your current progress!,You'll lose your current progress!
+GL_LANG_MAHJONG_POPUP_AGAIN_RESTART,다시 시작,Reiniciar,Mulai ulang,Restart,Restart
+GL_LANG_MAHJONG_POPUP_AGAIN_NEWGAME,새 게임,Novo Jogo,Permainan Baru,New Game,New Game
+GL_LANG_MAHJONG_POPUP_AGAIN_CANCEL,취소,Cancelar,Batal,Cancel,Cancel
+GL_LANG_MAHJONG_POPUP_HINT_TITLE,"광고를 보고 보상 
+받기: 힌트",Assista a um anúncio para ganhar a recompensa: Dica,Tonton iklan untuk mendapatkan hadiah: Petunjuk,Watch an ad to get reward: Hint,Watch an ad to get reward: Hint
+GL_LANG_MAHJONG_POPUP_HINT_BUTTON_YES,좋은 아이디어,Ótima ideia!,Ide bagus!,Great idea!,Great idea!
+GL_LANG_MAHJONG_POPUP_HINT_BUTTON_NO,괜찮아요,"Não, obrigado","Tidak, terima kasih",No thanks,No thanks
+GL_LANG_MAHJONG_POPUP_SHUFFLE_TITLE,"광고를 보고 보상 
+받기: 셔플",Assista a um anúncio para ganhar a recompensa: Embaralhar,Tonton iklan untuk mendapatkan hadiah: Kocok,Watch an ad to get reward: Shuffle,Watch an ad to get reward: Shuffle
+GL_LANG_MAHJONG_POPUP_SHUFFLE_BUTTON_YES,좋은 아이디어,Ótima ideia!,Ide bagus!,Great idea!,Great idea!
+GL_LANG_MAHJONG_POPUP_SHUFFLE_BUTTON_NO,괜찮아요,"Não, obrigado","Tidak, terima kasih",No thanks,No thanks
+GL_LANG_MAHJONG_POPUP_LOSE_TITLE,매칭이 더 이상 없습니다.,Sem mais combinações,Tidak ada kecocokan,Out of Matches,Out of Matches
+GL_LANG_MAHJONG_POPUP_LOSE_DESC,"앗! 더 이상 매칭할 수 있는 블록이 
+없습니다.다시 시작하거나 ‘섞기’를 
+사용해 보세요!","Oops, você ficou sem partidas! Reinicie ou use Embaralhar para tentar novamente!","Oops, kamu kehabisan pertandingan! Mulai ulang atau gunakan Kocok untuk mencoba lagi!","Oops, you're out of matches. Restart or use Shuffle to try again!","Oops, you're out of matches. Restart or use Shuffle to try again!"
+GL_LANG_MAHJONG_POPUP_LOSE_BUTTON_SHUFFLE,섞기,Embaralhar,Kocok,Shuffle,Shuffle
+GL_LANG_MAHJONG_POPUP_LOSE_BUTTON_RESTART,다시 시작,Reiniciar,Mulai ulang,Restart,Restart
+GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_1_1,같은 타일 두 개를 터치해 제거하세요.,Toque duas peças idênticas para combiná-las e removê-las,Ketuk dua ubin identik untuk mencocokkan dan menghapusnya,Tap two identical tiles to match and remove them,Tap two identical tiles to match and remove them
+GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_1_2,바깥쪽 타일을 매칭해 안쪽 타일을 열어 주세요.,Combine peças nas laterais para desbloquear as peças internas,Cocokkan ubin di sisi untuk membuka ubin bagian dalam,Match tiles on the sides to unlock the inner tiles,Match tiles on the sides to unlock the inner tiles
+GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_1_3,"위쪽 타일을 매칭해 아래 타일을 
+열어 주세요.",Combine peças no topo para desbloquear as peças abaixo,Cocokkan ubin di atas untuk membuka ubin di bawah,Match tiles on top to unlock the tiles below,Match tiles on top to unlock the tiles below
+GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_1_4,"위쪽 타일을 매칭해 아래 타일을 
+열어 주세요.",Combine peças no topo para desbloquear as peças abaixo,Cocokkan ubin di atas untuk membuka ubin di bawah,Match tiles on top to unlock the tiles below,Match tiles on top to unlock the tiles below
+GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_4,스페셜 타일: 스페셜 타일끼리는 서로 매칭할 수 있습니다.,Peças especiais: peças especiais podem ser combinadas entre si,Ubin khusus: ubin khusus dapat saling mencocokkan,Special tiles: special tiles can match with each other,Special tiles: special tiles can match with each other
+GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_6,스페셜 타일: 스페셜 타일끼리는 서로 매칭할 수 있습니다.,Peças especiais: peças especiais podem ser combinadas entre si,Ubin khusus: ubin khusus dapat saling mencocokkan,Special tiles: special tiles can match with each other,Special tiles: special tiles can match with each other
+GL_LANG_MAHJONG_GUIDE_STEP_NEW_LEVEL_1_1,같은 타일 두 개를 터치해 제거하세요.,Toque duas peças idênticas para combiná-las e removê-las,Ketuk dua ubin identik untuk mencocokkan dan menghapusnya,Tap two identical tiles to match and remove them.,Tap two identical tiles to match and remove them.
+GL_LANG_MAHJONG_GUIDE_STEP_NEW_LEVEL_1_2,위쪽 타일을 매칭해 아래 타일을 열어 주세요.,Combine peças no topo para desbloquear as peças abaixo,Cocokkan ubin di atas untuk membuka ubin di bawah,Match tiles on top to unlock the tiles below.,Match tiles on top to unlock the tiles below.
+GL_LANG_MAHJONG_GUIDE_STEP_NEW_LEVEL_1_3,바깥쪽 타일을 매칭해 안쪽 타일을 열어 주세요.,Combine peças nas laterais para desbloquear as peças internas,Cocokkan ubin di sisi untuk membuka ubin bagian dalam,Match the outer tiles to unlock the inner ones.,Match the outer tiles to unlock the inner ones.
+GL_LANG_MAHJONG_GUIDE_STEP_NEW_LEVEL_1_4,모든 타일을 제거하면 승리합니다!,Remova todas as peças para vencer!,Hapus semua ubin untuk menang!,Remove all the tiles to win!,Remove all the tiles to win!
+GL_LANG_MAHJONG_GUIDE_STEP_PHASE_2,좌우와 위쪽의 타일을 모두 제거해야 계속 매칭할 수 있습니다!,"Remova todas as peças à esquerda, à direita e no topo para continuar combinando!","Hapus semua ubin di kiri, kanan, dan atas untuk melanjutkan pencocokan!","Remove all the tiles on the left, right, and top to continue matching!","Remove all the tiles on the left, right, and top to continue matching!"
+GL_LANG_ONELINE_SKIP,건너뛰기,Pular,Lewati,Skip,Skip
+GL_LANG_ONELINE_GUIDE,"시작점에서 한 줄을 그려 모든 칸을 
+채워보세요!",Arraste uma linha única do ponto de partida para preencher todos os quadrados,Seretkan satu garis dari titik awal untuk mengisi semua kotak,Drag a single line from the starting point to fill all the squares!,Drag a single line from the starting point to fill all the squares!
+GL_LANG_ONELINE_TITLE_LEVEL,레벨,LEVEL,TINGKAT,LEVEL,LEVEL
+GL_LANG_ONELINE_POPUP_SEEAD_TITLE,광고를 보고 무료 힌트를 얻으세요!,Assista a um anúncio para ganhar a recompensa: Dica,Tonton iklan untuk mendapatkan hadiah: Petunjuk,See ads to get free tips!,See ads to get free tips!
+GL_LANG_ONELINE_POPUP_SEEAD_BUTTON_YES,좋은 생각입니다!,Ótima ideia!,Ide bagus!,Good Idea,Good Idea
+GL_LANG_ONELINE_POPUP_SEEAD_BUTTON_NO,아니요,"Não, obrigado","Tidak, terima kasih",No Thanks,No Thanks
+GL_LANG_ONELINE_POPUP_RESTART_TITLE,"게임을 다시 
+시작하시겠습니까?",Reiniciar Jogo?,Mulai ulang permainan?,Restart Game?,Restart Game?
+GL_LANG_ONELINE_POPUP_RESTART_DESC,현재 진행 상황을 잃고 이 게임은 패배로 처리됩니다!,"Você perderá seu progresso atual, e este jogo será contado como uma derrota!","Kamu akan kehilangan kemajuan
+ saat ini, dan permainan ini akan
+ dihitung sebagai kekalahan!","You'll lose your current progress, and this game will be counted as a Loss!","You'll lose your current progress, and this game will be counted as a Loss!"
+GL_LANG_ONELINE_POPUP_RESTART_BUTTON_YES,다시 시작,Reiniciar,Mulai ulang,Restart,Restart
+GL_LANG_ONELINE_POPUP_RESTART_BUTTON_NO,취소,Cancelar,Batal,Cancel,Cancel
+GL_LANG_WATERSORT_TITLE_LEVEL,레벨,Nível,Level,Level,Level
+GL_LANG_WATERSORT_SKIP,건너뛰기,Pular,Lewati,Skip,Skip
+GL_LANG_WATERSORT_LOSE_TIPS,"이 라운드에서는 잘 
+풀리지 않았습니다. 
+게임을 다시 시작하거나 
+아이템을 사용하고 다시
+ 도전하세요.","Ops, esta rodada não foi como esperado. Reinicie ou use impulsionadores para tentar novamente!","Ups, ronde ini tidak berjalan sesuai keinginanmu. Mulai ulang atau gunakan booster untuk mencoba lagi!","Not good, I'm going to lose this game. Restart the game or use props, and try again.","Not good, I'm going to lose this game. Restart the game or use props, and try again."
+GL_LANG_WATERSORT_REVERT_TIPS,시험관 수가 최대치에 도달했습니다.,O número de tubos atingiu o limite,Jumlah tabung telah mencapai batas,The number of test tubes has reached the upper limit,The number of test tubes has reached the upper limit
+GL_LANG_WATERSORT_GUIDE_1,시험관을 선택하려면 클릭하세요.,Toque para selecionar,Ketuk untuk memilihnya,Click to select test tube,Click to select test tube
+GL_LANG_WATERSORT_GUIDE_2,색이 있는 물은 맨 위에 같은 색이 있고 가득 차 있지 않은 튜브에만 부을 수 있습니다,Água colorida só pode ser despejada em um tubo não cheio com a mesma cor no topo,Air berwarna hanya bisa dituangkan ke dalam tabung yang belum penuh dengan warna yang sama di bagian atas,"Only when the upper layer of the target test tube has the same color and there is empty space inside the tube, can it be poured in","Only when the upper layer of the target test tube has the same color and there is empty space inside the tube, can it be poured in"
+GL_LANG_WATERSORT_POPUP_USEITEM_TITLE,아이템 사용,Slot extra,Slot tambahan,UseItem,UseItem
+GL_LANG_WATERSORT_POPUP_USEITEM_BUTTON_YES,좋은 생각입니다!,Ótima ideia!,Ide bagus!,Use Item,Use Item
+GL_LANG_WATERSORT_POPUP_USEITEM_BUTTON_NO,아니요,"Não, obrigado","Tidak, terima kasih",No Thanks,No Thanks
+GL_LANG_WATERSORT_POPUP_UNLOCK_TITLE,시험관을 잠금 해제하거나 업그레이드하세요!,Slot extra,Slot tambahan,Unlock Or Upgrade test tube!,Unlock Or Upgrade test tube!
+GL_LANG_WATERSORT_POPUP_UNLOCK_BUTTON_YES,좋은 생각입니다!,Ótima ideia!,Ide bagus!,Good Idea,Good Idea
+GL_LANG_WATERSORT_POPUP_UNLOCK_BUTTON_NO,아니요,"Não, obrigado","Tidak, terima kasih",No Thanks,No Thanks
+GL_LANG_WATERSORT_POPUP_SEEAD_TITLE,광고를 보고 무료 힌트를 얻으세요!,Assista a um anúncio para ganhar a recompensa: Dica,Tonton iklan untuk mendapatkan hadiah: Petunjuk,See ads to get free tips!,See ads to get free tips!
+GL_LANG_WATERSORT_POPUP_SEEAD_BUTTON_YES,좋은 생각입니다!,Ótima ideia!,Ide bagus!,Good Idea,Good Idea
+GL_LANG_WATERSORT_POPUP_SEEAD_BUTTON_NO,아니요,"Não, obrigado","Tidak, terima kasih",No Thanks,No Thanks
+GL_LANG_WATERSORT_POPUP_SEEAD_REVERT_TITLE,광고를 보고 무료 되돌리기 아이템을 받으세요!,Assista a um anúncio para ganhar a recompensa: Desfazer,Tonton iklan untuk mendapatkan hadiah: Ulangi,See ads to get free revert tiems!,See ads to get free revert tiems!
+GL_LANG_WATERSORT_POPUP_SEEAD_REVERT_BUTTON_YES,좋은 생각입니다!,Ótima ideia!,Ide bagus!,Good Idea,Good Idea
+GL_LANG_WATERSORT_POPUP_SEEAD_REVERT_BUTTON_NO,아니요,"Não, obrigado","Tidak, terima kasih",No Thanks,No Thanks
+GL_LANG_WATERSORT_POPUP_SEEAD_NEW_TUBE_TITLE,광고를 시청하고 추가 슬롯을 받으세요!,Assista a um anúncio para ganhar a recompensa: Slot extra,Tonton iklan untuk mendapatkan hadiah: Slot tambahan,See ads to get free add new tube tiems!,See ads to get free add new tube tiems!
+GL_LANG_WATERSORT_POPUP_SEEAD_NEW_TUBE_BUTTON_YES,좋은 생각입니다!,Ótima ideia!,Ide bagus!,Good Idea,Good Idea
+GL_LANG_WATERSORT_POPUP_SEEAD_NEW_TUBE_BUTTON_NO,아니요,"Não, obrigado","Tidak, terima kasih",No Thanks,No Thanks
+GL_LANG_WATERSORT_POPUP_RESTART_TITLE,"게임을 다시 
+시작하시겠습니까?",Reiniciar Jogo?,Mulai ulang permainan?,Restart Game?,Restart Game?
+GL_LANG_WATERSORT_POPUP_RESTART_DESC,현재 진행 상황을 잃고 이 게임은 패배로 처리됩니다!,"Você perderá seu progresso atual, e este jogo será contado como uma derrota!","Kamu akan kehilangan kemajuan
+ saat ini, dan permainan ini akan
+ dihitung sebagai kekalahan!","You'll lose your current progress, and this game will be counted as a Loss!","You'll lose your current progress, and this game will be counted as a Loss!"
+GL_LANG_WATERSORT_POPUP_RESTART_BUTTON_YES,다시 시작,Reiniciar,Mulai ulang,Restart,Restart
+GL_LANG_WATERSORT_POPUP_RESTART_BUTTON_NO,취소,Cancelar,Batal,Cancel,Cancel
+GL_LANG_ONET_TITLE_LEVEL,레벨,NÍVEL,TINGKAT,LEVEL,LEVEL
+GL_LANG_ONET_SKIP,건너뛰기,Pular,Lewati,Skip,Skip
+GL_LANG_ONET_GUIDE_1,타일을 맞추려면 탭하세요,Toque para combinar as peças,Ketuk untuk mencocokkan ubin,Tap to match,Tap to match
+GL_LANG_ONET_GUIDE_2,타일을 맞추려면 탭하세요,Toque para combinar as peças,Ketuk untuk mencocokkan ubin,Tap to match,Tap to match
+GL_LANG_ONET_GUIDE_3,"타일을 2 회 이하로 꺾어서 
+연결하세요.",Conecte as peças usando até 3 linhas retas,Hubungkan ubin menggunakan hingga 3 garis lurus,Connect tiles with less than 2 turns,Connect tiles with less than 2 turns
+GL_LANG_ONET_GUIDE_4,"장애물 없이, 2회 이하로 꺾어 같은 타일을 매칭하세요.",Combine as mesmas peças sem que nenhuma peça bloqueie o caminho de conexão,Cocokkan ubin yang sama tanpa ada ubin yang menghalangi jalur penghubung,Match same tiles with less than 2 turns and no obstacles,Match same tiles with less than 2 turns and no obstacles
+GL_LANG_ONET_GUIDE_5,모든 타일을 매칭하면 승리합니다!,Combine todas as peças para vencer!,Cocokkan semua ubin untuk menang!,Match all tiles win,Match all tiles win
+GL_LANG_ONET_POPUP_BUTTON_YES,좋은 생각입니다!,Ótima ideia!,Ide bagus!,Great idea!,Great idea!
+GL_LANG_ONET_POPUP_BUTTON_NO,아니요,"Não, obrigado","Tidak, terima kasih",No thanks,No thanks
+GL_LANG_ONET_POPUP_TITLE_SHUFFLE,"광고를 보고 새로고침 
+보상을 받으세요!",Assista a um anúncio para ganhar a recompensa: Atualizar,Tonton iklan untuk mendapatkan hadiah: Segarkan,Watch an ad to get reward: Refresh,Watch an ad to get reward: Refresh
+GL_LANG_ONET_POPUP_TITLE_HINT,광고를 보고 힌트 보상을 받으세요!,Assista a um anúncio para ganhar a recompensa: Dica,Tonton iklan untuk mendapatkan hadiah: Petunjuk,Watch an ad to get reward: Hint,Watch an ad to get reward: Hint
+GL_LANG_ONET_POPUP_TITLE_OVERTIME,"광고를 보고 추가 시간 
+보상을 받으세요!",Assista a um anúncio para ganhar a recompensa: 60s extras,Tonton iklan untuk mendapatkan hadiah: 60 detik ekstra,Watch an ad to get reward: Extra Time,Watch an ad to get reward: Extra Time
+GL_LANG_ONET_POPUP_ADDTIME_TITLE,시간 초과,Sem tempo,Waktu habis,Out of Time,Out of Time
+GL_LANG_ONET_POPUP_ADDTIME_DESC,"앗, 시간이 다 되었어요! 다시 
+시작하거나 추가 60 초를 사용하여
+ 재도전하세요!","Oops, você ficou sem tempo! Reinicie ou use 60s extras para tentar novamente!","Oops, kamu kehabisan waktu! Mulai ulang atau gunakan 60 detik ekstra untuk mencoba lagi!","Oops, you're out of time! Restart or use Extra 60s to try again!","Oops, you're out of time! Restart or use Extra 60s to try again!"
+GL_LANG_ONET_POPUP_ADDTIME_BUTTON_YES,추가 60초,60s extras,60 detik ekstra,Extra 60s,Extra 60s
+GL_LANG_ONET_POPUP_ADDTIME_BUTTON_NO,다시 시작,Reiniciar,Mulai ulang,Restart,Restart
+GL_LANG_ONET_POPUP_RESTART_TITLE,"게임을 다시 
+시작하시겠습니까?",Reiniciar Jogo?,Mulai ulang permainan?,Restart Game?,Restart Game?
+GL_LANG_ONET_POPUP_RESTART_DESC,현재 진행 상황을 잃고 이 게임은 패배로 처리됩니다!,Você perderá seu progresso atual!,"Anda akan kehilangan kemajuan 
+Anda saat ini!","You'll lose your current progress, and this game will be counted as a Loss!","You'll lose your current progress, and this game will be counted as a Loss!"
+GL_LANG_ONET_POPUP_RESTART_BUTTON_YES,다시 시작,Reiniciar,Mulai ulang,Restart,Restart
+GL_LANG_ONET_POPUP_RESTART_BUTTON_NO,새 게임,Novo Jogo,Permainan Baru,New Game,New Game
+GL_LANG_ONET_ERROR_TIPS,"다른 블록에 의해 이동이
+ 제한됩니다",O caminho de conexão deve estar livre de obstáculos,Jalur penghubung harus bebas dari rintangan,Path blocked by other tiles,Path blocked by other tiles
+GL_LANG_ONET_LEVEL_COMPLETE,레벨 완료,Nível Completo,Level Selesai,Level Complete,Level Complete
+GL_LANG_SUDOKU_TITLE_LEVEL,레벨,LEVEL,TINGKAT,LEVEL,LEVEL
+GL_LANG_SUDOKU_TITLE_TIME,시간,Tempo,Waktu,TIME,TIME
+GL_LANG_SUDOKU_GUIDE_SKIP,건너뛰기,Pular,Lewati,Skip,Skip
+GL_LANG_SUDOKU_GUIDE_STEP1_TEXT,이 행 채우기,Preencha esta linha,Isi baris ini,Fill this row,Fill this row
+GL_LANG_SUDOKU_GUIDE_STEP1_BUBBLE_1_1,이 칸을 터치하세요,Toque nesta célula,Ketuk sel ini,Tap this cell,Tap this cell
+GL_LANG_SUDOKU_GUIDE_STEP2_TEXT,이 열 채우기,Preencha esta coluna,Isi kolom ini,Fill this column,Fill this column
+GL_LANG_SUDOKU_GUIDE_STEP2_BUBBLE_1_1,"각 세로 열에는 1~6 
+숫자만 입력할 수 
+있습니다",Cada coluna vertical só pode conter dígitos de 1 a 6.,Setiap kolom vertikal hanya dapat berisi angka dari 1 hingga 6.,Each vertical column can only contain digits from 1 to 6,Each vertical column can only contain digits from 1 to 6
+GL_LANG_SUDOKU_GUIDE_STEP2_BUBBLE_1_2,이 숫자를 터치하세요,Toque neste dígito,Ketuk angka ini,Tap this digit,Tap this digit
+GL_LANG_SUDOKU_GUIDE_STEP2_BUBBLE_2_1,이 칸을 터치하세요,Toque nesta célula,Ketuk sel ini,Tap this cell,Tap this cell
+GL_LANG_SUDOKU_GUIDE_STEP2_BUBBLE_ERROR,각 숫자는 한 번만 나타날 수 있습니다,Cada dígito só pode aparecer uma vez,Setiap digit hanya dapat muncul sekali,Each digit can only appear once,Each digit can only appear once
+GL_LANG_SUDOKU_GUIDE_STEP3_TEXT,이 박스 채우기,Preencha esta caixa,Isi kotak ini,Fill this box,Fill this box
+GL_LANG_SUDOKU_GUIDE_STEP3_BUBBLE_1_1,"각 칸에는 1~6 숫자만 입력할 수 
+있습니다",Cada caixa só pode conter dígitos de 1 a 6,Setiap kotak hanya boleh berisi angka dari 1 sampai 6,Each box can only contain digits from 1 to 6,Each box can only contain digits from 1 to 6
+GL_LANG_SUDOKU_GUIDE_STEP3_BUBBLE_1_2,이 숫자를 터치하세요,Toque neste dígito,Ketuk angka ini,Tap this digit,Tap this digit
+GL_LANG_SUDOKU_GUIDE_STEP3_BUBBLE_2_1,이 칸을 터치하세요,Toque nesta célula,Ketuk sel ini,Tap this cell,Tap this cell
+GL_LANG_SUDOKU_GUIDE_STEP3_BUBBLE_ERROR,각 숫자는 한 번만 나타날 수 있습니다,Cada dígito só pode aparecer uma vez,Setiap digit hanya dapat muncul sekali,Each digit can only appear once,Each digit can only appear once
+GL_LANG_SUDOKU_GUIDE_STEP4_TEXT,숫자 2의 올바른 위치를 찾으세요,Encontre o local certo para o dígito 2,Temukan tempat yang tepat untuk angka 2,Find the right spot for the digit 2,Find the right spot for the digit 2
+GL_LANG_SUDOKU_GUIDE_STEP4_BUBBLE_1_1,"이 칸에서 × 표시된 칸을 
+확인하세요. 숫자 2 와 같은 행에 
+있습니다","Observe as células marcadas com × nesta caixa, elas estão localizadas na mesma linha que o dígito 2.","Amati sel yang ditandai dengan × di kotak ini, mereka terletak di baris yang sama dengan angka 2.","Observe the cells marked with × in this box, they are located in the same row as the digit 2","Observe the cells marked with × in this box, they are located in the same row as the digit 2"
+GL_LANG_SUDOKU_GUIDE_STEP4_BUBBLE_1_2,이 숫자를 터치하세요,Toque neste dígito,Ketuk angka ini,Tap this digit,Tap this digit
+GL_LANG_SUDOKU_GUIDE_STEP4_BUBBLE_2_1,이 칸을 터치하세요,Toque nesta célula,Ketuk sel ini,Tap this cell,Tap this cell
+GL_LANG_SUDOKU_GUIDE_STEP4_BUBBLE_ERROR,여기에 입력할 수 있는 숫자는 2뿐입니다,Apenas o dígito 2 pode ser preenchido,Hanya digit 2 yang dapat diisi,Only the digit 2 can be filled in,Only the digit 2 can be filled in
+GL_LANG_SUDOKU_GAME_OVER_DESC,"하트가 모두 소진되어 게임이 실패할 
+예정입니다. 게임을 계속하려면 
+하트 1 개를 회복하세요","Oops, você ficou sem corações! Reinicie ou assista a um anúncio para restaurar 1 Coração!","Oops, kamu kehabisan hati! Mulai ulang atau tonton iklan untuk mengembalikan 1 hati!",You have lost all your Hearts and the game is about to fail. Restore 1 Heart to continue the game.,You have lost all your Hearts and the game is about to fail. Restore 1 Heart to continue the game.
+GL_LANG_SUDOKU_GAME_OVER_BUTTON_RESTORE,하트 1개 회복,Restaurar,Memulihkan,Restore 1 Heart,Restore 1 Heart
+GL_LANG_SUDOKU_GAME_OVER_BUTTON_NEW_GAME,새 게임,Novo Jogo,Permainan Baru,New Game,New Game
+GL_LANG_SUDOKU_GAME_OVER_BUTTON_RESTART,다시 시작,Reiniciar,Mulai ulang,Restart,Restart
+GL_LANG_SUDOKU_GAME_RESTART_TITLE,"게임을 다시 
+시작하시겠습니까?",Reiniciar Jogo?,Mulai ulang permainan?,Restart Game?,Restart Game?
+GL_LANG_SUDOKU_GAME_RESTART_DESC,현재 진행 상황이 모두 사라집니다!,Você perderá seu progresso atual!,"Anda akan kehilangan kemajuan 
+Anda saat ini!",You'll lose your current progress!,You'll lose your current progress!
+GL_LANG_SUDOKU_GAME_RESTART_BUTTON_NEW_GAME,새 게임,Novo Jogo,Permainan Baru,New Game,New Game
+GL_LANG_SUDOKU_GAME_RESTART_BUTTON_RESTART,다시 시작,Reiniciar,Mulai ulang,Restart,Restart
+GL_LANG_SUDOKU_GAME_WIN_TITLE,단계 통과,Parabéns!,Selamat!,Pass Level,Pass Level
+GL_LANG_SUDOKU_GAME_WIN_SCORE,점수,PONTUAÇÃO,SKOR,SCORE,SCORE
+GL_LANG_SUDOKU_GAME_WIN_TIME,시간,Tempo,Waktu,Time,Time
+GL_LANG_SUDOKU_GAME_WIN_BUTTON_NEW_GAME,새 게임,Novo Jogo,Permainan Baru,New Game,New Game
+GL_LANG_SUDOKU_GAME_WIN_BACK,뒤로,Sair do Jogo,Keluar dari Permainan,Back,Back
+GL_LANG_FRUIT_DIANZAN_1,좋아요!,Bom!,Baik!,Good!,Good!
+GL_LANG_FRUIT_DIANZAN_2,훌륭해요!,Excelente!,Luar Biasa!,Excellent!,Excellent!
+GL_LANG_FRUIT_DIANZAN_3,대단해요!,Ótimo!,Hebat!,Great!,Great!
+GL_LANG_FRUIT_DIANZAN_4,멋져요!,Incrível!,Menakjubkan!,Amazing!,Amazing!
+GL_LANG_FRUIT_AD_COMING_TITLE,잠시 휴식,Faça uma pausa,Istirahatlah sejenak,Take a Break,Take a Break
+GL_LANG_FRUIT_AD_COMING_SUB_TITLE,광고가 표시됩니다,O jogo voltará logo após este anúncio!,Game akan kembali segera setelah iklan ini!,Ad will show in,Ad will show in
+GL_LANG_FRUIT_TITLE_SCORE,점수,PONTUAÇÃO,SKOR,SCORE,SCORE
+GL_LANG_FRUIT_TITLE_TIME,전체 기록,DE SEMPRE,SEPANJANG WAKTU,ALL-TIME,ALL-TIME
+GL_LANG_FRUIT_TITLE_NEXT,다음,Próximo,Berikutnya,Next,Next
+GL_LANG_FRUIT_GUIDE_1,원하는 위치를 터치하여 과일을 떨어뜨리세요,Toque para soltar a fruta onde quiser,Ketuk untuk menjatuhkan buah di tempat yang Anda inginkan,Tap to drop the fruit wherever you wish,Tap to drop the fruit wherever you wish
+GL_LANG_FRUIT_GUIDE_2,"또는 선을 끌어 원하는 위치에
+ 과일을 떨어뜨리세요",Ou arraste a linha para o local desejado para soltar a fruta,Atau seret garis ke tempat yang Anda inginkan untuk menjatuhkan buah,Or drag the line to your desired spot to drop the fruit,Or drag the line to your desired spot to drop the fruit
+GL_LANG_FRUIT_GUIDE_3,"같은 과일 두 개를 합쳐 더 큰
+ 과일을 만드세요",Una duas frutas idênticas para criar uma maior,Gabungkan dua buah identik untuk membuat yang lebih besar,Merge two indentical fruits to create a larger one,Merge two indentical fruits to create a larger one
+GL_LANG_FRUIT_GUIDE_SKIP,건너뛰기,Pular,Lewati,Skip,Skip
+GL_LANG_FRUIT_GUIDE_PROP_BOMB_DESC,과일을 터치하여 제거하세요,Toque em uma fruta para removê-la,Ketuk buah untuk menghapusnya,Tap a Fruit to clear it,Tap a Fruit to clear it
+GL_LANG_FRUIT_POPUP_RESTART_TITLE,"게임을 다시 
+시작하시겠습니까?",Reiniciar Jogo?,Mulai ulang permainan?,Restart Game?,Restart Game?
+GL_LANG_FRUIT_POPUP_RESTART_DESC,현재 진행 상황이 모두 사라집니다!,Você perderá seu progresso atual!,"Anda akan kehilangan kemajuan 
+Anda saat ini!",You'll lose your current progress!,You'll lose your current progress!
+GL_LANG_FRUIT_POPUP_RESTART_BUTTON_YES,다시 시작,Reiniciar,Mulai ulang,Restart,Restart
+GL_LANG_FRUIT_POPUP_RESTART_BUTTON_NO,취소,Cancelar,Batal,Cancel,Cancel
+GL_LANG_FRUIT_POPUP_BOMB_TITLE,광고를 시청하고 보상: 폭탄 받기!,Assista a um anúncio para ganhar a recompensa: Bomba,Tonton iklan untuk mendapatkan hadiah: Bom,Watch an ad to get reward: Bomb!,Watch an ad to get reward: Bomb!
+GL_LANG_FRUIT_POPUP_BOMB_BUTTON_YES,좋은 아이디어입니다!,Ótima ideia!,Ide bagus!,Great idea!,Great idea!
+GL_LANG_FRUIT_POPUP_BOMB_BUTTON_NO,괜찮습니다,"Não, obrigado","Tidak, terima kasih",No thanks,No thanks
+GL_LANG_FRUIT_POPUP_SHAKE_TITLE,광고를 시청하고 보상: 흔들기 받기!,Assista a um anúncio para ganhar a recompensa: Agitar,Tonton iklan untuk mendapatkan hadiah: Guncang,Watch an ad to get reward: Shake,Watch an ad to get reward: Shake
+GL_LANG_FRUIT_POPUP_SHAKE_BUTTON_YES,좋은 아이디어입니다!,Ótima ideia!,Ide bagus!,Great idea!,Great idea!
+GL_LANG_FRUIT_POPUP_SHAKE_BUTTON_NO,닫기,"Não, obrigado","Tidak, terima kasih",No thanks,No thanks
+GL_LANG_COMMON_RESULT_BUTTON_PLAY_AGAIN,다시 플레이하기,Jogar outra vez,Main Lagi,Play Again,Play Again
+GL_LANG_COMMON_RESULT_OVER_FRUIT_SCORE,점수,Pontuação,Skor,Score,Score
+GL_LANG_COMMON_RESULT_OVER_FRUIT_BEST_SCORE,골든 최고 점수,Melhor Pontuação,Skor terbaik,Golden Best Score,Golden Best Score
+GL_LANG_COMMON_RESULT_OVER_SCORE,점수,Pontuação,Skor,Score,Score

@@ -1,0 +1,10 @@
+{
+ "None": 0,
+ "TryPing": 1,
+ "PingSuccess": 2,
+ "Begin": 3,
+ "Second": 4,
+ "Success": 5,
+ "Failed": 6,
+ "LoginSucess": 7
+}

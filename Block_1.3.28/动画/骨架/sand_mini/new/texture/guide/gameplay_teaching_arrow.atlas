@@ -1,0 +1,13 @@
+
+gameplay_teaching_arrow.png
+size: 99,57
+format: RGBA8888
+filter: MipMap,MipMap
+repeat: none
+guide_arrow2
+  rotate: false
+  xy: 4, 4
+  size: 91, 49
+  orig: 91, 49
+  offset: 0, 0
+  index: -1

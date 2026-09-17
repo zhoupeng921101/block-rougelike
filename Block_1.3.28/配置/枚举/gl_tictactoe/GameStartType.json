@@ -1,0 +1,6 @@
+{
+ "None": 0,
+ "NewGame": 1,
+ "RestartGame": 2,
+ "DrawStartGame": 3
+}

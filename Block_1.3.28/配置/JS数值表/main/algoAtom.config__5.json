@@ -1,0 +1,175 @@
+[
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 0,
+   "ways": [
+    {
+     "blocks": [
+      {
+       "id": "@y.BLOCK_SEQ",
+       "data": {
+        "startBlockId": 2,
+        "endBlockId": 42
+       }
+      },
+      {
+       "id": "@y.BLOCK_SEL",
+       "data": {
+        "filterType": "@p.PUT_NO_CLEAR"
+       }
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "COLLECT_AVG_BOARD_CHAOS_CORNER_900005",
+      "key": "_AVG_BOARD_CHAOS_CORNER",
+      "clear": true,
+      "operator": "@g.MAX_GREATER_CUR",
+      "success": {
+       "collectCompId": "COLLECT_AVG_BOARD_CHAOS_CORNER_900005",
+       "key": "_AVG_BOARD_CHAOS_CORNER",
+       "clear": true,
+       "operator": "@g.MIN",
+       "success": {
+        "collectCompId": "@y.COLLECT_EDGE",
+        "key": "@h.EDGE",
+        "clear": false,
+        "selectComp": {
+         "compId": "SELECT_EDGE_GREATER_10_OR_LESS_5_900005"
+        }
+       }
+      }
+     },
+     "blockOrders": [
+      "@c.AREA_RANDOM",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": true,
+     "clear": true,
+     "remove": false,
+     "algoName": "斜角变形熵增"
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 1,
+   "ways": [
+    {
+     "blocks": [
+      {
+       "id": "@y.BLOCK_SEQ",
+       "data": {
+        "startBlockId": 2,
+        "endBlockId": 42
+       }
+      },
+      {
+       "id": "@y.BLOCK_SEL",
+       "data": {
+        "filterType": "@p.PUT_NO_CLEAR"
+       }
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "COLLECT_AVG_BOARD_CHAOS_CORNER_900005",
+      "key": "_AVG_BOARD_CHAOS_CORNER",
+      "clear": true,
+      "operator": "@g.MAX_GREATER_CUR",
+      "success": {
+       "collectCompId": "COLLECT_AVG_BOARD_CHAOS_CORNER_900005",
+       "key": "_AVG_BOARD_CHAOS_CORNER",
+       "clear": true,
+       "operator": "@g.MIN"
+      }
+     },
+     "blockOrders": [
+      "@c.AREA_RANDOM",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": true,
+     "clear": true,
+     "remove": false,
+     "algoName": "斜角变形熵增"
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 2,
+   "ways": [
+    {
+     "blocks": [
+      {
+       "id": "@y.BLOCK_SEQ",
+       "data": {
+        "startBlockId": 2,
+        "endBlockId": 42
+       }
+      },
+      {
+       "id": "@y.BLOCK_SEL",
+       "data": {
+        "filterType": "@p.PUT_NO_CLEAR"
+       }
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "COLLECT_AVG_BOARD_CHAOS_CORNER_900005",
+      "key": "_AVG_BOARD_CHAOS_CORNER",
+      "clear": true,
+      "operator": "@g.MAX_GREATER_CUR",
+      "success": {
+       "collectCompId": "COLLECT_AVG_BOARD_CHAOS_CORNER_900005",
+       "key": "_AVG_BOARD_CHAOS_CORNER",
+       "clear": true,
+       "operator": "@g.MIN"
+      }
+     },
+     "blockOrders": [
+      "@c.AREA_RANDOM",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": true,
+     "clear": true,
+     "remove": false,
+     "algoName": "斜角变形熵增"
+    }
+   ]
+  }
+ }
+]

@@ -1,0 +1,7 @@
+{
+ "INGAME_AD_CHECK": "ad_ingame_check",
+ "SETTLE_AD_CHECK": "ad_settle_check",
+ "REWARD_AD_CHECK": "ad_reward_check",
+ "BANNER_AD_CHECK": "ad_banner_check",
+ "AUTO_INGAME_AD_CHECK": "ad_auto_ingame_check"
+}

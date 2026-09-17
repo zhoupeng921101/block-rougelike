@@ -1,0 +1,7 @@
+{
+ "bundle": "woodskin",
+ "prefab": "prefabs/StarLikeView",
+ "cnName": "评分反馈界面--木块皮肤--方案3",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

@@ -1,0 +1,16 @@
+{
+ "noWipe": 0,
+ "interestValues": [],
+ "downStep": 0,
+ "totalStep": 0,
+ "isTrough": false,
+ "isLowTrigger": false,
+ "enterTimeDiff": false,
+ "diffDown": false,
+ "valleyRate": 0,
+ "thirdPartState": "@l.None",
+ "offered": false,
+ "lastOffered": [],
+ "simpleCD": 0,
+ "useSimple": false
+}

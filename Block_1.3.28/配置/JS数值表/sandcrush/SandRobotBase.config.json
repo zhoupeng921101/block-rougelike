@@ -1,0 +1,11 @@
+{
+ "robotId": 1,
+ "enabled": true,
+ "autoPlay": false,
+ "aiResponseTimeout": 5000.0,
+ "maxRetryCount": 3,
+ "thinkTimeRange": [
+  0.5,
+  2
+ ]
+}

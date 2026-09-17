@@ -1,0 +1,7 @@
+{
+ "bundle": "woodskin",
+ "prefab": "prefabs/levelMode/SandLevelResultColor",
+ "cnName": "目标颜色结果界面",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

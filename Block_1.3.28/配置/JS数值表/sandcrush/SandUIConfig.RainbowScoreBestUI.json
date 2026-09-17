@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/ideas/rainbowScore/prefab/rainbowScoreBestUI",
+ "cnName": "彩虹分数最高分界面",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

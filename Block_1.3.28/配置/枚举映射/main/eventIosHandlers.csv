@@ -1,0 +1,14 @@
+﻿键成员,键值,映射值,值来源
+ios_closeSelf,closeSelf,@onClick_closeSelf.bind,未解析
+ios_exit,ios_exit,@onClick_exit.bind,未解析
+ios_home,ios_home,@onClick_home.bind,未解析
+ios_moreGames,ios_moreGames,@onClick_moreGames.bind,未解析
+ios_moreSettings,ios_moreSettings,@onClick_moreSettings.bind,未解析
+ios_replay,ios_replay,@onClick_replay.bind,未解析
+ios_BGM,ios_BGM,@onClick_BGM.bind,未解析
+ios_sound,ios_sound,@onClick_sound.bind,未解析
+ios_vibration,ios_vibration,@onClick_vibration.bind,未解析
+ios_noads2,ios_noads2,@onClick_noads2.bind,未解析
+ios_SetAddRandomSwitch,ios_SetAddRandomSwitch,@onClick_SetAddRandomSwitch.bind,未解析
+ios_SetAddDefultSkinBtn,ios_SetAddDefultSkinBtn,@onClick_SetAddDefultSkinBtn.bind,未解析
+ios_share,ios_share,@onClick_share.bind,未解析

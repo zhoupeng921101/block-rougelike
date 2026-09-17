@@ -1,0 +1,8 @@
+﻿_key,isShade,type,shaderPrefabPath,noShaderPrefabPath,colorList
+preClear1,0,4,,ChangeSkin/skin1/PreClear/prefab/skinPreClear,"[{""color"": ""#B1E2FE"", ""opacity"": 255}, {""color"": ""#60C3FF"", ""opacity"": 255}]"
+preClear2,0,4,,ChangeSkin/skin1/PreClear/prefab/skinPreClear,"[{""color"": ""#ECEDA7"", ""opacity"": 255}, {""color"": ""#F1EAC0"", ""opacity"": 255}]"
+preClear3,0,4,,ChangeSkin/skin1/PreClear/prefab/skinPreClear,"[{""color"": ""#B29FF2"", ""opacity"": 255}, {""color"": ""#CDBFFB"", ""opacity"": 255}]"
+preClear4,0,4,,ChangeSkin/skin1/PreClear/prefab/skinPreClear,"[{""color"": ""#EFBD9A"", ""opacity"": 255}, {""color"": ""#EACBAB"", ""opacity"": 255}]"
+preClear5,0,4,,ChangeSkin/skin1/PreClear/prefab/skinPreClear,"[{""color"": ""#F47373"", ""opacity"": 255}, {""color"": ""#EAACAC"", ""opacity"": 255}]"
+preClear6,0,4,,ChangeSkin/skin1/PreClear/prefab/skinPreClear,"[{""color"": ""#9CE198"", ""opacity"": 255}, {""color"": ""#C3E8BF"", ""opacity"": 255}]"
+preClear7,0,4,,ChangeSkin/skin1/PreClear/prefab/skinPreClear,"[{""color"": ""#E8A5DF"", ""opacity"": 255}, {""color"": ""#E5C8E8"", ""opacity"": 255}]"

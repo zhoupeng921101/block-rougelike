@@ -1,0 +1,8 @@
+{
+ "startRow": "@r",
+ "startColList": "@n",
+ "blockId": "@s",
+ "endColList": "@u",
+ "leftMove": 0,
+ "rightMove": 0
+}

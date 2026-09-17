@@ -1,0 +1,153 @@
+
+juzhongdianzan.png
+size: 2048, 1024
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+Tex_ring_512x512_005
+  rotate: false
+  xy: 916, 282
+  size: 500, 500
+  orig: 500, 500
+  offset: 0, 0
+  index: -1
+ct1
+  rotate: false
+  xy: 590, 70
+  size: 27, 23
+  orig: 28, 23
+  offset: 0, 0
+  index: -1
+ct2
+  rotate: true
+  xy: 1382, 242
+  size: 38, 30
+  orig: 38, 30
+  offset: 0, 0
+  index: -1
+ct3
+  rotate: false
+  xy: 1214, 45
+  size: 27, 22
+  orig: 27, 22
+  offset: 0, 0
+  index: -1
+ct4
+  rotate: true
+  xy: 2026, 745
+  size: 23, 20
+  orig: 24, 20
+  offset: 0, 0
+  index: -1
+ct5
+  rotate: false
+  xy: 397, 3
+  size: 38, 26
+  orig: 38, 26
+  offset: 0, 0
+  index: -1
+ct6
+  rotate: false
+  xy: 1169, 38
+  size: 43, 29
+  orig: 44, 29
+  offset: 0, 0
+  index: -1
+ct7
+  rotate: false
+  xy: 397, 31
+  size: 115, 62
+  orig: 116, 63
+  offset: 1, 1
+  index: -1
+ct8
+  rotate: false
+  xy: 1765, 453
+  size: 101, 55
+  orig: 102, 55
+  offset: 1, 0
+  index: -1
+ct9
+  rotate: false
+  xy: 514, 37
+  size: 74, 56
+  orig: 74, 58
+  offset: 0, 2
+  index: -1
+gaoguang
+  rotate: false
+  xy: 1418, 437
+  size: 345, 345
+  orig: 413, 413
+  offset: 34, 34
+  index: -1
+gaungqian2
+  rotate: false
+  xy: 1169, 69
+  size: 211, 211
+  orig: 256, 256
+  offset: 22, 23
+  index: -1
+huangquan
+  rotate: false
+  xy: 2, 95
+  size: 912, 912
+  orig: 936, 936
+  offset: 12, 12
+  index: -1
+lizi01
+  rotate: false
+  xy: 1868, 478
+  size: 30, 30
+  orig: 38, 38
+  offset: 4, 4
+  index: -1
+sg1
+  rotate: true
+  xy: 1767, 770
+  size: 237, 270
+  orig: 237, 270
+  offset: 0, 0
+  index: -1
+sg2
+  rotate: false
+  xy: 1730, 133
+  size: 301, 302
+  orig: 308, 309
+  offset: 4, 4
+  index: -1
+sg3
+  rotate: true
+  xy: 1418, 137
+  size: 298, 310
+  orig: 304, 319
+  offset: 3, 4
+  index: -1
+sg4
+  rotate: false
+  xy: 916, 31
+  size: 251, 249
+  orig: 258, 257
+  offset: 4, 4
+  index: -1
+sg6
+  rotate: false
+  xy: 1765, 510
+  size: 259, 258
+  orig: 266, 266
+  offset: 3, 4
+  index: -1
+tiban
+  rotate: false
+  xy: 916, 784
+  size: 849, 223
+  orig: 853, 226
+  offset: 2, 2
+  index: -1
+zi
+  rotate: false
+  xy: 2, 2
+  size: 393, 91
+  orig: 393, 91
+  offset: 0, 0
+  index: -1

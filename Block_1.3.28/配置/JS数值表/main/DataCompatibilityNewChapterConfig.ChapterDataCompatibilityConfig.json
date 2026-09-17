@@ -1,0 +1,39 @@
+{
+ "chapterScore": "fangkuaipintutravel#current_cord:number",
+ "chapterHighScore": "fangkuaipintutravel#high_cord:number",
+ "chapterRoundNum": "fangkuaipintutravel#roundNum:number",
+ "chapterGameNum": "fangkuaipintutravel#gameNum:number",
+ "chapterNum": "fangkuaipintutravel#chapterNum:number",
+ "lastChapterNum": "fangkuaipintutravel#chapterMoveNum:number",
+ "chapterFaceBlocks": "fangkuaipintutravel#save_arr:object",
+ "chapterCondition": "fangkuaipintutravel#Condition:object",
+ "chapterTryTimes": "fangkuaipintutravel#tryTimes:number",
+ "chapterAlgoActualName": "fangkuaipintutravel#currentBlockNameArr:object",
+ "chapterBlockCenterPos": {
+  "x": "fangkuaipintutravel#putCenterCol:number",
+  "y": "fangkuaipintutravel#putCenterRow:number"
+ },
+ "DailyWinStreakStateInfoData": {
+  "winCount": "fangkuaipintutravel#winStreakCountDaily:number",
+  "winCountTime": "fangkuaipintutravel#lastWinTimestamp:number",
+  "winCountOld": "fangkuaipintutravel#winStreakCountDaily:number"
+ },
+ "winStreakCount": "fangkuaipintutravel#winStreakCount:number",
+ "chapterOneChapterGameNum": "fangkuaipintutravel#game1Num:number",
+ "chapterFirstJoin": "fangkuaipintutravel#chapterFirstJoin:number",
+ "chapterStreamerInfo": "fangkuaipintutravel#streamerInfo:object",
+ "chapterBlockProduceBoardLists": "SaveSurfaceBlockInfoData#TravelSave_arr:object",
+ "chapterBlockExtraList": {
+  "better_block": "fangkuaipintutravel#betterBlockCount:number",
+  "better_space": "fangkuaipintutravel#betterSpaceCount:number"
+ },
+ "chapterHardQuestionSuccess": "fangkuaipintutravel#puzzle_cnt:number",
+ "chapterZiMuShangZengCount": "fangkuaipintutravel#ziMuShangZengCount:number",
+ "chapterReviveSuccessStatisticsInfo": {
+  "progress": "fangkuaipintutravel#RevivePositionList:object"
+ },
+ "chapterAdvertisementShowNum": "JourneyClickDetailLocal#reward_ad_click_cnt:number",
+ "chapterReviveNum": "fangkuaipintutravel#adPlayNum:number",
+ "chapterActualReviveNum": "fangkuaipintutravel#adPlayNum:number",
+ "chapterPureGemTraitData": "pureGemData:object"
+}

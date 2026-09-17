@@ -1,0 +1,78 @@
+{
+ "block_1_normal": {
+  "assetPath": "res/game_cube_1_material_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "block_2_normal": {
+  "assetPath": "res/game_cube_2_material_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "block_3_normal": {
+  "assetPath": "res/game_cube_3_material_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "block_4_normal": {
+  "assetPath": "res/game_cube_4_material_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "block_5_normal": {
+  "assetPath": "res/game_cube_5_material_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "block_6_normal": {
+  "assetPath": "res/game_cube_6_material_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "block_7_normal": {
+  "assetPath": "res/game_cube_7_material_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "combo_sprite": {
+  "assetPath": "res/combo_txt_material_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "combo_font": {
+  "assetPath": "font/combo_fnt_material_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "ck_effect": {
+  "assetPath": "effect/CK_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "combo_effect": {
+  "assetPath": "effect/comb_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006",
+  "armatureName": "Armature"
+ },
+ "encourage_effect": {
+  "assetPath": "effect/encourage_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "eliminate_prompt_effect": {
+  "assetPath": "effect/gameplay_eliminatePrompt_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "eliminate_effect": {
+  "assetPath": "effect/xc_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ },
+ "block_put_effect": {
+  "assetPath": "effect/gameplay_spine_blocklight_plan1_006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2006"
+ }
+}

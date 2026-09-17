@@ -1,0 +1,10 @@
+﻿成员,值
+BeforeGameEnter,BeforeGameEnter
+BeforeGameExit,BeforeGameExit
+EnterMiniGame,EnterMiniGame
+ExitMiniGame,ExitMiniGame
+AfterGameEnter,GameEnter
+AfterGameExit,GameExit
+GetSortList,GetSortList
+HidePopup,HidePopup
+ShowPopup,ShowPopup

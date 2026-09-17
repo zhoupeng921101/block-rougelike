@@ -1,0 +1,5 @@
+﻿_key,scorerateUnitID,sandalgoUnitID,triggeralgoUnitID,long_term_color,peak_open,dead_line_Height,clear_board,huge_eliminate,chain_eliminate
+10001001,2,1,1,"[3000.0, 10000.0, 20000.0, 40000.0]",True,83,True,800,True
+10001002,3,2,1,"[50000.0, 100000.0, 250000.0, 500000.0]",False,85,True,800,True
+20001001,2,1,1,"[3000.0, 10000.0, 20000.0, 40000.0]",True,83,True,800,True
+20001002,3,2,1,"[50000.0, 100000.0, 250000.0, 500000.0]",False,85,True,800,True

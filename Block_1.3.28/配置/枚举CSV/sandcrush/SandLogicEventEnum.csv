@@ -1,0 +1,12 @@
+﻿成员,值
+ClearSandEnd,ClearSandEnd
+ClearSandStart,ClearSandStart
+BoxMoveCollisionState,boxMoveCollisionState
+BoxPutFail,boxPutFail
+BoxPutSuccess,boxPutSuccess
+BoxToMap,boxToMap
+EmptyColors,emptyColors
+GameLogicOver,gameLogicOver
+MapDropEnd,mapDropEnd
+MapDropStart,mapDropStart
+MapStable,mapStable

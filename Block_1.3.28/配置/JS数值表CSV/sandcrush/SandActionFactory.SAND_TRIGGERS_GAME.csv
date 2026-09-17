@@ -1,0 +1,3 @@
+﻿event,targetType,actions
+@r.SandActionEventType.GameBombExplode,@r.SandTargetType.Board,"[""@i.BombAction""]"
+@r.SandActionEventType.CleanSameColor,@r.SandTargetType.Board,"[""@l.ClearSameColorAction""]"

@@ -1,0 +1,27 @@
+
+PowerUP.png
+size: 754, 80
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+bj_blue
+  rotate: false
+  xy: 746, 18
+  size: 6, 60
+  orig: 6, 60
+  offset: 0, 0
+  index: -1
+ic_arrow
+  rotate: true
+  xy: 641, 2
+  size: 76, 103
+  orig: 76, 104
+  offset: 0, 1
+  index: -1
+wenzi
+  rotate: false
+  xy: 2, 3
+  size: 637, 75
+  orig: 637, 75
+  offset: 0, 0
+  index: -1

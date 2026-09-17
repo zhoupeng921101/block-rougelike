@@ -1,0 +1,16 @@
+[
+ {
+  "event": "@r.SandActionEventType.GameBombExplode",
+  "targetType": "@r.SandTargetType.Board",
+  "actions": [
+   "@i.BombAction"
+  ]
+ },
+ {
+  "event": "@r.SandActionEventType.CleanSameColor",
+  "targetType": "@r.SandTargetType.Board",
+  "actions": [
+   "@l.ClearSameColorAction"
+  ]
+ }
+]

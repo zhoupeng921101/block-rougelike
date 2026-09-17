@@ -1,0 +1,41 @@
+
+watermelon_gamplay_combo.png
+size: 522,331
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+combo_blue
+  rotate: true
+  xy: 2, 2
+  size: 327, 102
+  orig: 327, 102
+  offset: 0, 0
+  index: -1
+combo_cyan
+  rotate: true
+  xy: 106, 2
+  size: 327, 102
+  orig: 327, 102
+  offset: 0, 0
+  index: -1
+combo_green
+  rotate: true
+  xy: 210, 2
+  size: 327, 102
+  orig: 327, 102
+  offset: 0, 0
+  index: -1
+combo_pink
+  rotate: true
+  xy: 314, 2
+  size: 327, 102
+  orig: 327, 102
+  offset: 0, 0
+  index: -1
+combo_purple
+  rotate: true
+  xy: 418, 2
+  size: 327, 102
+  orig: 327, 102
+  offset: 0, 0
+  index: -1

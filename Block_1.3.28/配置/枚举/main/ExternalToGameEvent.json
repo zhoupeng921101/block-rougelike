@@ -1,0 +1,6 @@
+{
+ "UpdateExternalInputData": "ExternalToGameEvent.UpdateExternalInputData",
+ "GameDispose": "ExternalToGameEvent.GameDispose",
+ "NativeCallback": "ExternalToGameEvent.AdNativeAdCallback",
+ "BoxBackButtonClick": "ExternalToGameEvent.BoxBackButtonClick"
+}

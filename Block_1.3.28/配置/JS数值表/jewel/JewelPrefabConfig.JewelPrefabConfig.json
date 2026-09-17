@@ -1,0 +1,39 @@
+{
+ "JewelGame": {
+  "name": "JewelGame",
+  "url": "prefabs/game/JewelGame",
+  "bundleName": "jewel",
+  "page": true
+ },
+ "JewelBoard": {
+  "name": "JewelBoard",
+  "url": "prefabs/board/JewelBoard",
+  "bundleName": "jewel"
+ },
+ "JewelBlocksProducer": {
+  "name": "JewelBlocksProducer",
+  "url": "prefabs/blocksProducer/JewelBlocksProducer",
+  "bundleName": "jewel"
+ },
+ "JewelBlocksProducerItem": {
+  "name": "JewelBlocksProducerItem",
+  "url": "prefabs/blocksProducer/JewelBlocksProducerItem",
+  "bundleName": "jewel"
+ },
+ "JewelFail": {
+  "name": "JewelFail",
+  "url": "prefabs/fail/JewelFail",
+  "bundleName": "jewel",
+  "page": true
+ },
+ "JewelBlock": {
+  "name": "JewelBlock",
+  "url": "prefabs/block/JewelBlock",
+  "bundleName": "jewel"
+ },
+ "JewelTopInfo": {
+  "name": "JewelTopInfo",
+  "url": "prefabs/topInfo/JewelTopInfo",
+  "bundleName": "jewel"
+ }
+}

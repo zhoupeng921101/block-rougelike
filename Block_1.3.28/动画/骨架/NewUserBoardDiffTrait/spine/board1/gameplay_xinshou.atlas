@@ -1,0 +1,20 @@
+
+gameplay_xinshou.png
+size: 442,331
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+yanshikuang
+  rotate: true
+  xy: 2, 2
+  size: 327, 222
+  orig: 960, 1707
+  offset: 317, 742
+  index: -1
+yanshikuang1
+  rotate: true
+  xy: 226, 10
+  size: 319, 214
+  orig: 960, 1707
+  offset: 321, 746
+  index: -1

@@ -1,0 +1,5 @@
+{
+ "REVIVE_FAILED": "reviveFailed",
+ "SETTING_RESTART": "settingRestart",
+ "COLD_START_SETTLEMENT": "coldStartSettlement"
+}

@@ -1,0 +1,174 @@
+
+gameplay_ma.png
+size: 621,621
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ef/ef22
+  rotate: false
+  xy: 2, 349
+  size: 480, 270
+  orig: 480, 270
+  offset: 0, 0
+  index: -1
+ef/glow
+  rotate: false
+  xy: 505, 284
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+ef/xl1
+  rotate: false
+  xy: 505, 226
+  size: 56, 56
+  orig: 56, 56
+  offset: 0, 0
+  index: -1
+f/d1
+  rotate: false
+  xy: 571, 300
+  size: 48, 48
+  orig: 48, 48
+  offset: 0, 0
+  index: -1
+f/d2
+  rotate: false
+  xy: 399, 115
+  size: 20, 20
+  orig: 20, 20
+  offset: 0, 0
+  index: -1
+f/d4
+  rotate: false
+  xy: 369, 48
+  size: 33, 33
+  orig: 33, 33
+  offset: 0, 0
+  index: -1
+f/d6
+  rotate: false
+  xy: 318, 32
+  size: 49, 49
+  orig: 49, 49
+  offset: 0, 0
+  index: -1
+xy/1
+  rotate: false
+  xy: 498, 141
+  size: 18, 74
+  orig: 18, 74
+  offset: 0, 0
+  index: -1
+xy/a
+  rotate: false
+  xy: 563, 230
+  size: 56, 52
+  orig: 56, 52
+  offset: 0, 0
+  index: -1
+xy/ad
+  rotate: false
+  xy: 340, 137
+  size: 76, 78
+  orig: 76, 78
+  offset: 0, 0
+  index: -1
+xy/available
+  rotate: false
+  xy: 2, 217
+  size: 501, 130
+  orig: 501, 130
+  offset: 0, 0
+  index: -1
+xy/b
+  rotate: true
+  xy: 89, 34
+  size: 56, 82
+  orig: 56, 82
+  offset: 0, 0
+  index: -1
+xy/e
+  rotate: true
+  xy: 518, 171
+  size: 53, 52
+  orig: 53, 52
+  offset: 0, 0
+  index: -1
+xy/g
+  rotate: false
+  xy: 418, 139
+  size: 56, 76
+  orig: 56, 76
+  offset: 0, 0
+  index: -1
+xy/games
+  rotate: false
+  xy: 2, 92
+  size: 336, 123
+  orig: 336, 123
+  offset: 0, 0
+  index: -1
+xy/i
+  rotate: false
+  xy: 476, 140
+  size: 20, 75
+  orig: 20, 75
+  offset: 0, 0
+  index: -1
+xy/l
+  rotate: true
+  xy: 89, 15
+  size: 17, 81
+  orig: 17, 81
+  offset: 0, 0
+  index: -1
+xy/md
+  rotate: false
+  xy: 2, 12
+  size: 85, 78
+  orig: 85, 78
+  offset: 0, 0
+  index: -1
+xy/more
+  rotate: true
+  xy: 484, 350
+  size: 269, 127
+  orig: 269, 127
+  offset: 0, 0
+  index: -1
+xy/mx
+  rotate: false
+  xy: 173, 39
+  size: 80, 51
+  orig: 80, 51
+  offset: 0, 0
+  index: -1
+xy/o
+  rotate: false
+  xy: 340, 83
+  size: 57, 52
+  orig: 57, 52
+  offset: 0, 0
+  index: -1
+xy/r
+  rotate: true
+  xy: 518, 128
+  size: 41, 51
+  orig: 41, 51
+  offset: 0, 0
+  index: -1
+xy/s
+  rotate: false
+  xy: 572, 176
+  size: 42, 52
+  orig: 42, 52
+  offset: 0, 0
+  index: -1
+xy/v
+  rotate: false
+  xy: 255, 40
+  size: 61, 50
+  orig: 61, 50
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,14 @@
+{
+ "LEGACY": 1,
+ "SAND": 2,
+ "ATOM": 3,
+ "CHAPTER": 5,
+ "DOUBLE_TILE": 6,
+ "NONE": 0,
+ "PENDING": 1,
+ "SUCCESS": 2,
+ "FAIL": 3,
+ "DEFAULT": 1,
+ "CLICK": 2,
+ "DOWNLOAD_ONLY": 1
+}

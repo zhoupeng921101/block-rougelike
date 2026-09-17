@@ -1,0 +1,8 @@
+{
+ "texturePath": "res/ideas/DropTrail/pixel_sandCrush_gamepaly_shine",
+ "spinePath": "res/ideas/DropTrail/pixel_sandCrush_gamepaly_trail",
+ "trailLength": 2500,
+ "simplifyTopVertices": true,
+ "topVerticesDelay": 0.3,
+ "debugEnabled": false
+}

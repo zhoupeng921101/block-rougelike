@@ -1,0 +1,13 @@
+{
+ "enable_game_cnt": 3,
+ "enable_trough_ratio": 0.3,
+ "init_interest_point": 0,
+ "weight_clear_cnt": 0.5,
+ "max_round_weight_clear": 30,
+ "min_weight_clear": 0.3,
+ "weight_combo_cnt": 0.1,
+ "weight_clear_screen": 3,
+ "weight_no_clear": 0.2,
+ "trough_block_cnt": 9,
+ "trough_decrease_ratio": 0.7
+}

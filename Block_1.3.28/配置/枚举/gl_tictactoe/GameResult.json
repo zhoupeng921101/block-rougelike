@@ -1,0 +1,10 @@
+{
+ "Win": 0,
+ "Lose": 1,
+ "Draw": 2,
+ "RedWin": 3,
+ "BlueWin": 4,
+ "YellowWin": 5,
+ "GreenWin": 6,
+ "RestartGame": 7
+}

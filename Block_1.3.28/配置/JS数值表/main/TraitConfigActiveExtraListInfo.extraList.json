@@ -1,0 +1,177 @@
+[
+ {
+  "id": 146100002,
+  "name": "CTDotClickUsrDataGameEndTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100003,
+  "name": "CTDotClickGameEndInfoTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100004,
+  "name": "CTDotFirstClickDataGameEndTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100005,
+  "name": "CTDotDeadReportToUsrDataGameEndTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100401,
+  "name": "CTAgloStrategyTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100402,
+  "name": "CTAgloReviveTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100408,
+  "name": "CTGameComboScoreTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100409,
+  "name": "CTChapterWinOverTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100410,
+  "name": "CTLowDeviceEffectTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100411,
+  "name": "CTAdvertisementMultipleCallTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100413,
+  "name": "CTAdvertisementNoHideTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100414,
+  "name": "CTComboDotTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100404,
+  "name": "CTAgloNameSpecialTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100415,
+  "name": "CTSkinBonesTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100416,
+  "name": "CTChapterSkinBonesTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100417,
+  "name": "CTClassSkinBonesTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100406,
+  "name": "CTGBMClearTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100407,
+  "name": "CTReviveTimeOutSkipSplashTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100418,
+  "name": "CTBAlgorithmGaohuibaoARGTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 408007,
+  "name": "CTEffectAccTraitTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100419,
+  "name": "CTChapterScoreComboTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100420,
+  "name": "CTGBMEmptySurfaceGameStartDotTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100421,
+  "name": "CTCommentskinWithFeedBackTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100422,
+  "name": "CTGameEndStatusDotTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100423,
+  "name": "CTMergeBlocksSkinBonesTrait",
+  "param": {
+   "firing": 1
+  }
+ }
+]

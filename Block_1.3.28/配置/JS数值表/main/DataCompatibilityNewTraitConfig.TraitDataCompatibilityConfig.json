@@ -1,0 +1,108 @@
+{
+ "JudgeCheatScoreCtrl_JudgeCheatScoreDataKey": "JudgeCheatScoreCtrl_JudgeCheatScoreDataKey:object",
+ "clearInitPanelEffectSaveStr": "clearInitPanelEffectSaveStr:string",
+ "clearInitPanelEffectValue": "clearInitPanelEffectValue:string",
+ "BlockPutData": "BlockPutData:object",
+ "RightPutData": "RightPutData:object",
+ "FirstBlockEliminateSkinTraitData": "FirstBlockEliminateSkinTraitData:object",
+ "lowHardsTimesHardIndex": "lowHardsTimes#hardIndex:number",
+ "GameEndAddPointControlClassKey": "GameEndAddPointControlClassKey:object",
+ "GameEndAddPointControlTravelKey": "GameEndAddPointControlTravelKey:object",
+ "CleanSceneUseSequenceSkin_index": "CleanSceneUseSequenceSkin_skinIndex:number",
+ "BCommentDisplayTraitData": {
+  "clickState": "CommentDisplay_20240603#clickState:boolean",
+  "isShow": "CommentDisplay_20240603#isShow:boolean",
+  "listTime": "CommentDisplay_20240603#listTime:object",
+  "listTravel": "CommentDisplay_20240603#listTravel:object",
+  "historyMaxComboTime": "ClassClickDetailLocal#max_combo:number",
+  "travelGameNum": "CommentDisplay_20240603#travelGameNum:number",
+  "comboGameNum": "CommentDisplay_20240603#comboGameNum:number",
+  "overMaxNum": "CommentDisplay_20240603#overMaxNum:number",
+  "maxComboTimeH": "CommentDisplay_20240603#maxComboTimeH:number",
+  "travelWinNum": "CommentDisplay_20240603#travelWinNum:number"
+ },
+ "PostGameToServerTrait": {
+  "uniqueLaneId": "LinePlayerInfoId:number"
+ },
+ "bAlgorithmDynamicDifficulty_classCount": "class_fail_count_key_class:number",
+ "bAlgorithmDynamicDifficulty_chapterCount": "travel_fail_count_key_travel:number",
+ "MoreAreaTKXC": "moreAreaTKXCLocal#trigger_continuous_times_param3:number",
+ "find_link_border_difficulty": "find_link_border_difficulty:object",
+ "IsOpenJourneyAnotherStyleTraitKey": "fangkuaipintu#journeyAnotherStyle:object",
+ "PushPRCtrADTraitLocalKey": {
+  "remainingFreeCount": "localStoragePushPRCtrAD#remainingFreeCount:number"
+ },
+ "CrossClearHard": {
+  "hardCount": "crossClearHard#hardCount:number",
+  "firstTime": "crossClearHard#firstTime:number"
+ },
+ "classicComboProtectAfterAllClean": "__baseData__isClassicComboProtectOpen:object",
+ "ComboModeCtrlTraitKey": {
+  "classCombo": "ComboModeInfo.comboInfo#contiClearNum:number"
+ },
+ "AchievementPushV2TraitKey": {
+  "key": "AchievementPushV2Ctrl_PushData#key:string",
+  "pushIndex": "AchievementPushV2Ctrl_PushData#pushedInddex:number",
+  "needContinuePush": "AchievementPushV2Ctrl_PushData#needContinuePush:boolean"
+ },
+ "IsFirstHomeGuideTrait": {
+  "isClickChoiceBtn": "firstHomeGuideDataCheckActiveUser:object"
+ },
+ "ADPushBackModelTraitKey": {
+  "maxEcpm": "ADPushBackModel_max:number"
+ },
+ "parallelClearHardObj": "parallelClearHard:object",
+ "IsOpenBannerTimeCtrTraitKey": {
+  "startTime": "isOpenBannerTimeCtr#startTime:number"
+ },
+ "IsOpenSorceBlockTraitData": {
+  "isCreateScoreBlockRandom": "fangkuaipintu#createScoreBlockProb:number",
+  "scoreBlockList": "fangkuaipintu#saveScore_arr:object"
+ },
+ "IsOpenScoreBlockTraitClickData": {
+  "bonus_block_blast_cnt": "fangkuaipintu#bonusBlockBlastCnt:number",
+  "bonus_block_cnt": "fangkuaipintu#bonusBlockCnt:number",
+  "bonus_block_score": "fangkuaipintu#bonusBlockScore:number"
+ },
+ "online_count_strategy": "online_count_strategy:object",
+ "online_round_blockIds": "online_round_blockIds:object",
+ "online_count_combo": "ClassClickDetailLocal#count_combo:number",
+ "online_clean_times": "ClassClickDetailLocal#clean_times:number",
+ "online_clean_num_all": "ClassClickDetailLocal#clean_num_all:number",
+ "online_clean_num_abv3": "ClassClickDetailLocal#clean_num_abv3:number",
+ "online_clearboard_num": "ClassClickDetailLocal#clearboard_num:number",
+ "clickRecordClass": "clickRecordClass:object",
+ "clickRecordTravel": "clickRecordTravel:object",
+ "classLightGBMData": "sf_LightChurnRate:object",
+ "SetAddDefultSkinBtn_classClickNum": "SetAddDefultSkinBtn_classClickNum:number",
+ "SetAddDefultSkinBtn_travelClickNum": "SetAddDefultSkinBtn_travelClickNum:number",
+ "SetAddRandomSwitch_beforeId": "SetAddRandomSwitch_beforeId:string",
+ "SetAddRandomSwitch_classClickNum": "SetAddRandomSwitch_classClickNum:number",
+ "SetAddRandomSwitch_isClose": "SetAddRandomSwitch_isClose:boolean",
+ "SetAddRandomSwitch_travelClickNum": "SetAddRandomSwitch_travelClickNum:number",
+ "AdReadyLow": {
+  "adReadyDateList": "AdReadyLow#adReadyDateList:object"
+ },
+ "isOpenFreeADByBadReceive_roundWightKey": "isOpenFreeADByBadReceive_roundWight:object",
+ "isOpenFreeADByBadReceiveKey": "isOpenFreeADByBadReceive:object",
+ "ClassSelectClearRunControlKey": "ClassSelectClearRunControlKey:object",
+ "ClassSelectClearRunKey": "ClassSelectClearRunKey:object",
+ "localstorage_travelNewPlayerHelpByTime": "localstorage_travelNewPlayerHelpByTime:object",
+ "skinUGC_enteredEdit": "skinUGC_enteredEdit:number",
+ "SkinLocalData": "SkinLocalData:object",
+ "UnLockSkinData": "UnLockSkinData:object",
+ "hasParam230012Open-1": "hasParam230012Open-1:boolean",
+ "hasParam230012Open-2": "hasParam230012Open-2:boolean",
+ "hasParam230012Open-3": "hasParam230012Open-3:boolean",
+ "hasParam230012Open-4": "hasParam230012Open-4:boolean",
+ "hasParam230012Open-5": "hasParam230012Open-5:boolean",
+ "hasParam230012Open-6": "hasParam230012Open-6:boolean",
+ "hasParam230012Open-7": "hasParam230012Open-7:boolean",
+ "hasParam230012Open-8": "hasParam230012Open-8:boolean",
+ "hasParam230012Open-9": "hasParam230012Open-9:boolean",
+ "hasParam230012Open-10": "hasParam230012Open-10:boolean",
+ "hasParam230012Open-11": "hasParam230012Open-11:boolean",
+ "hasParam230012Open-12": "hasParam230012Open-12:boolean",
+ "hasParam230012Open-13": "hasParam230012Open-13:boolean",
+ "hasParam230012Open-14": "hasParam230012Open-14:boolean"
+}

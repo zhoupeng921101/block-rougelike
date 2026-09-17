@@ -1,0 +1,128 @@
+{
+ "SetAddDefultSkinBtn": {
+  "spriteFrame": "textures/SetAddDefultSkinBtnTrait/setting_btn_common_blue_android",
+  "platform": "gp",
+  "bundleName": "mainTraits"
+ },
+ "ClearScreenRelaxBg": {
+  "spriteFrame": "textures/lightBg",
+  "platform": "ios",
+  "bundleName": "Remote_9723_f_clearScreenRelax"
+ },
+ "IosSetUpCheckClose": {
+  "spriteFrame": "textures/iosSetUp/btn_SoundBg_Close",
+  "platform": "ios"
+ },
+ "AddPlayReason": {
+  "spriteFrame": "textures/loadingview_test",
+  "bundleName": "Remote_addPlayReason"
+ },
+ "IosSetUpCheckOpen": {
+  "spriteFrame": "textures/iosSetUp/btn_SoundBg_Open",
+  "platform": "ios"
+ },
+ "IosSetUpCheckCloseUseSkin": {
+  "spriteFrame": "textures/skin/setup/btn_SoundBg_Close",
+  "platform": "ios"
+ },
+ "IosSetAddDefultSkinBtnTxt": {
+  "spriteFrame": "textures/iosSetUp/btn_TxtSkin_EN_ios",
+  "platform": "ios"
+ },
+ "IosSetAddDefultSkinBtn": {
+  "spriteFrame": "textures/iosSetUp/btn_SetSkin_ios",
+  "platform": "ios"
+ },
+ "IosSetAddDefultSkinIcon": {
+  "spriteFrame": "textures/iosSetUp/icon_skin_ios",
+  "platform": "ios"
+ },
+ "IosSetAddDefultSkinTxt": {
+  "spriteFrame": "textures/iosSetUp/txt_Skin_EN_ios",
+  "platform": "ios"
+ },
+ "IosSetAddShareBtn": {
+  "spriteFrame": "textures/iosSetUp/btn_SetCommon",
+  "platform": "ios"
+ },
+ "IosSetAddShareBtnTxt": {
+  "spriteFrame": "textures/iosSetUp/btn_Share_EN",
+  "platform": "ios"
+ },
+ "IosSetAddShareIcon": {
+  "spriteFrame": "textures/iosSetUp/icon_Share",
+  "platform": "ios"
+ },
+ "IosSetAddShareTxt": {
+  "spriteFrame": "textures/iosSetUp/txt_ShareGame_EN",
+  "platform": "ios"
+ },
+ "IosSetAddNextHardLevelEmpty": {
+  "spriteFrame": "textures/win/trait/difficultChangeColorTrait/level_btn_nextHardLevelEmpty",
+  "platform": "ios"
+ },
+ "IosSetAddNextLevelEmpty": {
+  "spriteFrame": "textures/win/level_btn_nextLevelEmpty",
+  "platform": "ios"
+ },
+ "GLMenuListNewGameIconFruit": {
+  "spriteFrame": "textures/icon_fruitMerge",
+  "platform": "gp",
+  "bundleName": "GLMenuListNewGameIconTrait"
+ },
+ "GLMenuListNewGameIconMahjong": {
+  "spriteFrame": "textures/icon_mahjong",
+  "platform": "gp",
+  "bundleName": "GLMenuListNewGameIconTrait"
+ },
+ "GLMenuListNewGameIconOnet": {
+  "spriteFrame": "textures/icon_onet",
+  "platform": "gp",
+  "bundleName": "GLMenuListNewGameIconTrait"
+ },
+ "GLGameListUIAdaptButtonBg": {
+  "spriteFrame": "textures/setting_btn_common",
+  "platform": "gp",
+  "bundleName": "GLGameListUIAdaptTrait"
+ },
+ "GLGameListUIAdaptGameIconBlockSlide": {
+  "spriteFrame": "textures/icon_blockSlide",
+  "platform": "gp",
+  "bundleName": "GLGameListUIAdaptTrait"
+ },
+ "GLGameListUIAdaptGameIconFruitMerge": {
+  "spriteFrame": "textures/icon_fruitMerge",
+  "platform": "gp",
+  "bundleName": "GLGameListUIAdaptTrait"
+ },
+ "GLGameListUIAdaptGameIconMahjong": {
+  "spriteFrame": "textures/icon_mahjong",
+  "platform": "gp",
+  "bundleName": "GLGameListUIAdaptTrait"
+ },
+ "GLGameListUIAdaptGameIconOneLine": {
+  "spriteFrame": "textures/icon_oneLine",
+  "platform": "gp",
+  "bundleName": "GLGameListUIAdaptTrait"
+ },
+ "GLGameListUIAdaptGameIconOnet": {
+  "spriteFrame": "textures/icon_onet",
+  "platform": "gp",
+  "bundleName": "GLGameListUIAdaptTrait"
+ },
+ "GLGameListUIAdaptGameIconSudoku": {
+  "spriteFrame": "textures/icon_sudoku",
+  "platform": "gp",
+  "bundleName": "GLGameListUIAdaptTrait"
+ },
+ "GLGameListUIAdaptGameIconTicTacToe": {
+  "spriteFrame": "textures/icon_ticTacToe",
+  "platform": "gp",
+  "bundleName": "GLGameListUIAdaptTrait"
+ },
+ "GLGameListUIAdaptGameIconWaterSort": {
+  "spriteFrame": "textures/icon_waterSort",
+  "platform": "gp",
+  "bundleName": "GLGameListUIAdaptTrait"
+ }
+}

@@ -1,0 +1,212 @@
+[
+ {
+  "string": "red_0",
+  "waterColor": [
+   196,
+   6,
+   2,
+   255
+  ],
+  "waterTop": [
+   232,
+   31,
+   32,
+   255
+  ]
+ },
+ {
+  "string": "yellow_0",
+  "waterColor": [
+   252,
+   192,
+   6,
+   255
+  ],
+  "waterTop": [
+   249,
+   209,
+   38,
+   255
+  ]
+ },
+ {
+  "string": "green_0",
+  "waterColor": [
+   112,
+   165,
+   2,
+   255
+  ],
+  "waterTop": [
+   151,
+   200,
+   18,
+   255
+  ]
+ },
+ {
+  "string": "blue_1",
+  "waterColor": [
+   93,
+   100,
+   166,
+   255
+  ],
+  "waterTop": [
+   126,
+   135,
+   208,
+   255
+  ]
+ },
+ {
+  "string": "pink_1",
+  "waterColor": [
+   254,
+   111,
+   215,
+   255
+  ],
+  "waterTop": [
+   247,
+   131,
+   227,
+   255
+  ]
+ },
+ {
+  "string": "purple_0",
+  "waterColor": [
+   95,
+   30,
+   142,
+   255
+  ],
+  "waterTop": [
+   153,
+   52,
+   229,
+   255
+  ]
+ },
+ {
+  "string": "pink_0",
+  "waterColor": [
+   143,
+   0,
+   110,
+   255
+  ],
+  "waterTop": [
+   170,
+   3,
+   131,
+   255
+  ]
+ },
+ {
+  "string": "orange_0",
+  "waterColor": [
+   228,
+   89,
+   0,
+   255
+  ],
+  "waterTop": [
+   244,
+   128,
+   21,
+   255
+  ]
+ },
+ {
+  "string": "green_1",
+  "waterColor": [
+   25,
+   117,
+   0,
+   255
+  ],
+  "waterTop": [
+   31,
+   135,
+   2,
+   255
+  ]
+ },
+ {
+  "string": "blue_2",
+  "waterColor": [
+   22,
+   22,
+   191,
+   255
+  ],
+  "waterTop": [
+   44,
+   71,
+   187,
+   255
+  ]
+ },
+ {
+  "string": "brown_1",
+  "waterColor": [
+   212,
+   159,
+   132,
+   255
+  ],
+  "waterTop": [
+   212,
+   159,
+   132,
+   255
+  ]
+ },
+ {
+  "string": "green_2",
+  "waterColor": [
+   1,
+   206,
+   184,
+   255
+  ],
+  "waterTop": [
+   10,
+   217,
+   195,
+   255
+  ]
+ },
+ {
+  "string": "blue_0",
+  "waterColor": [
+   1,
+   152,
+   216,
+   255
+  ],
+  "waterTop": [
+   30,
+   178,
+   243,
+   255
+  ]
+ },
+ {
+  "string": "black_0",
+  "waterColor": [
+   5,
+   2,
+   14,
+   255
+  ],
+  "waterTop": [
+   5,
+   2,
+   14,
+   255
+  ]
+ }
+]

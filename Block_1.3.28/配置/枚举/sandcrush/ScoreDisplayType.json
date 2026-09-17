@@ -1,0 +1,9 @@
+{
+ "NORMAL": "normal",
+ "ELIMINATION": "elimination",
+ "COMBO": "combo",
+ "PLACEMENT": "placement",
+ "PROP": "prop",
+ "CLEAR_BOARD": "clear_board",
+ "CHAIN": "chain"
+}

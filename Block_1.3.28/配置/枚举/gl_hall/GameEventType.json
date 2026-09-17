@@ -1,0 +1,11 @@
+{
+ "ShowPopup": "ShowPopup",
+ "HidePopup": "HidePopup",
+ "BeforeGameEnter": "BeforeGameEnter",
+ "AfterGameEnter": "GameEnter",
+ "BeforeGameExit": "BeforeGameExit",
+ "AfterGameExit": "GameExit",
+ "GetSortList": "GetSortList",
+ "EnterMiniGame": "EnterMiniGame",
+ "ExitMiniGame": "ExitMiniGame"
+}

@@ -1,0 +1,41 @@
+[
+ {
+  "id": "@y.BLOCK_SEQ",
+  "data": {
+   "startBlockId": 2,
+   "endBlockId": 42
+  }
+ },
+ {
+  "id": "@y.BLOCK_SORT",
+  "data": {
+   "sort": "@f.ORDER"
+  }
+ },
+ {
+  "id": "@y.BLOCK_LIMIT_SMALL",
+  "data": {
+   "delBlocks": [
+    6,
+    27,
+    28,
+    15,
+    3,
+    2,
+    5,
+    4,
+    37,
+    38,
+    39,
+    40,
+    41
+   ]
+  }
+ },
+ {
+  "id": "SELECT_BLOCK_714012",
+  "data": {
+   "overTime": 100
+  }
+ }
+]

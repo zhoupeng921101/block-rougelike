@@ -1,0 +1,39 @@
+
+// BigNum.d.ts
+
+// 1. BigNum 类的接口声明
+declare interface BigNum {
+    add(n: BigNum | number | string): BigNum;
+    subtract(n: BigNum | number | string): BigNum;
+    multiply(n: BigNum | number | string): BigNum;
+    divide(n: BigNum | number | string): BigNum;
+    mod(n: BigNum | number | string): BigNum;
+    and(n: BigNum | number | string): BigNum;
+    or(n: BigNum | number | string): BigNum;
+    xor(n: BigNum | number | string): BigNum;
+    shiftLeft(n: number): BigNum;
+    shiftRight(n: number): BigNum;
+    not(): BigNum;
+    equals(n: BigNum | number | string): boolean;
+    notEquals(n: BigNum | number | string): boolean;
+    greater(n: BigNum | number | string): boolean;
+    greaterOrEquals(n: BigNum | number | string): boolean;
+    lesser(n: BigNum | number | string): boolean;
+    lesserOrEquals(n: BigNum | number | string): boolean;
+    isZero(): boolean;
+    toJSNumber(): number;
+    toString(radix?: number): string;
+}
+
+// 2. BigNum 工厂函数接口
+declare interface BigNumStatic {
+    (n: number | string): BigNum;
+    zero: BigNum;
+    one: BigNum;
+    max(...args: BigNum[]): BigNum;
+    min(...args: BigNum[]): BigNum;
+}
+
+// 3. 全局变量声明
+declare let bigNum: BigNumStatic;
+

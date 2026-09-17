@@ -1,0 +1,67 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.spineSingleBlock",
+  "params": {
+   "effectConfig": "eliminate_prompt_effect",
+   "animConfig": {
+    "color_1": [
+     [
+      "in_1"
+     ],
+     [
+      "init_1"
+     ]
+    ],
+    "color_2": [
+     [
+      "in_2"
+     ],
+     [
+      "init_2"
+     ]
+    ],
+    "color_3": [
+     [
+      "in_3"
+     ],
+     [
+      "init_3"
+     ]
+    ],
+    "color_4": [
+     [
+      "in_4"
+     ],
+     [
+      "init_4"
+     ]
+    ],
+    "color_5": [
+     [
+      "in_5"
+     ],
+     [
+      "init_5"
+     ]
+    ],
+    "color_6": [
+     [
+      "in_6"
+     ],
+     [
+      "init_6"
+     ]
+    ],
+    "color_7": [
+     [
+      "in_7"
+     ],
+     [
+      "init_7"
+     ]
+    ]
+   },
+   "isHideBlocks": true
+  }
+ }
+]

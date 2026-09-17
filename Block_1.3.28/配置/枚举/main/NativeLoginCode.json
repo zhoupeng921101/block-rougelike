@@ -1,0 +1,10 @@
+{
+ "Success": 200,
+ "OtherDevice": 401,
+ "CancelledByUser": 2003,
+ "UserCancelled": 1001,
+ "Failed": 1004,
+ "NoNetWork": 2002,
+ "SoftwareNotFound": 2004,
+ "ServerError": 500
+}

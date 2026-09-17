@@ -1,0 +1,11 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.skin4028CustomEliminate",
+  "params": {
+   "effectConfig": "eliminate_effect",
+   "isAboveBlocks": true,
+   "delayPerBlock": 0.06,
+   "delayPerBlock2": 0.06
+  }
+ }
+]

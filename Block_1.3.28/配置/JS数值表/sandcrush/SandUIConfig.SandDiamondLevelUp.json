@@ -1,0 +1,7 @@
+{
+ "bundle": "woodskin",
+ "prefab": "prefabs/levelup/SandDiamondLevelUp",
+ "cnName": "阶段目标实现-钻石",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

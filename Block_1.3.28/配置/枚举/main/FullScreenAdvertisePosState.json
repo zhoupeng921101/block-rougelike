@@ -1,0 +1,6 @@
+{
+ "FullScreen_GameOver": 1,
+ "FullScreen_Replay": 2,
+ "FullScreen_AppShow": 3,
+ "FullScreen_Inactivity": 4
+}

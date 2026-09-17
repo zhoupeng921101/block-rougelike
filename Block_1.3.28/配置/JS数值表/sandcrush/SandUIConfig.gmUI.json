@@ -1,0 +1,7 @@
+{
+ "bundle": "sandgm",
+ "prefab": "GmView",
+ "cnName": "GM界面",
+ "layer": "@o.HSLayerType.System",
+ "cache": false
+}

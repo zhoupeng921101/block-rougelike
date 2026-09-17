@@ -1,0 +1,9 @@
+﻿name,bundle,cover,weight,resName
+一笔画,gl_oneline,,100,oneLine
+井字棋,gl_tictactoe,,90,ticTacToe
+合成大西瓜,gl_fruit,,80,fruitMerge
+水排序,gl_watersort,,70,waterSort
+连连看,gl_onet,,60,onet
+麻将,gl_mahjong,,50,mahjong
+数独,gl_sudoku,,40,sudoku
+土耳其方块,gl_blockslide,,30,blockSlide

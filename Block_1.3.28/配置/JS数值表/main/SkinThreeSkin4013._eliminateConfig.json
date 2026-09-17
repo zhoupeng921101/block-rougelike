@@ -1,0 +1,41 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.spineRowAndColumnRandom",
+  "params": {
+   "effectConfig": "eliminate_effect",
+   "animConfig": {
+    "color_1_x": "orange_x_1",
+    "color_1_y": "orange_y_1",
+    "color_2_x": "yellow_x_1",
+    "color_2_y": "yellow_y_1",
+    "color_3_x": "orange_x_1",
+    "color_3_y": "orange_y_1",
+    "color_4_x": "yellow_x_1",
+    "color_4_y": "yellow_y_1",
+    "color_5_x": "orange_x_1",
+    "color_5_y": "orange_y_1",
+    "color_6_x": "yellow_x_1",
+    "color_6_y": "yellow_y_1",
+    "color_7_x": "orange_x_1",
+    "color_7_y": "orange_y_1"
+   },
+   "animConfig2": {
+    "color_1_x": "orange_x_2",
+    "color_1_y": "orange_y_2",
+    "color_2_x": "yellow_x_2",
+    "color_2_y": "yellow_y_2",
+    "color_3_x": "orange_x_2",
+    "color_3_y": "orange_y_2",
+    "color_4_x": "yellow_x_2",
+    "color_4_y": "yellow_y_2",
+    "color_5_x": "orange_x_2",
+    "color_5_y": "orange_y_2",
+    "color_6_x": "yellow_x_2",
+    "color_6_y": "yellow_y_2",
+    "color_7_x": "orange_x_2",
+    "color_7_y": "orange_y_2"
+   },
+   "isLastTimeNotSameAnimConfig": true
+  }
+ }
+]

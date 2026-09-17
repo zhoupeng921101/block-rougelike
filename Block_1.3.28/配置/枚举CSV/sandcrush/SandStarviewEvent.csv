@@ -1,0 +1,11 @@
+﻿成员,值
+STARVIEW_CLOSE,starview_close
+COMBO_ACHIEVED,starview_combo
+TIME_CUMULATIVE,starview_cumulative
+ENTER_GAME,starview_enter_game
+GAME_ENDED,starview_game_ended
+GAME_RESET,starview_game_reset
+GAME_RESULT,starview_game_result
+NEW_RECORD,starview_new_record
+SCORE_CHANGED,starview_score_changed
+TIME_SINGLE,starview_single

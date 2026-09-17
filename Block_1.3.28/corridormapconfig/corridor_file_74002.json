@@ -1,0 +1,326 @@
+[
+  {
+    "conditions": {
+      "country": [ "US" ],
+      "adwaynum": [ "74002" ]
+    },
+    "data": {
+      "318751cf4db840b4": {
+        "in_24h": {
+          "floor1": 200
+        },
+        "24_168h": {
+          "floor1": 137
+        },
+        "168_744h": {
+          "floor1": 74
+        },
+        "out_744h": {
+          "floor1": 62
+        }
+      },
+      "bc7753aad07c320c": {
+        "in_24h": {
+          "floor1": 249
+        },
+        "24_168h": {
+          "floor1": 144
+        },
+        "168_744h": {
+          "floor1": 93
+        },
+        "out_744h": {
+          "floor1": 80
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": [ "AU", "CA", "GB", "JP", "KR", "NZ" ],
+      "adwaynum": [ "74002" ]
+    },
+    "data": {
+      "318751cf4db840b4": {
+        "in_24h": {
+          "floor1": 166
+        },
+        "24_168h": {
+          "floor1": 116
+        },
+        "168_744h": {
+          "floor1": 64
+        },
+        "out_744h": {
+          "floor1": 50
+        }
+      },
+      "bc7753aad07c320c": {
+        "in_24h": {
+          "floor1": 213
+        },
+        "24_168h": {
+          "floor1": 128
+        },
+        "168_744h": {
+          "floor1": 81
+        },
+        "out_744h": {
+          "floor1": 61
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": [ "AT", "BE", "BG", "CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "CN", "HR", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK" ],
+      "adwaynum": [ "74002" ]
+    },
+    "data": {
+      "318751cf4db840b4": {
+        "in_24h": {
+          "floor1": 74
+        },
+        "24_168h": {
+          "floor1": 54
+        },
+        "168_744h": {
+          "floor1": 32
+        },
+        "out_744h": {
+          "floor1": 24
+        }
+      },
+      "bc7753aad07c320c": {
+        "in_24h": {
+          "floor1": 102
+        },
+        "24_168h": {
+          "floor1": 61
+        },
+        "168_744h": {
+          "floor1": 40
+        },
+        "out_744h": {
+          "floor1": 30
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": [ "BN", "BT", "KH", "KP", "LA", "LK", "MM", "MN", "MV", "NP", "RU", "SG", "TL", "VN" ],
+      "adwaynum": [ "74002" ]
+    },
+    "data": {
+      "318751cf4db840b4": {
+        "in_24h": {
+          "floor1": 10
+        },
+        "24_168h": {
+          "floor1": 8
+        },
+        "168_744h": {
+          "floor1": 7
+        },
+        "out_744h": {
+          "floor1": 10
+        }
+      },
+      "bc7753aad07c320c": {
+        "in_24h": {
+          "floor1": 14
+        },
+        "24_168h": {
+          "floor1": 8
+        },
+        "168_744h": {
+          "floor1": 7
+        },
+        "out_744h": {
+          "floor1": 11
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": [ "BL", "BO", "BZ", "CL", "CR", "CU", "DO", "EC", "GF", "GP", "GT", "GY", "HN", "HT", "MF", "MQ", "NI", "PA", "PE", "PR", "PY", "SR", "SV", "UY", "VE" ],
+      "adwaynum": [ "74002" ]
+    },
+    "data": {
+      "318751cf4db840b4": {
+        "in_24h": {
+          "floor1": 20
+        },
+        "24_168h": {
+          "floor1": 12
+        },
+        "168_744h": {
+          "floor1": 7
+        },
+        "out_744h": {
+          "floor1": 7
+        }
+      },
+      "bc7753aad07c320c": {
+        "in_24h": {
+          "floor1": 29
+        },
+        "24_168h": {
+          "floor1": 14
+        },
+        "168_744h": {
+          "floor1": 8
+        },
+        "out_744h": {
+          "floor1": 8
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": [ "DZ", "EG", "KZ", "BD", "IN" ],
+      "adwaynum": [ "74002" ]
+    },
+    "data": {
+      "318751cf4db840b4": {
+        "in_24h": {
+          "floor1": 4
+        },
+        "24_168h": {
+          "floor1": 3
+        },
+        "168_744h": {
+          "floor1": 2
+        },
+        "out_744h": {
+          "floor1": 2
+        }
+      },
+      "bc7753aad07c320c": {
+        "in_24h": {
+          "floor1": 6
+        },
+        "24_168h": {
+          "floor1": 4
+        },
+        "168_744h": {
+          "floor1": 3
+        },
+        "out_744h": {
+          "floor1": 3
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": [ "ID", "TR", "RS", "PK", "GE" ],
+      "adwaynum": [ "74002" ]
+    },
+    "data": {
+      "318751cf4db840b4": {
+        "in_24h": {
+          "floor1": 8
+        },
+        "24_168h": {
+          "floor1": 5
+        },
+        "168_744h": {
+          "floor1": 4
+        },
+        "out_744h": {
+          "floor1": 4
+        }
+      },
+      "bc7753aad07c320c": {
+        "in_24h": {
+          "floor1": 13
+        },
+        "24_168h": {
+          "floor1": 7
+        },
+        "168_744h": {
+          "floor1": 5
+        },
+        "out_744h": {
+          "floor1": 5
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": [ "TH", "AR", "PH", "MY" ],
+      "adwaynum": [ "74002" ]
+    },
+    "data": {
+      "318751cf4db840b4": {
+        "in_24h": {
+          "floor1": 18
+        },
+        "24_168h": {
+          "floor1": 11
+        },
+        "168_744h": {
+          "floor1": 6
+        },
+        "out_744h": {
+          "floor1": 6
+        }
+      },
+      "bc7753aad07c320c": {
+        "in_24h": {
+          "floor1": 26
+        },
+        "24_168h": {
+          "floor1": 13
+        },
+        "168_744h": {
+          "floor1": 8
+        },
+        "out_744h": {
+          "floor1": 7
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": [ "BR", "CO", "MX", "ZA" ],
+      "adwaynum": [ "74002" ]
+    },
+    "data": {
+      "318751cf4db840b4": {
+        "in_24h": {
+          "floor1": 28
+        },
+        "24_168h": {
+          "floor1": 17
+        },
+        "168_744h": {
+          "floor1": 10
+        },
+        "out_744h": {
+          "floor1": 10
+        }
+      },
+      "bc7753aad07c320c": {
+        "in_24h": {
+          "floor1": 36
+        },
+        "24_168h": {
+          "floor1": 17
+        },
+        "168_744h": {
+          "floor1": 11
+        },
+        "out_744h": {
+          "floor1": 11
+        }
+      }
+    }
+  }
+]

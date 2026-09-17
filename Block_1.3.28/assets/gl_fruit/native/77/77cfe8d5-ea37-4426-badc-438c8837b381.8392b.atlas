@@ -1,0 +1,41 @@
+
+Fruit_06.png
+size: 512, 256
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+Fruit_06_body_01
+  rotate: false
+  xy: 2, 44
+  size: 207, 207
+  orig: 209, 209
+  offset: 1, 1
+  index: -1
+Fruit_06_body_02
+  rotate: false
+  xy: 211, 44
+  size: 207, 207
+  orig: 209, 209
+  offset: 1, 1
+  index: -1
+Fruit_06_eye_l
+  rotate: false
+  xy: 420, 214
+  size: 50, 37
+  orig: 62, 50
+  offset: 7, 7
+  index: -1
+Fruit_06_eye_r
+  rotate: false
+  xy: 2, 2
+  size: 54, 40
+  orig: 57, 50
+  offset: 1, 3
+  index: -1
+Fruit_06_mouth_01
+  rotate: false
+  xy: 58, 27
+  size: 57, 15
+  orig: 59, 17
+  offset: 1, 1
+  index: -1

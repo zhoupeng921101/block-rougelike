@@ -1,0 +1,6 @@
+﻿_key,icon,title,content,btnText1,btnText2,hideCloseBtn,name,isBtn1Video,propId
+again,0,@r.default.MAHJONG_POPUP_AGAIN_TITLE,@r.default.MAHJONG_POPUP_AGAIN_DESC,@r.default.MAHJONG_POPUP_AGAIN_BUTTON_RESTART,@r.default.MAHJONG_POPUP_AGAIN_BUTTON_NEWGAME,False,again,,
+againGuide,0,@r.default.MAHJONG_POPUP_AGAIN_TITLE,@r.default.MAHJONG_POPUP_AGAIN_DESC,@r.default.MAHJONG_POPUP_AGAIN_BUTTON_RESTART,@r.default.MAHJONG_POPUP_AGAIN_BUTTON_CANCEL,False,againGuide,,
+hint,1,@r.default.MAHJONG_POPUP_HINT_TITLE,,@r.default.MAHJONG_POPUP_HINT_BUTTON_YES,@r.default.MAHJONG_POPUP_HINT_BUTTON_NO,False,hint,True,@n.GLMahjongPropIdDefine.Hint
+shuffle,2,@r.default.MAHJONG_POPUP_SHUFFLE_TITLE,,@r.default.MAHJONG_POPUP_SHUFFLE_BUTTON_YES,@r.default.MAHJONG_POPUP_SHUFFLE_BUTTON_NO,False,shuffle,True,@n.GLMahjongPropIdDefine.Shuffle
+Lose,3,@r.default.MAHJONG_POPUP_LOSE_TITLE,@r.default.MAHJONG_POPUP_LOSE_DESC,@r.default.MAHJONG_POPUP_LOSE_BUTTON_SHUFFLE,@r.default.MAHJONG_POPUP_LOSE_BUTTON_RESTART,True,Lose,True,@n.GLMahjongPropIdDefine.Shuffle

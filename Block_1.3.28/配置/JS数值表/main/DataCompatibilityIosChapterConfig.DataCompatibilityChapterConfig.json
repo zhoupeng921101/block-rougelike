@@ -1,0 +1,22 @@
+{
+ "chapterScore": "fangkuaipintutravel#current_cord:number",
+ "chapterHighScore": "fangkuaipintutravel#high_cord:number",
+ "chapterRoundNum": "fangkuaipintutravel#roundNum:number",
+ "chapterGameNum": "fangkuaipintutravel#gameNum:number",
+ "chapterNum": "fangkuaipintutravel#chapterNum:number",
+ "chapterFaceBlocks": "fangkuaipintutravel#save_arr:object",
+ "chapterCondition": "fangkuaipintutravel#Condition:object",
+ "chapterTryTimes": "fangkuaipintutravel#tryTimes:number",
+ "chapterStreamerInfo": "fangkuaipintutravel#streamerInfo:object",
+ "chapterReviveNum": "fangkuaipintutravel#adPlayNum:number",
+ "chapterActualReviveNum": "fangkuaipintutravel#adPlayNum:number",
+ "chapterOneChapterGameNum": "fangkuaipintutravel#game1Num:number",
+ "lastChapterNum": "fangkuaipintutravel#chapterMoveNum:number",
+ "chapterBlockExtraList": {
+  "better_block": "fangkuaipintutravel#betterBlockCount:number",
+  "better_space": "fangkuaipintutravel#betterSpaceCount:number"
+ },
+ "GameEndAddPointControlTravelKey": "fangkuaipintutravel#diePointArr:object",
+ "chapterBlockLists": "fangkuaipintutravel#opera_arr:object",
+ "chapterAlgoActualName": "fangkuaipintutravel#currentBlockNameArr:object"
+}

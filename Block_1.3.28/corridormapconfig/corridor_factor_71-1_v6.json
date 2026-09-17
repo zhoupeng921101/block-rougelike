@@ -1,0 +1,1138 @@
+[
+  {
+    "conditions": {
+      "country": ["US"],
+      "abtest": ["fs71008","rv71008"],
+      "adwaynum": ["71008"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "floor1": 30
+      },
+      "afe53469a2b9298c": {
+        "floor1": 10
+      },
+      "ab18eea0331c9f88": {
+        "floor1": 50
+      },
+      "431f3e8b8ae07da8": {
+        "floor1": 20
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AU","CA","GB","JP","KR","NZ"],
+      "abtest": ["fs71008","rv71008"],
+      "adwaynum": ["71008"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "floor1": 20
+      },
+      "afe53469a2b9298c": {
+        "floor1": 5
+      },
+      "ab18eea0331c9f88": {
+        "floor1": 45
+      },
+      "431f3e8b8ae07da8": {
+        "floor1": 15
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AT","BE","BG","CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HK", "HR", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK","CN"],
+      "abtest": ["fs71008","rv71008"],
+      "adwaynum": ["71008"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "floor1": 10
+      },
+      "afe53469a2b9298c": {
+        "floor1": 3
+      },
+      "ab18eea0331c9f88": {
+        "floor1": 25
+      },
+      "431f3e8b8ae07da8": {
+        "floor1": 8
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BD", "BN", "BT", "ID", "IN", "KH", "KP", "LA", "LK", "MM", "MN", "MV", "MY", "NP", "PH", "PK", "RU", "SG", "TH", "TL", "VN"],
+      "abtest": ["fs71008","rv71008"],
+      "adwaynum": ["71008"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "floor1": 2.4
+      },
+      "afe53469a2b9298c": {
+        "floor1": 1
+      },
+      "ab18eea0331c9f88": {
+        "floor1": 6
+      },
+      "431f3e8b8ae07da8": {
+        "floor1": 1.5
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AR", "BL", "BO", "BR", "BZ", "CL", "CO", "CR", "CU", "DO", "EC", "GF", "GP", "GT", "GY", "HN", "HT", "MF", "MQ", "MX", "NI", "PA", "PE", "PR", "PY", "SR", "SV", "UY", "VE"],
+      "abtest": ["fs71008","rv71008"],
+      "adwaynum": ["71008"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "floor1": 3.6
+      },
+      "afe53469a2b9298c": {
+        "floor1": 1.5
+      },
+      "ab18eea0331c9f88": {
+        "floor1": 10
+      },
+      "431f3e8b8ae07da8": {
+        "floor1": 2
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["US"],
+      "abtest": ["fs71006","rv71006"],
+      "adwaynum": ["71006"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 70
+          },
+          "24h_out": {
+            "floor1": 30
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 35
+          },
+          "24h_out": {
+            "floor1": 20
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 25
+          },
+          "24h_out": {
+            "floor1": 15
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 30
+          },
+          "24h_out": {
+            "floor1": 15
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 16
+          },
+          "24h_out": {
+            "floor1": 10
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 10
+          },
+          "24h_out": {
+            "floor1": 7
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 100
+          },
+          "24h_out": {
+            "floor1": 50
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 60
+          },
+          "24h_out": {
+            "floor1": 35
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 40
+          },
+          "24h_out": {
+            "floor1": 25
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 50
+          },
+          "24h_out": {
+            "floor1": 25
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 30
+          },
+          "24h_out": {
+            "floor1": 17
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 20
+          },
+          "24h_out": {
+            "floor1": 12
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AU","CA","GB","JP","KR","NZ"],
+      "abtest": ["fs71006","rv71006"],
+      "adwaynum": ["71006"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 45
+          },
+          "24h_out": {
+            "floor1": 20
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 25
+          },
+          "24h_out": {
+            "floor1": 15
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 15
+          },
+          "24h_out": {
+            "floor1": 10
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 20
+          },
+          "24h_out": {
+            "floor1": 10
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 12
+          },
+          "24h_out": {
+            "floor1": 6
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6
+          },
+          "24h_out": {
+            "floor1": 5
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 80
+          },
+          "24h_out": {
+            "floor1": 45
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 50
+          },
+          "24h_out": {
+            "floor1": 25
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 30
+          },
+          "24h_out": {
+            "floor1": 20
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 40
+          },
+          "24h_out": {
+            "floor1": 22
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 25
+          },
+          "24h_out": {
+            "floor1": 12
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 15
+          },
+          "24h_out": {
+            "floor1": 10
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AT","BE","BG","CH","CY","CZ","DE","DK","EE","ES","FI","FR","GR","HK","HR","HU","IE","IS","IT","LI","LT","LU","LV","MT","NL","NO","PL","PT","RO","SE","SI","SK"],
+      "abtest": ["fs71006","rv71006"],
+      "adwaynum": ["71006"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 15
+          },
+          "24h_out": {
+            "floor1": 8
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 7
+          },
+          "24h_out": {
+            "floor1": 5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6
+          },
+          "24h_out": {
+            "floor1": 4
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 7
+          },
+          "24h_out": {
+            "floor1": 4
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 3
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 2.5
+          },
+          "24h_out": {
+            "floor1": 1.5
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 30
+          },
+          "24h_out": {
+            "floor1": 18
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 15
+          },
+          "24h_out": {
+            "floor1": 8
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 12
+          },
+          "24h_out": {
+            "floor1": 7
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 15
+          },
+          "24h_out": {
+            "floor1": 9
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 7
+          },
+          "24h_out": {
+            "floor1": 4
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6
+          },
+          "24h_out": {
+            "floor1": 3
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BN","BT","CN","KH","KP","LA","LK","MM","MN","MV","NP","RU","SG","TL","TW","VN"],
+      "abtest": ["fs71006","rv71006"],
+      "adwaynum": ["71006"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 5
+          },
+          "24h_out": {
+            "floor1": 3.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3.5
+          },
+          "24h_out": {
+            "floor1": 3
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 1.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1
+          },
+          "24h_out": {
+            "floor1": 0.8
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1.5
+          },
+          "24h_out": {
+            "floor1": 1
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 8
+          },
+          "24h_out": {
+            "floor1": 6
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 4
+          },
+          "24h_out": {
+            "floor1": 2.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6
+          },
+          "24h_out": {
+            "floor1": 4
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 4
+          },
+          "24h_out": {
+            "floor1": 3
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BL","BO","BZ","CL","CR","CU","DO","EC","GF","GP","GT","GY","HN","HT","MF","MQ","NI","PA","PE","PR","PY","SR","SV","UY","VE"],
+      "abtest": ["fs71006","rv71006"],
+      "adwaynum": ["71006"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 5
+          },
+          "24h_out": {
+            "floor1": 3
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 2.5
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 2.5
+          },
+          "24h_out": {
+            "floor1": 1.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1
+          },
+          "24h_out": {
+            "floor1": 0.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1.2
+          },
+          "24h_out": {
+            "floor1": 0.8
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 9
+          },
+          "24h_out": {
+            "floor1": 6.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 4
+          },
+          "24h_out": {
+            "floor1": 2.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6
+          },
+          "24h_out": {
+            "floor1": 4
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 4
+          },
+          "24h_out": {
+            "floor1": 3
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["DZ","EG","KZ","BD","IN"],
+      "abtest": ["fs71006","rv71006"],
+      "adwaynum": ["71006"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 1
+          },
+          "24h_out": {
+            "floor1": 0.8
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 0.7
+          },
+          "24h_out": {
+            "floor1": 0.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 0.8
+          },
+          "24h_out": {
+            "floor1": 0.6
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.4
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 0.3
+          },
+          "24h_out": {
+            "floor1": 0.2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 0.4
+          },
+          "24h_out": {
+            "floor1": 0.3
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 1.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1
+          },
+          "24h_out": {
+            "floor1": 0.7
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1
+          },
+          "24h_out": {
+            "floor1": 0.7
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 1
+          },
+          "24h_out": {
+            "floor1": 0.7
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.3
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.3
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["ID","TR","RS","PK","GE"],
+      "abtest": ["fs71006","rv71006"],
+      "adwaynum": ["71006"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 3
+          },
+          "24h_out": {
+            "floor1": 1.8
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 0.8
+          },
+          "24h_out": {
+            "floor1": 0.6
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1
+          },
+          "24h_out": {
+            "floor1": 0.7
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 1.5
+          },
+          "24h_out": {
+            "floor1": 0.9
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 0.4
+          },
+          "24h_out": {
+            "floor1": 0.3
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 0.5
+          },
+          "24h_out": {
+            "floor1": 0.35
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 8
+          },
+          "24h_out": {
+            "floor1": 4
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 4
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1
+          },
+          "24h_out": {
+            "floor1": 0.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1.5
+          },
+          "24h_out": {
+            "floor1": 1
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["TH","AR","PH","MY"],
+      "abtest": ["fs71006","rv71006"],
+      "adwaynum": ["71006"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 4
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 1.2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3
+          },
+          "24h_out": {
+            "floor1": 1.5
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 1
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1
+          },
+          "24h_out": {
+            "floor1": 0.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 1.5
+          },
+          "24h_out": {
+            "floor1": 0.7
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 7
+          },
+          "24h_out": {
+            "floor1": 4
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 4
+          },
+          "24h_out": {
+            "floor1": 2.5
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 6
+          },
+          "24h_out": {
+            "floor1": 3.5
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 3.5
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 3
+          },
+          "24h_out": {
+            "floor1": 1.5
+          }
+        }
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BR","CO","MX","ZA"],
+      "abtest": ["fs71006","rv71006"],
+      "adwaynum": ["71006"],
+      "low_api_version": 111
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "high": {
+          "in_24h": {
+            "floor1": 8
+          },
+          "24h_out": {
+            "floor1": 5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 3
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 4
+          },
+          "24h_out": {
+            "floor1": 3
+          }
+        }
+      },
+      "afe53469a2b9298c": {
+        "high": {
+          "in_24h": {
+            "floor1": 4
+          },
+          "24h_out": {
+            "floor1": 2.5
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 1.5
+          },
+          "24h_out": {
+            "floor1": 1
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 2
+          },
+          "24h_out": {
+            "floor1": 1.5
+          }
+        }
+      },
+      "ab18eea0331c9f88": {
+        "high": {
+          "in_24h": {
+            "floor1": 15
+          },
+          "24h_out": {
+            "floor1": 8
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 5
+          },
+          "24h_out": {
+            "floor1": 4
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 8
+          },
+          "24h_out": {
+            "floor1": 6
+          }
+        }
+      },
+      "431f3e8b8ae07da8": {
+        "high": {
+          "in_24h": {
+            "floor1": 7
+          },
+          "24h_out": {
+            "floor1": 4
+          }
+        },
+        "middle": {
+          "in_24h": {
+            "floor1": 2.5
+          },
+          "24h_out": {
+            "floor1": 2
+          }
+        },
+        "low": {
+          "in_24h": {
+            "floor1": 4
+          },
+          "24h_out": {
+            "floor1": 3
+          }
+        }
+      }
+    }
+  }
+]

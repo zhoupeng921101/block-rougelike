@@ -1,0 +1,10 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.skin4026Custom",
+  "params": {
+   "effectConfig": "eliminate_prompt_effect",
+   "isAboveBlocks": true,
+   "delayPerRing": 0.04
+  }
+ }
+]

@@ -1,0 +1,16 @@
+{
+ "gl_oneline": "GameRes/scenes/glOnelinePrefab",
+ "gl_tictactoe": "scene/glTictactoePrefab",
+ "gl_fruit": "assets/scenes/gl_fruit",
+ "HsBlock": 97,
+ "HsSeaBattle": 96,
+ "gl_watersort": "scene/glWatersort",
+ "gl_onet": "scene/glOnet",
+ "gl_mahjong": "assets/scenes/glMahjongPrefab",
+ "HsLudo": 92,
+ "Hs2048": 91,
+ "Hs4InARow": 90,
+ "gl_sudoku": "glSudoku",
+ "HsSolitaire": 88,
+ "gl_blockslide": 91.5
+}

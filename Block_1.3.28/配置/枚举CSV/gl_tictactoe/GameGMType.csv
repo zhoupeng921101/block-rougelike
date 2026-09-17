@@ -1,0 +1,15 @@
+﻿成员,值
+NextLevelRed,0
+NextLevelBlue,1
+AutoPutChess,2
+AutoPutChessLock,3
+Draw,4
+Temperature,5
+ForeknowDraw,6
+ForeknowDrawLock,7
+FourDrawNum,8
+FiveDrawNum,9
+BackSpace,10
+IsOpenMoreGuide,11
+MinMaxONum,12
+AddItem,13

@@ -1,0 +1,519 @@
+{
+ "MainTraits": {
+  "name": "MainTraits",
+  "url": "prefabs/MainTraits",
+  "bundleName": "mainTraits"
+ },
+ "Modal": {
+  "name": "Modal",
+  "url": "prefabs/modal/Modal"
+ },
+ "ClearScreenRelax": {
+  "name": "clearScreenRelax",
+  "url": "prefabs/clearScreenRelax",
+  "bundleName": "Remote_9723_f_clearScreenRelax"
+ },
+ "Alert": {
+  "name": "Alert",
+  "url": "prefabs/alert/Alert"
+ },
+ "ClassMain": {
+  "name": "ClassMain",
+  "url": "prefabs/main/ClassMain",
+  "bundleName": "class",
+  "page": true
+ },
+ "ClassGame": {
+  "name": "ClassGame",
+  "url": "prefabs/game/ClassGame",
+  "bundleName": "class",
+  "page": true
+ },
+ "MergeBlocksMain": {
+  "name": "MergeBlocksMain",
+  "url": "prefabs/main/MergeBlocksMain",
+  "bundleName": "mergeBlocks",
+  "page": true
+ },
+ "MergeBlocksGame": {
+  "name": "MergeBlocksGame",
+  "url": "prefabs/game/MergeBlocksGame",
+  "bundleName": "mergeBlocks",
+  "page": true
+ },
+ "RoyalMatchStoryMain": {
+  "name": "RoyalMatchStoryMain",
+  "url": "prefabs/main/RoyalMatchStoryMain",
+  "bundleName": "royalMatchStory",
+  "page": true
+ },
+ "RoyalMatchStoryGame": {
+  "name": "RoyalMatchStoryGame",
+  "url": "prefabs/game/RoyalMatchStoryGame",
+  "bundleName": "royalMatchStory",
+  "page": true
+ },
+ "ChapterMain": {
+  "name": "ChapterMain",
+  "url": "prefabs/main/ChapterMain",
+  "bundleName": "chapter",
+  "page": true
+ },
+ "JewelMain": {
+  "name": "JewelMain",
+  "url": "prefabs/main/JewelMain",
+  "bundleName": "jewel",
+  "page": true
+ },
+ "ChapterList": {
+  "name": "ChapterList",
+  "url": "prefabs/chapterList/ChapterList",
+  "bundleName": "chapter",
+  "page": true
+ },
+ "ChapterContent": {
+  "name": "ChapterContent",
+  "url": "prefabs/chapterList/ChapterContent",
+  "bundleName": "chapter"
+ },
+ "ChapterItem": {
+  "name": "ChapterItem",
+  "url": "prefabs/chapterList/ChapterItem",
+  "bundleName": "chapter"
+ },
+ "ChapterLevelTxt": {
+  "name": "ChapterLevelTxt",
+  "url": "prefabs/chapterList/ChapterLevelTxt",
+  "bundleName": "chapter"
+ },
+ "ChapterTopLevelNum": {
+  "name": "ChapterTopLevelNum",
+  "url": "prefabs/ChapterTopLevelNum",
+  "bundleName": "Remote_ShowOverMoreAggressively"
+ },
+ "ToolMain": {
+  "name": "ToolMain",
+  "url": "prefabs/main/ToolMain",
+  "bundleName": "tool"
+ },
+ "Board": {
+  "name": "Board",
+  "url": "prefabs/board/Board"
+ },
+ "Block": {
+  "name": "Block",
+  "url": "prefabs/block/Block"
+ },
+ "BlockProducer": {
+  "name": "BlocksProducer",
+  "url": "prefabs/blockProducer/BlockProducer"
+ },
+ "BlockProducerItem": {
+  "name": "BlockProducerItem",
+  "url": "prefabs/blockProducer/BlockProducerItem"
+ },
+ "Launch": {
+  "name": "Launch",
+  "url": "prefabs/launch/Launch"
+ },
+ "HomePage": {
+  "name": "HomePage",
+  "url": "prefabs/homePage/homePage",
+  "page": true
+ },
+ "HomePageMoreGameLoading": {
+  "name": "HomePageMoreGameLoading",
+  "url": "prefabs/homePage/homePageMoreGameLoading"
+ },
+ "HomePageType1": {
+  "name": "homePageType1",
+  "url": "prefabs/type1/homePageType1",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType2": {
+  "name": "homePageType2",
+  "url": "prefabs/type2/homePageType2",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType3": {
+  "name": "homePageType3",
+  "url": "prefabs/type3/homePageType3",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType4": {
+  "name": "homePageType4",
+  "url": "prefabs/type4/homePageType4",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType5": {
+  "name": "homePageType5",
+  "url": "prefabs/type5/homePageType5",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType6": {
+  "name": "homePageType6",
+  "url": "prefabs/type6/homePageType6",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType7": {
+  "name": "homePageType7",
+  "url": "prefabs/type7/homePageType7",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType8": {
+  "name": "homePageType8",
+  "url": "prefabs/type8/homePageType8",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType9": {
+  "name": "homePageType9",
+  "url": "prefabs/type9/homePageType9",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType10": {
+  "name": "homePageType10",
+  "url": "prefabs/type10/homePageType10",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType11": {
+  "name": "homePageType11",
+  "url": "prefabs/type11/homePageType11",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType12": {
+  "name": "homePageType12",
+  "url": "prefabs/type12/homePageType12",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType13": {
+  "name": "homePageType13",
+  "url": "prefabs/type13/homePageType13",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "HomePageType14": {
+  "name": "homePageType14",
+  "url": "prefabs/type14/homePageType14",
+  "bundleName": "Remote_homePage",
+  "page": true
+ },
+ "Setup": {
+  "name": "Setup",
+  "url": "prefabs/setup/Setup",
+  "modal": true
+ },
+ "SetupIos": {
+  "name": "Setup",
+  "url": "prefabs/iosSetUp/iosSetup",
+  "modal": true
+ },
+ "SetupIosBtnItem": {
+  "name": "iosSetUpItem",
+  "url": "prefabs/iosSetUp/iosSetUpItem"
+ },
+ "IOSSetupAccountBtnItem": {
+  "name": "IOSSetUpBtnItem",
+  "url": "prefabs/account/iOSSetupAccountBtnItem"
+ },
+ "SetupIconItem": {
+  "name": "SetupIconItem",
+  "url": "prefabs/setup/components/SetupIconItem"
+ },
+ "Tip": {
+  "name": "Tip",
+  "url": "prefabs/tip/Tip"
+ },
+ "SetupBtnItem": {
+  "name": "SetupBtnItem",
+  "url": "prefabs/setup/components/SetupBtnItem"
+ },
+ "SetupLanguageList": {
+  "name": "SetupLanguageList",
+  "url": "prefabs/setup_changelanguage",
+  "bundleName": "LangSelectTrait"
+ },
+ "SetupLanguageListItem": {
+  "name": "SetupLanguageListItem",
+  "url": "prefabs/setup_languageItem",
+  "bundleName": "LangSelectTrait"
+ },
+ "SetupAccountBtnItem": {
+  "name": "SetupAccountBtnItem",
+  "url": "prefabs/account/GPSetupBtnItem"
+ },
+ "Revive": {
+  "name": "Revive",
+  "url": "prefabs/revive/Revive",
+  "modal": true,
+  "clickModalNotClose": true,
+  "mutex": "@r.PrefabMutexType.REVIVE"
+ },
+ "ReviveBlockAlert": {
+  "name": "ReviveBlockAlert",
+  "url": "prefabs/ReviveBlockAlert",
+  "bundleName": "Remote_ReviveBlockAlert",
+  "modal": true,
+  "clickModalNotClose": true,
+  "mutex": "@r.PrefabMutexType.REVIVE"
+ },
+ "NearHighScoreReviveAlert": {
+  "name": "NearHighScoreReviveAlert",
+  "url": "prefabs/NearHighScoreReviveAlert",
+  "bundleName": "NearHighScoreReviveTrait",
+  "modal": true,
+  "mutex": "@r.PrefabMutexType.REVIVE"
+ },
+ "RetentionPopup": {
+  "name": "RetentionPopup",
+  "url": "prefabs/RetentionPopup",
+  "bundleName": "RetentionPopupTrait",
+  "modal": true
+ },
+ "TouchEffect": {
+  "name": "TouchEffect",
+  "url": "prefabs/touchEffect/TouchEffect"
+ },
+ "Encourage": {
+  "name": "Encourage",
+  "url": "prefabs/encourage/Encourage"
+ },
+ "EncourageReplaceGood": {
+  "name": "EncourageReplaceGood",
+  "url": "prefabs/encourage/trait/EncourageReplaceGood"
+ },
+ "ComboScoreTip": {
+  "name": "ComboScoreTip",
+  "url": "prefabs/comboScoreTip/ComboScoreTip"
+ },
+ "ComboScoreIosTip": {
+  "name": "ComboScoreIosTip",
+  "url": "prefabs/comboScoreTip/ComboScoreIosTip"
+ },
+ "Achievement_Entrance": {
+  "name": "Achievement_Entrance",
+  "url": "prefabs/achievement/Achievement_Entrance"
+ },
+ "Achievement_Main": {
+  "name": "Achievement_Main",
+  "url": "prefabs/achievement/Achievement_Main",
+  "page": true
+ },
+ "Achievement_Statistics_Item": {
+  "name": "Achievement_Statistics_Item",
+  "url": "prefabs/achievement/Achievement_Statistics_Item"
+ },
+ "Achievement_Statistics_Item_Bg": {
+  "name": "Achievement_Statistics_Item_Bg",
+  "url": "prefabs/achievement/Achievement_Statistics_Item_Bg"
+ },
+ "Achievement_Awards_Item": {
+  "name": "Achievement_Awards_Item",
+  "url": "prefabs/achievement/Achievement_Awards_Item"
+ },
+ "Achievement_Awards_Item_Icon": {
+  "name": "Achievement_Awards_Item_Icon",
+  "url": "prefabs/achievement/Achievement_Awards_item_Icon"
+ },
+ "Achievement_Details": {
+  "name": "Achievement_Detail",
+  "url": "prefabs/achievement/Achievement_Detail"
+ },
+ "commentSkin": {
+  "name": "commentSkin",
+  "url": "prefabs/commentSkin/commentSkin",
+  "modal": true
+ },
+ "NoSpace": {
+  "name": "NoSpace",
+  "url": "prefabs/game/NoSpace"
+ },
+ "GoOnGame": {
+  "name": "GoOnGame",
+  "url": "prefabs/game/GoOnGame"
+ },
+ "DailyWinStreakState": {
+  "name": "DailyWinStreakState",
+  "url": "prefabs/dailyWinStreakState/DailyWinStreakState"
+ },
+ "RightPutPerfect": {
+  "name": "RightPutPerfect",
+  "url": "prefabs/board/RightPutPerfect"
+ },
+ "SetupVibrateItem": {
+  "name": "SetupVibrateItem",
+  "url": "prefabs/setup/components/SetupVibrateItem"
+ },
+ "GLHallMoreGamesPopupView": {
+  "name": "GLHallMoreGamesPopupView",
+  "url": "prefabs/gamelobby/GLHallMoreGamesPopupView",
+  "modal": true
+ },
+ "GameLobbyMainView": {
+  "name": "GameLobbyMainView",
+  "url": "prefabs/gamelobby/GameLobbyMainView",
+  "page": true
+ },
+ "GameLobbyAddMoreGame": {
+  "name": "GameLobbyAddMoreGame",
+  "url": "prefabs/gamelobby/GameLobbyAddMoreGame"
+ },
+ "ComboBase": {
+  "name": "ComboBase",
+  "url": "prefabs/combo/ComboBase"
+ },
+ "PlaybackGamePre": {
+  "name": "PlaybackGamePre",
+  "url": "prefabs/playback/replayGamePre"
+ },
+ "PlaybackGameBtn": {
+  "name": "PlaybackGameBtn",
+  "url": "prefabs/playback/replayGameBtn"
+ },
+ "ColorClearPreviewItem": {
+  "name": "ColorClearPreviewItem",
+  "url": "prefabs/ColorClearPreviewItem",
+  "bundleName": "Remote_32523_f_ColorClearPreview"
+ },
+ "TripCountdown": {
+  "name": "TripCountdown",
+  "url": "prefabs/homePage/tripCountdown"
+ },
+ "AdventureOverdueChapterItem": {
+  "name": "AdventureOverdueChapterItem",
+  "url": "prefabs/adventureOverdueChapterItem",
+  "bundleName": "Remote_AdventureOverdue",
+  "platform": "ios"
+ },
+ "AdventureOverdueChapterLevelTxt": {
+  "name": "AdventureOverdueChapterLevelTxt",
+  "url": "prefabs/adventureOverdueChapterLevelTxt",
+  "bundleName": "Remote_AdventureOverdue",
+  "platform": "ios"
+ },
+ "NewLifeBlockItem": {
+  "name": "NewLifeBlockItem",
+  "url": "prefabs/blockProducer/ShowItem3",
+  "platform": "ios"
+ },
+ "ShareBtnNode": {
+  "name": "ShareBtnNode",
+  "url": "prefabs/ShareBtnNode",
+  "bundleName": "Remote_controlShareIconShow",
+  "platform": "ios"
+ },
+ "NextLevelButtonShowText": {
+  "name": "NextLevelButtonShowText",
+  "url": "prefab/Remote_NextLevelButtonShowText",
+  "bundleName": "Remote_NextLevelButtonShowText",
+  "platform": "ios"
+ },
+ "NewFeedbackViewTwo": {
+  "name": "NewFeedbackViewTwo",
+  "url": "prefabs/newFeedbackView_Two",
+  "bundleName": "Remote_NewFeedback",
+  "modal": true
+ },
+ "NewFeedbackView": {
+  "name": "NewFeedbackView",
+  "url": "prefabs/newFeedbackView",
+  "bundleName": "Remote_NewFeedback",
+  "modal": true
+ },
+ "NewFeedbackTapView": {
+  "name": "NewFeedbackTapView",
+  "url": "prefabs/tapView",
+  "bundleName": "Remote_NewFeedback"
+ },
+ "InactivityAdComing": {
+  "name": "InactivityAdComing",
+  "url": "prefabs/adcoming",
+  "bundleName": "InactivityTriggeredInterstitialTrait"
+ },
+ "NoSignal": {
+  "name": "NoSignal",
+  "url": "prefabs/NoSignal/NoSignal",
+  "modal": true
+ },
+ "NoOptPutTip": {
+  "name": "NoOptPutTip",
+  "url": "prefabs/blockProducerTip",
+  "bundleName": "Remote_BlockProducerTip"
+ },
+ "VietnamIos_PopupHint": {
+  "name": "PopupHint",
+  "url": "vietnam/prefab/ios/PopupHint",
+  "bundleName": "Vietnam_f_VietnamCtrTrait"
+ },
+ "VietnamIos_PopupStop": {
+  "name": "PopupStop",
+  "url": "vietnam/prefab/ios/PopupStop",
+  "bundleName": "Vietnam_f_VietnamCtrTrait"
+ },
+ "VietnamGp_PopupHint": {
+  "name": "PopupHint",
+  "url": "vietnam/prefab/gp/PopupHint_gp",
+  "bundleName": "Vietnam_f_VietnamCtrTrait"
+ },
+ "VietnamGp_PopupStop": {
+  "name": "PopupStop",
+  "url": "vietnam/prefab/gp/PopupStop_gp",
+  "bundleName": "Vietnam_f_VietnamCtrTrait"
+ },
+ "ReviveBtnEff": {
+  "name": "ReviveBtnEff",
+  "url": "prefabs/ReviveBtnEffPrefab",
+  "bundleName": "ReviveBtnEffTrait"
+ },
+ "ClassGameOverMsgView": {
+  "name": "ClassGameOverMsgView",
+  "url": "prefabs/ClassGameOverMsgView",
+  "bundleName": "ClassGameOverMsgTrait"
+ },
+ "BoardSplashAnimationRainbowScreenRefresh": {
+  "name": "BoardSplashAnimationRainbowScreenRefresh",
+  "url": "prefabs/BoardSplashAnimationRainbowScreenRefresh",
+  "bundleName": "BoardSplashAnimationTrait"
+ },
+ "ComboRevive": {
+  "name": "ComboRevive",
+  "url": "prefabs/ComboRevive",
+  "bundleName": "ClassReviveShowComboTrait"
+ },
+ "ReviveBtnHighlightTrait": {
+  "name": "ReviveBtnHighlightTrait",
+  "url": "prefabs/ReviveBtnHighlightTrait",
+  "bundleName": "ReviveBtnHighlightTrait"
+ },
+ "TravelEntryClockShadowTrait": {
+  "name": "TravelEntryClockShadowTrait",
+  "url": "prefabs/TravelEntryClockShadowTrait",
+  "bundleName": "TravelEntryClockShadowTrait"
+ },
+ "PromotionMoreGamesInBlockCtrl": {
+  "name": "PromotionMoreGamesInBlockCtrl",
+  "url": "prefabs/internalReferral/PromotionMoreGamesInBlockCtrl"
+ },
+ "ReplayConfirmation": {
+  "name": "ReplayConfirmation",
+  "url": "prefabs/ReplayConfirmation",
+  "bundleName": "ReplayConfirmationTrait",
+  "modal": true,
+  "platform": "ios"
+ },
+ "SandGameEntry": {
+  "name": "SandGameEntry",
+  "url": "prefabs/sand/SandGameEntry"
+ }
+}

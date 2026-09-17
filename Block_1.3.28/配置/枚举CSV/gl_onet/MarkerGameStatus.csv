@@ -1,0 +1,6 @@
+﻿成员,值
+NewGame,0
+Replay,1
+Success,2
+Fail,3
+GiveUp,4

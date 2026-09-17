@@ -1,0 +1,15 @@
+﻿_key,key,achievementTargetType,cjpushcftype,scheme
+17,achieve_high_score,1,highscores,cj17
+18,achieve_high_score,1,highscores,cj18
+19,achieve_win_streak,2,travelwinning,cj19
+20,achieve_win_streak,2,travelwinning,cj20
+21,achieve_all_levels,4,levescompleted,cj21
+22,achieve_all_levels,4,levescompleted,cj22
+23,achieve_adventure_map,8,mosaicmaps,cj23
+24,achieve_adventure_map,8,mosaicmaps,cj24
+25,achieve_elimination_multi,5,clear_master,cj25
+26,achieve_elimination_multi,5,clear_master,cj26
+27,achieve_elimination_block,9,master_cleaner,cj27
+28,achieve_elimination_block,9,master_cleaner,cj28
+29,achieve_collect_gem,6,jewelry_tycoon,cj29
+30,achieve_collect_gem,6,jewelry_tycoon,cj30

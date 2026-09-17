@@ -1,0 +1,47 @@
+{
+ "blue": {
+  "start": "00579800",
+  "peak": "1179C6FF",
+  "end": "00579800"
+ },
+ "cyan": {
+  "start": "30BAFF00",
+  "peak": "31BAFFFF",
+  "end": "30BAFF00"
+ },
+ "green": {
+  "start": "45B01B00",
+  "peak": "45B01CFF",
+  "end": "45B01B00"
+ },
+ "orange": {
+  "start": "A7540200",
+  "peak": "A75402FF",
+  "end": "A7540200"
+ },
+ "pink": {
+  "start": "A06A9100",
+  "peak": "A06A91FF",
+  "end": "A06A9100"
+ },
+ "purple": {
+  "start": "773D7D00",
+  "peak": "790285FF",
+  "end": "773D7D00"
+ },
+ "red": {
+  "start": "BB343400",
+  "peak": "BB3434FF",
+  "end": "BB343400"
+ },
+ "white": {
+  "start": "BBBBBB00",
+  "peak": "BDBDBDFF",
+  "end": "BBBBBB00"
+ },
+ "yellow": {
+  "start": "BC9A3100",
+  "peak": "BC9A31FF",
+  "end": "BC9A3100"
+ }
+}

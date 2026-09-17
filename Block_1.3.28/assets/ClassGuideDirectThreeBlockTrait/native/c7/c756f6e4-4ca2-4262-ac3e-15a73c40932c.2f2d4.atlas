@@ -1,0 +1,76 @@
+
+gameplay_biankuang_efc.png
+size: 822,492
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+lg_1
+  rotate: false
+  xy: 2, 36
+  size: 32, 454
+  orig: 32, 454
+  offset: 0, 0
+  index: -1
+lg_2
+  rotate: true
+  xy: 526, 42
+  size: 27, 97
+  orig: 27, 97
+  offset: 0, 0
+  index: -1
+lg_4
+  rotate: false
+  xy: 2, 20
+  size: 14, 14
+  orig: 14, 14
+  offset: 0, 0
+  index: -1
+lg_5
+  rotate: true
+  xy: 701, 104
+  size: 141, 119
+  orig: 141, 119
+  offset: 0, 0
+  index: -1
+lg_8A
+  rotate: false
+  xy: 36, 247
+  size: 243, 243
+  orig: 245, 245
+  offset: 1, 1
+  index: -1
+lg_8B
+  rotate: false
+  xy: 281, 247
+  size: 243, 243
+  orig: 245, 245
+  offset: 1, 1
+  index: -1
+lg_8C
+  rotate: false
+  xy: 526, 247
+  size: 243, 243
+  orig: 245, 245
+  offset: 1, 1
+  index: -1
+lg_8D
+  rotate: false
+  xy: 36, 2
+  size: 243, 243
+  orig: 245, 245
+  offset: 1, 1
+  index: -1
+lg_8E
+  rotate: false
+  xy: 281, 2
+  size: 243, 243
+  orig: 245, 245
+  offset: 1, 1
+  index: -1
+lg_9
+  rotate: false
+  xy: 526, 71
+  size: 173, 174
+  orig: 173, 174
+  offset: 0, 0
+  index: -1

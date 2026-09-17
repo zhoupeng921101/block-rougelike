@@ -1,0 +1,14 @@
+﻿键成员,键值,映射值,值来源
+PuzzleNone,0,无策略出题,字面量
+Puzzle100,1,困难难度100出题,字面量
+PuzzleTimeFirst,2,定时难题首次出题,字面量
+PuzzleTimeOther,3,定时难题后续出题,字面量
+LaneScheme,4,泳道出题,字面量
+AlgoGuide,5,新手出题,字面量
+AlgoRevive,6,复活出题,字面量
+AlgoReviveTrait,7,复活特性出题,字面量
+AlgoTrait,8,特性出题,字面量
+Priority,9,最高优先级出题,字面量
+AlgoFirstRound,10,首轮出题,字面量
+AlgoNoReplaceBottom,11,无替换底板出题,字面量
+RatoChapter,12,关卡节奏调整,字面量

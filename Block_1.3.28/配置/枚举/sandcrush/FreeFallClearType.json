@@ -1,0 +1,6 @@
+{
+ "DropOver": 0,
+ "Everytime": 1,
+ "EveryTimeImmediatelyDrop": 2,
+ "DropOverImmediatelyDrop": 3
+}

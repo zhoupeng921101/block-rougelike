@@ -1,0 +1,5 @@
+﻿_key,initSize,maxSize
+preClearSingle,8,64
+clearX,1,8
+clearY,1,8
+preClearLoop,8,8

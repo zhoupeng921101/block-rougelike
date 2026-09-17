@@ -1,0 +1,7 @@
+{
+ "INGAME_PLAYING": "ingame_playing",
+ "INGAME_DEATH_ANIMATION": "ingame_death_animation",
+ "UI_REVIVE": "ui_revive",
+ "UI_RESULT": "ui_result",
+ "OTHER": "other"
+}

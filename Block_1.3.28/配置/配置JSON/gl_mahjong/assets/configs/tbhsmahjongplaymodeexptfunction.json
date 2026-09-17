@@ -1,0 +1,29 @@
+[
+ {
+  "Key": 1001,
+  "FunctionType": "UIFunction",
+  "FunctionField": "LogicType",
+  "AndroidData": "1A",
+  "IOSData": "Default",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1002,
+  "FunctionType": "UIFunction",
+  "FunctionField": "MaxDifficulty",
+  "AndroidData": "2",
+  "IOSData": "2",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1003,
+  "FunctionType": "UIFunction",
+  "FunctionField": "UIStyle",
+  "AndroidData": "2",
+  "IOSData": "2",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ }
+]

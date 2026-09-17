@@ -1,0 +1,16 @@
+﻿_key,assetPath,platform,bundleName,armatureName
+block_1_normal,res/game_cube_1_material_006,gp,Remote_Skin_Material_2006,
+block_2_normal,res/game_cube_2_material_006,gp,Remote_Skin_Material_2006,
+block_3_normal,res/game_cube_3_material_006,gp,Remote_Skin_Material_2006,
+block_4_normal,res/game_cube_4_material_006,gp,Remote_Skin_Material_2006,
+block_5_normal,res/game_cube_5_material_006,gp,Remote_Skin_Material_2006,
+block_6_normal,res/game_cube_6_material_006,gp,Remote_Skin_Material_2006,
+block_7_normal,res/game_cube_7_material_006,gp,Remote_Skin_Material_2006,
+combo_sprite,res/combo_txt_material_006,gp,Remote_Skin_Material_2006,
+combo_font,font/combo_fnt_material_006,gp,Remote_Skin_Material_2006,
+ck_effect,effect/CK_006,gp,Remote_Skin_Material_2006,
+combo_effect,effect/comb_006,gp,Remote_Skin_Material_2006,Armature
+encourage_effect,effect/encourage_006,gp,Remote_Skin_Material_2006,
+eliminate_prompt_effect,effect/gameplay_eliminatePrompt_006,gp,Remote_Skin_Material_2006,
+eliminate_effect,effect/xc_006,gp,Remote_Skin_Material_2006,
+block_put_effect,effect/gameplay_spine_blocklight_plan1_006,gp,Remote_Skin_Material_2006,

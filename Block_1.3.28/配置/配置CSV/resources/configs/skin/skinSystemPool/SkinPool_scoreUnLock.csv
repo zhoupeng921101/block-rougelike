@@ -1,0 +1,41 @@
+﻿ID,name,unlock_type,unlock_num,dexc_ch,desc_en,isShow,iconName
+1000,Default,0,1,原皮肤,first,1,skin_000
+1001,Pure Pink,2,1000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_001
+1002,Macaron,2,1500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_002
+1003,Gradient Pink,2,2000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_003
+1004,Morandi ,2,2500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_004
+1005,Pure Green,2,3000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_005
+1006,Sunflowers,2,3500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_006
+1007,The Starry Night,2,4000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_007
+1008,Dark Pop,2,4500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_008
+1009,Mondrian,2,5000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_009
+1010,Cyberpunk,2,5500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_010
+1011,Countryside,2,6000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_011
+1012,Ocean,2,6500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_012
+1013,Forest,2,7000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_013
+1014,Ukiyoe,2,7500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_014
+1015,Memphis,2,8000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_015
+1016,Rococo,2,8500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_016
+1017,Matisse,2,9000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_017
+1018,Latte,2,9500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_018
+1019,Pantone,2,10000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_019
+1020,Ground,2,10500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_020
+1021,Blue-white,2,11000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_021
+1022,Classic Black,2,11500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_022
+1023,Earth,2,12000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_023
+1024,Air Pink,2,12500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_024
+1025,Tiffany Blue,2,13000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_025
+1026,Dessert,2,13500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_026
+1027,Macaw,2,14000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_027
+1028,Mountains,2,14500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_028
+1029,Glaciers,2,15000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_029
+1030,Warm Cold,2,15500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_030
+1031,Wizard,2,16000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_031
+1032,Passion,2,16500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_032
+1033,Peaceful,2,17000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_033
+1034,Mystery,2,17500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_034
+1035,Fresh,2,18000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_035
+1036,Romantic,2,18500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_036
+1037,Calm,2,19000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_037
+1038,Lovely,2,19500,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_038
+1039,Energy,2,20000,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_039

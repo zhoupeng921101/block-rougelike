@@ -1,0 +1,7 @@
+{
+ "clearX": "out_x",
+ "clearY": "out_y",
+ "out": "out",
+ "preClearSingle": "init_1",
+ "preClearLoop": "init_2"
+}

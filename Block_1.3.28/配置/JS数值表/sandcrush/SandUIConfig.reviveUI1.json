@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/ReviveUI1",
+ "cnName": "复活界面1",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

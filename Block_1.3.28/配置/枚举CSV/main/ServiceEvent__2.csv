@@ -1,0 +1,15 @@
+﻿成员,值
+AdCallNative,AdService.CallNativeAd
+AdCheckLoadingAd,AdService.CheckLoadingAd
+AdClearLowEcpmAd,AdService.ClearLowEcpmAd
+AdCutPreEcpm,AdService.CutPreEcpm
+AdGetMaxEcpm,AdService.GetMaxEcpm
+AdGetReadyByAdType,AdService.GetReadyByAdType
+AdHideBanner,AdService.HideBanner
+AdNativeAdCallback,AdService.NativeAdCallback
+AdNativeAdCallback2,AdService.NativeAdCallback2
+AdNativeCutCallback,AdService.NativeCutCallback
+AdNativeGetFirstAdEcpm,AdService.NativeGetFirstAdEcpm
+AdNativeOnAdIncome,AdService.NativeOnAdIncome
+AdNativeRewardCallback,AdService.NativeRewardCallback
+AdShowLoad,AdService.ShowLoad

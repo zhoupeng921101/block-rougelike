@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/ad/waitAdCoffee",
+ "cnName": "等待广告界面--咖啡模式",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

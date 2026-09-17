@@ -1,0 +1,6 @@
+﻿_key,name,url
+MainHeadInfo,MainHeadInfo,prefabs/account/MainHeadInfo
+AccountPlayerInfo,AccountPlayerInfo,prefabs/account/PlayerInfo
+SelectInfo,SelectInfo,prefabs/account/SelectInfo
+SureAlert,SureAlert,prefabs/account/SureAlert
+LoginResultAlert,LoginResultAlert,prefabs/account/LoginResultAlert

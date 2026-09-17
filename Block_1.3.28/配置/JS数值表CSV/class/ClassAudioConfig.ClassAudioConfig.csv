@@ -1,0 +1,5 @@
+﻿_key,url,type,volume,bundleName
+IsOpenSorceBlockTrait_Score1,audio/traits/IsOpenSorceBlockTrait/score1,@r.AudioType.EFFECT,1,class
+IsOpenSorceBlockTrait_Score2,audio/traits/IsOpenSorceBlockTrait/score2,@r.AudioType.EFFECT,1,class
+IsOpenSorceBlockTrait_Score3,audio/traits/IsOpenSorceBlockTrait/score3,@r.AudioType.EFFECT,1,class
+heart_disappear,audios/combo/heart_disappear,@r.AudioType.EFFECT,1,class

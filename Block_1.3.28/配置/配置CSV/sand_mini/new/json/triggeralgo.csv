@@ -1,0 +1,10 @@
+﻿_key,ID,UnitID,TriggerAlgo,TriggerAlgoType,IsOpen,Priority,TriggerType,algoreplace,BlockAlgoParam
+408,408,71,ClosePeakFill,1,1,10002,"4,45,60&3,5600,8500&10,1",0,
+409,409,71,ClosePeakFill,1,1,10001,"2,1,25000&3,5200,8500&10,1",0,
+410,410,71,SequenceDoubleColor,3,1,10,"1,10&10,1",0,300
+411,411,71,blockAlgoChangeBlockPool,2,1,10000,"23,0,45&3,0,3600",0,"19,300,9"
+412,412,71,FillPerfect2,3,1,5,"24,1",0,303
+413,413,71,DoubleColorFillAble,3,1,10,"1,10&10,1",0,
+414,414,71,SequenceDoubleColor,3,1,10,"1,10&10,1",0,402
+415,415,71,HighEfficiencyFill,1,1,10001,"28,3,5650,1&29,1,2",0,
+416,416,71,DoublePeakFill,1,1,21000,"6,1&8,30,60&10,1",1,

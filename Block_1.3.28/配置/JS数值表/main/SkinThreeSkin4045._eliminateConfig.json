@@ -1,0 +1,42 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.spineRowAndColumnRandom",
+  "params": {
+   "effectConfig": "eliminate_effect",
+   "animConfig": {
+    "color_1_x": "heng_in1_red",
+    "color_1_y": "su_in1_red",
+    "color_2_x": "heng_in1",
+    "color_2_y": "su_in1",
+    "color_3_x": "heng_in1_red",
+    "color_3_y": "su_in1_red",
+    "color_4_x": "heng_in1",
+    "color_4_y": "su_in1",
+    "color_5_x": "heng_in1_red",
+    "color_5_y": "su_in1_red",
+    "color_6_x": "heng_in1",
+    "color_6_y": "su_in1",
+    "color_7_x": "heng_in1_red",
+    "color_7_y": "su_in1_red"
+   },
+   "animConfig2": {
+    "color_1_x": "heng_in2_red",
+    "color_1_y": "su_in2_red",
+    "color_2_x": "heng_in2",
+    "color_2_y": "su_in2",
+    "color_3_x": "heng_in2_red",
+    "color_3_y": "su_in2_red",
+    "color_4_x": "heng_in2",
+    "color_4_y": "su_in2",
+    "color_5_x": "heng_in2_red",
+    "color_5_y": "su_in2_red",
+    "color_6_x": "heng_in2",
+    "color_6_y": "su_in2",
+    "color_7_x": "heng_in2_red",
+    "color_7_y": "su_in2_red"
+   },
+   "scale": 1,
+   "isLastTimeNotSameAnimConfig": true
+  }
+ }
+]

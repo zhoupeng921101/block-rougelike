@@ -1,0 +1,22 @@
+{
+ "FH": {
+  "step": 10,
+  "baseScore": 40
+ },
+ "CHB": {
+  "step": 20,
+  "baseScore": 60
+ },
+ "CHR": {
+  "step": 25,
+  "baseScore": 70
+ },
+ "CHC": {
+  "step": 30,
+  "baseScore": 80
+ },
+ "NS": {
+  "step": 40,
+  "baseScore": 90
+ }
+}

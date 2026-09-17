@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/StarView",
+ "cnName": "评分反馈界面",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

@@ -1,0 +1,8 @@
+﻿_key,url,type,volume,bundleName
+s_combo_1,audios/eliminate/s_combo_1,@r.AudioType.EFFECT,1,jewel
+s_combo_2,audios/eliminate/s_combo_2,@r.AudioType.EFFECT,1,jewel
+s_combo_3,audios/eliminate/s_combo_3,@r.AudioType.EFFECT,1,jewel
+s_combo_4,audios/eliminate/s_combo_4,@r.AudioType.EFFECT,0.5,jewel
+s_combo_5,audios/eliminate/s_combo_5,@r.AudioType.EFFECT,1,jewel
+s_combo_6,audios/eliminate/s_combo_6,@r.AudioType.EFFECT,1,jewel
+bgmMusic,audios/bgMusic/bg,@r.AudioType.SOUND,1,jewel

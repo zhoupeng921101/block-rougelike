@@ -1,0 +1,53 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.spineSingleBlockRandom",
+  "params": {
+   "effectConfig": "eliminate_effect",
+   "animConfig": {
+    "color_1": [
+     "in_1",
+     "in_2",
+     "in_3",
+     "in_4"
+    ],
+    "color_2": [
+     "in_1",
+     "in_2",
+     "in_3",
+     "in_4"
+    ],
+    "color_3": [
+     "in_1",
+     "in_2",
+     "in_3",
+     "in_4"
+    ],
+    "color_4": [
+     "in_1",
+     "in_2",
+     "in_3",
+     "in_4"
+    ],
+    "color_5": [
+     "in_1",
+     "in_2",
+     "in_3",
+     "in_4"
+    ],
+    "color_6": [
+     "in_1",
+     "in_2",
+     "in_3",
+     "in_4"
+    ],
+    "color_7": [
+     "in_1",
+     "in_2",
+     "in_3",
+     "in_4"
+    ]
+   },
+   "useNoRepeatRandom": true
+  }
+ }
+]

@@ -1,0 +1,97 @@
+
+main_welcome_popUp.png
+size: 330,262
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+mei1
+  rotate: true
+  xy: 203, 12
+  size: 23, 10
+  orig: 23, 10
+  offset: 0, 0
+  index: -1
+mei2
+  rotate: false
+  xy: 241, 92
+  size: 27, 10
+  orig: 27, 10
+  offset: 0, 0
+  index: -1
+shenti
+  rotate: true
+  xy: 2, 104
+  size: 156, 270
+  orig: 156, 270
+  offset: 0, 0
+  index: -1
+yan1
+  rotate: false
+  xy: 274, 75
+  size: 41, 46
+  orig: 41, 46
+  offset: 0, 0
+  index: -1
+yan2
+  rotate: true
+  xy: 274, 123
+  size: 53, 52
+  orig: 53, 52
+  offset: 0, 0
+  index: -1
+yanzhuzi
+  rotate: true
+  xy: 241, 76
+  size: 14, 15
+  orig: 14, 15
+  offset: 0, 0
+  index: -1
+youshou
+  rotate: true
+  xy: 2, 9
+  size: 93, 120
+  orig: 93, 120
+  offset: 0, 0
+  index: -1
+youtui
+  rotate: true
+  xy: 241, 14
+  size: 55, 84
+  orig: 55, 84
+  offset: 0, 0
+  index: -1
+youtuiyz
+  rotate: false
+  xy: 168, 7
+  size: 33, 28
+  orig: 33, 28
+  offset: 0, 0
+  index: -1
+zhayan
+  rotate: true
+  xy: 317, 71
+  size: 50, 11
+  orig: 50, 11
+  offset: 0, 0
+  index: -1
+zui
+  rotate: false
+  xy: 124, 2
+  size: 42, 33
+  orig: 44, 35
+  offset: 1, 1
+  index: -1
+zuoshou
+  rotate: true
+  xy: 124, 37
+  size: 65, 115
+  orig: 65, 115
+  offset: 0, 0
+  index: -1
+zuotui
+  rotate: false
+  xy: 274, 178
+  size: 54, 82
+  orig: 54, 82
+  offset: 0, 0
+  index: -1

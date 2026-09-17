@@ -1,0 +1,44 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.rowAndColunm",
+  "params": {
+   "effectConfig": "eliminate_prompt_effect",
+   "animConfig": {
+    "color_1_x": "in_1_1",
+    "color_1_y": "in_1_1",
+    "color_2_x": "in_2_1",
+    "color_2_y": "in_2_1",
+    "color_3_x": "in_3_1",
+    "color_3_y": "in_3_1",
+    "color_4_x": "in_4_1",
+    "color_4_y": "in_4_1",
+    "color_5_x": "in_5_1",
+    "color_5_y": "in_5_1",
+    "color_6_x": "in_6_1",
+    "color_6_y": "in_6_1",
+    "color_7_x": "in_7_1",
+    "color_7_y": "in_7_1",
+    "color_8_x": "in_1_1",
+    "color_8_y": "in_1_1"
+   },
+   "armatureName": "Armature",
+   "needRotate": true
+  }
+ },
+ {
+  "type": "@o.SkinThreePreEliminateType.singleBlock",
+  "params": {
+   "effectConfig": "eliminate_prompt_effect",
+   "animConfig": {
+    "color_1": "in_1_2",
+    "color_2": "in_2_2",
+    "color_3": "in_3_2",
+    "color_4": "in_4_2",
+    "color_5": "in_5_2",
+    "color_6": "in_6_2",
+    "color_7": "in_7_2"
+   },
+   "armatureName": "Armature"
+  }
+ }
+]

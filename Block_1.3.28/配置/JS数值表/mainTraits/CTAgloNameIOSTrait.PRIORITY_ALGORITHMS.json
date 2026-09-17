@@ -1,0 +1,38 @@
+[
+ {
+  "type": "@s.OFFER_TYPE.ALGO_MIX_TKXC",
+  "name": "混合填空2"
+ },
+ {
+  "type": "@s.OFFER_TYPE.ALGO_QUICK",
+  "name": "快速填空"
+ },
+ {
+  "type": "@s.OFFER_TYPE.ALGO_FILL_MORE_AREA",
+  "name": "大面积填空"
+ },
+ {
+  "type": "@s.OFFER_TYPE.CLEAR_BOARD",
+  "name": "清屏算法plus"
+ },
+ {
+  "type": "@s.OFFER_TYPE.SIMPLE_ZHIJUE",
+  "name": "简单直觉题"
+ },
+ {
+  "type": "@s.OFFER_TYPE.CLASSTERMINATE_CYCLE",
+  "name": "终止刷分"
+ },
+ {
+  "type": "@s.OFFER_TYPE.CHAPTERTERMINATE_CYCLE",
+  "name": "终止刷分"
+ },
+ {
+  "type": "@s.OFFER_TYPE.ELIMINTE_PLEASURE",
+  "name": "消除爽"
+ },
+ {
+  "type": "@s.OFFER_TYPE.ALGO_SCORE",
+  "name": "分数算法"
+ }
+]

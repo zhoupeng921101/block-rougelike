@@ -1,0 +1,11 @@
+{
+ "OpenStart": "openStart",
+ "Loading": "loading",
+ "LoadSuccess": "loadSuccess",
+ "LoadFailed": "loadFailed",
+ "NoNet": "noNet",
+ "Timeout": "timeout",
+ "EnteringGame": "enteringGame",
+ "EnteredGame": "enteredGame",
+ "EnterGameFailed": "enterGameFailed"
+}

@@ -1,0 +1,6 @@
+﻿_key,storageKey,keys,Ctor
+basic,dataCompatibilityBasicGateKey,@l.DataCompatibilityBasicTypeKeys,@m.DataCompatibilityIosBasicProcessor
+trait,dataCompatibilityTraitGateKey,@u.DataCompatibilityTraitTypeKeys,@h.DataCompatibilityIosTraitProcessor
+jewel,dataCompatibilityJewelGateKey,@d.DataCompatibilityJewelTypeKeys,@_.DataCompatibilityIosJewelProcessor
+class,dataCompatibilityClassGateKey,@c.DataCompatibilityClassTypeKeys,@f.DataCompatibilityIosClassProcessor
+chapter,dataCompatibilityChapterGateKey,@s.DataCompatibilityChapterTypeKeys,@p.DataCompatibilityIosChapterProcessor

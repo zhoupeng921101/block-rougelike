@@ -1,0 +1,5 @@
+﻿成员,值
+Uninitialize,0
+Initializing,1
+Initialized,2
+InitializedError,3

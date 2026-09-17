@@ -1,0 +1,256 @@
+[
+ {
+  "Key": 1001,
+  "FunctionType": "UIFunction",
+  "FunctionField": "UIStyle",
+  "AndroidData": "2",
+  "IOSData": "2",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1002,
+  "FunctionType": "GuideFunction",
+  "FunctionField": "GuideType",
+  "AndroidData": "a",
+  "IOSData": "a",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1003,
+  "FunctionType": "GameFunction",
+  "FunctionField": "CardDragOffset",
+  "AndroidData": "1",
+  "IOSData": "1",
+  "AndroidDataExtra": [
+   [
+    "OffsetX",
+    "0"
+   ],
+   [
+    "OffsetY",
+    "200"
+   ]
+  ],
+  "IOSDataExtra": [
+   [
+    "OffsetX",
+    "0"
+   ],
+   [
+    "OffsetY",
+    "200"
+   ]
+  ]
+ },
+ {
+  "Key": 1004,
+  "FunctionType": "GameFunction",
+  "FunctionField": "CardAdsorb",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1005,
+  "FunctionType": "GameFunction",
+  "FunctionField": "CardAdsorbEffect",
+  "AndroidData": "1",
+  "IOSData": "1",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1006,
+  "FunctionType": "GameFunction",
+  "FunctionField": "CardAdsorbEx",
+  "AndroidData": "1",
+  "IOSData": "1",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1007,
+  "FunctionType": "GameFunction",
+  "FunctionField": "CardLockDarken",
+  "AndroidData": "1",
+  "IOSData": "1",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1008,
+  "FunctionType": "GameFunction",
+  "FunctionField": "QuestionLogic",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1009,
+  "FunctionType": "GameFunction",
+  "FunctionField": "TimeCoefficient",
+  "AndroidData": "6",
+  "IOSData": "6",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1010,
+  "FunctionType": "GameFunction",
+  "FunctionField": "LevelCoefficient",
+  "AndroidData": "1.2",
+  "IOSData": "1.2",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1011,
+  "FunctionType": "GameFunction",
+  "FunctionField": "DieLevelParam",
+  "AndroidData": "1",
+  "IOSData": "1",
+  "AndroidDataExtra": [
+   [
+    "maxNotDieLevel",
+    "4"
+   ]
+  ],
+  "IOSDataExtra": [
+   [
+    "maxNotDieLevel",
+    "4"
+   ]
+  ]
+ },
+ {
+  "Key": 1012,
+  "FunctionType": "GameFunction",
+  "FunctionField": "CardPressOffset",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1013,
+  "FunctionType": "AdFunction",
+  "FunctionField": "AutoUseItem",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1014,
+  "FunctionType": "GameFunction",
+  "FunctionField": "DiffLevLogicPatch",
+  "AndroidData": "1",
+  "IOSData": "1",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1015,
+  "FunctionType": "AdFunction",
+  "FunctionField": "FirstBackAdChance",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1016,
+  "FunctionType": "GameFunction",
+  "FunctionField": "ClickEffect",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1017,
+  "FunctionType": "GameFunction",
+  "FunctionField": "LevelStyle",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1018,
+  "FunctionType": "UIFunction",
+  "FunctionField": "UIColorStyle",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1019,
+  "FunctionType": "GameFunction",
+  "FunctionField": "FailUpdateAblitiyValue",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1020,
+  "FunctionType": "GameFunction",
+  "FunctionField": "BeyondRateCalType",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1021,
+  "FunctionType": "GameFunction",
+  "FunctionField": "ClickLockTips",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [
+   [
+    "OffsetY",
+    "150"
+   ]
+  ],
+  "IOSDataExtra": [
+   [
+    "OffsetY",
+    "150"
+   ]
+  ]
+ },
+ {
+  "Key": 1022,
+  "FunctionType": "UIFunction",
+  "FunctionField": "CloseBgAniType",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1023,
+  "FunctionType": "GameFunction",
+  "FunctionField": "StartTimerT",
+  "AndroidData": "5",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ },
+ {
+  "Key": 1024,
+  "FunctionType": "GameFunction",
+  "FunctionField": "LockCardAniType",
+  "AndroidData": "0",
+  "IOSData": "0",
+  "AndroidDataExtra": [],
+  "IOSDataExtra": []
+ }
+]

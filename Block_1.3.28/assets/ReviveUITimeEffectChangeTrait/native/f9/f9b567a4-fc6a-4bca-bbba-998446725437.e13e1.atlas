@@ -1,0 +1,62 @@
+
+revive_number.png
+size: 348,820
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+lan0
+  rotate: false
+  xy: 286, 779
+  size: 39, 39
+  orig: 39, 39
+  offset: 0, 0
+  index: -1
+number/blue/0
+  rotate: false
+  xy: 2, 348
+  size: 156, 186
+  orig: 156, 186
+  offset: 0, 0
+  index: -1
+number/blue/1
+  rotate: false
+  xy: 2, 160
+  size: 156, 186
+  orig: 156, 186
+  offset: 0, 0
+  index: -1
+number/blue/2
+  rotate: true
+  xy: 2, 2
+  size: 156, 186
+  orig: 156, 186
+  offset: 0, 0
+  index: -1
+number/blue/3
+  rotate: false
+  xy: 160, 348
+  size: 156, 186
+  orig: 156, 186
+  offset: 0, 0
+  index: -1
+number/blue/4
+  rotate: true
+  xy: 160, 190
+  size: 156, 186
+  orig: 156, 186
+  offset: 0, 0
+  index: -1
+number/blue/5
+  rotate: false
+  xy: 190, 2
+  size: 156, 186
+  orig: 156, 186
+  offset: 0, 0
+  index: -1
+椭圆 3
+  rotate: false
+  xy: 2, 536
+  size: 282, 282
+  orig: 282, 282
+  offset: 0, 0
+  index: -1

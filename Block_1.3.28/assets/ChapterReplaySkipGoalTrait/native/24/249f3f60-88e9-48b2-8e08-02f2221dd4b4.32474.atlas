@@ -1,0 +1,55 @@
+
+gameplay_shuaping2.png
+size: 1024,512
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+light_101
+  rotate: false
+  xy: 2, 226
+  size: 170, 170
+  orig: 170, 170
+  offset: 0, 0
+  index: -1
+light_102
+  rotate: false
+  xy: 2, 54
+  size: 170, 170
+  orig: 170, 170
+  offset: 0, 0
+  index: -1
+light_103
+  rotate: false
+  xy: 174, 226
+  size: 170, 170
+  orig: 170, 170
+  offset: 0, 0
+  index: -1
+light_104
+  rotate: false
+  xy: 174, 54
+  size: 170, 170
+  orig: 170, 170
+  offset: 0, 0
+  index: -1
+light_105
+  rotate: false
+  xy: 346, 226
+  size: 170, 170
+  orig: 170, 170
+  offset: 0, 0
+  index: -1
+light_106
+  rotate: false
+  xy: 346, 54
+  size: 170, 170
+  orig: 170, 170
+  offset: 0, 0
+  index: -1
+tx/glow
+  rotate: false
+  xy: 2, 2
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1

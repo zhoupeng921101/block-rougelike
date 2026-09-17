@@ -1,0 +1,7 @@
+{
+ "gameFirstEntryTime": "fangkuaipintu#enterDayTime:number",
+ "installTime": "fangkuaipintu#firstInstall:number",
+ "dotUpLoad": "fangkuaipintu#open30PercentUp:number",
+ "gl_hall_moreGame_red": "gl_hall_moreGame_red:string",
+ "severIsInitLoginData": "severIsInitLoginData:number"
+}

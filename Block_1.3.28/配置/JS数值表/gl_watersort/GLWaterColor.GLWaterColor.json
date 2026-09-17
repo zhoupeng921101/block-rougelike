@@ -1,0 +1,212 @@
+[
+ {
+  "string": "red_0",
+  "waterColor": [
+   229,
+   50,
+   64,
+   255
+  ],
+  "waterTop": [
+   252,
+   90,
+   102,
+   255
+  ]
+ },
+ {
+  "string": "yellow_0",
+  "waterColor": [
+   255,
+   225,
+   0,
+   255
+  ],
+  "waterTop": [
+   255,
+   239,
+   121,
+   255
+  ]
+ },
+ {
+  "string": "green_0",
+  "waterColor": [
+   115,
+   231,
+   0,
+   255
+  ],
+  "waterTop": [
+   161,
+   255,
+   68,
+   255
+  ]
+ },
+ {
+  "string": "blue_1",
+  "waterColor": [
+   43,
+   114,
+   255,
+   255
+  ],
+  "waterTop": [
+   91,
+   146,
+   255,
+   255
+  ]
+ },
+ {
+  "string": "pink_1",
+  "waterColor": [
+   255,
+   98,
+   190,
+   255
+  ],
+  "waterTop": [
+   255,
+   137,
+   215,
+   255
+  ]
+ },
+ {
+  "string": "purple_0",
+  "waterColor": [
+   134,
+   47,
+   255,
+   255
+  ],
+  "waterTop": [
+   159,
+   89,
+   255,
+   255
+  ]
+ },
+ {
+  "string": "pink_0",
+  "waterColor": [
+   143,
+   0,
+   110,
+   255
+  ],
+  "waterTop": [
+   175,
+   7,
+   136,
+   255
+  ]
+ },
+ {
+  "string": "orange_0",
+  "waterColor": [
+   255,
+   128,
+   0,
+   255
+  ],
+  "waterTop": [
+   255,
+   156,
+   58,
+   255
+  ]
+ },
+ {
+  "string": "green_1",
+  "waterColor": [
+   0,
+   147,
+   12,
+   255
+  ],
+  "waterTop": [
+   15,
+   181,
+   29,
+   255
+  ]
+ },
+ {
+  "string": "blue_2",
+  "waterColor": [
+   54,
+   36,
+   255,
+   255
+  ],
+  "waterTop": [
+   83,
+   83,
+   255,
+   255
+  ]
+ },
+ {
+  "string": "brown_1",
+  "waterColor": [
+   255,
+   193,
+   161,
+   255
+  ],
+  "waterTop": [
+   255,
+   221,
+   204,
+   255
+  ]
+ },
+ {
+  "string": "green_2",
+  "waterColor": [
+   30,
+   182,
+   126,
+   255
+  ],
+  "waterTop": [
+   45,
+   212,
+   151,
+   255
+  ]
+ },
+ {
+  "string": "blue_0",
+  "waterColor": [
+   71,
+   212,
+   255,
+   255
+  ],
+  "waterTop": [
+   130,
+   226,
+   255,
+   255
+  ]
+ },
+ {
+  "string": "black_0",
+  "waterColor": [
+   23,
+   18,
+   56,
+   255
+  ],
+  "waterTop": [
+   46,
+   37,
+   102,
+   255
+  ]
+ }
+]

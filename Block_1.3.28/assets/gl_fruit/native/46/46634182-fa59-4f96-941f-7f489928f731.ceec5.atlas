@@ -1,0 +1,41 @@
+
+Fruit_02.png
+size: 1024, 512
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+Fruit_02_body_01
+  rotate: false
+  xy: 2, 60
+  size: 273, 284
+  orig: 275, 286
+  offset: 1, 1
+  index: -1
+Fruit_02_body_02
+  rotate: false
+  xy: 277, 60
+  size: 273, 284
+  orig: 275, 286
+  offset: 1, 1
+  index: -1
+Fruit_02_eye_l
+  rotate: false
+  xy: 552, 303
+  size: 53, 41
+  orig: 59, 47
+  offset: 4, 1
+  index: -1
+Fruit_02_eye_r
+  rotate: false
+  xy: 2, 16
+  size: 54, 42
+  orig: 60, 54
+  offset: 2, 9
+  index: -1
+Fruit_02_mouth_01
+  rotate: false
+  xy: 2, 2
+  size: 23, 12
+  orig: 25, 14
+  offset: 1, 1
+  index: -1

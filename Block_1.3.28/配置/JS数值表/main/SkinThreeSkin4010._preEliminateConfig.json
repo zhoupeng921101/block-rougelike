@@ -1,0 +1,10 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.skin4010Custom",
+  "params": {
+   "effectConfigA": "eliminate_prompt_effect",
+   "effectConfigB": "eliminate_prompt_effect_b",
+   "isAboveBlocks": true
+  }
+ }
+]

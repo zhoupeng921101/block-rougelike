@@ -1,0 +1,9 @@
+{
+ "NONE": "none",
+ "RANDOM": "random",
+ "HIT_TIME_ASC": "hitTimeAsc",
+ "HIT_TIME_DESC": "hitTimeDesc",
+ "CLICK_RATE_ASC": "clickRateAsc",
+ "CLICK_RATE_DESC": "clickRateDesc",
+ "RETENTION_ORDER": "retentionOrder"
+}

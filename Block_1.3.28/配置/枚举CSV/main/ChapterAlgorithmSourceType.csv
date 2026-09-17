@@ -1,0 +1,14 @@
+﻿成员,值
+TravelStageNone,0
+TravelStage1,100
+TravelStage2_simple,101
+TravelStage2_hard,102
+TravelStage3,103
+TravelRevive,104
+TravelReviveTrait,105
+TravelBase,106
+TravelTrait,107
+Priority,108
+TravelFirstRound,109
+AlgoNoReplaceBottom,110
+RatoChapter,111

@@ -1,0 +1,11 @@
+{
+ "GL_HALL": "gl_hall",
+ "GL_FRUIT": "gl_fruit",
+ "GL_MAHJONG": "gl_mahjong",
+ "GL_ONELINE": "gl_oneline",
+ "GL_ONET": "gl_onet",
+ "GL_SUDOKU": "gl_sudoku",
+ "GL_TICTACTOE": "gl_tictactoe",
+ "GL_WATER_SORT": "gl_watersort",
+ "GL_BLOCK_SLIDE": "gl_blockslide"
+}

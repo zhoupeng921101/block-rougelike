@@ -1,0 +1,7 @@
+{
+ "bundle": "woodskin",
+ "prefab": "prefabs/dailyLogin/DailyLoginUI",
+ "cnName": "每日登录界面",
+ "layer": "@o.HSLayerType.Notify",
+ "cache": false
+}

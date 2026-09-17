@@ -1,0 +1,6 @@
+{
+ "Eliminate": 0,
+ "BoomArea": 1,
+ "AllSameColor": 2,
+ "ReviveEliminate": 3
+}

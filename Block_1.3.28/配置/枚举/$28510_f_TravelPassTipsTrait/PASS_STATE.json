@@ -1,0 +1,6 @@
+{
+ "NO_SHOW": 0,
+ "PASS": 1,
+ "NOT_PASS": 2,
+ "BE_LIKE": 3
+}

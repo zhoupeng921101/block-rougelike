@@ -1,0 +1,52 @@
+[
+ {
+  "name": "ChapterScoreWin",
+  "url": "prefabs/win/ChapterScoreWin",
+  "type": "@s.UIType.GAMEOVER"
+ },
+ {
+  "name": "ChapterCollectWin",
+  "url": "prefabs/win/ChapterCollectWin",
+  "type": "@s.UIType.GAMEOVER"
+ },
+ {
+  "name": "ChapterScoreFail",
+  "url": "prefabs/fail/ChapterScoreFail",
+  "type": "@s.UIType.GAMEOVER"
+ },
+ {
+  "name": "ChapterCollectFail",
+  "url": "prefabs/fail/ChapterCollectFail",
+  "type": "@s.UIType.GAMEOVER"
+ },
+ {
+  "name": "ChapterReduceScoreWin",
+  "url": "prefabs/win/trait/reduceTravelSettlement/ChapterReduceScoreWin",
+  "type": "@s.UIType.GAMEOVER"
+ },
+ {
+  "name": "ChapterReduceCollectWin",
+  "url": "prefabs/win/trait/reduceTravelSettlement/ChapterReduceCollectWin",
+  "type": "@s.UIType.GAMEOVER"
+ },
+ {
+  "name": "ChapterReduceScoreFail",
+  "url": "prefabs/fail/trait/reduceTravelSettlement/ChapterReduceScoreFail",
+  "type": "@s.UIType.GAMEOVER"
+ },
+ {
+  "name": "ChapterReduceCollectFail",
+  "url": "prefabs/fail/trait/reduceTravelSettlement/ChapterReduceCollectFail",
+  "type": "@s.UIType.GAMEOVER"
+ },
+ {
+  "name": "ClassWin",
+  "url": "prefabs/win/ClassWin",
+  "type": "@s.UIType.GAMEOVER"
+ },
+ {
+  "name": "ClassFail",
+  "url": "prefabs/fail/ClassFail",
+  "type": "@s.UIType.GAMEOVER"
+ }
+]

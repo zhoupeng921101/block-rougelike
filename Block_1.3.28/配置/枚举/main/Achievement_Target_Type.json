@@ -1,0 +1,13 @@
+{
+ "achieve_high_score": 1,
+ "achieve_win_streak": 2,
+ "achieve_login_day": 3,
+ "achieve_all_levels": 4,
+ "achieve_elimination_multi": 5,
+ "achieve_collect_gem": 6,
+ "achieve_high_combo": 7,
+ "achieve_adventure_map": 8,
+ "achieve_elimination_block": 9,
+ "month_achieve": 14,
+ "achieve_open_condition": 33
+}

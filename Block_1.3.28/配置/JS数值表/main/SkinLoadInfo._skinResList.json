@@ -1,0 +1,162 @@
+{
+ "uiCommonMaterial": {
+  "url": "skin/materials/single_area",
+  "asset": null,
+  "type": "@cc.Material"
+ },
+ "blockMaterial": {
+  "url": "skin/materials/five_area",
+  "asset": null,
+  "type": "@cc.Material"
+ },
+ "blockAndShadowSprite": {
+  "url": "textures/skin/block/blocks",
+  "asset": null,
+  "type": "@cc.SpriteFrame"
+ },
+ "gems101Sprite": {
+  "url": "textures/skin/block/skinGems101",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems101BgSprite": {
+  "url": "textures/skin/block/skinGems101Bg",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems102Sprite": {
+  "url": "textures/skin/block/skinGems102",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems102BgSprite": {
+  "url": "textures/skin/block/skinGems102Bg",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems103Sprite": {
+  "url": "textures/skin/block/skinGems103",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems103BgSprite": {
+  "url": "textures/skin/block/skinGems103Bg",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems104Sprite": {
+  "url": "textures/skin/block/skinGems104",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems104BgSprite": {
+  "url": "textures/skin/block/skinGems104Bg",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems105Sprite": {
+  "url": "textures/skin/block/skinGems105",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems105BgSprite": {
+  "url": "textures/skin/block/skinGems105Bg",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems106Sprite": {
+  "url": "textures/skin/block/skinGems106",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "gems106BgSprite": {
+  "url": "textures/skin/block/skinGems106Bg",
+  "asset": null,
+  "type": "@cc.Texture2D"
+ },
+ "board": {
+  "url": "prefabs/skin/board/SkinBoardPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "combo": {
+  "url": "prefabs/skin/combo/SkinComboPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "comboHeart": {
+  "url": "prefabs/skin/comboHeart/SkinComboHeartPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "crownAndHightScore": {
+  "url": "prefabs/skin/crow/SkinCrownPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "eliminate": {
+  "url": "prefabs/skin/eliminate/SkinEliminatePrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "encourage": {
+  "url": "prefabs/skin/encourage/SkinEncouragePrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "gameBg": {
+  "url": "prefabs/skin/GameBg/SkinGameBgPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "score": {
+  "url": "prefabs/skin/score/SkinScorePrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "setupBgInner": {
+  "url": "prefabs/skin/setup/SkinSetupBgInnerFramePrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "setupBgOuter": {
+  "url": "prefabs/skin/setup/SkinSetupBgOuterFramePrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "setupBgSeparationLine": {
+  "url": "prefabs/skin/setup/SkinSetupBgSeparationLinePrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "setupBtn": {
+  "url": "prefabs/skin/setup/SkinSetupBtnPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "setupCloseBtn": {
+  "url": "prefabs/skin/setup/SkinSetupCloseBtnPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "setupDesc": {
+  "url": "prefabs/skin/setup/SkinSetupDescPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "travelGameBackBtn": {
+  "url": "prefabs/skin/travelGameBackBtn/SkinGameBackBtnPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "travelTargetRibbon": {
+  "url": "prefabs/skin/travelTargetRibbon/SkinTravelTargetRibbonPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ },
+ "skinDontTouchLayer": {
+  "url": "prefabs/skin/DotTouchLayer/DontTouchLayerPrefab",
+  "asset": null,
+  "type": "@cc.Prefab"
+ }
+}

@@ -1,0 +1,14 @@
+[
+ {
+  "color": "@n",
+  "opacity": 255
+ },
+ {
+  "color": "@n",
+  "opacity": "@c"
+ },
+ {
+  "color": "@n",
+  "opacity": "@h"
+ }
+]

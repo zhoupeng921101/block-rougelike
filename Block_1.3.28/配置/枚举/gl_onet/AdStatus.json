@@ -1,0 +1,8 @@
+{
+ "NewGame": 0,
+ "ContinueGame": 1,
+ "Restart": 2,
+ "Success": 3,
+ "Fail": 4,
+ "Playing": 5
+}

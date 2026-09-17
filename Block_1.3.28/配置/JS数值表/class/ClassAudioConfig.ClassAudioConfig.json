@@ -1,0 +1,26 @@
+{
+ "IsOpenSorceBlockTrait_Score1": {
+  "url": "audio/traits/IsOpenSorceBlockTrait/score1",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "class"
+ },
+ "IsOpenSorceBlockTrait_Score2": {
+  "url": "audio/traits/IsOpenSorceBlockTrait/score2",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "class"
+ },
+ "IsOpenSorceBlockTrait_Score3": {
+  "url": "audio/traits/IsOpenSorceBlockTrait/score3",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "class"
+ },
+ "heart_disappear": {
+  "url": "audios/combo/heart_disappear",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "class"
+ }
+}

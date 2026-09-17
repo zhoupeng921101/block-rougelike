@@ -1,0 +1,32 @@
+{
+ "1280": {
+  "logo": 328,
+  "buttonLayout": -74,
+  "winStreak": 93,
+  "icon": -548
+ },
+ "1707": {
+  "logo": 460,
+  "buttonLayout": -74,
+  "winStreak": 86,
+  "icon": -716
+ },
+ "1920": {
+  "logo": 607,
+  "buttonLayout": -11,
+  "winStreak": 230,
+  "icon": -785
+ },
+ "2340": {
+  "logo": 495,
+  "buttonLayout": -95,
+  "winStreak": 110,
+  "icon": -803
+ },
+ "2560": {
+  "logo": 495,
+  "buttonLayout": -95,
+  "winStreak": 110,
+  "icon": -803
+ }
+}

@@ -1,0 +1,25 @@
+﻿Key,FunctionType,FunctionField,AndroidData,IOSData,AndroidDataExtra,IOSDataExtra
+1001,UIFunction,UIStyle,2,2,[],[]
+1002,GuideFunction,GuideType,a,a,[],[]
+1003,GameFunction,CardDragOffset,1,1,"[[""OffsetX"", ""0""], [""OffsetY"", ""200""]]","[[""OffsetX"", ""0""], [""OffsetY"", ""200""]]"
+1004,GameFunction,CardAdsorb,0,0,[],[]
+1005,GameFunction,CardAdsorbEffect,1,1,[],[]
+1006,GameFunction,CardAdsorbEx,1,1,[],[]
+1007,GameFunction,CardLockDarken,1,1,[],[]
+1008,GameFunction,QuestionLogic,0,0,[],[]
+1009,GameFunction,TimeCoefficient,6,6,[],[]
+1010,GameFunction,LevelCoefficient,1.2,1.2,[],[]
+1011,GameFunction,DieLevelParam,1,1,"[[""maxNotDieLevel"", ""4""]]","[[""maxNotDieLevel"", ""4""]]"
+1012,GameFunction,CardPressOffset,0,0,[],[]
+1013,AdFunction,AutoUseItem,0,0,[],[]
+1014,GameFunction,DiffLevLogicPatch,1,1,[],[]
+1015,AdFunction,FirstBackAdChance,0,0,[],[]
+1016,GameFunction,ClickEffect,0,0,[],[]
+1017,GameFunction,LevelStyle,0,0,[],[]
+1018,UIFunction,UIColorStyle,0,0,[],[]
+1019,GameFunction,FailUpdateAblitiyValue,0,0,[],[]
+1020,GameFunction,BeyondRateCalType,0,0,[],[]
+1021,GameFunction,ClickLockTips,0,0,"[[""OffsetY"", ""150""]]","[[""OffsetY"", ""150""]]"
+1022,UIFunction,CloseBgAniType,0,0,[],[]
+1023,GameFunction,StartTimerT,5,0,[],[]
+1024,GameFunction,LockCardAniType,0,0,[],[]

@@ -1,0 +1,27 @@
+[
+ {
+  "resolution": "480*800",
+  "score": 1,
+  "max_pixel": 384000.0
+ },
+ {
+  "resolution": "720*1280",
+  "score": 2,
+  "max_pixel": 921600
+ },
+ {
+  "resolution": "720*1600",
+  "score": 3,
+  "max_pixel": 1152000.0
+ },
+ {
+  "resolution": "1080*1920",
+  "score": 4,
+  "max_pixel": 2073600
+ },
+ {
+  "resolution": "1440*2560",
+  "score": 5,
+  "max_pixel": 3686400
+ }
+]

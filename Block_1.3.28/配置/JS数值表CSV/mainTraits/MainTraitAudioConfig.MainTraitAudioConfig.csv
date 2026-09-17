@@ -1,0 +1,5 @@
+﻿_key,url,type,volume,bundleName
+streak_rock1,audios/eliminate/comboRainbow/streak_rock1,@r.AudioType.EFFECT,1,mainTraits
+streak_rock2,audios/eliminate/comboRainbow/streak_rock2,@r.AudioType.EFFECT,1,mainTraits
+streak_rock3,audios/eliminate/comboRainbow/streak_rock3,@r.AudioType.EFFECT,1,mainTraits
+clearComboAnim,audios/boardEffect/clearComboAnim/all_clean_djh,@r.AudioType.EFFECT,1,mainTraits

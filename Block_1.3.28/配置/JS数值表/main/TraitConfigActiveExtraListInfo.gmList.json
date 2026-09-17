@@ -1,0 +1,30 @@
+[
+ {
+  "id": 146100301,
+  "name": "CTGMAlgorithmTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100303,
+  "name": "CTLogAddAdLogTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100304,
+  "name": "CTGMReviveTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100304,
+  "name": "CTGMIsOpenOperaPosTrait",
+  "param": {
+   "firing": 1
+  }
+ }
+]

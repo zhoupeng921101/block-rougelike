@@ -1,0 +1,8 @@
+{
+ "NONE": 0,
+ "SIMPLE": 1,
+ "MEDIUM": 2,
+ "DIFFICULT": 3,
+ "NOVICE": 4,
+ "SIMPLE_DIFFICULT": 5
+}

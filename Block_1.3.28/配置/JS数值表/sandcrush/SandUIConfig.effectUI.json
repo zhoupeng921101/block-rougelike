@@ -1,0 +1,7 @@
+{
+ "bundle": "sandcrush",
+ "prefab": "res/prefabs/effectUI",
+ "cnName": "动效层",
+ "layer": "@o.HSLayerType.MainUI",
+ "cache": false
+}

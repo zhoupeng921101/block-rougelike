@@ -1,0 +1,113 @@
+[
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 0,
+   "ways": [
+    {
+     "algoName": "复活",
+     "blocks": [
+      {
+       "id": "@y.BLOCK_RESET",
+       "data": {
+        "blocks": [
+         1
+        ]
+       }
+      }
+     ],
+     "blockOrders": [
+      "@c.AREA_EMPTY",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": false,
+     "clear": false,
+     "remove": false
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 1,
+   "ways": [
+    {
+     "algoName": "复活",
+     "blocks": [
+      {
+       "id": "@y.BLOCK_RESET",
+       "data": {
+        "blocks": [
+         28,
+         27,
+         15,
+         6,
+         3,
+         2,
+         4,
+         5,
+         9,
+         1
+        ]
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "@y.COLLECT_EDGE",
+      "key": "@h.EDGE",
+      "clear": true,
+      "operator": "@g.MIN"
+     },
+     "blockOrders": [
+      "@c.AREA_EMPTY",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": false,
+     "clear": false,
+     "remove": false
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 2,
+   "ways": [
+    {
+     "algoName": "复活",
+     "blocks": [
+      {
+       "id": "@y.BLOCK_RESET",
+       "data": {
+        "blocks": [
+         1
+        ]
+       }
+      }
+     ],
+     "blockOrders": [
+      "@c.AREA_EMPTY",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": false,
+     "clear": false,
+     "remove": false
+    }
+   ]
+  }
+ }
+]

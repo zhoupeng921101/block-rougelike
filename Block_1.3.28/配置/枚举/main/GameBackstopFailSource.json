@@ -1,0 +1,10 @@
+{
+ "RespTimeout": "resp_timeout",
+ "RespInvalidData": "resp_invalid_data",
+ "RespPolicyBlocked": "resp_policy_blocked",
+ "RespBlockedEid": "resp_blocked_eid",
+ "RespFeatureKeyMissing": "resp_feature_key_missing",
+ "StableInvalid": "stable_invalid",
+ "StableFeatureKeyMissing": "stable_feature_key_missing",
+ "OuterBoundary": "outer_boundary"
+}

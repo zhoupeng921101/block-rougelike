@@ -1,0 +1,12 @@
+{
+ "randomizedAlgorithmCpp": "randomized-algorithm-cpp",
+ "specialStraightDiffBinaryCpp": "special-straight-diff-binary-cpp",
+ "specialRandNoDieBinaryCpp": "special-rand-no-die-binary-cpp",
+ "fillBitAlgorithmCpp": "fill-bit-algorithm-cpp",
+ "specialAdd3BinaryCpp": "special-add3-binary-cpp",
+ "algorithmEntropyAdd3MCpp": "algorithm-entropy-add3m-cpp",
+ "algorithmDifficultBestCpp": "algorithm-difficult-best-cpp",
+ "algorithmEntropyCpp": "algorithm-entropy-cpp",
+ "algoFillSortEdgeCpp": "algo-fill-sort-edge-cpp",
+ "clearBoardPlusCpp": "clear-board-plus-cpp"
+}

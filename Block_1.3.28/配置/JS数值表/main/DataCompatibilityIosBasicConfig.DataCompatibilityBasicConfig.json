@@ -1,0 +1,17 @@
+{
+ "CATCH_COUNTRY_CODE": "CATCH_COUNTRY_CODE:string",
+ "loginServerRestartNum": "loginServerRestartNum:number",
+ "localPlayerInfo": "LocalPlayerInfo:object",
+ "nowWayArr": "hotfreshdata#nowWayArr:object",
+ "abtestdata": "abtestdata:object",
+ "classAdvertisementShowNum": "ClassClickDetailLocal#reward_ad_click_cnt:number",
+ "chapterAdvertisementShowNum": "JourneyClickDetailLocal#reward_ad_click_cnt:number",
+ "classUseInitialColor": "init_block_color_arr:object",
+ "currentSkinId": "isOpenChangeSkin_curSkinId:string",
+ "classLastScore": "__baseData__current_cord_pre:number",
+ "chapterBlockProduceBoardLists": "online_round_save_arr_journey:object",
+ "classBlockProduceBoardLists": "online_round_save_arr:object",
+ "classAdvertisementSuccessNum": "ClassClickDetailLocal#reward_ad_click_cnt:number",
+ "classHistoryRoundArr": "__baseData__historyRoundArr:object",
+ "severIsInitLoginData": "severIsInitLoginData:number"
+}

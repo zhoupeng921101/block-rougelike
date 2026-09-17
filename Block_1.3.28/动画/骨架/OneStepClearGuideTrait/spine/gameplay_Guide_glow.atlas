@@ -1,0 +1,27 @@
+
+gameplay_Guide_glow.png
+size: 750,322
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+glow/1
+  rotate: false
+  xy: 2, 2
+  size: 318, 318
+  orig: 320, 320
+  offset: 1, 1
+  index: -1
+glow/123
+  rotate: false
+  xy: 642, 214
+  size: 106, 106
+  orig: 106, 106
+  offset: 0, 0
+  index: -1
+glow/2
+  rotate: false
+  xy: 322, 2
+  size: 318, 318
+  orig: 330, 330
+  offset: 6, 6
+  index: -1

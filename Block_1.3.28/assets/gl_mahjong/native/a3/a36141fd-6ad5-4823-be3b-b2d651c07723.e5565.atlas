@@ -1,0 +1,41 @@
+
+Mahjong_AllComboEffect.png
+size: 337,128
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+glow_3
+  rotate: true
+  xy: 156, 14
+  size: 112, 76
+  orig: 128, 128
+  offset: 8, 44
+  index: -1
+huaban
+  rotate: false
+  xy: 234, 13
+  size: 80, 53
+  orig: 80, 53
+  offset: 0, 0
+  index: -1
+huaban_1
+  rotate: true
+  xy: 234, 68
+  size: 58, 101
+  orig: 64, 128
+  offset: 3, 14
+  index: -1
+star_1
+  rotate: false
+  xy: 2, 2
+  size: 124, 124
+  orig: 128, 128
+  offset: 2, 2
+  index: -1
+zhuye
+  rotate: false
+  xy: 128, 6
+  size: 26, 120
+  orig: 32, 128
+  offset: 3, 4
+  index: -1

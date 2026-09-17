@@ -1,0 +1,74 @@
+{
+ "IpaPreCommonLoading": {
+  "name": "IpaPreCommonLoading",
+  "url": "prefabs/ipa/common/IpaPreCommonLoading"
+ },
+ "IpaAgreeLabel": {
+  "name": "IpaAgreeLabel",
+  "url": "prefabs/ipa/removeAd/IpaAgreeLabel"
+ },
+ "IpaPreRemoveAdExpire": {
+  "name": "IpaPreRemoveAdExpire",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdExpire"
+ },
+ "IpaPreRemoveAdIntroduce": {
+  "name": "IpaPreRemoveAdIntroduce",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdIntroduce"
+ },
+ "IpaPreRemoveAdLoadingFailed": {
+  "name": "IpaPreRemoveAdLoadingFailed",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdLoadingFailed"
+ },
+ "IpaPreRemoveAdMain": {
+  "name": "IpaPreRemoveAdMain",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdMain"
+ },
+ "IpaPreRemoveAdNoNet": {
+  "name": "IpaPreRemoveAdNoNet",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdNoNet"
+ },
+ "IpaPreRemoveAdPaymentFailed": {
+  "name": "IpaPreRemoveAdPaymentFailed",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdPaymentFailed"
+ },
+ "IpaPreRemoveAdPaymentSuccess": {
+  "name": "IpaPreRemoveAdPaymentSuccess",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdPaymentSuccess"
+ },
+ "IpaPreRemoveAdPopTip": {
+  "name": "IpaPreRemoveAdPopTip",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdPopTip"
+ },
+ "IpaPreRemoveAdPriceItem": {
+  "name": "IpaPreRemoveAdPriceItem",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdPriceItem"
+ },
+ "IpaPreRemoveAdRenew": {
+  "name": "IpaPreRemoveAdRenew",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdRenew"
+ },
+ "IpaSubEntry": {
+  "name": "IpaSubEntry",
+  "url": "prefabs/ipa/removeAd/IpaSubEntry"
+ },
+ "IpaSubEntry2": {
+  "name": "IpaSubEntry2",
+  "url": "prefabs/ipa/removeAd/IpaSubEntry2"
+ },
+ "IpaPreRemoveAdTip": {
+  "name": "IpaPreRemoveAdTip",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdTip"
+ },
+ "IpaPreRemoveAdTip2": {
+  "name": "IpaPreRemoveAdTip2",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdTip2"
+ },
+ "IpaPreRemoveAdTip3": {
+  "name": "IpaPreRemoveAdTip3",
+  "url": "prefabs/ipa/removeAd/IpaPreRemoveAdTip3"
+ },
+ "IpaPreHand": {
+  "name": "IpaPreHand",
+  "url": "prefabs/ipa/sudoku/IpaPreHand"
+ }
+}

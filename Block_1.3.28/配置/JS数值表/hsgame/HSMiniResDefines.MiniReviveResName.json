@@ -1,0 +1,9 @@
+{
+ "REVIVE_PREFAB": "res/prefabs/UI/reviveUI",
+ "PROGRESS_BG": "sand_revive_progress_bg",
+ "PROGRESS_BAR": "sand_revive_progress_bar",
+ "DRAGONBONES_BTN_SKE": "sand_revive_dragonbones_btn_ske",
+ "DRAGONBONES_BTN_TEX": "sand_revive_dragonbones_btn_tex",
+ "DRAGONBONES_NUM_SKE": "sand_revive_dragonbones_num_ske",
+ "DRAGONBONES_NUM_TEX": "sand_revive_dragonbones_num_tex"
+}

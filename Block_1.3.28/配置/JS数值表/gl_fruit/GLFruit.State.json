@@ -1,0 +1,7 @@
+{
+ "GLFruitSpawnStateNode": "GLFruitSpawnStateNode",
+ "GLFruitReadyDropStateNode": "GLFruitReadyDropStateNode",
+ "GLFruitActiveStateNode": "GLFruitActiveStateNode",
+ "GLFruitMergeStateNode": "GLFruitMergeStateNode",
+ "GLFruitPreReadyDropStateNode": "GLFruitPreReadyDropStateNode"
+}

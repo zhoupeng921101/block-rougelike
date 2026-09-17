@@ -1,0 +1,125 @@
+
+Mahjong_Collosion_combo_V2.png
+size: 625,240
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+combo_1
+  rotate: false
+  xy: 221, 28
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: -1
+combo_2
+  rotate: false
+  xy: 303, 2
+  size: 60, 40
+  orig: 60, 40
+  offset: 0, 0
+  index: -1
+combo_3
+  rotate: false
+  xy: 564, 9
+  size: 50, 50
+  orig: 50, 50
+  offset: 0, 0
+  index: -1
+combo_4
+  rotate: false
+  xy: 221, 110
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+combo_5
+  rotate: false
+  xy: 303, 44
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+combo_6
+  rotate: true
+  xy: 2, 3
+  size: 235, 217
+  orig: 256, 256
+  offset: 11, 17
+  index: -1
+combo_7
+  rotate: false
+  xy: 351, 110
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+combo_8
+  rotate: false
+  xy: 365, 3
+  size: 48, 39
+  orig: 64, 64
+  offset: 3, 13
+  index: -1
+combo_9
+  rotate: false
+  xy: 221, 3
+  size: 63, 23
+  orig: 64, 32
+  offset: 1, 5
+  index: -1
+hd_1
+  rotate: true
+  xy: 481, 174
+  size: 64, 63
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+hd_2
+  rotate: false
+  xy: 369, 44
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+hd_3
+  rotate: false
+  xy: 501, 46
+  size: 61, 62
+  orig: 64, 64
+  offset: 0, 2
+  index: -1
+hd_4
+  rotate: true
+  xy: 564, 61
+  size: 47, 59
+  orig: 64, 64
+  offset: 3, 5
+  index: -1
+hd_5
+  rotate: true
+  xy: 546, 174
+  size: 64, 63
+  orig: 64, 64
+  offset: 0, 1
+  index: -1
+hd_6
+  rotate: false
+  xy: 435, 44
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+hd_7
+  rotate: false
+  xy: 481, 110
+  size: 64, 62
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+hd_8
+  rotate: false
+  xy: 547, 110
+  size: 64, 62
+  orig: 64, 64
+  offset: 0, 0
+  index: -1

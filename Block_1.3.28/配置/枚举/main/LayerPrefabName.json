@@ -1,0 +1,10 @@
+{
+ "ClassFail": "ClassFail",
+ "ClassWin": "ClassWin",
+ "MergeBlocksFail": "MergeBlocksFail",
+ "MergeBlocksWin": "MergeBlocksWin",
+ "ChapterScoreWin": "ChapterScoreWin",
+ "ChapterCollectWin": "ChapterCollectWin",
+ "ChapterScoreFail": "ChapterScoreFail",
+ "ChapterCollectFail": "ChapterCollectFail"
+}

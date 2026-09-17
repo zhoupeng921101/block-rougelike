@@ -1,0 +1,11 @@
+[
+ {
+  "name": "bgContainer"
+ },
+ {
+  "name": "boardContainer"
+ },
+ {
+  "name": "blocksProducerContainer"
+ }
+]

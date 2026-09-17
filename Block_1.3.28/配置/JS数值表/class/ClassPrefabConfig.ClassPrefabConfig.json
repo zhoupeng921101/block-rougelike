@@ -1,0 +1,94 @@
+{
+ "ClassGuide": {
+  "name": "ClassGuide",
+  "url": "prefabs/guide/ClassGuide",
+  "bundleName": "class"
+ },
+ "ClassGuideEffect": {
+  "name": "ClassGuideEffect",
+  "url": "prefabs/guide/ClassGuideEffect",
+  "bundleName": "class"
+ },
+ "ClassGuideWithoutComp": {
+  "name": "ClassGuideWithoutComp",
+  "url": "prefabs/guide/ClassGuideWithoutComp",
+  "bundleName": "class"
+ },
+ "ClassWin": {
+  "name": "ClassWin",
+  "url": "prefabs/win/ClassWin",
+  "bundleName": "class",
+  "page": true
+ },
+ "ClassFail": {
+  "name": "ClassFail",
+  "url": "prefabs/fail/ClassFail",
+  "bundleName": "class",
+  "page": true
+ },
+ "OverRevive": {
+  "name": "OverRevive",
+  "url": "prefabs/overRevive/OverRevive",
+  "bundleName": "class",
+  "modal": true,
+  "clickModalNotClose": true,
+  "mutex": "@r.PrefabMutexType.GAME_OVER_REVIVE"
+ },
+ "ClassTopInfo": {
+  "name": "ClassTopInfo",
+  "url": "prefabs/topInfo/ClassTopInfo",
+  "bundleName": "class"
+ },
+ "ScoreBlockEffect": {
+  "name": "ScoreBlockEffect",
+  "url": "prefabs/board/traits/IsOpenSorceBlockTrait/ScoreBlockEffect",
+  "bundleName": "class"
+ },
+ "ComboEffect": {
+  "name": "ComboEffect",
+  "url": "prefabs/trait/comboEffectCtrl/ComboEffect",
+  "bundleName": "class"
+ },
+ "ClearInitPanelEffect": {
+  "name": "ClearInitPanelEffect",
+  "url": "prefabs/board/traits/ClearInitPanelEffectTrait/ClearInitPanelEffect",
+  "bundleName": "class"
+ },
+ "ClearInitPanelEffectItem": {
+  "name": "ClearInitPanelEffect",
+  "url": "prefabs/board/traits/ClearInitPanelEffectTrait/ClearInitPanelItem",
+  "bundleName": "class"
+ },
+ "unbelievable": {
+  "name": "unbelievable",
+  "url": "prefabs/unbelievable",
+  "bundleName": "Remote_comboEffNew"
+ },
+ "RainbowScreenRefresh": {
+  "name": "RainbowScreenRefresh",
+  "url": "prefabs/rainbow_screen_refresh",
+  "bundleName": "Remote_rainbowScreenRefresh"
+ },
+ "ClassCombo_NewComboEffect": {
+  "name": "ClassCombo_NewComboEffect",
+  "url": "prefabs/NewComboEffect",
+  "bundleName": "Remote_NewComboEffect",
+  "platform": "ios"
+ },
+ "ClassAddIosHelpClean": {
+  "name": "ClassAddIosHelpClean",
+  "url": "prefabs/addIosHelpClean",
+  "bundleName": "Remote_21203",
+  "platform": "ios"
+ },
+ "FirstUserIdentitySelect": {
+  "name": "FirstUserIdentitySelect",
+  "url": "prefabs/FirstUserIdentitySelect",
+  "bundleName": "FirstUserIdentitySelectTrait"
+ },
+ "newUnbelievable": {
+  "name": "newUnbelievable",
+  "url": "newprefabs/newunbelievable",
+  "bundleName": "Remote_comboEffNew"
+ }
+}

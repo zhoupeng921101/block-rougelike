@@ -1,0 +1,20 @@
+
+pixel_sandCrush_gameplay_progressBar_efx.png
+size: 108,66
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+jinDu2
+  rotate: true
+  xy: 66, 12
+  size: 52, 40
+  orig: 59, 40
+  offset: 7, 0
+  index: -1
+jinDu_liZi
+  rotate: false
+  xy: 2, 2
+  size: 62, 62
+  orig: 77, 77
+  offset: 8, 7
+  index: -1

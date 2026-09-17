@@ -1,0 +1,294 @@
+{
+ "home_page_background": {
+  "assetPath": "mat/game_bg_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_5006",
+  "backgroundType": "gradient"
+ },
+ "home_page_logo": {
+  "assetPath": "res/homepage/loadingview_logo_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "home_page_chapter_btn": {
+  "assetPath": "res/homepage/btn_adventure_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "home_page_chapter_clock_btn": {
+  "assetPath": "res/homepage/btn_adventure_1_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "travel_entry_clock_shadow_main_btn_icon_time": {
+  "assetPath": "res/homepage/main_btn_icon_time01_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "travel_entry_clock_shadow_main_time_hour": {
+  "assetPath": "res/homepage/main_time_hour_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "travel_entry_clock_shadow_main_time_min_left": {
+  "assetPath": "res/homepage/main_time_min_left_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "travel_entry_clock_shadow_main_time_hour_light": {
+  "assetPath": "res/homepage/main_time_hour_light_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "travel_entry_clock_shadow_main_time_min_light": {
+  "assetPath": "res/homepage/main_time_min_light_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "travel_entry_clock_shadow_main_time_hour_shadow": {
+  "assetPath": "res/homepage/main_time_hour_shadow_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "travel_entry_clock_shadow_main_time_min_left_shadow": {
+  "assetPath": "res/homepage/main_time_min_left_shadow_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "home_page_class_btn": {
+  "assetPath": "res/homepage/btn_classic_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "home_page_icon_redpoint": {
+  "assetPath": "res/homepage/homepage_img_dot_material1_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006",
+  "spriteLayout": {
+   "position": {
+    "x": 274,
+    "y": 72
+   }
+  }
+ },
+ "home_page_logo_decoration_5006": {
+  "assetPath": "res/backgroundbg_material_1_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "chapter_level_txt_font": {
+  "assetPath": "",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006",
+  "fontLayout": {
+   "color": {
+    "r": 76,
+    "g": 95,
+    "b": 152
+   }
+  }
+ },
+ "chapter_item_bg": {
+  "assetPath": "res/chapterlist/adventure_img_mosaic_bg_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "chapter_content_cup": {
+  "assetPath": "res/chapterlist/adventure_img_CupBg_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "chapter_content_cup_tip_img": {
+  "assetPath": "res/chapterlist/txt_Join_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "chapter_through_cup_bone_spine": {
+  "assetPath": "effect/mosaic_clear_cup_5006_1",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "chapter_list_root_bg": {
+  "assetPath": "",
+  "platform": "gp",
+  "backgroundType": "colorOnly",
+  "backgroundColor": {
+   "r": 59,
+   "g": 56,
+   "b": 137
+  }
+ },
+ "chapter_list_top_bg": {
+  "assetPath": "res/chapterlist/adventure_bg_TittleUp_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "chapter_list_top_back_btn": {
+  "assetPath": "res/adventure_btn_BackHome_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "chapter_list_top_title_img": {
+  "assetPath": "res/chapterlist/adventure_txt_TittleJourney_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "chapter_list_bottom_bg": {
+  "assetPath": "res/chapterlist/adventure_bg_TittleDown_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "chapter_list_bottom_start_game_btn": {
+  "assetPath": "res/chapterlist/adventure_btn_level_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006",
+  "spriteLayout": {
+   "contentSize": {
+    "width": 580,
+    "height": 180
+   }
+  }
+ },
+ "chapter_list_chapter_lb_font": {
+  "assetPath": "font/level_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "chapter_list_continue_btn": {
+  "assetPath": "res/chapterlist/adventure_btn_continue_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "achievement_entrance_spine": {
+  "assetPath": "effect/main_icon_achievement_5006_1",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "achievement_main_bg": {
+  "assetPath": "res/achievement/achievement_panel_blue_1_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "achievement_main_title_bg": {
+  "assetPath": "res/chapterlist/adventure_bg_TittleUp_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "achievement_main_title": {
+  "assetPath": "res/achievement/Achievement_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "achievement_main_awards_bg": {
+  "assetPath": "res/achievement/achievement_panel_blue_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "achievement_statistics_item_bg": {
+  "assetPath": "res/achievement/achievement_panel_information_blue_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "achievement_statistics_item_name_font": {
+  "assetPath": "",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006",
+  "fontLayout": {
+   "color": {
+    "r": 255,
+    "g": 255,
+    "b": 255
+   }
+  }
+ },
+ "achievement_detail_content_bg": {
+  "assetPath": "res/setup/setting_bg_common_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_5006",
+  "spriteLayout": {
+   "position": {
+    "x": 0,
+    "y": 20
+   },
+   "contentSize": {
+    "width": 848,
+    "height": 1330
+   }
+  }
+ },
+ "achievement_detail_title": {
+  "assetPath": "res/achievement/window_txt_award_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006",
+  "spriteLayout": {
+   "position": {
+    "x": 0,
+    "y": 615
+   }
+  }
+ },
+ "achievement_detail_close_btn": {
+  "assetPath": "res/setup/setting_btn_close_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_5006",
+  "spriteLayout": {
+   "position": {
+    "x": 0,
+    "y": 20
+   }
+  }
+ },
+ "achievement_detail_confirm_btn": {
+  "assetPath": "res/achievement/window_btn_confirm_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006",
+  "spriteLayout": {
+   "contentSize": {
+    "width": 578,
+    "height": 181
+   }
+  }
+ },
+ "achievement_detail_confirm_txt": {
+  "assetPath": "res/achievement/window_txt_confirm_material_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ },
+ "achievement_detail_award_time_bg": {
+  "assetPath": "res/achievement/window_img_timeBg",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006",
+  "spriteLayout": {
+   "opacity": 255
+  }
+ },
+ "achievement_detail_award_time_font": {
+  "assetPath": "",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006",
+  "fontLayout": {
+   "color": {
+    "r": 84,
+    "g": 82,
+    "b": 131
+   }
+  }
+ },
+ "achievement_detail_desc_font": {
+  "assetPath": "",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006",
+  "fontLayout": {
+   "color": {
+    "r": 84,
+    "g": 82,
+    "b": 131
+   }
+  }
+ },
+ "achievement_detail_award_icon_spine": {
+  "assetPath": "effect/badge_icon_smallPanel_5006",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Theme_5006"
+ }
+}

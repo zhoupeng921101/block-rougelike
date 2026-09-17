@@ -1,0 +1,6 @@
+﻿id,data
+@y.BLOCK_WEIGHT,
+@y.BLOCK_SORT,"{""sort"": ""@f.RANDOM""}"
+@y.BLOCK_LIMIT_SMALL,
+SELECT_BLOCK_712001,"{""overTime"": 100}"
+@y.SAFETY_NO_DIE,

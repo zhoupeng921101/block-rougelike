@@ -1,0 +1,41 @@
+
+aixin_01.png
+size: 276, 40
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+xin_you1
+  rotate: true
+  xy: 122, 4
+  size: 34, 58
+  orig: 34, 58
+  offset: 0, 0
+  index: -1
+xin_you1_an
+  rotate: true
+  xy: 182, 4
+  size: 34, 58
+  orig: 34, 58
+  offset: 0, 0
+  index: -1
+xin_zuo1
+  rotate: true
+  xy: 2, 2
+  size: 36, 58
+  orig: 36, 58
+  offset: 0, 0
+  index: -1
+xin_zuo1_an
+  rotate: true
+  xy: 62, 2
+  size: 36, 58
+  orig: 36, 58
+  offset: 0, 0
+  index: -1
+yuandian
+  rotate: false
+  xy: 242, 6
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1

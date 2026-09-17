@@ -1,0 +1,50 @@
+{
+ "SequenceDoubleColor": {
+  "algo": 1001,
+  "name": "序列双色"
+ },
+ "RandomDoubleColor": {
+  "algo": 1002,
+  "name": "随机双色"
+ },
+ "SequenceDoubleColor2": {
+  "algo": 1003,
+  "name": "序列双色2"
+ },
+ "EfficientDoubleColor": {
+  "algo": 1004,
+  "name": "高效双色"
+ },
+ "blockAlgoCC": {
+  "algo": 1005,
+  "name": "CC大小块出块算法概率"
+ },
+ "blockAlgoIrregular1": {
+  "algo": 1006,
+  "name": "随机其中一个出异形块"
+ },
+ "blockAlgoIrregular2": {
+  "algo": 1007,
+  "name": "3个块按概率出异形块"
+ },
+ "blockAlgoChangeBlockPool": {
+  "algo": 1008,
+  "name": "块池变换"
+ },
+ "FillPerfect2": {
+  "algo": 1009,
+  "name": "广告辅助消除块 完美填空2"
+ },
+ "CCDoubleColor1": {
+  "algo": 1010,
+  "name": "简单回形双色填空"
+ },
+ "CCDoubleColor2": {
+  "algo": 1011,
+  "name": "复杂回形双色填空"
+ },
+ "CCDoubleColor3": {
+  "algo": 1012,
+  "name": "外过滤回形双色"
+ }
+}

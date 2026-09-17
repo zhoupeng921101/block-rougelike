@@ -1,0 +1,69 @@
+
+gameplay_xzjlc.png
+size: 1066,254
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+ccc/Amazing!
+  rotate: false
+  xy: 2, 122
+  size: 482, 130
+  orig: 484, 131
+  offset: 1, 1
+  index: -1
+ccc/Excellent!
+  rotate: false
+  xy: 486, 141
+  size: 501, 111
+  orig: 503, 111
+  offset: 1, 0
+  index: -1
+ccc/Good!
+  rotate: false
+  xy: 670, 29
+  size: 302, 110
+  orig: 304, 111
+  offset: 1, 1
+  index: -1
+ccc/Unbelievable!
+  rotate: false
+  xy: 2, 9
+  size: 666, 111
+  orig: 667, 111
+  offset: 0, 0
+  index: -1
+ef/glow
+  rotate: false
+  xy: 989, 190
+  size: 62, 62
+  orig: 64, 64
+  offset: 1, 1
+  index: -1
+ef/xl2
+  rotate: false
+  xy: 974, 2
+  size: 89, 93
+  orig: 109, 113
+  offset: 10, 10
+  index: -1
+f/d1
+  rotate: false
+  xy: 989, 97
+  size: 44, 44
+  orig: 48, 48
+  offset: 2, 2
+  index: -1
+f/d4
+  rotate: false
+  xy: 1035, 112
+  size: 29, 29
+  orig: 33, 33
+  offset: 2, 2
+  index: -1
+f/d6
+  rotate: false
+  xy: 989, 143
+  size: 45, 45
+  orig: 49, 49
+  offset: 2, 2
+  index: -1

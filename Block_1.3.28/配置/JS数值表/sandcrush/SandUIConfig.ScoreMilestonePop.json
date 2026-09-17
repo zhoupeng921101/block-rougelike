@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/ideas/scoreMilestone/prefab/scoreMilestonePop",
+ "cnName": "得分里程碑弹板",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

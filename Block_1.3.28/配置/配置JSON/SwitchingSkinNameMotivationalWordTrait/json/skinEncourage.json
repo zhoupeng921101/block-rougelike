@@ -1,0 +1,402 @@
+{
+ "skin_1000": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#506ce4",
+   "gradientParam": "#3754c6",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1001": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#ff90b8",
+   "gradientParam": "#ff6199",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1002": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#87d6ff",
+   "gradientParam": "#58a5ce",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1003": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#f15e90",
+   "gradientParam": "#e43f7a",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1004": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#8fa7ca",
+   "gradientParam": "#8296b7",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1005": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#63a05e",
+   "gradientParam": "#4e8a4f",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1006": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#b4932a",
+   "gradientParam": "#a28422",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1007": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#5b91d7",
+   "gradientParam": "#3f68ab",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1008": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#f03a5e",
+   "gradientParam": "#d72c4d",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1009": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#344dce",
+   "gradientParam": "#3346ae",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1010": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#6e33a7",
+   "gradientParam": "#e707e4",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1011": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#759641",
+   "gradientParam": "#576e35",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1012": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#4079f7",
+   "gradientParam": "#1a3bd4",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1013": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#7aaa99",
+   "gradientParam": "#538675",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1014": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#dbba69",
+   "gradientParam": "#b69544",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1015": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#f8228c",
+   "gradientParam": "#e51f81",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1016": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#80be66",
+   "gradientParam": "#6ba152",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1017": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#79b01e",
+   "gradientParam": "#557a1d",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1018": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#ee8959",
+   "gradientParam": "#a34e2d",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1019": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#bb8e77",
+   "gradientParam": "#946957",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1020": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#478f42",
+   "gradientParam": "#377933",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1021": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#0674e3",
+   "gradientParam": "#065cb5",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1022": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#9062d1",
+   "gradientParam": "#72429e",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1023": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#4fa129",
+   "gradientParam": "#3e871f",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1024": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#f0a1a8",
+   "gradientParam": "#db9197",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1025": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#56c9b7",
+   "gradientParam": "#31b09d",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1026": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#c29463",
+   "gradientParam": "#ad7e4c",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1027": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#f8454c",
+   "gradientParam": "#ce2629",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1028": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#4193a8",
+   "gradientParam": "#29697a",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1029": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#46acfa",
+   "gradientParam": "#2593ed",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1030": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#e47654",
+   "gradientParam": "#bf5a46",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1031": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#43896e",
+   "gradientParam": "#2c5f49",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1032": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#ec442f",
+   "gradientParam": "#bc2912",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1033": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#68aa58",
+   "gradientParam": "#5a934a",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1034": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#957cea",
+   "gradientParam": "#7f69cb",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1035": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#56c9b7",
+   "gradientParam": "#31b09d",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1036": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#e146df",
+   "gradientParam": "#c632c4",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1037": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#bc934a",
+   "gradientParam": "#b5893c",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1038": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#f28f8e",
+   "gradientParam": "#d47373",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ],
+ "skin_1039": [
+  {
+   "color": "#ffffff",
+   "colorParam": "#d58508",
+   "gradientParam": "#d56808",
+   "gradientDirection": 90,
+   "gradientType": 1,
+   "type": 4
+  }
+ ]
+}

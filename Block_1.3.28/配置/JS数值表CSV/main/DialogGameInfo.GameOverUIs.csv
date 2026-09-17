@@ -1,0 +1,11 @@
+﻿name,url,type
+ChapterScoreWin,prefabs/win/ChapterScoreWin,@s.UIType.GAMEOVER
+ChapterCollectWin,prefabs/win/ChapterCollectWin,@s.UIType.GAMEOVER
+ChapterScoreFail,prefabs/fail/ChapterScoreFail,@s.UIType.GAMEOVER
+ChapterCollectFail,prefabs/fail/ChapterCollectFail,@s.UIType.GAMEOVER
+ChapterReduceScoreWin,prefabs/win/trait/reduceTravelSettlement/ChapterReduceScoreWin,@s.UIType.GAMEOVER
+ChapterReduceCollectWin,prefabs/win/trait/reduceTravelSettlement/ChapterReduceCollectWin,@s.UIType.GAMEOVER
+ChapterReduceScoreFail,prefabs/fail/trait/reduceTravelSettlement/ChapterReduceScoreFail,@s.UIType.GAMEOVER
+ChapterReduceCollectFail,prefabs/fail/trait/reduceTravelSettlement/ChapterReduceCollectFail,@s.UIType.GAMEOVER
+ClassWin,prefabs/win/ClassWin,@s.UIType.GAMEOVER
+ClassFail,prefabs/fail/ClassFail,@s.UIType.GAMEOVER

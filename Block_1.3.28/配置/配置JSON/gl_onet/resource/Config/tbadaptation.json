@@ -1,0 +1,218 @@
+[
+ {
+  "width": 60,
+  "height": 64,
+  "horizontalSpace": 3,
+  "verticalSpace": 2,
+  "minimumHorizontalMargin": 24,
+  "minimumVerticalMargin": 24,
+  "borderName": "card_large"
+ },
+ {
+  "width": 59,
+  "height": 63,
+  "horizontalSpace": 3,
+  "verticalSpace": 2,
+  "minimumHorizontalMargin": 24,
+  "minimumVerticalMargin": 24,
+  "borderName": "card_large"
+ },
+ {
+  "width": 58,
+  "height": 62,
+  "horizontalSpace": 3,
+  "verticalSpace": 2,
+  "minimumHorizontalMargin": 24,
+  "minimumVerticalMargin": 24,
+  "borderName": "card_large"
+ },
+ {
+  "width": 57,
+  "height": 61,
+  "horizontalSpace": 3,
+  "verticalSpace": 2,
+  "minimumHorizontalMargin": 23,
+  "minimumVerticalMargin": 23,
+  "borderName": "card_large"
+ },
+ {
+  "width": 56,
+  "height": 60,
+  "horizontalSpace": 3,
+  "verticalSpace": 2,
+  "minimumHorizontalMargin": 23,
+  "minimumVerticalMargin": 23,
+  "borderName": "card_large"
+ },
+ {
+  "width": 55,
+  "height": 59,
+  "horizontalSpace": 3,
+  "verticalSpace": 2,
+  "minimumHorizontalMargin": 22,
+  "minimumVerticalMargin": 22,
+  "borderName": "card_large"
+ },
+ {
+  "width": 54,
+  "height": 58,
+  "horizontalSpace": 3,
+  "verticalSpace": 2,
+  "minimumHorizontalMargin": 22,
+  "minimumVerticalMargin": 22,
+  "borderName": "card_large"
+ },
+ {
+  "width": 53,
+  "height": 57,
+  "horizontalSpace": 3,
+  "verticalSpace": 2,
+  "minimumHorizontalMargin": 22,
+  "minimumVerticalMargin": 22,
+  "borderName": "card_large"
+ },
+ {
+  "width": 52,
+  "height": 56,
+  "horizontalSpace": 3,
+  "verticalSpace": 2,
+  "minimumHorizontalMargin": 21,
+  "minimumVerticalMargin": 21,
+  "borderName": "card_large"
+ },
+ {
+  "width": 51,
+  "height": 54,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 21,
+  "minimumVerticalMargin": 21,
+  "borderName": "card_small"
+ },
+ {
+  "width": 50,
+  "height": 53,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 20,
+  "minimumVerticalMargin": 20,
+  "borderName": "card_small"
+ },
+ {
+  "width": 49,
+  "height": 52,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 20,
+  "minimumVerticalMargin": 20,
+  "borderName": "card_small"
+ },
+ {
+  "width": 48,
+  "height": 51,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 20,
+  "minimumVerticalMargin": 20,
+  "borderName": "card_small"
+ },
+ {
+  "width": 47,
+  "height": 50,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 19,
+  "minimumVerticalMargin": 19,
+  "borderName": "card_small"
+ },
+ {
+  "width": 46,
+  "height": 49,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 19,
+  "minimumVerticalMargin": 19,
+  "borderName": "card_small"
+ },
+ {
+  "width": 45,
+  "height": 48,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 18,
+  "minimumVerticalMargin": 18,
+  "borderName": "card_small"
+ },
+ {
+  "width": 44,
+  "height": 47,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 18,
+  "minimumVerticalMargin": 18,
+  "borderName": "card_small"
+ },
+ {
+  "width": 43,
+  "height": 46,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 18,
+  "minimumVerticalMargin": 18,
+  "borderName": "card_small"
+ },
+ {
+  "width": 42,
+  "height": 45,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 17,
+  "minimumVerticalMargin": 17,
+  "borderName": "card_small"
+ },
+ {
+  "width": 41,
+  "height": 44,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 17,
+  "minimumVerticalMargin": 17,
+  "borderName": "card_small"
+ },
+ {
+  "width": 40,
+  "height": 43,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 17,
+  "minimumVerticalMargin": 17,
+  "borderName": "card_small"
+ },
+ {
+  "width": 39,
+  "height": 42,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 16,
+  "minimumVerticalMargin": 16,
+  "borderName": "card_small"
+ },
+ {
+  "width": 38,
+  "height": 41,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 16,
+  "minimumVerticalMargin": 16,
+  "borderName": "card_small"
+ },
+ {
+  "width": 37,
+  "height": 40,
+  "horizontalSpace": 2,
+  "verticalSpace": 1,
+  "minimumHorizontalMargin": 15,
+  "minimumVerticalMargin": 15,
+  "borderName": "card_small"
+ }
+]

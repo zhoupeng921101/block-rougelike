@@ -1,0 +1,10 @@
+{
+ "atlasPath": {
+  "NoTheme96Config": "textures/chapterList/periods/block/chapterListBlocks"
+ },
+ "itemPath": "prefabs/chapterList/ChapterItem",
+ "itemHeight": 80,
+ "cupNodeOffsetY": 350,
+ "itemsContentHeightAdd": 900,
+ "defaultHeightLength": 13
+}

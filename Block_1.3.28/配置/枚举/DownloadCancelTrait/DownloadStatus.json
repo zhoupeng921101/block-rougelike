@@ -1,0 +1,6 @@
+{
+ "Downloading": "downloading",
+ "Paused": "paused",
+ "Cancelled": "cancelled",
+ "Completed": "completed"
+}

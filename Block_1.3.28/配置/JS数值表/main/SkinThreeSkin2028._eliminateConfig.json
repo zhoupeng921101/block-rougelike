@@ -1,0 +1,26 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.rowAndColunm",
+  "params": {
+   "effectConfig": "eliminate_effect",
+   "animConfig": {
+    "color_1_x": "blue_x",
+    "color_1_y": "blue_y",
+    "color_2_x": "yellow_x",
+    "color_2_y": "yellow_y",
+    "color_3_x": "purple_x",
+    "color_3_y": "purple_y",
+    "color_4_x": "orange_x",
+    "color_4_y": "orange_y",
+    "color_5_x": "red_x",
+    "color_5_y": "red_y",
+    "color_6_x": "green_x",
+    "color_6_y": "green_y",
+    "color_7_x": "cyan_x",
+    "color_7_y": "cyan_y"
+   },
+   "armatureName": "Armature",
+   "needRotate": false
+  }
+ }
+]

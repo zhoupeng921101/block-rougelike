@@ -1,0 +1,22 @@
+[
+ "global",
+ "window",
+ "console",
+ "Error",
+ "step",
+ "Object",
+ "Function",
+ "Array",
+ "Map",
+ "Set",
+ "WeakMap",
+ "WeakSet",
+ "Promise",
+ "Symbol",
+ "BigInt",
+ "Boolean",
+ "Number",
+ "String",
+ "Date",
+ "RegExp"
+]

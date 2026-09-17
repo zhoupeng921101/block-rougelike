@@ -1,0 +1,8 @@
+﻿_key,ID,Event,Constant
+1,1,DiamondProdution,"1|20|2,3,4,5,4,3,2|5"
+2,2,DiamondConsumption,50|100
+3,3,StageOrder1,"1,2,3"
+4,4,StageOrder2,"4,2,3"
+5,5,StageOrder3,"5,2,3"
+6,6,StageOrder4,"6,2,3"
+7,7,StageLineReward,"7,4,30|12,4,30|19,1,15|31,2,20|41,4,40|54,2,25|64,4,50|82,3,30|99,4,60"

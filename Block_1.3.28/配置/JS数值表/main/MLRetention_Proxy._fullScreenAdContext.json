@@ -1,0 +1,10 @@
+{
+ "adType": "@e",
+ "fullScreenAdPosType": "@t",
+ "showTs": "@a",
+ "mode": "@r",
+ "gameNum": "@o",
+ "ts": "@a",
+ "incomeReceived": false,
+ "callbackReceived": false
+}

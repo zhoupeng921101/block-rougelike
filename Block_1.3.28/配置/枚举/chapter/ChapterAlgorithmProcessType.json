@@ -1,0 +1,12 @@
+{
+ "ChapterDeal": "chapterDeal",
+ "ChapterReplace": "chapterReplace",
+ "Deal": "deal",
+ "ChapterCondition": "chapterCondition",
+ "ChapterPriority": "chapterPriority",
+ "AlgoExe": "algoExe",
+ "ChapterBlockOut": "chapterBlockOut",
+ "BlockPos": "blockPos",
+ "Color": "color",
+ "Collect": "collect"
+}

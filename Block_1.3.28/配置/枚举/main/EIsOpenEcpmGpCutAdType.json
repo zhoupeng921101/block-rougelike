@@ -1,0 +1,18 @@
+{
+ "Type_0_AdTimesDayThenCountry": 0,
+ "Type_1_AdTimesDay2ThenRemoteEcpm": 1,
+ "Type_2_RemoteAdTimestampAndEcpm": 2,
+ "Type_3_RemoteRevOrPropsCutTimes": 3,
+ "Type_4_RemoteRevOrPropsCutTimes": 4,
+ "Type_5_PropsRandom": 5,
+ "Type_6_PropsGameTime": 6,
+ "Type_7_RemoteRound": 7,
+ "Type_8_RemoteAdTimestamp": 8,
+ "Type_9_RemoteRev": 9,
+ "Type_10_EcpmAndPropsRegEcpm": 10,
+ "Type_11_GameTimeAndPropsCutTimes": 11,
+ "Type_12_CountryThenPropsRegEcpm": 12,
+ "Type_13_MaxComboNumAndPropsComboNum": 13,
+ "Type_14_ClearNumAndPropsComboNum": 14,
+ "Type_15_LocalMaxCombos": 15
+}

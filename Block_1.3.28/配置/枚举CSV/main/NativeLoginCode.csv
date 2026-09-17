@@ -1,0 +1,9 @@
+﻿成员,值
+Success,200
+OtherDevice,401
+ServerError,500
+UserCancelled,1001
+Failed,1004
+NoNetWork,2002
+CancelledByUser,2003
+SoftwareNotFound,2004

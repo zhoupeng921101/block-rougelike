@@ -1,0 +1,41 @@
+
+gameplay_guide_eff.png
+size: 436,330
+format: RGBA8888
+filter: MipMap,MipMap
+repeat: none
+1
+  rotate: false
+  xy: 4, 4
+  size: 106, 106
+  orig: 106, 106
+  offset: 0, 0
+  index: -1
+123
+  rotate: false
+  xy: 224, 4
+  size: 106, 106
+  orig: 106, 106
+  offset: 0, 0
+  index: -1
+1_1
+  rotate: false
+  xy: 114, 4
+  size: 106, 106
+  orig: 106, 106
+  offset: 0, 0
+  index: -1
+2
+  rotate: false
+  xy: 4, 114
+  size: 212, 212
+  orig: 212, 212
+  offset: 0, 0
+  index: -1
+2_2
+  rotate: false
+  xy: 220, 114
+  size: 212, 212
+  orig: 212, 212
+  offset: 0, 0
+  index: -1

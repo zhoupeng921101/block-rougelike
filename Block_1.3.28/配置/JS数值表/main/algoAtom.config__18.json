@@ -1,0 +1,23 @@
+[
+ {
+  "id": "@y.BLOCK_WEIGHT"
+ },
+ {
+  "id": "SELECT_BLOCK_800123",
+  "data": {
+   "overTime": 100,
+   "searchRegionOrder": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "axisPriority": 0,
+   "returnMode": 0,
+   "blankRegionFilter": 0
+  }
+ }
+]

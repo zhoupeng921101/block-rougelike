@@ -1,0 +1,116 @@
+{
+ "1": {
+  "ID": 1,
+  "AlgoName": "MultipleBlast",
+  "Name": "填空消除",
+  "AlgoType": 1
+ },
+ "2": {
+  "ID": 2,
+  "AlgoName": "TwoColor",
+  "Name": "同色堆叠",
+  "AlgoType": 2
+ },
+ "3": {
+  "ID": 3,
+  "AlgoName": "SameHigh",
+  "Name": "不变堆叠",
+  "AlgoType": 2
+ },
+ "4": {
+  "ID": 4,
+  "AlgoName": "SlowHigher",
+  "Name": "温和堆叠",
+  "AlgoType": 2
+ },
+ "5": {
+  "ID": 5,
+  "AlgoName": "FastHigher",
+  "Name": "强制堆叠",
+  "AlgoType": 2
+ },
+ "6": {
+  "ID": 6,
+  "AlgoName": "Random",
+  "Name": "随机",
+  "AlgoType": 3
+ },
+ "7": {
+  "ID": 7,
+  "AlgoName": "SameColor",
+  "Name": "纯色",
+  "AlgoType": ""
+ },
+ "8": {
+  "ID": 8,
+  "AlgoName": "FillPerfect2",
+  "Name": "完美填空",
+  "AlgoType": 1
+ },
+ "9": {
+  "ID": 9,
+  "AlgoName": "FastHigher2",
+  "Name": "强制堆叠2",
+  "AlgoType": 2
+ },
+ "10": {
+  "ID": 10,
+  "AlgoName": "SequenceFill",
+  "Name": "序列填充",
+  "AlgoType": ""
+ },
+ "11": {
+  "ID": 11,
+  "AlgoName": "SequenceFilter",
+  "Name": "序列过滤",
+  "AlgoType": "0&100"
+ },
+ "12": {
+  "ID": 12,
+  "AlgoName": "SequenceProbFilter",
+  "Name": "序列概率过滤",
+  "AlgoType": ""
+ },
+ "13": {
+  "ID": 13,
+  "AlgoName": "SequenceDoubleColor",
+  "Name": "序列双色块",
+  "AlgoType": "2&4"
+ },
+ "14": {
+  "ID": 14,
+  "AlgoName": "RepeatableRandom",
+  "Name": "可重复随机",
+  "AlgoType": ""
+ },
+ "15": {
+  "ID": 15,
+  "AlgoName": "FilterRepeatableRandom",
+  "Name": "过滤可重复随机",
+  "AlgoType": ""
+ },
+ "16": {
+  "ID": 16,
+  "AlgoName": "RandomDoubleColor",
+  "Name": "随机双色块",
+  "AlgoType": 4
+ },
+ "17": {
+  "ID": 17,
+  "AlgoName": "RepSequenceFill",
+  "Name": "修复序列填充",
+  "AlgoType": ""
+ },
+ "18": {
+  "ID": 18,
+  "AlgoName": "RepSequenceFilter",
+  "Name": "修复序列过滤",
+  "AlgoType": ""
+ },
+ "19": {
+  "ID": 19,
+  "AlgoName": "RepSequenceProbFilter",
+  "Name": "修复序列概率过滤",
+  "AlgoType": ""
+ }
+}

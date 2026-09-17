@@ -1,0 +1,293 @@
+
+sandCrush_main_btn_light.png
+size: 1794,584
+format: RGBA8888
+filter: MipMap,MipMap
+repeat: none
+btn_light2_xl_1
+  rotate: true
+  xy: 1666, 158
+  size: 36, 21
+  orig: 451, 112
+  offset: 0, 91
+  index: -1
+btn_light2_xl_10
+  rotate: false
+  xy: 414, 352
+  size: 365, 112
+  orig: 451, 112
+  offset: 10, 0
+  index: -1
+btn_light2_xl_11
+  rotate: false
+  xy: 4, 236
+  size: 369, 112
+  orig: 451, 112
+  offset: 44, 0
+  index: -1
+btn_light2_xl_12
+  rotate: false
+  xy: 860, 468
+  size: 364, 112
+  orig: 451, 112
+  offset: 82, 0
+  index: -1
+btn_light2_xl_13
+  rotate: false
+  xy: 1228, 468
+  size: 331, 112
+  orig: 451, 112
+  offset: 120, 0
+  index: -1
+btn_light2_xl_14
+  rotate: false
+  xy: 1124, 352
+  size: 294, 112
+  orig: 451, 112
+  offset: 157, 0
+  index: -1
+btn_light2_xl_15
+  rotate: false
+  xy: 1422, 352
+  size: 256, 112
+  orig: 451, 112
+  offset: 195, 0
+  index: -1
+btn_light2_xl_16
+  rotate: false
+  xy: 1310, 236
+  size: 218, 112
+  orig: 451, 112
+  offset: 233, 0
+  index: -1
+btn_light2_xl_17
+  rotate: false
+  xy: 1373, 120
+  size: 180, 112
+  orig: 451, 112
+  offset: 271, 0
+  index: -1
+btn_light2_xl_18
+  rotate: false
+  xy: 1532, 242
+  size: 143, 106
+  orig: 451, 112
+  offset: 308, 0
+  index: -1
+btn_light2_xl_19
+  rotate: false
+  xy: 1557, 158
+  size: 105, 80
+  orig: 451, 112
+  offset: 346, 0
+  index: -1
+btn_light2_xl_2
+  rotate: false
+  xy: 1598, 12
+  size: 73, 48
+  orig: 451, 112
+  offset: 0, 64
+  index: -1
+btn_light2_xl_20
+  rotate: false
+  xy: 1679, 198
+  size: 67, 53
+  orig: 451, 112
+  offset: 384, 0
+  index: -1
+btn_light2_xl_21
+  rotate: false
+  xy: 1557, 129
+  size: 30, 25
+  orig: 451, 112
+  offset: 421, 0
+  index: -1
+btn_light2_xl_3
+  rotate: false
+  xy: 1679, 255
+  size: 111, 75
+  orig: 451, 112
+  offset: 0, 37
+  index: -1
+btn_light2_xl_4
+  rotate: false
+  xy: 1212, 20
+  size: 149, 101
+  orig: 451, 112
+  offset: 0, 11
+  index: -1
+btn_light2_xl_5
+  rotate: false
+  xy: 838, 4
+  size: 187, 112
+  orig: 451, 112
+  offset: 0, 0
+  index: -1
+btn_light2_xl_6
+  rotate: false
+  xy: 954, 120
+  size: 224, 112
+  orig: 451, 112
+  offset: 0, 0
+  index: -1
+btn_light2_xl_7
+  rotate: false
+  xy: 1044, 236
+  size: 262, 112
+  orig: 451, 112
+  offset: 0, 0
+  index: -1
+btn_light2_xl_8
+  rotate: false
+  xy: 740, 236
+  size: 300, 112
+  orig: 451, 112
+  offset: 0, 0
+  index: -1
+btn_light2_xl_9
+  rotate: false
+  xy: 783, 352
+  size: 337, 112
+  orig: 451, 112
+  offset: 0, 0
+  index: -1
+btn_light_xl_1
+  rotate: false
+  xy: 1182, 120
+  size: 1, 1
+  orig: 451, 112
+  offset: 4, 104
+  index: -1
+btn_light_xl_10
+  rotate: false
+  xy: 451, 468
+  size: 405, 112
+  orig: 451, 112
+  offset: 3, 0
+  index: -1
+btn_light_xl_11
+  rotate: false
+  xy: 4, 468
+  size: 443, 112
+  orig: 451, 112
+  offset: 4, 0
+  index: -1
+btn_light_xl_12
+  rotate: false
+  xy: 4, 352
+  size: 406, 112
+  orig: 451, 112
+  offset: 42, 0
+  index: -1
+btn_light_xl_13
+  rotate: false
+  xy: 377, 236
+  size: 359, 112
+  orig: 451, 112
+  offset: 90, 0
+  index: -1
+btn_light_xl_14
+  rotate: false
+  xy: 368, 120
+  size: 313, 112
+  orig: 451, 112
+  offset: 138, 0
+  index: -1
+btn_light_xl_15
+  rotate: false
+  xy: 685, 120
+  size: 265, 112
+  orig: 451, 112
+  offset: 186, 0
+  index: -1
+btn_light_xl_16
+  rotate: false
+  xy: 1563, 468
+  size: 227, 112
+  orig: 451, 112
+  offset: 224, 0
+  index: -1
+btn_light_xl_17
+  rotate: false
+  xy: 1029, 9
+  size: 179, 107
+  orig: 451, 112
+  offset: 272, 0
+  index: -1
+btn_light_xl_18
+  rotate: true
+  xy: 1682, 334
+  size: 130, 106
+  orig: 451, 112
+  offset: 320, 0
+  index: -1
+btn_light_xl_19
+  rotate: true
+  xy: 1598, 64
+  size: 90, 86
+  orig: 451, 112
+  offset: 359, 0
+  index: -1
+btn_light_xl_2
+  rotate: false
+  xy: 1691, 153
+  size: 50, 41
+  orig: 451, 112
+  offset: 3, 65
+  index: -1
+btn_light_xl_20
+  rotate: false
+  xy: 1688, 108
+  size: 41, 41
+  orig: 451, 112
+  offset: 407, 6
+  index: -1
+btn_light_xl_3
+  rotate: true
+  xy: 1508, 25
+  size: 91, 86
+  orig: 451, 112
+  offset: 1, 26
+  index: -1
+btn_light_xl_4
+  rotate: false
+  xy: 1365, 11
+  size: 139, 105
+  orig: 451, 112
+  offset: 0, 7
+  index: -1
+btn_light_xl_5
+  rotate: false
+  xy: 1182, 125
+  size: 187, 107
+  orig: 451, 112
+  offset: 0, 5
+  index: -1
+btn_light_xl_6
+  rotate: false
+  xy: 599, 4
+  size: 235, 112
+  orig: 451, 112
+  offset: 0, 0
+  index: -1
+btn_light_xl_7
+  rotate: false
+  xy: 321, 4
+  size: 274, 112
+  orig: 451, 112
+  offset: 0, 0
+  index: -1
+btn_light_xl_8
+  rotate: false
+  xy: 4, 4
+  size: 313, 112
+  orig: 451, 112
+  offset: 0, 0
+  index: -1
+btn_light_xl_9
+  rotate: false
+  xy: 4, 120
+  size: 360, 112
+  orig: 451, 112
+  offset: 1, 0
+  index: -1

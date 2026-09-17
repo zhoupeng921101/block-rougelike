@@ -1,0 +1,122 @@
+[
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 0,
+   "overTime": 33,
+   "safety": true,
+   "ways": [
+    {
+     "algoName": "测试6",
+     "blocks": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "COLLECT_TOTAL_PROFIT_900050",
+      "key": "@h.TOTAL_PROFIT",
+      "clear": true,
+      "operator": "@g.MIN"
+     },
+     "blockOrders": [
+      "@c.AREA_EMPTY",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": true,
+     "clear": true
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 1,
+   "overTime": 33,
+   "safety": true,
+   "ways": [
+    {
+     "algoName": "测试6",
+     "blocks": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "COLLECT_EDGE_RATE_900050",
+      "key": "@h.EDGE_RATE",
+      "clear": true,
+      "operator": "@g.MAX"
+     },
+     "blockOrders": [
+      "@c.AREA_EMPTY",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": true,
+     "clear": true
+    }
+   ]
+  }
+ },
+ {
+  "id": "@y.ALGO_SINGLE",
+  "data": {
+   "index": 2,
+   "overTime": 33,
+   "safety": true,
+   "ways": [
+    {
+     "algoName": "测试6",
+     "blocks": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      }
+     ],
+     "select": {
+      "collectCompId": "COLLECT_EDGE_RATE_900050",
+      "key": "@h.EDGE_RATE",
+      "clear": true,
+      "operator": "@g.MAX"
+     },
+     "blockOrders": [
+      "@c.AREA_EMPTY",
+      "@c.ID_RANDOM"
+     ],
+     "blockValues": [],
+     "posOrders": [
+      "@s.RANDOM"
+     ],
+     "put": true,
+     "clear": true
+    }
+   ]
+  }
+ }
+]

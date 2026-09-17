@@ -1,0 +1,22 @@
+{
+ "MainHeadInfo": {
+  "name": "MainHeadInfo",
+  "url": "prefabs/account/MainHeadInfo"
+ },
+ "AccountPlayerInfo": {
+  "name": "AccountPlayerInfo",
+  "url": "prefabs/account/PlayerInfo"
+ },
+ "SelectInfo": {
+  "name": "SelectInfo",
+  "url": "prefabs/account/SelectInfo"
+ },
+ "SureAlert": {
+  "name": "SureAlert",
+  "url": "prefabs/account/SureAlert"
+ },
+ "LoginResultAlert": {
+  "name": "LoginResultAlert",
+  "url": "prefabs/account/LoginResultAlert"
+ }
+}

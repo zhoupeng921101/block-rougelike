@@ -1,0 +1,48 @@
+
+nopixel_watersort_gameplay_thumb.png
+size: 538,238
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+images/Wave
+  rotate: false
+  xy: 2, 2
+  size: 256, 234
+  orig: 256, 234
+  offset: 0, 0
+  index: -1
+images/biankuang
+  rotate: false
+  xy: 260, 3
+  size: 93, 85
+  orig: 93, 85
+  offset: 0, 0
+  index: -1
+images/biankuangGlow1
+  rotate: false
+  xy: 408, 108
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+images/guang
+  rotate: false
+  xy: 260, 90
+  size: 146, 146
+  orig: 146, 146
+  offset: 0, 0
+  index: -1
+images/icon_good
+  rotate: false
+  xy: 355, 3
+  size: 93, 85
+  orig: 93, 85
+  offset: 0, 0
+  index: -1
+images/shou
+  rotate: true
+  xy: 450, 13
+  size: 93, 85
+  orig: 93, 85
+  offset: 0, 0
+  index: -1

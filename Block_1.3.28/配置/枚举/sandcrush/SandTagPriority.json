@@ -1,0 +1,8 @@
+{
+ "URGENT": 1,
+ "HIGH": 5,
+ "MEDIUM": 10,
+ "NORMAL": 20,
+ "LOW": 30,
+ "LOWEST": 50
+}

@@ -1,0 +1,7 @@
+{
+ "bundle": "woodskin",
+ "prefab": "prefabs/levelMode/SandLevelResultGem",
+ "cnName": "关卡结果界面",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

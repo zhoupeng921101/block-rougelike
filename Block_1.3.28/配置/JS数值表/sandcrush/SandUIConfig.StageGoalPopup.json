@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/levelup/SandLevelUp",
+ "cnName": "阶段目标实现",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

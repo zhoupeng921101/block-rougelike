@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/setting",
+ "cnName": "setting",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

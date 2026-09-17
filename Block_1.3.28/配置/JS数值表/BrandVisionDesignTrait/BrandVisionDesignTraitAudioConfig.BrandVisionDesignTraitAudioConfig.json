@@ -1,0 +1,38 @@
+{
+ "man_gaokang": {
+  "url": "audios/man_gaokang",
+  "type": "@o.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "BrandVisionDesignTrait"
+ },
+ "man_lengjing": {
+  "url": "audios/man_lengjing",
+  "type": "@o.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "BrandVisionDesignTrait"
+ },
+ "man_huopo": {
+  "url": "audios/man_huopo",
+  "type": "@o.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "BrandVisionDesignTrait"
+ },
+ "man_dichen": {
+  "url": "audios/man_dichen",
+  "type": "@o.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "BrandVisionDesignTrait"
+ },
+ "woman_lengjing": {
+  "url": "audios/woman_lengjing",
+  "type": "@o.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "BrandVisionDesignTrait"
+ },
+ "woman_huopo": {
+  "url": "audios/woman_huopo",
+  "type": "@o.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "BrandVisionDesignTrait"
+ }
+}

@@ -1,0 +1,8 @@
+{
+ "MAIN": "DataCompatibilityNewMainGateInfo",
+ "CLASS": "DataCompatibilityNewClassGateInfo",
+ "CHAPTER": "DataCompatibilityNewChapterGateInfo",
+ "JEWEL": "DataCompatibilityNewJewelGateInfo",
+ "TRAIT": "DataCompatibilityNewTraitGateInfo",
+ "ERROR_FLAG": "dataCompatibilityErrorFlag"
+}

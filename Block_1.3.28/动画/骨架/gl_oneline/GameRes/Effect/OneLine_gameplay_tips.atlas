@@ -1,0 +1,34 @@
+
+OneLine_gameplay_tips.png
+size: 180,55
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+gameplay_hint1
+  rotate: false
+  xy: 114, 18
+  size: 31, 35
+  orig: 31, 35
+  offset: 0, 0
+  index: -1
+gameplay_hint2
+  rotate: false
+  xy: 147, 18
+  size: 31, 35
+  orig: 31, 35
+  offset: 0, 0
+  index: -1
+gameplay_square_color1
+  rotate: false
+  xy: 58, 2
+  size: 54, 51
+  orig: 54, 51
+  offset: 0, 0
+  index: -1
+gameplay_square_color2
+  rotate: false
+  xy: 2, 2
+  size: 54, 51
+  orig: 54, 51
+  offset: 0, 0
+  index: -1

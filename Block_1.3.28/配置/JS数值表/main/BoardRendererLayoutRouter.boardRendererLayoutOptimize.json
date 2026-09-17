@@ -1,0 +1,9 @@
+{
+ "getBoardWorldPos": "@_",
+ "getBoardDragReferenceWorldY": "@h",
+ "syncLegacyTouchCoords": "@y",
+ "isSelectItemInSnapHintRegion": "@v",
+ "resolveSelectItemGridGxGy": "@C",
+ "boardGridGxGyToContainerLocal": "@T",
+ "resolveSnapHintRegionBounds": "@f"
+}

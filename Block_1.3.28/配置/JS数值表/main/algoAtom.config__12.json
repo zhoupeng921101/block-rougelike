@@ -1,0 +1,17 @@
+[
+ {
+  "id": "@y.BLOCK_WEIGHT"
+ },
+ {
+  "id": "@y.BLOCK_SORT",
+  "data": {
+   "sort": "@f.RANDOM"
+  }
+ },
+ {
+  "id": "SELECT_BLOCK_716001",
+  "data": {
+   "overTime": 100
+  }
+ }
+]

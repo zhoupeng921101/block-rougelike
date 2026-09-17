@@ -1,0 +1,5 @@
+﻿name,targetType,sKey
+Highest Combo,@u.Achievement_Target_Type.achieve_high_combo,achieve_high_combo
+Rounds,@u.Achievement_Target_Type.achieve_all_levels,achieve_all_levels
+Best Score,@u.Achievement_Target_Type.achieve_high_score,achieve_high_score
+Login Days,@u.Achievement_Target_Type.achieve_login_day,achieve_login_day

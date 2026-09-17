@@ -1,0 +1,42 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.spineRowAndColumnRandom",
+  "params": {
+   "effectConfig": "eliminate_effect",
+   "animConfig": {
+    "color_1_x": "purple_x_1",
+    "color_1_y": "purple_y_1",
+    "color_2_x": "blue_x_1",
+    "color_2_y": "blue_y_1",
+    "color_3_x": "pink_x_1",
+    "color_3_y": "pink_y_1",
+    "color_4_x": "red_x_1",
+    "color_4_y": "red_y_1",
+    "color_5_x": "purple_x_1",
+    "color_5_y": "purple_y_1",
+    "color_6_x": "blue_x_1",
+    "color_6_y": "blue_y_1",
+    "color_7_x": "pink_x_1",
+    "color_7_y": "pink_y_1"
+   },
+   "animConfig2": {
+    "color_1_x": "purple_x_2",
+    "color_1_y": "purple_y_2",
+    "color_2_x": "blue_x_2",
+    "color_2_y": "blue_y_2",
+    "color_3_x": "pink_x_2",
+    "color_3_y": "pink_y_2",
+    "color_4_x": "red_x_2",
+    "color_4_y": "red_y_2",
+    "color_5_x": "purple_x_2",
+    "color_5_y": "purple_y_2",
+    "color_6_x": "blue_x_2",
+    "color_6_y": "blue_y_2",
+    "color_7_x": "pink_x_2",
+    "color_7_y": "pink_y_2"
+   },
+   "scale": 1,
+   "isLastTimeNotSameAnimConfig": true
+  }
+ }
+]

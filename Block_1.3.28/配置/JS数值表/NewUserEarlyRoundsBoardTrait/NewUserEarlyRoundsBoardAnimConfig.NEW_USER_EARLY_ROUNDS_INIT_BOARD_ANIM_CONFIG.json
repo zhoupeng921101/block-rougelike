@@ -1,0 +1,93 @@
+{
+ "enabled": 1,
+ "longPressMs": 300,
+ "patterns": [],
+ "boards": [
+  {
+   "bid": 1,
+   "patterns": [
+    {
+     "matchColor": 7,
+     "steps": [
+      {
+       "color": 7,
+       "durationMs": 250
+      },
+      {
+       "color": 2,
+       "durationMs": 250
+      },
+      {
+       "color": 7,
+       "durationMs": 250
+      },
+      {
+       "color": 2,
+       "durationMs": 250
+      },
+      {
+       "color": 7,
+       "durationMs": 1000.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "bid": 44,
+   "patterns": [
+    {
+     "matchColor": 5,
+     "steps": [
+      {
+       "color": 5,
+       "durationMs": 600
+      },
+      {
+       "color": 7,
+       "durationMs": 400
+      },
+      {
+       "color": 3,
+       "durationMs": 400
+      },
+      {
+       "color": 4,
+       "durationMs": 400
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "bid": 48,
+   "patterns": [
+    {
+     "matchColor": 7,
+     "steps": [
+      {
+       "color": 7,
+       "durationMs": 250
+      },
+      {
+       "color": 4,
+       "durationMs": 250
+      },
+      {
+       "color": 7,
+       "durationMs": 250
+      },
+      {
+       "color": 4,
+       "durationMs": 250
+      },
+      {
+       "color": 7,
+       "durationMs": 1000.0
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

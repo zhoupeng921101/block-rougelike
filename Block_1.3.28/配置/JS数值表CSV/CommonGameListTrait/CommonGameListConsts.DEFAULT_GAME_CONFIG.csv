@@ -1,0 +1,13 @@
+﻿_key,type,trigger
+gl_blockslide,@n.CommonGameListTypes.GameType.LEGACY,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+gl_watersort,@n.CommonGameListTypes.GameType.LEGACY,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+gl_oneline,@n.CommonGameListTypes.GameType.LEGACY,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+gl_mahjong,@n.CommonGameListTypes.GameType.LEGACY,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+gl_onet,@n.CommonGameListTypes.GameType.LEGACY,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+gl_fruit,@n.CommonGameListTypes.GameType.LEGACY,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+gl_tictactoe,@n.CommonGameListTypes.GameType.LEGACY,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+gl_sudoku,@n.CommonGameListTypes.GameType.LEGACY,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+G2,@n.CommonGameListTypes.GameType.ATOM,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+G3,@n.CommonGameListTypes.GameType.ATOM,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+G5,@n.CommonGameListTypes.GameType.ATOM,@n.CommonGameListTypes.DownloadTrigger.DEFAULT
+gl_sand,@n.CommonGameListTypes.GameType.SAND,@n.CommonGameListTypes.DownloadTrigger.DEFAULT

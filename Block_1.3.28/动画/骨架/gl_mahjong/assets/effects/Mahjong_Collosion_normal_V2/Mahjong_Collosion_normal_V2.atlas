@@ -1,0 +1,62 @@
+
+Mahjong_Collosion_normal_V2.png
+size: 260,404
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+normal_1
+  rotate: false
+  xy: 64, 266
+  size: 93, 78
+  orig: 100, 100
+  offset: 0, 10
+  index: -1
+normal_2
+  rotate: true
+  xy: 188, 342
+  size: 60, 68
+  orig: 60, 68
+  offset: 0, 0
+  index: -1
+normal_3
+  rotate: false
+  xy: 117, 346
+  size: 69, 56
+  orig: 70, 70
+  offset: 0, 6
+  index: -1
+normal_4
+  rotate: false
+  xy: 2, 317
+  size: 60, 60
+  orig: 60, 60
+  offset: 0, 0
+  index: -1
+normal_5
+  rotate: false
+  xy: 2, 2
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+normal_6
+  rotate: false
+  xy: 159, 260
+  size: 80, 80
+  orig: 80, 80
+  offset: 0, 0
+  index: -1
+normal_7
+  rotate: false
+  xy: 67, 363
+  size: 48, 39
+  orig: 64, 64
+  offset: 3, 13
+  index: -1
+normal_8
+  rotate: false
+  xy: 2, 379
+  size: 63, 23
+  orig: 64, 32
+  offset: 1, 5
+  index: -1

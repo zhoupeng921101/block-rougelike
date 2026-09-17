@@ -1,0 +1,19 @@
+{
+ "NoUse": "NoUse",
+ "Ready": "Ready",
+ "PureBucketReady": "PureBucketReady",
+ "Request": "Request",
+ "Response": "Response",
+ "ExperimentDataNULL": "ExperimentDataNULL",
+ "TimeoutAndNoLocalConfig": "TimeoutAndNoLocalConfig",
+ "ConfigNULL": "ConfigNULL",
+ "CanNotUseConfig": "CanNotUseConfig",
+ "SaveConfigSuccessPre": "SaveConfigSuccessPre",
+ "SaveConfigSuccess": "SaveConfigSuccess",
+ "ServerApplyConfigFail": "ServerApplyConfigFail",
+ "ApplyConfigSuccess": "ApplyConfigSuccess",
+ "NoBottomPlateFallback": "NoButtonPlateFallback",
+ "ActiveRemainUnChanged": "ActiveRemainUnChanged",
+ "ActiveChanged": "ActiveChanged",
+ "UseComplete": "UseComplete"
+}

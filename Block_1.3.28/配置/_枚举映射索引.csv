@@ -1,0 +1,10 @@
+﻿bundle,映射表名,键枚举,条目数,键查不到,值未解析
+main,CHAPTER_ALGO_SOURCE_NAME,ChapterAlgorithmSourceType,13,0,0
+main,CLASS_ALGO_SOURCE_NAME,ClassAlgorithmSourceType,13,0,0
+main,OFFER_ALGORITHM_SDK_TYPE,OFFER_TYPE,502,0,499
+main,OFFER_TYPE_REAL_STRINGS,OFFER_TYPE,507,0,0
+main,OFFER_TYPE_STRINGS,OFFER_TYPE,507,0,0
+main,eventHandlers,enSetupKeys,27,0,27
+main,eventIosHandlers,enSetupIosKeys,13,0,13
+mainTraits,LayerFeatureName,LayerFeatureExtends,11,11,0
+sandcrush,_BUNDLE_NAME_MAP,SandSkinEnum,9,0,0

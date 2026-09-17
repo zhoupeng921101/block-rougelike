@@ -1,0 +1,16 @@
+﻿ID,name,unlock_type,unlock_num,dexc_ch,desc_en,isShow,iconName
+1000,Default,0,1,原皮肤,first,1,skin_000
+1002,Macaron,2,0,分享游戏,After sharing the games,1,skin_002
+1005,Pure Green,2,0,在经典模式获得{0}分,Reach {0} points in Classic Mode,1,skin_005
+1007,The Starry Night,2,0,累计登陆{0}天,Log in for {0} consecutive days,1,skin_007
+1011,Countryside,2,0,完成{0}次游戏,After completing {0} games,1,skin_011
+1013,Forest,2,0,完成{0}次游戏,After completing {0} games,1,skin_013
+1014,Ukiyoe,2,0,完成{0}次游戏,After completing {0} games,1,skin_014
+1018,Latte,2,0,完成{0}次游戏,After completing {0} games,1,skin_018
+1023,Earth,2,0,完成{0}次游戏,After completing {0} games,1,skin_023
+1024,Air Pink,2,0,完成{0}次游戏,After completing {0} games,1,skin_024
+1026,Dessert,2,0,完成{0}次游戏,After completing {0} games,1,skin_026
+1029,Glaciers,2,0,完成{0}次游戏,After completing {0} games,1,skin_029
+1030,Warm Cold,2,0,完成{0}次游戏,After completing {0} games,1,skin_030
+1031,Wizard,2,0,完成{0}次游戏,After completing {0} games,1,skin_031
+1035,Fresh,2,0,完成{0}次游戏,After completing {0} games,1,skin_035

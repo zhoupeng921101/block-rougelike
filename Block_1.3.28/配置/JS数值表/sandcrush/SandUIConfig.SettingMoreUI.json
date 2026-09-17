@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/moregame",
+ "cnName": "moregames",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

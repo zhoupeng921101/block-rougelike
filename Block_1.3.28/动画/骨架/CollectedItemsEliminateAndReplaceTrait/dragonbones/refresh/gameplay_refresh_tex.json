@@ -1,0 +1,1 @@
+{"width": 78, "SubTexture": [{"width": 32, "y": 57, "height": 32, "name": "par_01", "x": 44}, {"frameHeight": 56, "y": 1, "frameWidth": 56, "frameX": -1, "width": 54, "frameY": -1, "height": 54, "name": "square_N", "x": 1}, {"width": 41, "y": 57, "height": 41, "name": "par_star", "x": 1}], "height": 100, "name": "gameplay_refresh", "imagePath": "gameplay_refresh_tex.png"}

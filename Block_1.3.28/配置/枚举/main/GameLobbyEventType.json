@@ -1,0 +1,9 @@
+{
+ "SettingUpdate": 1,
+ "EnterGame": 2,
+ "ExitToGameLobby": 3,
+ "rewardsAdCall": 4,
+ "EnterMiniGame": 5,
+ "InterstAdCall": 6,
+ "GetMiniGameList": 7
+}

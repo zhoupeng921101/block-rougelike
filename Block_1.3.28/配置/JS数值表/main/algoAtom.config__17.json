@@ -1,0 +1,23 @@
+[
+ {
+  "id": "@y.BLOCK_WEIGHT"
+ },
+ {
+  "id": "@y.BLOCK_SORT",
+  "data": {
+   "sort": "@f.RANDOM"
+  }
+ },
+ {
+  "id": "@y.BLOCK_LIMIT_SMALL"
+ },
+ {
+  "id": "SELECT_BLOCK_712001",
+  "data": {
+   "overTime": 100
+  }
+ },
+ {
+  "id": "@y.SAFETY_NO_DIE"
+ }
+]

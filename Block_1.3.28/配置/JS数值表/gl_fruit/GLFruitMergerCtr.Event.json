@@ -1,0 +1,6 @@
+{
+ "ShowDropLine": "ShowDropLine",
+ "HideDropLine": "HideDropLine",
+ "UpdateDropLinePosition": "UpdateDropLinePosition",
+ "FruitNumberChanged": "FruitNumberChanged"
+}

@@ -1,0 +1,5 @@
+﻿day,amount,currencyType
+8,40,@o.CurrencyType.DIAMOND
+15,60,@o.CurrencyType.DIAMOND
+22,80,@o.CurrencyType.DIAMOND
+30,100,@o.CurrencyType.DIAMOND

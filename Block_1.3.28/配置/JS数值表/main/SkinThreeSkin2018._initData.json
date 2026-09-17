@@ -1,0 +1,11 @@
+{
+ "highNode": "@o",
+ "highNodePos": "@o.position",
+ "crownNode": "@n",
+ "crownPos": "@n.position",
+ "crownBgNode": null,
+ "highScoreNode": null,
+ "highScorePos": null,
+ "fontSize": 0,
+ "zIndex": "@o.zIndex"
+}

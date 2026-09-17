@@ -1,0 +1,2 @@
+﻿type,params
+@o.SkinThreePreEliminateType.spineRowAndColumn,"{""effectConfig"": ""eliminate_effect"", ""animConfig"": {""color_1_x"": ""blue"", ""color_1_y"": ""blue"", ""color_2_x"": ""yellow"", ""color_2_y"": ""yellow"", ""color_3_x"": ""purple"", ""color_3_y"": ""purple"", ""color_4_x"": ""orange"", ""color_4_y"": ""orange"", ""color_5_x"": ""red"", ""color_5_y"": ""red"", ""color_6_x"": ""green"", ""color_6_y"": ""green"", ""color_7_x"": ""cyan"", ""color_7_y"": ""cyan""}, ""needRotate"": true, ""scale"": 1}"

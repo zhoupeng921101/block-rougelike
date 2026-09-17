@@ -1,0 +1,12 @@
+﻿键成员,键值,映射值,值来源
+MosaicLayer,,马赛克层,字面量
+ReviveLayer,,复活层,字面量
+TravelOverLayer,,关卡结算层,字面量
+TravelConfigLayer,,关卡配置层,字面量
+BlockOrderLayer,,出块顺序层,字面量
+TravelAlgorithmLayer,,关卡算法层,字面量
+EndlessOverLayer,,无尽结算功能层,字面量
+MainLayer,,主界面功能层,字面量
+SettingLayer,,设置功能层,字面量
+Class,,无尽模式,字面量
+Journey,,旅行模式,字面量

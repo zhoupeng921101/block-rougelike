@@ -1,0 +1,165 @@
+{
+ "KO": {
+  "Label": {},
+  "Sprite": {},
+  "DragonBone": {}
+ },
+ "PT_BR": {
+  "Label": {},
+  "Sprite": {
+   "0375685f-99fa-46e9-8d0b-73c6b2c8e29b": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "textures/btn_Classics",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "49fabebe-cd74-4757-9df3-18f66026398f": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "textures/btn_JourneyLoading",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "eca8d2a7-7db2-4f60-ad15-30078afa7b3c": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "textures/btn_JourneyLoading2",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "9b746475-b8fb-4023-a842-8d294ee2632b": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "textures/btn_JourneyLoading1",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "902828b5-c552-4c03-bf39-a6250c02152f": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "textures/main_btn_moreGames",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "0c0d8046-cfcf-4978-a2f6-59f9ef21b717": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "textures/icon_DailyVictory",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "7a2a245e-050f-4e20-8492-efee2e56f406": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "textures/txt_ConsecutiveDailyVictories",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   }
+  },
+  "DragonBone": {
+   "119d3b95-7fa9-4e3a-95f7-bc02e78ba6b6": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "dragonbones/main_icon_achievement_ske"
+   },
+   "3656e785-a765-4102-8e89-06d69524f708": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "dragonbones/main_icon_achievement_tex"
+   },
+   "309c7c0b-e0eb-4c3d-bf52-73782401d763": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "dragonbones/main_everydaywin_ske"
+   },
+   "c661acfd-f0ca-414b-8815-9cf7d86dc5c7": {
+    "bundle": "Remote_Lang_PT_BR",
+    "path": "dragonbones/main_everydaywin_tex"
+   }
+  }
+ },
+ "ID": {
+  "Label": {},
+  "Sprite": {
+   "0375685f-99fa-46e9-8d0b-73c6b2c8e29b": {
+    "bundle": "Remote_Lang_ID",
+    "path": "textures/btn_Classics",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "49fabebe-cd74-4757-9df3-18f66026398f": {
+    "bundle": "Remote_Lang_ID",
+    "path": "textures/btn_JourneyLoading",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "eca8d2a7-7db2-4f60-ad15-30078afa7b3c": {
+    "bundle": "Remote_Lang_ID",
+    "path": "textures/btn_JourneyLoading2",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "9b746475-b8fb-4023-a842-8d294ee2632b": {
+    "bundle": "Remote_Lang_ID",
+    "path": "textures/btn_JourneyLoading1",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "902828b5-c552-4c03-bf39-a6250c02152f": {
+    "bundle": "Remote_Lang_ID",
+    "path": "textures/main_btn_moreGames",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "0c0d8046-cfcf-4978-a2f6-59f9ef21b717": {
+    "bundle": "Remote_Lang_ID",
+    "path": "textures/icon_DailyVictory",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   },
+   "7a2a245e-050f-4e20-8492-efee2e56f406": {
+    "bundle": "Remote_Lang_ID",
+    "path": "textures/txt_ConsecutiveDailyVictories",
+    "offset": {
+     "x": 0,
+     "y": 0
+    }
+   }
+  },
+  "DragonBone": {
+   "119d3b95-7fa9-4e3a-95f7-bc02e78ba6b6": {
+    "bundle": "Remote_Lang_ID",
+    "path": "dragonbones/main_icon_achievement_ske"
+   },
+   "3656e785-a765-4102-8e89-06d69524f708": {
+    "bundle": "Remote_Lang_ID",
+    "path": "dragonbones/main_icon_achievement_tex"
+   },
+   "309c7c0b-e0eb-4c3d-bf52-73782401d763": {
+    "bundle": "Remote_Lang_ID",
+    "path": "dragonbones/main_everydaywin_ske"
+   },
+   "c661acfd-f0ca-414b-8815-9cf7d86dc5c7": {
+    "bundle": "Remote_Lang_ID",
+    "path": "dragonbones/main_everydaywin_tex"
+   }
+  }
+ }
+}

@@ -1,0 +1,6 @@
+{
+ "StateChanged": "stateChanged",
+ "ParentChanged": "parentChanged",
+ "NodeUpdate": "nodeUpdate",
+ "ActiveInHierarchyChanged": "active-in-hierarchy-changed"
+}

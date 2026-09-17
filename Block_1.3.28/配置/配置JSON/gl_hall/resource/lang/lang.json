@@ -1,0 +1,1185 @@
+{
+ "GL_LANG_GAME_NAME_TICTACTOE": {
+  "KO": "틱택토",
+  "PT_BR": "JOGO DO GALO",
+  "ID": "TIC TAC TOE",
+  "EN_US": "Tic Tac Toe",
+  "EN_GB": "Tic Tac Toe"
+ },
+ "GL_LANG_GAME_NAME_MAHJONG": {
+  "KO": "마작",
+  "PT_BR": "MAHJONG",
+  "ID": "MAHJONG",
+  "EN_US": "Mahjong",
+  "EN_GB": "Mahjong"
+ },
+ "GL_LANG_GAME_NAME_ONET": {
+  "KO": "오넷",
+  "PT_BR": "ONET",
+  "ID": "ONET",
+  "EN_US": "Onet",
+  "EN_GB": "Onet"
+ },
+ "GL_LANG_GAME_NAME_ONELINE": {
+  "KO": "한 줄 매칭",
+  "PT_BR": "UMA LINHA",
+  "ID": "SATU GARIS",
+  "EN_US": "One Line",
+  "EN_GB": "One Line"
+ },
+ "GL_LANG_GAME_NAME_WATER": {
+  "KO": "워터 소트",
+  "PT_BR": "CLASSIFICAR ÁGUA",
+  "ID": "PENYARINGAN AIR",
+  "EN_US": "Water Sort",
+  "EN_GB": "Water Sort"
+ },
+ "GL_LANG_GAME_NAME_FRUIT": {
+  "KO": "과일 합치기",
+  "PT_BR": "FUSÃO DE FRUTAS",
+  "ID": "FUSI BUAH",
+  "EN_US": "Fruit Merge",
+  "EN_GB": "Fruit Merge"
+ },
+ "GL_LANG_GAME_NAME_SUDOKU": {
+  "KO": "스도쿠",
+  "PT_BR": "SUDOKU",
+  "ID": "SUDOKU",
+  "EN_US": "Sudoku",
+  "EN_GB": "Sudoku"
+ },
+ "GL_LANG_TICTACTOE_SKIP": {
+  "KO": "건너뛰기",
+  "PT_BR": "Pular",
+  "ID": "Lewati",
+  "EN_US": "Skip",
+  "EN_GB": "Skip"
+ },
+ "GL_LANG_TICTACTOE_GUIDE_1": {
+  "KO": "빈 칸을 터치하여 표시를 \r\n놓으세요",
+  "PT_BR": "Toque em um quadrado vazio para colocar sua marca.",
+  "ID": "Ketuk kotak kosong untuk \r\nmenempatkan tanda Anda.",
+  "EN_US": "Tap an empty square to place your mark",
+  "EN_GB": "Tap an empty square to place your mark"
+ },
+ "GL_LANG_TICTACTOE_GUIDE_2": {
+  "KO": "상대가 줄을 완성하지 못하도록 막으세요",
+  "PT_BR": "Bloqueie seu oponente de completar a linha dele.",
+  "ID": "Halangi lawan Anda menyelesaikan baris mereka.",
+  "EN_US": "Block your opponent from completing their row",
+  "EN_GB": "Block your opponent from completing their row"
+ },
+ "GL_LANG_TICTACTOE_GUIDE_3": {
+  "KO": "가로, 세로, 대각선 3개 표시를 먼저 만들면 승리!",
+  "PT_BR": "Consiga três marcas seguidas para ganhar!",
+  "ID": "Dapatkan tiga tanda \r\nberturut-turut untuk\r\n menang!",
+  "EN_US": "Get three marks in a row to win!",
+  "EN_GB": "Get three marks in a row to win!"
+ },
+ "GL_LANG_TICTACTOE_GUIDE_4": {
+  "KO": "가로, 세로, 대각선 4개 표시를 먼저 만들면 승리!",
+  "PT_BR": "Consiga quatro marcas seguidas para ganhar!",
+  "ID": "Dapatkan empat tanda berturut-turut untuk menang!",
+  "EN_US": "Get four marks in a row to win!",
+  "EN_GB": "Get four marks in a row to win!"
+ },
+ "GL_LANG_TICTACTOE_GUIDE_5": {
+  "KO": "가로, 세로, 대각선 5개 표시를 먼저 만들면 승리!",
+  "PT_BR": "Consiga cinco marcas seguidas para ganhar!",
+  "ID": "Dapatkan lima tanda berturut-turut untuk menang!",
+  "EN_US": "Get five marks in a row to win!",
+  "EN_GB": "Get five marks in a row to win!"
+ },
+ "GL_LANG_TICTACTOE_GUIDE_LAST": {
+  "KO": "잘했어요! 이제 다음 라운드로!",
+  "PT_BR": "Boa! Agora, para a próxima rodada!",
+  "ID": "Bagus! Sekarang lanjut ke babak berikutnya!",
+  "EN_US": "Way to go! Now, onto the next round!",
+  "EN_GB": "Way to go! Now, onto the next round!"
+ },
+ "GL_LANG_TICTACTOE_POPUP_RESTART_TITLE": {
+  "KO": "게임을 다시 \r\n시작하시겠습니까?",
+  "PT_BR": "Reiniciar Jogo?",
+  "ID": "Mulai ulang permainan?",
+  "EN_US": "Restart Game?",
+  "EN_GB": "Restart Game?"
+ },
+ "GL_LANG_TICTACTOE_POPUP_RESTART_DESC": {
+  "KO": "현재 진행 상황을 잃고 이 게임은 패배로 처리됩니다!",
+  "PT_BR": "Você perderá seu progresso atual, e este jogo será contado como uma derrota!",
+  "ID": "Kamu akan kehilangan kemajuan\r\n saat ini, dan permainan ini akan\r\n dihitung sebagai kekalahan!",
+  "EN_US": "You'll lose your current progress, and this game will be counted as a Loss!",
+  "EN_GB": "You'll lose your current progress, and this game will be counted as a Loss!"
+ },
+ "GL_LANG_TICTACTOE_POPUP_RESTART_BUTTON_YES": {
+  "KO": "다시 시작",
+  "PT_BR": "Reiniciar",
+  "ID": "Mulai ulang",
+  "EN_US": "Restart",
+  "EN_GB": "Restart"
+ },
+ "GL_LANG_TICTACTOE_POPUP_RESTART_BUTTON_NO": {
+  "KO": "취소",
+  "PT_BR": "Cancelar",
+  "ID": "Batal",
+  "EN_US": "Cancel",
+  "EN_GB": "Cancel"
+ },
+ "GL_LANG_MAHJONG_FULL_COMBO": {
+  "KO": "풀 콤보!",
+  "PT_BR": "Combinação Completa!",
+  "ID": "Kombinasi Penuh!",
+  "EN_US": "Full Combo!",
+  "EN_GB": "Full Combo!"
+ },
+ "GL_LANG_MAHJONG_SKIP": {
+  "KO": "건너뛰기",
+  "PT_BR": "Pular",
+  "ID": "Lewati",
+  "EN_US": "Skip",
+  "EN_GB": "Skip"
+ },
+ "GL_LANG_MAHJONG_TITLE_LEVEL": {
+  "KO": "레벨",
+  "PT_BR": "LEVEL",
+  "ID": "TINGKAT",
+  "EN_US": "LEVEL",
+  "EN_GB": "LEVEL"
+ },
+ "GL_LANG_MAHJONG_TITLE_MATCHES": {
+  "KO": "매치 수",
+  "PT_BR": "MATCHES",
+  "ID": "COCOK",
+  "EN_US": "MATCHES",
+  "EN_GB": "MATCHES"
+ },
+ "GL_LANG_MAHJONG_TIP_1": {
+  "KO": "상단 타일 먼저 제거",
+  "PT_BR": "Remover as peças que bloqueiam o topo primeiro",
+  "ID": "Hapus ubin yang memblokir \r\nbagian atas terlebih dahulu",
+  "EN_US": "Remove tiles blocking the top first",
+  "EN_GB": "Remove tiles blocking the top first"
+ },
+ "GL_LANG_MAHJONG_TIP_2": {
+  "KO": "좌우 측면 타일 먼저 제거",
+  "PT_BR": "Remova as peças dos lados esquerdo e direito primeiro",
+  "ID": "Hapus ubin di sisi kiri dan \r\nkanan terlebih dahulu",
+  "EN_US": "Remove tiles on the left and right sides first",
+  "EN_GB": "Remove tiles on the left and right sides first"
+ },
+ "GL_LANG_MAHJONG_TIP_3": {
+  "KO": "현재 사용 불가. 실행 취소할 수 있는 동작이 없습니다!",
+  "PT_BR": "Atualmente indisponível. Não há movimentos desfeitos",
+  "ID": "Saat ini tidak tersedia. Tidak ada langkah yang dapat dibatalkan",
+  "EN_US": "Currently unavailable. There are no undoable moves!",
+  "EN_GB": "Currently unavailable. There are no undoable moves!"
+ },
+ "GL_LANG_MAHJONG_POPUP_AGAIN_TITLE": {
+  "KO": "게임을 다시 \r\n시작하시겠습니까?",
+  "PT_BR": "Reiniciar Jogo?",
+  "ID": "Mulai ulang permainan?",
+  "EN_US": "Restart Game?",
+  "EN_GB": "Restart Game?"
+ },
+ "GL_LANG_MAHJONG_POPUP_AGAIN_DESC": {
+  "KO": "현재 진행 상황이 모두 사라집니다!",
+  "PT_BR": "Você perderá seu progresso atual!",
+  "ID": "Anda akan kehilangan kemajuan \r\nAnda saat ini!",
+  "EN_US": "You'll lose your current progress!",
+  "EN_GB": "You'll lose your current progress!"
+ },
+ "GL_LANG_MAHJONG_POPUP_AGAIN_RESTART": {
+  "KO": "다시 시작",
+  "PT_BR": "Reiniciar",
+  "ID": "Mulai ulang",
+  "EN_US": "Restart",
+  "EN_GB": "Restart"
+ },
+ "GL_LANG_MAHJONG_POPUP_AGAIN_NEWGAME": {
+  "KO": "새 게임",
+  "PT_BR": "Novo Jogo",
+  "ID": "Permainan Baru",
+  "EN_US": "New Game",
+  "EN_GB": "New Game"
+ },
+ "GL_LANG_MAHJONG_POPUP_AGAIN_CANCEL": {
+  "KO": "취소",
+  "PT_BR": "Cancelar",
+  "ID": "Batal",
+  "EN_US": "Cancel",
+  "EN_GB": "Cancel"
+ },
+ "GL_LANG_MAHJONG_POPUP_HINT_TITLE": {
+  "KO": "광고를 보고 보상 \r\n받기: 힌트",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: Dica",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: Petunjuk",
+  "EN_US": "Watch an ad to get reward: Hint",
+  "EN_GB": "Watch an ad to get reward: Hint"
+ },
+ "GL_LANG_MAHJONG_POPUP_HINT_BUTTON_YES": {
+  "KO": "좋은 아이디어",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Great idea!",
+  "EN_GB": "Great idea!"
+ },
+ "GL_LANG_MAHJONG_POPUP_HINT_BUTTON_NO": {
+  "KO": "괜찮아요",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No thanks",
+  "EN_GB": "No thanks"
+ },
+ "GL_LANG_MAHJONG_POPUP_SHUFFLE_TITLE": {
+  "KO": "광고를 보고 보상 \r\n받기: 셔플",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: Embaralhar",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: Kocok",
+  "EN_US": "Watch an ad to get reward: Shuffle",
+  "EN_GB": "Watch an ad to get reward: Shuffle"
+ },
+ "GL_LANG_MAHJONG_POPUP_SHUFFLE_BUTTON_YES": {
+  "KO": "좋은 아이디어",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Great idea!",
+  "EN_GB": "Great idea!"
+ },
+ "GL_LANG_MAHJONG_POPUP_SHUFFLE_BUTTON_NO": {
+  "KO": "괜찮아요",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No thanks",
+  "EN_GB": "No thanks"
+ },
+ "GL_LANG_MAHJONG_POPUP_LOSE_TITLE": {
+  "KO": "매칭이 더 이상 없습니다.",
+  "PT_BR": "Sem mais combinações",
+  "ID": "Tidak ada kecocokan",
+  "EN_US": "Out of Matches",
+  "EN_GB": "Out of Matches"
+ },
+ "GL_LANG_MAHJONG_POPUP_LOSE_DESC": {
+  "KO": "앗! 더 이상 매칭할 수 있는 블록이 \r\n없습니다.다시 시작하거나 ‘섞기’를 \r\n사용해 보세요!",
+  "PT_BR": "Oops, você ficou sem partidas! Reinicie ou use Embaralhar para tentar novamente!",
+  "ID": "Oops, kamu kehabisan pertandingan! Mulai ulang atau gunakan Kocok untuk mencoba lagi!",
+  "EN_US": "Oops, you're out of matches. Restart or use Shuffle to try again!",
+  "EN_GB": "Oops, you're out of matches. Restart or use Shuffle to try again!"
+ },
+ "GL_LANG_MAHJONG_POPUP_LOSE_BUTTON_SHUFFLE": {
+  "KO": "섞기",
+  "PT_BR": "Embaralhar",
+  "ID": "Kocok",
+  "EN_US": "Shuffle",
+  "EN_GB": "Shuffle"
+ },
+ "GL_LANG_MAHJONG_POPUP_LOSE_BUTTON_RESTART": {
+  "KO": "다시 시작",
+  "PT_BR": "Reiniciar",
+  "ID": "Mulai ulang",
+  "EN_US": "Restart",
+  "EN_GB": "Restart"
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_1_1": {
+  "KO": "같은 타일 두 개를 터치해 제거하세요.",
+  "PT_BR": "Toque duas peças idênticas para combiná-las e removê-las",
+  "ID": "Ketuk dua ubin identik untuk mencocokkan dan menghapusnya",
+  "EN_US": "Tap two identical tiles to match and remove them",
+  "EN_GB": "Tap two identical tiles to match and remove them"
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_1_2": {
+  "KO": "바깥쪽 타일을 매칭해 안쪽 타일을 열어 주세요.",
+  "PT_BR": "Combine peças nas laterais para desbloquear as peças internas",
+  "ID": "Cocokkan ubin di sisi untuk membuka ubin bagian dalam",
+  "EN_US": "Match tiles on the sides to unlock the inner tiles",
+  "EN_GB": "Match tiles on the sides to unlock the inner tiles"
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_1_3": {
+  "KO": "위쪽 타일을 매칭해 아래 타일을 \r\n열어 주세요.",
+  "PT_BR": "Combine peças no topo para desbloquear as peças abaixo",
+  "ID": "Cocokkan ubin di atas untuk membuka ubin di bawah",
+  "EN_US": "Match tiles on top to unlock the tiles below",
+  "EN_GB": "Match tiles on top to unlock the tiles below"
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_1_4": {
+  "KO": "위쪽 타일을 매칭해 아래 타일을 \r\n열어 주세요.",
+  "PT_BR": "Combine peças no topo para desbloquear as peças abaixo",
+  "ID": "Cocokkan ubin di atas untuk membuka ubin di bawah",
+  "EN_US": "Match tiles on top to unlock the tiles below",
+  "EN_GB": "Match tiles on top to unlock the tiles below"
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_4": {
+  "KO": "스페셜 타일: 스페셜 타일끼리는 서로 매칭할 수 있습니다.",
+  "PT_BR": "Peças especiais: peças especiais podem ser combinadas entre si",
+  "ID": "Ubin khusus: ubin khusus dapat saling mencocokkan",
+  "EN_US": "Special tiles: special tiles can match with each other",
+  "EN_GB": "Special tiles: special tiles can match with each other"
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_LEVEL_6": {
+  "KO": "스페셜 타일: 스페셜 타일끼리는 서로 매칭할 수 있습니다.",
+  "PT_BR": "Peças especiais: peças especiais podem ser combinadas entre si",
+  "ID": "Ubin khusus: ubin khusus dapat saling mencocokkan",
+  "EN_US": "Special tiles: special tiles can match with each other",
+  "EN_GB": "Special tiles: special tiles can match with each other"
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_NEW_LEVEL_1_1": {
+  "KO": "같은 타일 두 개를 터치해 제거하세요.",
+  "PT_BR": "Toque duas peças idênticas para combiná-las e removê-las",
+  "ID": "Ketuk dua ubin identik untuk mencocokkan dan menghapusnya",
+  "EN_US": "Tap two identical tiles to match and remove them.",
+  "EN_GB": "Tap two identical tiles to match and remove them."
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_NEW_LEVEL_1_2": {
+  "KO": "위쪽 타일을 매칭해 아래 타일을 열어 주세요.",
+  "PT_BR": "Combine peças no topo para desbloquear as peças abaixo",
+  "ID": "Cocokkan ubin di atas untuk membuka ubin di bawah",
+  "EN_US": "Match tiles on top to unlock the tiles below.",
+  "EN_GB": "Match tiles on top to unlock the tiles below."
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_NEW_LEVEL_1_3": {
+  "KO": "바깥쪽 타일을 매칭해 안쪽 타일을 열어 주세요.",
+  "PT_BR": "Combine peças nas laterais para desbloquear as peças internas",
+  "ID": "Cocokkan ubin di sisi untuk membuka ubin bagian dalam",
+  "EN_US": "Match the outer tiles to unlock the inner ones.",
+  "EN_GB": "Match the outer tiles to unlock the inner ones."
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_NEW_LEVEL_1_4": {
+  "KO": "모든 타일을 제거하면 승리합니다!",
+  "PT_BR": "Remova todas as peças para vencer!",
+  "ID": "Hapus semua ubin untuk menang!",
+  "EN_US": "Remove all the tiles to win!",
+  "EN_GB": "Remove all the tiles to win!"
+ },
+ "GL_LANG_MAHJONG_GUIDE_STEP_PHASE_2": {
+  "KO": "좌우와 위쪽의 타일을 모두 제거해야 계속 매칭할 수 있습니다!",
+  "PT_BR": "Remova todas as peças à esquerda, à direita e no topo para continuar combinando!",
+  "ID": "Hapus semua ubin di kiri, kanan, dan atas untuk melanjutkan pencocokan!",
+  "EN_US": "Remove all the tiles on the left, right, and top to continue matching!",
+  "EN_GB": "Remove all the tiles on the left, right, and top to continue matching!"
+ },
+ "GL_LANG_ONELINE_SKIP": {
+  "KO": "건너뛰기",
+  "PT_BR": "Pular",
+  "ID": "Lewati",
+  "EN_US": "Skip",
+  "EN_GB": "Skip"
+ },
+ "GL_LANG_ONELINE_GUIDE": {
+  "KO": "시작점에서 한 줄을 그려 모든 칸을 \r\n채워보세요!",
+  "PT_BR": "Arraste uma linha única do ponto de partida para preencher todos os quadrados",
+  "ID": "Seretkan satu garis dari titik awal untuk mengisi semua kotak",
+  "EN_US": "Drag a single line from the starting point to fill all the squares!",
+  "EN_GB": "Drag a single line from the starting point to fill all the squares!"
+ },
+ "GL_LANG_ONELINE_TITLE_LEVEL": {
+  "KO": "레벨",
+  "PT_BR": "LEVEL",
+  "ID": "TINGKAT",
+  "EN_US": "LEVEL",
+  "EN_GB": "LEVEL"
+ },
+ "GL_LANG_ONELINE_POPUP_SEEAD_TITLE": {
+  "KO": "광고를 보고 무료 힌트를 얻으세요!",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: Dica",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: Petunjuk",
+  "EN_US": "See ads to get free tips!",
+  "EN_GB": "See ads to get free tips!"
+ },
+ "GL_LANG_ONELINE_POPUP_SEEAD_BUTTON_YES": {
+  "KO": "좋은 생각입니다!",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Good Idea",
+  "EN_GB": "Good Idea"
+ },
+ "GL_LANG_ONELINE_POPUP_SEEAD_BUTTON_NO": {
+  "KO": "아니요",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No Thanks",
+  "EN_GB": "No Thanks"
+ },
+ "GL_LANG_ONELINE_POPUP_RESTART_TITLE": {
+  "KO": "게임을 다시 \r\n시작하시겠습니까?",
+  "PT_BR": "Reiniciar Jogo?",
+  "ID": "Mulai ulang permainan?",
+  "EN_US": "Restart Game?",
+  "EN_GB": "Restart Game?"
+ },
+ "GL_LANG_ONELINE_POPUP_RESTART_DESC": {
+  "KO": "현재 진행 상황을 잃고 이 게임은 패배로 처리됩니다!",
+  "PT_BR": "Você perderá seu progresso atual, e este jogo será contado como uma derrota!",
+  "ID": "Kamu akan kehilangan kemajuan\r\n saat ini, dan permainan ini akan\r\n dihitung sebagai kekalahan!",
+  "EN_US": "You'll lose your current progress, and this game will be counted as a Loss!",
+  "EN_GB": "You'll lose your current progress, and this game will be counted as a Loss!"
+ },
+ "GL_LANG_ONELINE_POPUP_RESTART_BUTTON_YES": {
+  "KO": "다시 시작",
+  "PT_BR": "Reiniciar",
+  "ID": "Mulai ulang",
+  "EN_US": "Restart",
+  "EN_GB": "Restart"
+ },
+ "GL_LANG_ONELINE_POPUP_RESTART_BUTTON_NO": {
+  "KO": "취소",
+  "PT_BR": "Cancelar",
+  "ID": "Batal",
+  "EN_US": "Cancel",
+  "EN_GB": "Cancel"
+ },
+ "GL_LANG_WATERSORT_TITLE_LEVEL": {
+  "KO": "레벨",
+  "PT_BR": "Nível",
+  "ID": "Level",
+  "EN_US": "Level",
+  "EN_GB": "Level"
+ },
+ "GL_LANG_WATERSORT_SKIP": {
+  "KO": "건너뛰기",
+  "PT_BR": "Pular",
+  "ID": "Lewati",
+  "EN_US": "Skip",
+  "EN_GB": "Skip"
+ },
+ "GL_LANG_WATERSORT_LOSE_TIPS": {
+  "KO": "이 라운드에서는 잘 \r\n풀리지 않았습니다. \r\n게임을 다시 시작하거나 \r\n아이템을 사용하고 다시\r\n 도전하세요.",
+  "PT_BR": "Ops, esta rodada não foi como esperado. Reinicie ou use impulsionadores para tentar novamente!",
+  "ID": "Ups, ronde ini tidak berjalan sesuai keinginanmu. Mulai ulang atau gunakan booster untuk mencoba lagi!",
+  "EN_US": "Not good, I'm going to lose this game. Restart the game or use props, and try again.",
+  "EN_GB": "Not good, I'm going to lose this game. Restart the game or use props, and try again."
+ },
+ "GL_LANG_WATERSORT_REVERT_TIPS": {
+  "KO": "시험관 수가 최대치에 도달했습니다.",
+  "PT_BR": "O número de tubos atingiu o limite",
+  "ID": "Jumlah tabung telah mencapai batas",
+  "EN_US": "The number of test tubes has reached the upper limit",
+  "EN_GB": "The number of test tubes has reached the upper limit"
+ },
+ "GL_LANG_WATERSORT_GUIDE_1": {
+  "KO": "시험관을 선택하려면 클릭하세요.",
+  "PT_BR": "Toque para selecionar",
+  "ID": "Ketuk untuk memilihnya",
+  "EN_US": "Click to select test tube",
+  "EN_GB": "Click to select test tube"
+ },
+ "GL_LANG_WATERSORT_GUIDE_2": {
+  "KO": "색이 있는 물은 맨 위에 같은 색이 있고 가득 차 있지 않은 튜브에만 부을 수 있습니다",
+  "PT_BR": "Água colorida só pode ser despejada em um tubo não cheio com a mesma cor no topo",
+  "ID": "Air berwarna hanya bisa dituangkan ke dalam tabung yang belum penuh dengan warna yang sama di bagian atas",
+  "EN_US": "Only when the upper layer of the target test tube has the same color and there is empty space inside the tube, can it be poured in",
+  "EN_GB": "Only when the upper layer of the target test tube has the same color and there is empty space inside the tube, can it be poured in"
+ },
+ "GL_LANG_WATERSORT_POPUP_USEITEM_TITLE": {
+  "KO": "아이템 사용",
+  "PT_BR": "Slot extra",
+  "ID": "Slot tambahan",
+  "EN_US": "UseItem",
+  "EN_GB": "UseItem"
+ },
+ "GL_LANG_WATERSORT_POPUP_USEITEM_BUTTON_YES": {
+  "KO": "좋은 생각입니다!",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Use Item",
+  "EN_GB": "Use Item"
+ },
+ "GL_LANG_WATERSORT_POPUP_USEITEM_BUTTON_NO": {
+  "KO": "아니요",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No Thanks",
+  "EN_GB": "No Thanks"
+ },
+ "GL_LANG_WATERSORT_POPUP_UNLOCK_TITLE": {
+  "KO": "시험관을 잠금 해제하거나 업그레이드하세요!",
+  "PT_BR": "Slot extra",
+  "ID": "Slot tambahan",
+  "EN_US": "Unlock Or Upgrade test tube!",
+  "EN_GB": "Unlock Or Upgrade test tube!"
+ },
+ "GL_LANG_WATERSORT_POPUP_UNLOCK_BUTTON_YES": {
+  "KO": "좋은 생각입니다!",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Good Idea",
+  "EN_GB": "Good Idea"
+ },
+ "GL_LANG_WATERSORT_POPUP_UNLOCK_BUTTON_NO": {
+  "KO": "아니요",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No Thanks",
+  "EN_GB": "No Thanks"
+ },
+ "GL_LANG_WATERSORT_POPUP_SEEAD_TITLE": {
+  "KO": "광고를 보고 무료 힌트를 얻으세요!",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: Dica",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: Petunjuk",
+  "EN_US": "See ads to get free tips!",
+  "EN_GB": "See ads to get free tips!"
+ },
+ "GL_LANG_WATERSORT_POPUP_SEEAD_BUTTON_YES": {
+  "KO": "좋은 생각입니다!",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Good Idea",
+  "EN_GB": "Good Idea"
+ },
+ "GL_LANG_WATERSORT_POPUP_SEEAD_BUTTON_NO": {
+  "KO": "아니요",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No Thanks",
+  "EN_GB": "No Thanks"
+ },
+ "GL_LANG_WATERSORT_POPUP_SEEAD_REVERT_TITLE": {
+  "KO": "광고를 보고 무료 되돌리기 아이템을 받으세요!",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: Desfazer",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: Ulangi",
+  "EN_US": "See ads to get free revert tiems!",
+  "EN_GB": "See ads to get free revert tiems!"
+ },
+ "GL_LANG_WATERSORT_POPUP_SEEAD_REVERT_BUTTON_YES": {
+  "KO": "좋은 생각입니다!",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Good Idea",
+  "EN_GB": "Good Idea"
+ },
+ "GL_LANG_WATERSORT_POPUP_SEEAD_REVERT_BUTTON_NO": {
+  "KO": "아니요",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No Thanks",
+  "EN_GB": "No Thanks"
+ },
+ "GL_LANG_WATERSORT_POPUP_SEEAD_NEW_TUBE_TITLE": {
+  "KO": "광고를 시청하고 추가 슬롯을 받으세요!",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: Slot extra",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: Slot tambahan",
+  "EN_US": "See ads to get free add new tube tiems!",
+  "EN_GB": "See ads to get free add new tube tiems!"
+ },
+ "GL_LANG_WATERSORT_POPUP_SEEAD_NEW_TUBE_BUTTON_YES": {
+  "KO": "좋은 생각입니다!",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Good Idea",
+  "EN_GB": "Good Idea"
+ },
+ "GL_LANG_WATERSORT_POPUP_SEEAD_NEW_TUBE_BUTTON_NO": {
+  "KO": "아니요",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No Thanks",
+  "EN_GB": "No Thanks"
+ },
+ "GL_LANG_WATERSORT_POPUP_RESTART_TITLE": {
+  "KO": "게임을 다시 \r\n시작하시겠습니까?",
+  "PT_BR": "Reiniciar Jogo?",
+  "ID": "Mulai ulang permainan?",
+  "EN_US": "Restart Game?",
+  "EN_GB": "Restart Game?"
+ },
+ "GL_LANG_WATERSORT_POPUP_RESTART_DESC": {
+  "KO": "현재 진행 상황을 잃고 이 게임은 패배로 처리됩니다!",
+  "PT_BR": "Você perderá seu progresso atual, e este jogo será contado como uma derrota!",
+  "ID": "Kamu akan kehilangan kemajuan\r\n saat ini, dan permainan ini akan\r\n dihitung sebagai kekalahan!",
+  "EN_US": "You'll lose your current progress, and this game will be counted as a Loss!",
+  "EN_GB": "You'll lose your current progress, and this game will be counted as a Loss!"
+ },
+ "GL_LANG_WATERSORT_POPUP_RESTART_BUTTON_YES": {
+  "KO": "다시 시작",
+  "PT_BR": "Reiniciar",
+  "ID": "Mulai ulang",
+  "EN_US": "Restart",
+  "EN_GB": "Restart"
+ },
+ "GL_LANG_WATERSORT_POPUP_RESTART_BUTTON_NO": {
+  "KO": "취소",
+  "PT_BR": "Cancelar",
+  "ID": "Batal",
+  "EN_US": "Cancel",
+  "EN_GB": "Cancel"
+ },
+ "GL_LANG_ONET_TITLE_LEVEL": {
+  "KO": "레벨",
+  "PT_BR": "NÍVEL",
+  "ID": "TINGKAT",
+  "EN_US": "LEVEL",
+  "EN_GB": "LEVEL"
+ },
+ "GL_LANG_ONET_SKIP": {
+  "KO": "건너뛰기",
+  "PT_BR": "Pular",
+  "ID": "Lewati",
+  "EN_US": "Skip",
+  "EN_GB": "Skip"
+ },
+ "GL_LANG_ONET_GUIDE_1": {
+  "KO": "타일을 맞추려면 탭하세요",
+  "PT_BR": "Toque para combinar as peças",
+  "ID": "Ketuk untuk mencocokkan ubin",
+  "EN_US": "Tap to match",
+  "EN_GB": "Tap to match"
+ },
+ "GL_LANG_ONET_GUIDE_2": {
+  "KO": "타일을 맞추려면 탭하세요",
+  "PT_BR": "Toque para combinar as peças",
+  "ID": "Ketuk untuk mencocokkan ubin",
+  "EN_US": "Tap to match",
+  "EN_GB": "Tap to match"
+ },
+ "GL_LANG_ONET_GUIDE_3": {
+  "KO": "타일을 2 회 이하로 꺾어서 \r\n연결하세요.",
+  "PT_BR": "Conecte as peças usando até 3 linhas retas",
+  "ID": "Hubungkan ubin menggunakan hingga 3 garis lurus",
+  "EN_US": "Connect tiles with less than 2 turns",
+  "EN_GB": "Connect tiles with less than 2 turns"
+ },
+ "GL_LANG_ONET_GUIDE_4": {
+  "KO": "장애물 없이, 2회 이하로 꺾어 같은 타일을 매칭하세요.",
+  "PT_BR": "Combine as mesmas peças sem que nenhuma peça bloqueie o caminho de conexão",
+  "ID": "Cocokkan ubin yang sama tanpa ada ubin yang menghalangi jalur penghubung",
+  "EN_US": "Match same tiles with less than 2 turns and no obstacles",
+  "EN_GB": "Match same tiles with less than 2 turns and no obstacles"
+ },
+ "GL_LANG_ONET_GUIDE_5": {
+  "KO": "모든 타일을 매칭하면 승리합니다!",
+  "PT_BR": "Combine todas as peças para vencer!",
+  "ID": "Cocokkan semua ubin untuk menang!",
+  "EN_US": "Match all tiles win",
+  "EN_GB": "Match all tiles win"
+ },
+ "GL_LANG_ONET_POPUP_BUTTON_YES": {
+  "KO": "좋은 생각입니다!",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Great idea!",
+  "EN_GB": "Great idea!"
+ },
+ "GL_LANG_ONET_POPUP_BUTTON_NO": {
+  "KO": "아니요",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No thanks",
+  "EN_GB": "No thanks"
+ },
+ "GL_LANG_ONET_POPUP_TITLE_SHUFFLE": {
+  "KO": "광고를 보고 새로고침 \r\n보상을 받으세요!",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: Atualizar",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: Segarkan",
+  "EN_US": "Watch an ad to get reward: Refresh",
+  "EN_GB": "Watch an ad to get reward: Refresh"
+ },
+ "GL_LANG_ONET_POPUP_TITLE_HINT": {
+  "KO": "광고를 보고 힌트 보상을 받으세요!",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: Dica",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: Petunjuk",
+  "EN_US": "Watch an ad to get reward: Hint",
+  "EN_GB": "Watch an ad to get reward: Hint"
+ },
+ "GL_LANG_ONET_POPUP_TITLE_OVERTIME": {
+  "KO": "광고를 보고 추가 시간 \r\n보상을 받으세요!",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: 60s extras",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: 60 detik ekstra",
+  "EN_US": "Watch an ad to get reward: Extra Time",
+  "EN_GB": "Watch an ad to get reward: Extra Time"
+ },
+ "GL_LANG_ONET_POPUP_ADDTIME_TITLE": {
+  "KO": "시간 초과",
+  "PT_BR": "Sem tempo",
+  "ID": "Waktu habis",
+  "EN_US": "Out of Time",
+  "EN_GB": "Out of Time"
+ },
+ "GL_LANG_ONET_POPUP_ADDTIME_DESC": {
+  "KO": "앗, 시간이 다 되었어요! 다시 \r\n시작하거나 추가 60 초를 사용하여\r\n 재도전하세요!",
+  "PT_BR": "Oops, você ficou sem tempo! Reinicie ou use 60s extras para tentar novamente!",
+  "ID": "Oops, kamu kehabisan waktu! Mulai ulang atau gunakan 60 detik ekstra untuk mencoba lagi!",
+  "EN_US": "Oops, you're out of time! Restart or use Extra 60s to try again!",
+  "EN_GB": "Oops, you're out of time! Restart or use Extra 60s to try again!"
+ },
+ "GL_LANG_ONET_POPUP_ADDTIME_BUTTON_YES": {
+  "KO": "추가 60초",
+  "PT_BR": "60s extras",
+  "ID": "60 detik ekstra",
+  "EN_US": "Extra 60s",
+  "EN_GB": "Extra 60s"
+ },
+ "GL_LANG_ONET_POPUP_ADDTIME_BUTTON_NO": {
+  "KO": "다시 시작",
+  "PT_BR": "Reiniciar",
+  "ID": "Mulai ulang",
+  "EN_US": "Restart",
+  "EN_GB": "Restart"
+ },
+ "GL_LANG_ONET_POPUP_RESTART_TITLE": {
+  "KO": "게임을 다시 \r\n시작하시겠습니까?",
+  "PT_BR": "Reiniciar Jogo?",
+  "ID": "Mulai ulang permainan?",
+  "EN_US": "Restart Game?",
+  "EN_GB": "Restart Game?"
+ },
+ "GL_LANG_ONET_POPUP_RESTART_DESC": {
+  "KO": "현재 진행 상황을 잃고 이 게임은 패배로 처리됩니다!",
+  "PT_BR": "Você perderá seu progresso atual!",
+  "ID": "Anda akan kehilangan kemajuan \r\nAnda saat ini!",
+  "EN_US": "You'll lose your current progress, and this game will be counted as a Loss!",
+  "EN_GB": "You'll lose your current progress, and this game will be counted as a Loss!"
+ },
+ "GL_LANG_ONET_POPUP_RESTART_BUTTON_YES": {
+  "KO": "다시 시작",
+  "PT_BR": "Reiniciar",
+  "ID": "Mulai ulang",
+  "EN_US": "Restart",
+  "EN_GB": "Restart"
+ },
+ "GL_LANG_ONET_POPUP_RESTART_BUTTON_NO": {
+  "KO": "새 게임",
+  "PT_BR": "Novo Jogo",
+  "ID": "Permainan Baru",
+  "EN_US": "New Game",
+  "EN_GB": "New Game"
+ },
+ "GL_LANG_ONET_ERROR_TIPS": {
+  "KO": "다른 블록에 의해 이동이\r\n 제한됩니다",
+  "PT_BR": "O caminho de conexão deve estar livre de obstáculos",
+  "ID": "Jalur penghubung harus bebas dari rintangan",
+  "EN_US": "Path blocked by other tiles",
+  "EN_GB": "Path blocked by other tiles"
+ },
+ "GL_LANG_ONET_LEVEL_COMPLETE": {
+  "KO": "레벨 완료",
+  "PT_BR": "Nível Completo",
+  "ID": "Level Selesai",
+  "EN_US": "Level Complete",
+  "EN_GB": "Level Complete"
+ },
+ "GL_LANG_SUDOKU_TITLE_LEVEL": {
+  "KO": "레벨",
+  "PT_BR": "LEVEL",
+  "ID": "TINGKAT",
+  "EN_US": "LEVEL",
+  "EN_GB": "LEVEL"
+ },
+ "GL_LANG_SUDOKU_TITLE_TIME": {
+  "KO": "시간",
+  "PT_BR": "Tempo",
+  "ID": "Waktu",
+  "EN_US": "TIME",
+  "EN_GB": "TIME"
+ },
+ "GL_LANG_SUDOKU_GUIDE_SKIP": {
+  "KO": "건너뛰기",
+  "PT_BR": "Pular",
+  "ID": "Lewati",
+  "EN_US": "Skip",
+  "EN_GB": "Skip"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP1_TEXT": {
+  "KO": "이 행 채우기",
+  "PT_BR": "Preencha esta linha",
+  "ID": "Isi baris ini",
+  "EN_US": "Fill this row",
+  "EN_GB": "Fill this row"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP1_BUBBLE_1_1": {
+  "KO": "이 칸을 터치하세요",
+  "PT_BR": "Toque nesta célula",
+  "ID": "Ketuk sel ini",
+  "EN_US": "Tap this cell",
+  "EN_GB": "Tap this cell"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP2_TEXT": {
+  "KO": "이 열 채우기",
+  "PT_BR": "Preencha esta coluna",
+  "ID": "Isi kolom ini",
+  "EN_US": "Fill this column",
+  "EN_GB": "Fill this column"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP2_BUBBLE_1_1": {
+  "KO": "각 세로 열에는 1~6 \r\n숫자만 입력할 수 \r\n있습니다",
+  "PT_BR": "Cada coluna vertical só pode conter dígitos de 1 a 6.",
+  "ID": "Setiap kolom vertikal hanya dapat berisi angka dari 1 hingga 6.",
+  "EN_US": "Each vertical column can only contain digits from 1 to 6",
+  "EN_GB": "Each vertical column can only contain digits from 1 to 6"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP2_BUBBLE_1_2": {
+  "KO": "이 숫자를 터치하세요",
+  "PT_BR": "Toque neste dígito",
+  "ID": "Ketuk angka ini",
+  "EN_US": "Tap this digit",
+  "EN_GB": "Tap this digit"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP2_BUBBLE_2_1": {
+  "KO": "이 칸을 터치하세요",
+  "PT_BR": "Toque nesta célula",
+  "ID": "Ketuk sel ini",
+  "EN_US": "Tap this cell",
+  "EN_GB": "Tap this cell"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP2_BUBBLE_ERROR": {
+  "KO": "각 숫자는 한 번만 나타날 수 있습니다",
+  "PT_BR": "Cada dígito só pode aparecer uma vez",
+  "ID": "Setiap digit hanya dapat muncul sekali",
+  "EN_US": "Each digit can only appear once",
+  "EN_GB": "Each digit can only appear once"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP3_TEXT": {
+  "KO": "이 박스 채우기",
+  "PT_BR": "Preencha esta caixa",
+  "ID": "Isi kotak ini",
+  "EN_US": "Fill this box",
+  "EN_GB": "Fill this box"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP3_BUBBLE_1_1": {
+  "KO": "각 칸에는 1~6 숫자만 입력할 수 \r\n있습니다",
+  "PT_BR": "Cada caixa só pode conter dígitos de 1 a 6",
+  "ID": "Setiap kotak hanya boleh berisi angka dari 1 sampai 6",
+  "EN_US": "Each box can only contain digits from 1 to 6",
+  "EN_GB": "Each box can only contain digits from 1 to 6"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP3_BUBBLE_1_2": {
+  "KO": "이 숫자를 터치하세요",
+  "PT_BR": "Toque neste dígito",
+  "ID": "Ketuk angka ini",
+  "EN_US": "Tap this digit",
+  "EN_GB": "Tap this digit"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP3_BUBBLE_2_1": {
+  "KO": "이 칸을 터치하세요",
+  "PT_BR": "Toque nesta célula",
+  "ID": "Ketuk sel ini",
+  "EN_US": "Tap this cell",
+  "EN_GB": "Tap this cell"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP3_BUBBLE_ERROR": {
+  "KO": "각 숫자는 한 번만 나타날 수 있습니다",
+  "PT_BR": "Cada dígito só pode aparecer uma vez",
+  "ID": "Setiap digit hanya dapat muncul sekali",
+  "EN_US": "Each digit can only appear once",
+  "EN_GB": "Each digit can only appear once"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP4_TEXT": {
+  "KO": "숫자 2의 올바른 위치를 찾으세요",
+  "PT_BR": "Encontre o local certo para o dígito 2",
+  "ID": "Temukan tempat yang tepat untuk angka 2",
+  "EN_US": "Find the right spot for the digit 2",
+  "EN_GB": "Find the right spot for the digit 2"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP4_BUBBLE_1_1": {
+  "KO": "이 칸에서 × 표시된 칸을 \r\n확인하세요. 숫자 2 와 같은 행에 \r\n있습니다",
+  "PT_BR": "Observe as células marcadas com × nesta caixa, elas estão localizadas na mesma linha que o dígito 2.",
+  "ID": "Amati sel yang ditandai dengan × di kotak ini, mereka terletak di baris yang sama dengan angka 2.",
+  "EN_US": "Observe the cells marked with × in this box, they are located in the same row as the digit 2",
+  "EN_GB": "Observe the cells marked with × in this box, they are located in the same row as the digit 2"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP4_BUBBLE_1_2": {
+  "KO": "이 숫자를 터치하세요",
+  "PT_BR": "Toque neste dígito",
+  "ID": "Ketuk angka ini",
+  "EN_US": "Tap this digit",
+  "EN_GB": "Tap this digit"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP4_BUBBLE_2_1": {
+  "KO": "이 칸을 터치하세요",
+  "PT_BR": "Toque nesta célula",
+  "ID": "Ketuk sel ini",
+  "EN_US": "Tap this cell",
+  "EN_GB": "Tap this cell"
+ },
+ "GL_LANG_SUDOKU_GUIDE_STEP4_BUBBLE_ERROR": {
+  "KO": "여기에 입력할 수 있는 숫자는 2뿐입니다",
+  "PT_BR": "Apenas o dígito 2 pode ser preenchido",
+  "ID": "Hanya digit 2 yang dapat diisi",
+  "EN_US": "Only the digit 2 can be filled in",
+  "EN_GB": "Only the digit 2 can be filled in"
+ },
+ "GL_LANG_SUDOKU_GAME_OVER_DESC": {
+  "KO": "하트가 모두 소진되어 게임이 실패할 \r\n예정입니다. 게임을 계속하려면 \r\n하트 1 개를 회복하세요",
+  "PT_BR": "Oops, você ficou sem corações! Reinicie ou assista a um anúncio para restaurar 1 Coração!",
+  "ID": "Oops, kamu kehabisan hati! Mulai ulang atau tonton iklan untuk mengembalikan 1 hati!",
+  "EN_US": "You have lost all your Hearts and the game is about to fail. Restore 1 Heart to continue the game.",
+  "EN_GB": "You have lost all your Hearts and the game is about to fail. Restore 1 Heart to continue the game."
+ },
+ "GL_LANG_SUDOKU_GAME_OVER_BUTTON_RESTORE": {
+  "KO": "하트 1개 회복",
+  "PT_BR": "Restaurar",
+  "ID": "Memulihkan",
+  "EN_US": "Restore 1 Heart",
+  "EN_GB": "Restore 1 Heart"
+ },
+ "GL_LANG_SUDOKU_GAME_OVER_BUTTON_NEW_GAME": {
+  "KO": "새 게임",
+  "PT_BR": "Novo Jogo",
+  "ID": "Permainan Baru",
+  "EN_US": "New Game",
+  "EN_GB": "New Game"
+ },
+ "GL_LANG_SUDOKU_GAME_OVER_BUTTON_RESTART": {
+  "KO": "다시 시작",
+  "PT_BR": "Reiniciar",
+  "ID": "Mulai ulang",
+  "EN_US": "Restart",
+  "EN_GB": "Restart"
+ },
+ "GL_LANG_SUDOKU_GAME_RESTART_TITLE": {
+  "KO": "게임을 다시 \r\n시작하시겠습니까?",
+  "PT_BR": "Reiniciar Jogo?",
+  "ID": "Mulai ulang permainan?",
+  "EN_US": "Restart Game?",
+  "EN_GB": "Restart Game?"
+ },
+ "GL_LANG_SUDOKU_GAME_RESTART_DESC": {
+  "KO": "현재 진행 상황이 모두 사라집니다!",
+  "PT_BR": "Você perderá seu progresso atual!",
+  "ID": "Anda akan kehilangan kemajuan \r\nAnda saat ini!",
+  "EN_US": "You'll lose your current progress!",
+  "EN_GB": "You'll lose your current progress!"
+ },
+ "GL_LANG_SUDOKU_GAME_RESTART_BUTTON_NEW_GAME": {
+  "KO": "새 게임",
+  "PT_BR": "Novo Jogo",
+  "ID": "Permainan Baru",
+  "EN_US": "New Game",
+  "EN_GB": "New Game"
+ },
+ "GL_LANG_SUDOKU_GAME_RESTART_BUTTON_RESTART": {
+  "KO": "다시 시작",
+  "PT_BR": "Reiniciar",
+  "ID": "Mulai ulang",
+  "EN_US": "Restart",
+  "EN_GB": "Restart"
+ },
+ "GL_LANG_SUDOKU_GAME_WIN_TITLE": {
+  "KO": "단계 통과",
+  "PT_BR": "Parabéns!",
+  "ID": "Selamat!",
+  "EN_US": "Pass Level",
+  "EN_GB": "Pass Level"
+ },
+ "GL_LANG_SUDOKU_GAME_WIN_SCORE": {
+  "KO": "점수",
+  "PT_BR": "PONTUAÇÃO",
+  "ID": "SKOR",
+  "EN_US": "SCORE",
+  "EN_GB": "SCORE"
+ },
+ "GL_LANG_SUDOKU_GAME_WIN_TIME": {
+  "KO": "시간",
+  "PT_BR": "Tempo",
+  "ID": "Waktu",
+  "EN_US": "Time",
+  "EN_GB": "Time"
+ },
+ "GL_LANG_SUDOKU_GAME_WIN_BUTTON_NEW_GAME": {
+  "KO": "새 게임",
+  "PT_BR": "Novo Jogo",
+  "ID": "Permainan Baru",
+  "EN_US": "New Game",
+  "EN_GB": "New Game"
+ },
+ "GL_LANG_SUDOKU_GAME_WIN_BACK": {
+  "KO": "뒤로",
+  "PT_BR": "Sair do Jogo",
+  "ID": "Keluar dari Permainan",
+  "EN_US": "Back",
+  "EN_GB": "Back"
+ },
+ "GL_LANG_FRUIT_DIANZAN_1": {
+  "KO": "좋아요!",
+  "PT_BR": "Bom!",
+  "ID": "Baik!",
+  "EN_US": "Good!",
+  "EN_GB": "Good!"
+ },
+ "GL_LANG_FRUIT_DIANZAN_2": {
+  "KO": "훌륭해요!",
+  "PT_BR": "Excelente!",
+  "ID": "Luar Biasa!",
+  "EN_US": "Excellent!",
+  "EN_GB": "Excellent!"
+ },
+ "GL_LANG_FRUIT_DIANZAN_3": {
+  "KO": "대단해요!",
+  "PT_BR": "Ótimo!",
+  "ID": "Hebat!",
+  "EN_US": "Great!",
+  "EN_GB": "Great!"
+ },
+ "GL_LANG_FRUIT_DIANZAN_4": {
+  "KO": "멋져요!",
+  "PT_BR": "Incrível!",
+  "ID": "Menakjubkan!",
+  "EN_US": "Amazing!",
+  "EN_GB": "Amazing!"
+ },
+ "GL_LANG_FRUIT_AD_COMING_TITLE": {
+  "KO": "잠시 휴식",
+  "PT_BR": "Faça uma pausa",
+  "ID": "Istirahatlah sejenak",
+  "EN_US": "Take a Break",
+  "EN_GB": "Take a Break"
+ },
+ "GL_LANG_FRUIT_AD_COMING_SUB_TITLE": {
+  "KO": "광고가 표시됩니다",
+  "PT_BR": "O jogo voltará logo após este anúncio!",
+  "ID": "Game akan kembali segera setelah iklan ini!",
+  "EN_US": "Ad will show in",
+  "EN_GB": "Ad will show in"
+ },
+ "GL_LANG_FRUIT_TITLE_SCORE": {
+  "KO": "점수",
+  "PT_BR": "PONTUAÇÃO",
+  "ID": "SKOR",
+  "EN_US": "SCORE",
+  "EN_GB": "SCORE"
+ },
+ "GL_LANG_FRUIT_TITLE_TIME": {
+  "KO": "전체 기록",
+  "PT_BR": "DE SEMPRE",
+  "ID": "SEPANJANG WAKTU",
+  "EN_US": "ALL-TIME",
+  "EN_GB": "ALL-TIME"
+ },
+ "GL_LANG_FRUIT_TITLE_NEXT": {
+  "KO": "다음",
+  "PT_BR": "Próximo",
+  "ID": "Berikutnya",
+  "EN_US": "Next",
+  "EN_GB": "Next"
+ },
+ "GL_LANG_FRUIT_GUIDE_1": {
+  "KO": "원하는 위치를 터치하여 과일을 떨어뜨리세요",
+  "PT_BR": "Toque para soltar a fruta onde quiser",
+  "ID": "Ketuk untuk menjatuhkan buah di tempat yang Anda inginkan",
+  "EN_US": "Tap to drop the fruit wherever you wish",
+  "EN_GB": "Tap to drop the fruit wherever you wish"
+ },
+ "GL_LANG_FRUIT_GUIDE_2": {
+  "KO": "또는 선을 끌어 원하는 위치에\r\n 과일을 떨어뜨리세요",
+  "PT_BR": "Ou arraste a linha para o local desejado para soltar a fruta",
+  "ID": "Atau seret garis ke tempat yang Anda inginkan untuk menjatuhkan buah",
+  "EN_US": "Or drag the line to your desired spot to drop the fruit",
+  "EN_GB": "Or drag the line to your desired spot to drop the fruit"
+ },
+ "GL_LANG_FRUIT_GUIDE_3": {
+  "KO": "같은 과일 두 개를 합쳐 더 큰\r\n 과일을 만드세요",
+  "PT_BR": "Una duas frutas idênticas para criar uma maior",
+  "ID": "Gabungkan dua buah identik untuk membuat yang lebih besar",
+  "EN_US": "Merge two indentical fruits to create a larger one",
+  "EN_GB": "Merge two indentical fruits to create a larger one"
+ },
+ "GL_LANG_FRUIT_GUIDE_SKIP": {
+  "KO": "건너뛰기",
+  "PT_BR": "Pular",
+  "ID": "Lewati",
+  "EN_US": "Skip",
+  "EN_GB": "Skip"
+ },
+ "GL_LANG_FRUIT_GUIDE_PROP_BOMB_DESC": {
+  "KO": "과일을 터치하여 제거하세요",
+  "PT_BR": "Toque em uma fruta para removê-la",
+  "ID": "Ketuk buah untuk menghapusnya",
+  "EN_US": "Tap a Fruit to clear it",
+  "EN_GB": "Tap a Fruit to clear it"
+ },
+ "GL_LANG_FRUIT_POPUP_RESTART_TITLE": {
+  "KO": "게임을 다시 \r\n시작하시겠습니까?",
+  "PT_BR": "Reiniciar Jogo?",
+  "ID": "Mulai ulang permainan?",
+  "EN_US": "Restart Game?",
+  "EN_GB": "Restart Game?"
+ },
+ "GL_LANG_FRUIT_POPUP_RESTART_DESC": {
+  "KO": "현재 진행 상황이 모두 사라집니다!",
+  "PT_BR": "Você perderá seu progresso atual!",
+  "ID": "Anda akan kehilangan kemajuan \r\nAnda saat ini!",
+  "EN_US": "You'll lose your current progress!",
+  "EN_GB": "You'll lose your current progress!"
+ },
+ "GL_LANG_FRUIT_POPUP_RESTART_BUTTON_YES": {
+  "KO": "다시 시작",
+  "PT_BR": "Reiniciar",
+  "ID": "Mulai ulang",
+  "EN_US": "Restart",
+  "EN_GB": "Restart"
+ },
+ "GL_LANG_FRUIT_POPUP_RESTART_BUTTON_NO": {
+  "KO": "취소",
+  "PT_BR": "Cancelar",
+  "ID": "Batal",
+  "EN_US": "Cancel",
+  "EN_GB": "Cancel"
+ },
+ "GL_LANG_FRUIT_POPUP_BOMB_TITLE": {
+  "KO": "광고를 시청하고 보상: 폭탄 받기!",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: Bomba",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: Bom",
+  "EN_US": "Watch an ad to get reward: Bomb!",
+  "EN_GB": "Watch an ad to get reward: Bomb!"
+ },
+ "GL_LANG_FRUIT_POPUP_BOMB_BUTTON_YES": {
+  "KO": "좋은 아이디어입니다!",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Great idea!",
+  "EN_GB": "Great idea!"
+ },
+ "GL_LANG_FRUIT_POPUP_BOMB_BUTTON_NO": {
+  "KO": "괜찮습니다",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No thanks",
+  "EN_GB": "No thanks"
+ },
+ "GL_LANG_FRUIT_POPUP_SHAKE_TITLE": {
+  "KO": "광고를 시청하고 보상: 흔들기 받기!",
+  "PT_BR": "Assista a um anúncio para ganhar a recompensa: Agitar",
+  "ID": "Tonton iklan untuk mendapatkan hadiah: Guncang",
+  "EN_US": "Watch an ad to get reward: Shake",
+  "EN_GB": "Watch an ad to get reward: Shake"
+ },
+ "GL_LANG_FRUIT_POPUP_SHAKE_BUTTON_YES": {
+  "KO": "좋은 아이디어입니다!",
+  "PT_BR": "Ótima ideia!",
+  "ID": "Ide bagus!",
+  "EN_US": "Great idea!",
+  "EN_GB": "Great idea!"
+ },
+ "GL_LANG_FRUIT_POPUP_SHAKE_BUTTON_NO": {
+  "KO": "닫기",
+  "PT_BR": "Não, obrigado",
+  "ID": "Tidak, terima kasih",
+  "EN_US": "No thanks",
+  "EN_GB": "No thanks"
+ },
+ "GL_LANG_COMMON_RESULT_BUTTON_PLAY_AGAIN": {
+  "KO": "다시 플레이하기",
+  "PT_BR": "Jogar outra vez",
+  "ID": "Main Lagi",
+  "EN_US": "Play Again",
+  "EN_GB": "Play Again"
+ },
+ "GL_LANG_COMMON_RESULT_OVER_FRUIT_SCORE": {
+  "KO": "점수",
+  "PT_BR": "Pontuação",
+  "ID": "Skor",
+  "EN_US": "Score",
+  "EN_GB": "Score"
+ },
+ "GL_LANG_COMMON_RESULT_OVER_FRUIT_BEST_SCORE": {
+  "KO": "골든 최고 점수",
+  "PT_BR": "Melhor Pontuação",
+  "ID": "Skor terbaik",
+  "EN_US": "Golden Best Score",
+  "EN_GB": "Golden Best Score"
+ },
+ "GL_LANG_COMMON_RESULT_OVER_SCORE": {
+  "KO": "점수",
+  "PT_BR": "Pontuação",
+  "ID": "Skor",
+  "EN_US": "Score",
+  "EN_GB": "Score"
+ }
+}

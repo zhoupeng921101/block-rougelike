@@ -1,0 +1,10 @@
+﻿成员,值
+EnterGameFailed,enterGameFailed
+EnteredGame,enteredGame
+EnteringGame,enteringGame
+LoadFailed,loadFailed
+LoadSuccess,loadSuccess
+Loading,loading
+NoNet,noNet
+OpenStart,openStart
+Timeout,timeout

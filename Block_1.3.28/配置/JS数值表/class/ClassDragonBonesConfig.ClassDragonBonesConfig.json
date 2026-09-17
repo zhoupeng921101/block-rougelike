@@ -1,0 +1,27 @@
+{
+ "comnb": {
+  "bundleName": "class",
+  "dragonAssetUrl": "dragonbones/topInfo/comnb_ske",
+  "dragonAtlasAssetUrl": "dragonbones/topInfo/comnb_tex"
+ },
+ "comboGrad": {
+  "bundleName": "class",
+  "dragonAssetUrl": "dragonbones/combo/trait/comboEffectCtrl/gameplay_dragonbone_combo_grade_ske",
+  "dragonAtlasAssetUrl": "dragonbones/combo/trait/comboEffectCtrl/gameplay_dragonbone_combo_grade_tex"
+ },
+ "optimizeResourcesComboGrad": {
+  "bundleName": "class",
+  "dragonAssetUrl": "dragonbones/combo/trait/optimizeResourcesEffect/gameplay_dragonbone_combo_grade_ske",
+  "dragonAtlasAssetUrl": "dragonbones/combo/trait/optimizeResourcesEffect/gameplay_dragonbone_combo_grade_tex"
+ },
+ "qBlockCombo": {
+  "bundleName": "class",
+  "dragonAssetUrl": "dragonbones/combo/QBlockCombo/gameplay_combo_in_ske",
+  "dragonAtlasAssetUrl": "dragonbones/combo/QBlockCombo/gameplay_combo_in_tex"
+ },
+ "difficultProblemReminder": {
+  "bundleName": "DifficultProblemReminderTrait",
+  "dragonAssetUrl": "dragonbones/gameplay_nttx_2_ske",
+  "dragonAtlasAssetUrl": "dragonbones/gameplay_nttx_2_tex"
+ }
+}

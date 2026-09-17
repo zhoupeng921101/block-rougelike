@@ -1,0 +1,20 @@
+{
+ "OFFER_TYPE": "offerType",
+ "STRING": "string",
+ "NUMBER": "number",
+ "SIGNED_NUMBER": "signedNumber",
+ "BOOLEAN": "boolean",
+ "BOOLEANNUMBER": "booleanNumber",
+ "OBJECT": "object",
+ "NUMBER_ARRAY": "numberArray",
+ "SIGNED_NUMBER_ARRAY": "signedNumberArray",
+ "BOOLEAN_ARRAY": "booleanArray",
+ "BOOLEANNUMBER_ARRAY": "booleanNumberArray",
+ "STRING_ARRAY": "stringArray",
+ "OBJECT_ARRAY": "objectArray",
+ "OFFER_TYPE_ARRAY": "offerTypeArray",
+ "NUMBER_2D_ARRAY": "numberArray2D",
+ "SIGNED_NUMBER_2D_ARRAY": "signedNumberArray2D",
+ "MIXED_TUPLE_ARRAY": "mixedTupleArray",
+ "RANGE_ARRAY": "rangeArray"
+}

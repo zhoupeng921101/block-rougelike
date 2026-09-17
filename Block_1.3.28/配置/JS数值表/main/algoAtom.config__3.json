@@ -1,0 +1,108 @@
+[
+ {
+  "id": "@y.ALGO_COMBINE",
+  "data": {
+   "ways": [
+    {
+     "algoName": "困难难题",
+     "blocks1": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SEL",
+       "data": {
+        "filterType": "@p.PUT_NO_CLEAR"
+       }
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      },
+      {
+       "id": "@y.BLOCK_LIMIT_SMALL"
+      }
+     ],
+     "blocks2": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SEL",
+       "data": {
+        "filterType": "@p.PUT_NO_CLEAR"
+       }
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      },
+      {
+       "id": "@y.BLOCK_LIMIT_SMALL"
+      }
+     ],
+     "blocks3": [
+      {
+       "id": "@y.BLOCK_WEIGHT"
+      },
+      {
+       "id": "@y.BLOCK_SEL",
+       "data": {
+        "filterType": "@p.NO_PUT"
+       }
+      },
+      {
+       "id": "@y.BLOCK_SORT",
+       "data": {
+        "sort": "@f.RANDOM"
+       }
+      },
+      {
+       "id": "@y.BLOCK_LIMIT_SMALL"
+      }
+     ],
+     "selectCombs": [
+      {
+       "compId": "@y.COM_BLOCK_MAX_DUP",
+       "data": {
+        "count": 2
+       }
+      }
+     ],
+     "putOrderDatas": [
+      {
+       "order": 0,
+       "liveWay": 1
+      },
+      {
+       "order": 132,
+       "liveWay": 0
+      },
+      {
+       "order": 231,
+       "liveWay": 0
+      }
+     ],
+     "select": {
+      "collectCompId": "@y.COLLECT_COMBINE_LIVE_RATE",
+      "key": "@h.LIVE_WAY_RATE",
+      "clear": false,
+      "operator": "@g.MAX",
+      "data": {
+       "key": "@h.LIVE_WAY"
+      }
+     },
+     "overTime": 100
+    },
+    {
+     "algoName": "熵增3",
+     "algoId": 900003
+    }
+   ]
+  }
+ }
+]

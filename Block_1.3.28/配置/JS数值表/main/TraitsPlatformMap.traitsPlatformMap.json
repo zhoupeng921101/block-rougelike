@@ -1,0 +1,9 @@
+{
+ "ComboTipsLevelTrait": "Combo_tips_lv_blockTrait",
+ "ChangeContinueHardTrait": "OpenChangeContinueHardTrait",
+ "ComboProtectContinueNewTrait": "ComboModeCtrlTrait",
+ "NewHardUITrait": "HardLevelRedUITrait",
+ "ComboEffectTrait": "ComboEffectCtrlTrait",
+ "GLHallMoreGamesPopup_f_GLHallMoreGamesPopupTrait": "IsOpenGLHallMoreGamesPopupTrait",
+ "Minigame23647_f_addMoreGameTrait": "AddMoreGameTrait"
+}

@@ -1,0 +1,20 @@
+
+shouzhi.png
+size: 453,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Tex_ring_03_256x256
+  rotate: false
+  xy: 2, 2
+  size: 252, 252
+  orig: 256, 256
+  offset: 2, 2
+  index: -1
+icon_hand
+  rotate: true
+  xy: 256, 54
+  size: 200, 195
+  orig: 240, 240
+  offset: 20, 17
+  index: -1

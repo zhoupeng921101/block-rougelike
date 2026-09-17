@@ -1,0 +1,7 @@
+﻿成员,值
+None,0
+Initializing,1
+Initialized,2
+Running,3
+Stopped,4
+Error,5

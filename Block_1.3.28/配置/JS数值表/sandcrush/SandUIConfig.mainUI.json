@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/MainUI",
+ "cnName": "主界面",
+ "layer": "@o.HSLayerType.GameUI",
+ "cache": false
+}

@@ -1,0 +1,4305 @@
+window.__require = function e(t, i, o) {
+function a(s, r) {
+if (!i[s]) {
+if (!t[s]) {
+var c = s.split("/");
+c = c[c.length - 1];
+if (!t[c]) {
+var l = "function" == typeof __require && __require;
+if (!r && l) return l(c, !0);
+if (n) return n(c, !0);
+throw new Error("Cannot find module '" + s + "'");
+}
+s = c;
+}
+var u = i[s] = {
+exports: {}
+};
+t[s][0].call(u.exports, function(e) {
+return a(t[s][1][e] || e);
+}, u, u.exports, e, t, i, o);
+}
+return i[s].exports;
+}
+for (var n = "function" == typeof __require && __require, s = 0; s < o.length; s++) a(o[s]);
+return a;
+}({
+GLTictactoeBanner: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "5c477xQwKhAgaxYGVstVnpv", "GLTictactoeBanner");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = cc._decorator, r = s.ccclass, c = s.property, l = function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.Image = null;
+t.Left = null;
+t.Right = null;
+t.Name = null;
+return t;
+}
+t.prototype.SetBannerTitle = function(e) {
+this.Name.string = e;
+};
+t.prototype.ChangeColor = function(e, t, i, o) {
+void 0 === o && (o = !0);
+if (o) {
+cc.tween(this.Image.node).to(i, {
+color: t
+}).start();
+cc.tween(this.Left.node).to(i, {
+color: e
+}).start();
+cc.tween(this.Right.node).to(i, {
+color: e
+}).start();
+cc.tween(this.Name.node).to(i, {
+color: e
+}).start();
+} else {
+this.Image.node.color = t;
+this.Left.node.color = e;
+this.Right.node.color = e;
+this.Name.node.color = e;
+}
+};
+n([ c(cc.Sprite) ], t.prototype, "Image", void 0);
+n([ c(cc.Sprite) ], t.prototype, "Left", void 0);
+n([ c(cc.Sprite) ], t.prototype, "Right", void 0);
+n([ c(cc.Label) ], t.prototype, "Name", void 0);
+return n([ r ], t);
+}(cc.Component);
+i.default = l;
+cc._RF.pop();
+}, {} ],
+GLTictactoeChangeSkin2: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "51003ZasShNR7PiGL9qNI/s", "GLTictactoeChangeSkin2");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = e("./GLTictactoeFeature"), r = cc._decorator, c = r.ccclass, l = (r.property, 
+function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.spriteFrames = [];
+t.sprites = [];
+return t;
+}
+t.prototype.onLoad = function() {
+var e = this;
+this.sprites[0] = this.node.getChildByName("icon").getComponent(cc.Sprite);
+var t = [ "resource/sprites/yuKanIcon", "resource/sprites/yuKanIcon2" ], i = 0;
+this.spriteFrames = new Array(t.length);
+var o = cc.assetManager.getBundle("gl_tictactoe");
+o ? t.forEach(function(a, n) {
+o.load(a, cc.SpriteFrame, function(o, r) {
+o ? console.error("GLTictactoeChangeSkinTs: failed to load " + a, o) : e.spriteFrames[n] = r;
+++i === t.length && (s.default.isOpen(s.GLTictactoeFeat.GLTictactoeChangeSkin) ? e.sprites[0].spriteFrame = e.spriteFrames[1] : e.sprites[0].spriteFrame = e.spriteFrames[0]);
+});
+}) : console.error("GLTictactoeChangeSkinTs: gl_tictactoe bundle not found");
+};
+return n([ c ], t);
+}(cc.Component));
+i.default = l;
+cc._RF.pop();
+}, {
+"./GLTictactoeFeature": "GLTictactoeFeature"
+} ],
+GLTictactoeChangeSkinTs: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "8c86cDKWhFF4qcPJL2fOcrZ", "GLTictactoeChangeSkinTs");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = e("./GLTictactoeFeature"), r = e("./GLTictactoeMain"), c = cc._decorator, l = c.ccclass, u = (c.property, 
+function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.leftNode = null;
+t.rightNode = null;
+t.spriteFrames = [];
+t.sprites = [];
+return t;
+}
+t.prototype.onLoad = function() {
+var e = r.default.Instance.node;
+this.leftNode = e.getChildByName("Header").getChildByName("ScoreNode").getChildByName("Left");
+this.rightNode = e.getChildByName("Header").getChildByName("ScoreNode").getChildByName("Right");
+var t = e.getChildByName("Header").getChildByName("ScoreNode").getChildByName("VS").getChildByName("Icon"), i = e.getChildByName("Content").getChildByName("TurnNode").getChildByName("LeftTurn"), o = e.getChildByName("Content").getChildByName("TurnNode").getChildByName("RightTurn");
+this.sprites = [ t.getComponent(cc.Sprite), i.getComponent(cc.Sprite), o.getComponent(cc.Sprite) ];
+this.loadSpriteFrames();
+};
+t.prototype.loadSpriteFrames = function() {
+var e = this, t = cc.assetManager.getBundle("gl_tictactoe");
+if (t) {
+var i = [ "resource/sprites/bar_vs", "resource/sprites/vs", "resource/sprites/icon_people_02", "resource/sprites/icon_bot_01", "resource/sprites/icon_bot_01", "resource/sprites/icon_people_02" ], o = 0;
+this.spriteFrames = new Array(i.length);
+i.forEach(function(a, n) {
+t.load(a, cc.SpriteFrame, function(t, s) {
+t ? console.error("GLTictactoeChangeSkinTs: failed to load " + a, t) : e.spriteFrames[n] = s;
+++o === i.length && e.applySkin();
+});
+});
+} else console.error("GLTictactoeChangeSkinTs: gl_tictactoe bundle not found");
+};
+t.prototype.applySkin = function() {
+var e = new cc.Color().fromHEX("#E05956"), t = new cc.Color().fromHEX("#5E97C6");
+if (s.default.isOpen(s.GLTictactoeFeat.GLTictactoeChangeSkin)) {
+this.leftNode.color = t;
+this.rightNode.color = e;
+this.sprites[0].spriteFrame = this.spriteFrames[1];
+this.sprites[1].spriteFrame = this.spriteFrames[3];
+this.sprites[2].spriteFrame = this.spriteFrames[5];
+} else {
+this.leftNode.color = e;
+this.rightNode.color = t;
+this.sprites[0].spriteFrame = this.spriteFrames[0];
+this.sprites[1].spriteFrame = this.spriteFrames[2];
+this.sprites[2].spriteFrame = this.spriteFrames[4];
+}
+};
+return n([ l ], t);
+}(cc.Component));
+i.default = u;
+cc._RF.pop();
+}, {
+"./GLTictactoeFeature": "GLTictactoeFeature",
+"./GLTictactoeMain": "GLTictactoeMain"
+} ],
+GLTictactoeChangeSkin: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "ec7fcBSoaJKJZmRvwxnFd/Z", "GLTictactoeChangeSkin");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = cc._decorator, r = s.ccclass, c = s.property, l = function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.leftNode = null;
+t.rightNode = null;
+t.spriteFrames = [];
+t.sprites = [];
+return t;
+}
+t.prototype.onLoad = function() {};
+n([ c(cc.Node) ], t.prototype, "leftNode", void 0);
+n([ c(cc.Node) ], t.prototype, "rightNode", void 0);
+n([ c(cc.SpriteFrame) ], t.prototype, "spriteFrames", void 0);
+n([ c(cc.Sprite) ], t.prototype, "sprites", void 0);
+return n([ r ], t);
+}(cc.Component);
+i.default = l;
+cc._RF.pop();
+}, {} ],
+GLTictactoeCheckDrawTraitCtrl: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "8f829mR+9VEoYGFNyPVuOgW", "GLTictactoeCheckDrawTraitCtrl");
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var o = e("../GLTictactoePlayerDataManager"), a = e("../../const/GLTictactoeConst"), n = [ [ {
+row: 0,
+col: 0
+}, {
+row: 1,
+col: 1
+}, {
+row: 2,
+col: 2
+} ], [ {
+row: 0,
+col: 2
+}, {
+row: 1,
+col: 1
+}, {
+row: 2,
+col: 0
+} ] ], s = function() {
+function e() {
+this._featureName = "GLTictactoeCheckDraw";
+}
+e.getInstance = function() {
+null == this._instance && (this._instance = new e());
+return this._instance;
+};
+e.prototype.isOpen = function() {
+return GL.Game.IsFeatureOpen(this._featureName);
+};
+e.prototype.makeBoard = function(e) {
+for (var t = [], i = 0; i < e.row; i++) {
+for (var o = [], a = 0; a < e.column; a++) o.push(e.chessModelList[i][a].playerType);
+t.push(o);
+}
+return t;
+};
+e.prototype.getEmptyPos = function(e) {
+for (var t = [], i = 0; i < e.length; i++) for (var o = 0; o < e[i].length; o++) e[i][o] === a.default.PlayerType.None && t.push({
+row: i,
+col: o
+});
+return t;
+};
+e.prototype.checkDraw = function() {
+var e = o.default.getGameModel();
+if (!e) return !1;
+var t = this.makeBoard(e), i = this.getEmptyPos(t);
+if (i.length > 0) {
+for (var n = 0; n < i.length; n++) {
+var s = i[n];
+t[s.row][s.col] = e.playerType == a.default.PlayerType.Red ? a.default.PlayerType.Blue : a.default.PlayerType.Red;
+if (!this.checkCanDraw(t, e.row, e.column)) return !1;
+t[s.row][s.col] = a.default.PlayerType.None;
+}
+return !0;
+}
+return this.checkCanDraw(t, e.row, e.column);
+};
+e.prototype.checkCanDraw = function(e, t, i) {
+return !!this.checkRow(e, t, i) && !!this.checkCol(e, t, i) && !!this.checkDiagonal(e);
+};
+e.prototype.checkRow = function(e, t, i) {
+for (var o = 0; o < t; o++) {
+for (var n = new Set(), s = 0; s < i; s++) e[o][s] !== a.default.PlayerType.None && n.add(e[o][s]);
+if (n.size < 2) return !1;
+}
+return !0;
+};
+e.prototype.checkCol = function(e, t, i) {
+for (var o = 0; o < i; o++) {
+for (var n = new Set(), s = 0; s < t; s++) e[s][o] !== a.default.PlayerType.None && n.add(e[s][o]);
+if (n.size < 2) return !1;
+}
+return !0;
+};
+e.prototype.checkDiagonal = function(e) {
+for (var t = 0; t < n.length; t++) {
+for (var i = new Set(), o = n[t], s = 0; s < o.length; s++) {
+var r = o[s];
+e[r.row][r.col] !== a.default.PlayerType.None && i.add(e[r.row][r.col]);
+}
+if (i.size < 2) return !1;
+}
+return !0;
+};
+e._instance = null;
+return e;
+}();
+i.default = s;
+cc._RF.pop();
+}, {
+"../../const/GLTictactoeConst": "GLTictactoeConst",
+"../GLTictactoePlayerDataManager": "GLTictactoePlayerDataManager"
+} ],
+GLTictactoeChessModel: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "71147MW05RDwYfknp8QA9Yt", "GLTictactoeChessModel");
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+i.default = function() {
+this.index = 0;
+this.playerType = null;
+};
+cc._RF.pop();
+}, {} ],
+GLTictactoeChess: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "963097yY0RIKLQ4qY/AaYFH", "GLTictactoeChess");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = e("../const/GLTictactoeConst"), r = e("../GLTictactoeFeature"), c = e("../GLTictactoeMain"), l = cc._decorator, u = l.ccclass, h = l.property, d = function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.iconNode = null;
+t.chessAnimation = null;
+t.bgAnimation = null;
+t.chessAnimation2 = null;
+t.bgAnimation2 = null;
+t.chessAnimation3 = null;
+t.bgAnimation3 = null;
+t.scaleNum = 1;
+t.chessChildPrefab = null;
+t.model = null;
+return t;
+}
+t.prototype.onLoad = function() {
+if (r.default.isOpen(r.GLTictactoeFeat.GLTictactoeChangeSkin) && c.default.Instance.chessChildPrefab) {
+this.chessAnimation.node.active = !1;
+this.bgAnimation.node.active = !1;
+var e = cc.instantiate(c.default.Instance.chessChildPrefab);
+e.parent = this.iconNode;
+this.chessAnimation2 = e.getChildByName("Chess2").getComponent(sp.Skeleton);
+this.bgAnimation2 = e.getChildByName("Background2").getComponent(sp.Skeleton);
+this.chessAnimation2.node.active = !0;
+this.bgAnimation2.node.active = !0;
+this.chessAnimation3 = this.chessAnimation2;
+this.bgAnimation3 = this.bgAnimation2;
+} else {
+this.chessAnimation.node.active = !0;
+this.bgAnimation.node.active = !0;
+this.chessAnimation3 = this.chessAnimation;
+this.bgAnimation3 = this.bgAnimation;
+}
+this.iconNode.active = !1;
+this.bgAnimation3.node.active = !1;
+};
+t.prototype.playAnimation = function(e, t, i, o) {
+void 0 === i && (i = 1);
+void 0 === o && (o = null);
+if (e) {
+e.setAnimation(0, t, !1);
+e.timeScale = i;
+o && e.setCompleteListener(function() {
+e.setCompleteListener(null);
+o();
+});
+}
+};
+t.prototype.initChess = function(e, t) {
+this.model = e;
+this.scaleNum = t;
+this.node.setScale(this.scaleNum, this.scaleNum);
+this.model.playerType !== s.default.PlayerType.None && this.putChessByPlayerNoAni(this.model.playerType);
+};
+t.prototype.reset = function() {
+this.iconNode.setScale(1, 1);
+this.iconNode.active = !1;
+this.releaseWinEffect();
+};
+t.prototype.resetByAni = function() {
+this.releaseWinEffect();
+this.hideAni();
+};
+t.prototype.putChessByPlayer = function(e) {
+var t = this;
+this.model.playerType = e;
+var i = this.getPrefix(this.model.playerType), o = i + "_chuxian", a = i + "_idle";
+this.playAnimation(this.chessAnimation3, o, 1.2, function() {
+return t.playAnimation(t.chessAnimation3, a);
+});
+this.iconNode.active = !0;
+this.iconNode.stopAllActions();
+this.iconNode.setScale(1, 1);
+this.playClickEffect();
+};
+t.prototype.putChessByPlayerNoAni = function(e) {
+this.model.playerType = e;
+this.iconNode.active = !0;
+var t = this.getPrefix(e) + "_idle";
+this.playAnimation(this.chessAnimation3, t);
+this.iconNode.setScale(1, 1);
+};
+t.prototype.hideAni = function() {
+var e = this;
+if (this.iconNode) {
+this.iconNode.stopAllActions();
+this.iconNode.setScale(1, 1);
+cc.tween(this.iconNode).to(.35, {
+scale: 0
+}).call(function() {
+e.iconNode.setScale(1, 1);
+e.iconNode.active = !1;
+}).start();
+}
+};
+t.prototype.showDrawAni = function() {
+var e = this;
+if (this.iconNode) {
+this.iconNode.active = !0;
+var t = this.getPrefix(this.model.playerType) + "_idle";
+this.playAnimation(this.chessAnimation3, t);
+this.iconNode.setScale(0, 0);
+cc.tween(this.iconNode).to(.35, {
+scale: 1
+}).call(function() {
+e.iconNode.setScale(1, 1);
+}).start();
+this.playClickEffect();
+}
+};
+t.prototype.playClickEffect = function() {};
+t.prototype.showWinSaoGuangAni = function() {
+var e = this;
+this.bgAnimation3.node.active = !0;
+this.chessAnimation3.node.active = !1;
+var t = this.getPrefix(this.model.playerType) + "_shengli";
+this.playAnimation(this.bgAnimation3, t, 1, function() {
+null != e.bgAnimation3 && null !== e.bgAnimation3.node && cc.isValid(e.bgAnimation3.node) && (e.bgAnimation3.node.active = !1);
+});
+};
+t.prototype.showBlockWin = function() {
+this.chessAnimation3.node.active = !0;
+this.bgAnimation3.node.active = !1;
+var e = this.getPrefix(this.model.playerType) + "_shengli_dikuang";
+this.playAnimation(this.chessAnimation3, e, 1, function() {});
+};
+t.prototype.releaseWinEffect = function() {
+this.bgAnimation3.node.active = !1;
+};
+t.prototype.getPrefix = function(e) {
+return e === s.default.PlayerType.Red ? r.default.isOpen(r.GLTictactoeFeat.GLTictactoeChangeSkin) ? "O" : "X" : r.default.isOpen(r.GLTictactoeFeat.GLTictactoeChangeSkin) ? "X" : "O";
+};
+n([ h(cc.Node) ], t.prototype, "iconNode", void 0);
+n([ h(sp.Skeleton) ], t.prototype, "chessAnimation", void 0);
+n([ h(sp.Skeleton) ], t.prototype, "bgAnimation", void 0);
+return n([ u ], t);
+}(cc.Component);
+i.default = d;
+cc._RF.pop();
+}, {
+"../GLTictactoeFeature": "GLTictactoeFeature",
+"../GLTictactoeMain": "GLTictactoeMain",
+"../const/GLTictactoeConst": "GLTictactoeConst"
+} ],
+GLTictactoeConst: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "cd24dtK8uFBQ6fIyG5ezMxF", "GLTictactoeConst");
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var o;
+(function(e) {
+e.GAME_KEY = "gl_tictactoe";
+var t = function() {
+function e() {}
+e.AdFrontRestartStr = "重新开始";
+e.AdFrontNewGameStr = "新开";
+e.AdFrontContinue = "继续游戏";
+return e;
+}();
+e.Text = t;
+(function(e) {
+e[e.None = 0] = "None";
+e[e.Red = 1] = "Red";
+e[e.Blue = 2] = "Blue";
+})(e.PlayerType || (e.PlayerType = {}));
+(function(e) {
+e[e.NoGame = 0] = "NoGame";
+e[e.GameIng = 1] = "GameIng";
+e[e.Interrupt = 2] = "Interrupt";
+e[e.GameOver = 3] = "GameOver";
+})(e.GameStatus || (e.GameStatus = {}));
+(function(e) {
+e[e.Machine = 1] = "Machine";
+e[e.Friends = 2] = "Friends";
+})(e.GameType || (e.GameType = {}));
+(function(e) {
+e[e.THREE = 0] = "THREE";
+e[e.FOUR = 1] = "FOUR";
+e[e.FIVE = 2] = "FIVE";
+})(e.GamePlayType || (e.GamePlayType = {}));
+(function(e) {
+e[e.EASY = 0] = "EASY";
+e[e.Hard = 1] = "Hard";
+e[e.Extreme = 2] = "Extreme";
+})(e.LevelDifficulty || (e.LevelDifficulty = {}));
+(function(e) {
+e[e.Win = 0] = "Win";
+e[e.Lose = 1] = "Lose";
+e[e.Draw = 2] = "Draw";
+e[e.RedWin = 3] = "RedWin";
+e[e.BlueWin = 4] = "BlueWin";
+e[e.YellowWin = 5] = "YellowWin";
+e[e.GreenWin = 6] = "GreenWin";
+e[e.RestartGame = 7] = "RestartGame";
+})(e.GameResult || (e.GameResult = {}));
+(function(e) {
+e[e.NextLevelRed = 0] = "NextLevelRed";
+e[e.NextLevelBlue = 1] = "NextLevelBlue";
+e[e.AutoPutChess = 2] = "AutoPutChess";
+e[e.AutoPutChessLock = 3] = "AutoPutChessLock";
+e[e.Draw = 4] = "Draw";
+e[e.Temperature = 5] = "Temperature";
+e[e.ForeknowDraw = 6] = "ForeknowDraw";
+e[e.ForeknowDrawLock = 7] = "ForeknowDrawLock";
+e[e.FourDrawNum = 8] = "FourDrawNum";
+e[e.FiveDrawNum = 9] = "FiveDrawNum";
+e[e.BackSpace = 10] = "BackSpace";
+e[e.IsOpenMoreGuide = 11] = "IsOpenMoreGuide";
+e[e.MinMaxONum = 12] = "MinMaxONum";
+e[e.AddItem = 13] = "AddItem";
+})(e.GameGMType || (e.GameGMType = {}));
+(function(e) {
+e[e.ClickChess = 0] = "ClickChess";
+e[e.FinishRobotChess = 1] = "FinishRobotChess";
+e[e.GuideViewTouch = 2] = "GuideViewTouch";
+e[e.SkipGuide = 3] = "SkipGuide";
+})(e.GameGuideType || (e.GameGuideType = {}));
+(function(e) {
+e[e.PlayerTypeChange = 0] = "PlayerTypeChange";
+e[e.GameStatusChange = 1] = "GameStatusChange";
+e[e.ChessCountChange = 2] = "ChessCountChange";
+})(e.GameDataEvent || (e.GameDataEvent = {}));
+(function(e) {
+e[e.Lose = -1] = "Lose";
+e[e.Draw = 0] = "Draw";
+e[e.Win = 1] = "Win";
+})(e.GameWinLose || (e.GameWinLose = {}));
+(function(e) {
+e[e.None = 0] = "None";
+e[e.NewGame = 1] = "NewGame";
+e[e.RestartGame = 2] = "RestartGame";
+e[e.DrawStartGame = 3] = "DrawStartGame";
+})(e.GameStartType || (e.GameStartType = {}));
+(function(e) {
+e[e.Undo = 1] = "Undo";
+e[e.Bomb = 2] = "Bomb";
+})(e.Item || (e.Item = {}));
+(function(e) {
+e[e.FreeType = 0] = "FreeType";
+e[e.AdType = 1] = "AdType";
+e[e.FreeAdType = 2] = "FreeAdType";
+})(e.ItemUseTrack || (e.ItemUseTrack = {}));
+(function(e) {
+e[e.Use = 0] = "Use";
+e[e.UseFinish = 1] = "UseFinish";
+})(e.ItemUse || (e.ItemUse = {}));
+})(o || (o = {}));
+i.default = o;
+cc._RF.pop();
+}, {} ],
+GLTictactoeContent: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "ea393GvRWhDLqHyuErnUBv/", "GLTictactoeContent");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = e("../const/GLTictactoeConst"), r = e("../GLTictactoeFeature"), c = e("../manager/GLTictactoeSoundManager"), l = e("./GLTictactoeChess"), u = e("./GLTictactoePreAim"), h = e("./GLTictactoeTurnNode"), d = e("../traits/GLTictactoeLastStepWinEncourageCtrl"), p = e("../traits/GLTictactoeFirstWinShowEncourageCtrl"), f = e("../GLTictactoeChangeSkin2"), y = cc._decorator, m = y.ccclass, T = y.property, g = function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.turnLeft = null;
+t.turnRight = null;
+t.tipChessParent = null;
+t.tipChessLine = null;
+t.tip = null;
+t.boardAnimation = null;
+t.boardAnimation1 = null;
+t.boardAnimation2 = null;
+t.tipChessPrefab = null;
+t.chessPrefab = null;
+t.ticTacToePreAim = null;
+t.ticTacToePreAimSmall = null;
+t.chessParent = null;
+t.chessList = [];
+t.yuMiao = null;
+t.preX = 0;
+t.preY = 0;
+t.dis = 0;
+t.canTouch = !1;
+t.chessScale = 1;
+t.touchChess = null;
+t.middleX = 0;
+t.middleY = 0;
+t.yuMiaoWidth = 0;
+t.model = null;
+t.winEffect2Prefab = null;
+return t;
+}
+t.prototype.onLoad = function() {
+var e = this;
+this.node.on(cc.Node.EventType.TOUCH_START, this.onPointerDown, this);
+this.node.on(cc.Node.EventType.TOUCH_MOVE, this.onPointerMove, this);
+this.node.on(cc.Node.EventType.TOUCH_END, this.onPointerUp, this);
+this.node.on(cc.Node.EventType.TOUCH_CANCEL, this.onPointerUp, this);
+r.default.isOpen(r.GLTictactoeFeat.GLTictactoeChangeSkin) && this.preloadWinEffect2().then(function() {
+var t = cc.instantiate(e.winEffect2Prefab);
+t.parent = e.node.getChildByName("ChessNode");
+e.boardAnimation2 = t.getComponent(sp.Skeleton);
+e.boardAnimation = e.boardAnimation2;
+});
+};
+t.prototype.preloadWinEffect2 = function() {
+var e = this;
+return this.winEffect2Prefab ? Promise.resolve(this.winEffect2Prefab) : new Promise(function(t, i) {
+var o = cc.assetManager.getBundle("gl_tictactoe");
+if (o) o.load("resource/prefab/WinEffect2", cc.Prefab, function(o, a) {
+if (o) {
+console.error("GLTictactoeMain: failed to load WinEffect2 prefab", o);
+i(o);
+} else {
+e.winEffect2Prefab = a;
+t(a);
+}
+}); else {
+console.error("GLTictactoeMain: gl_tictactoe bundle not found");
+i(new Error("gl_tictactoe bundle not found"));
+}
+});
+};
+t.prototype.initChess = function(e) {
+this.model = e;
+for (var t = this.model.chessModelList, i = 0; i < this.chessParent.children.length; i++) this.chessParent.children[i].destroy();
+this.chessParent.removeAllChildren();
+var o = 1, a = 0, n = 30;
+if (this.model.gamePlayType === s.default.GamePlayType.THREE) {
+o = 1;
+a = 300 + (n = 30);
+} else a = this.model.gamePlayType === s.default.GamePlayType.FOUR ? 300 * (o = .49) + (n = 16) : 300 * (o = .32) + (n = 12);
+var r = this.model, c = r.column, u = r.row, h = a * c / 2 * -1 + a / 2, d = a * u / 2 - a / 2 + 5;
+this.preX = a * c / 2 * -1;
+this.preY = a * u / 2 * -1 + 5;
+this.dis = a;
+this.chessScale = o;
+if (this.model.gamePlayType === s.default.GamePlayType.THREE) {
+this.middleX = h + this.dis;
+this.middleY = d - this.dis;
+this.yuMiaoWidth = 3 * a - n;
+} else if (this.model.gamePlayType === s.default.GamePlayType.FOUR) {
+this.middleX = h + 2 * this.dis + 300 * o / 2 + n / 2;
+this.middleY = d - 2 * this.dis - 300 * o / 2 - n / 2;
+this.yuMiaoWidth = 6 * a - n;
+} else {
+this.middleX = h + 4 * this.dis;
+this.middleY = d - 4 * this.dis;
+this.yuMiaoWidth = 9 * a - n;
+}
+for (i = 0; i < this.chessParent.children.length; i++) this.chessParent.children[i].destroy();
+this.chessParent.removeAllChildren();
+this.chessList = Array.from({
+length: u
+}, function() {
+return [];
+});
+for (i = 0; i < u; i++) for (var p = 0; p < c; p++) {
+var f = cc.instantiate(this.chessPrefab);
+f.parent = this.chessParent;
+f.setPosition(h + p * a, d - i * a);
+var y = f.getComponent(l.default);
+y.initChess(t[i][p], o);
+this.chessList[i][p] = y;
+}
+};
+t.prototype.showTipChess = function(e) {
+for (var t = e === s.default.GamePlayType.THREE ? 3 : e === s.default.GamePlayType.FOUR ? 4 : 5, i = 0; i < t; i++) {
+var o = cc.instantiate(this.tipChessPrefab);
+r.default.isOpen(r.GLTictactoeFeat.GLTictactoeChangeSkin) && o.addComponent(f.default);
+o.parent = this.tipChessParent.node;
+}
+this.tipChessParent.updateLayout();
+this.tipChessLine.setContentSize(new cc.Size(this.tipChessParent.node.width - 20, this.tipChessLine.height));
+};
+t.prototype.getChessModel = function(e, t) {
+return e < 0 || e >= this.model.row || t < 0 || t >= this.model.column ? null : this.chessList[e][t].model;
+};
+t.prototype.getChess = function(e, t) {
+return e < 0 || e >= this.model.row || t < 0 || t >= this.model.column ? null : this.chessList[e][t];
+};
+t.prototype.getYuMiao = function() {
+if (!this.yuMiao) {
+var e = this.model.gamePlayType !== s.default.GamePlayType.FIVE ? this.ticTacToePreAim : this.ticTacToePreAimSmall, t = cc.instantiate(e);
+t.parent = this.node;
+this.yuMiao = t.getComponent(u.default);
+this.yuMiao.SetChessBoard(this);
+}
+return this.yuMiao;
+};
+t.prototype.getChessByXY = function(e) {
+var t = this.chessParent.convertToNodeSpaceAR(e), i = t.x, o = t.y;
+if (i < this.preX || i > this.preX + this.dis * this.model.column || o < this.preY || o > this.preY + this.dis * this.model.row) return null;
+var a = Math.abs(i - this.preX), n = Math.abs(o - this.preY), s = this.model.row - Math.floor(n / this.dis) - 1, r = Math.floor(a / this.dis);
+return s < 0 || s >= this.chessList.length || !this.chessList[s] || r < 0 || r >= this.chessList[s].length ? null : this.chessList[s][r];
+};
+t.prototype.onPointerDown = function(e) {
+if (this.node && cc.isValid(this.node) && this.chessList && this.model && this.model.isCanTouchChess()) {
+var t = e.getLocation(), i = this.getYuMiao(), o = this.getChessByXY(t);
+if (o) {
+this.touchChess = o;
+var a = Math.floor(o.model.index / this.model.column), n = o.model.index % this.model.column;
+this.model.gamePlayType !== s.default.GamePlayType.THREE && i.ShowPreAimAni(a, n);
+} else {
+this.model.gamePlayType !== s.default.GamePlayType.THREE && i.HidePreAimAni();
+this.touchChess = null;
+}
+this.canTouch = !0;
+}
+};
+t.prototype.onPointerMove = function(e) {
+if (this.node && cc.isValid(this.node) && this.canTouch && this.chessList && this.model) {
+var t = e.getLocation(), i = this.getYuMiao(), o = this.getChessByXY(t);
+if (o !== this.touchChess) if (o) {
+this.touchChess = o;
+var a = Math.floor(o.model.index / this.model.column), n = o.model.index % this.model.column;
+this.model.gamePlayType !== s.default.GamePlayType.THREE && i.ShowPreAimAni(a, n);
+} else {
+this.touchChess = null;
+this.model.gamePlayType !== s.default.GamePlayType.THREE && i.HidePreAimAni();
+}
+}
+};
+t.prototype.onPointerUp = function() {
+if (this.node && cc.isValid(this.node) && this.model) {
+var e = this.getYuMiao();
+this.canTouch = !1;
+if (this.touchChess) {
+this.clickChess(this.touchChess.model.index);
+this.model.gamePlayType !== s.default.GamePlayType.THREE && e.HidePreAimAni();
+} else this.model.gamePlayType !== s.default.GamePlayType.THREE && e.HidePreAimAni();
+this.touchChess = null;
+}
+};
+t.prototype.clickChess = function(e) {
+var t = Math.floor(e / this.model.column), i = e % this.model.column;
+this.node.emit("clickChess", t, i);
+};
+t.prototype.putChess = function(e, t, i, o) {
+this.chessList[e][t].putChessByPlayer(i, o);
+i === s.default.PlayerType.Red ? c.default.playSoundX() : c.default.playSoundO();
+};
+t.prototype.putChessNoAni = function(e, t, i) {
+this.chessList[e][t].putChessByPlayerNoAni(i);
+i === s.default.PlayerType.Red ? c.default.playSoundX() : c.default.playSoundO();
+};
+t.prototype.resetOneChess = function(e, t, i) {
+void 0 === i && (i = !1);
+var o = this.chessList[e][t];
+i ? o.resetByAni() : o.reset();
+};
+t.prototype.resetChess = function() {
+for (var e = 0; e < this.model.row; e++) for (var t = 0; t < this.model.column; t++) this.chessList[e][t].resetByAni();
+};
+t.prototype.resetTurns = function() {
+this.turnLeft.exitRound();
+this.turnRight.exitRound();
+};
+t.prototype.updateTurn = function(e) {
+var t = e === s.default.PlayerType.Red ? this.turnLeft : this.turnRight, i = e === s.default.PlayerType.Red ? this.turnRight : this.turnLeft;
+t.enterRound();
+i.exitRound();
+};
+t.prototype.showWinChessNewEffect = function(e, t, i) {
+var o = this, a = e.length, n = 0;
+this.showBoardWins(t);
+var r = function(e, i) {
+var a, n;
+d.default.getInstance().isOpen() && t == s.default.PlayerType.Red && o.model.isFull() && d.default.getInstance().showEncourage(null === (a = o.node) || void 0 === a ? void 0 : a.parent);
+p.default.getInstance().isOpen() && t == s.default.PlayerType.Red && p.default.getInstance().showEncourage(null === (n = o.node) || void 0 === n ? void 0 : n.parent);
+for (var r = function(t) {
+var a = e[t], n = Math.floor(a / o.model.row), s = a % o.model.column, r = .2 * t, c = o.chessList[n][s];
+o.scheduleOnce(function() {
+c.showWinSaoGuangAni();
+t === e.length - 1 && o.scheduleOnce(function() {
+o.showBlockWins(e, function() {
+null == i || i();
+});
+}, .3);
+}, r);
+}, c = 0; c < e.length; c++) r(c);
+}, c = function() {
+n >= a ? o.scheduleOnce(function() {
+return null == i ? void 0 : i();
+}, .5) : r(e[n], function() {
+++n >= a ? c() : o.scheduleOnce(function() {
+return c();
+}, .3);
+});
+};
+this.scheduleOnce(function() {
+return c();
+}, .5);
+};
+t.prototype.hideBoardAnimation = function() {
+this.boardAnimation.node.active = !1;
+};
+t.prototype.showBoardWins = function(e) {
+this.boardAnimation.node.active = !0;
+r.default.isOpen(r.GLTictactoeFeat.GLTictactoeChangeSkin) ? e === s.default.PlayerType.Red ? this.boardAnimation.setAnimation(0, "shengli_qipangaoliang_lan", !1) : this.boardAnimation.setAnimation(0, "shengli_qipangaoliang_hong", !1) : this.boardAnimation.setAnimation(0, "shengli_qipangaoliang", !1);
+};
+t.prototype.showBlockWins = function(e, t) {
+for (var i = 0; i < e.length; i++) {
+var o = e[i], a = Math.floor(o / this.model.row), n = o % this.model.column;
+this.chessList[a][n].showBlockWin();
+}
+var s = e.length;
+3 === s ? c.default.playSoundWin3() : 4 === s ? c.default.playSoundWin4() : c.default.playSoundWin5();
+this.scheduleOnce(function() {
+return null == t ? void 0 : t();
+}, .3);
+};
+t.prototype.playStartAnimation = function(e) {
+cc.Tween.stopAllByTarget(this.chessParent.parent);
+cc.tween(this.chessParent.parent).set({
+scale: .05,
+opacity: 0
+}).to(e, {
+scale: .9,
+opacity: 255
+}, {
+easing: "sineInOut"
+}).start();
+cc.Tween.stopAllByTarget(this.turnLeft.node);
+cc.tween(this.turnLeft.node).set({
+x: -578,
+opacity: 0
+}).to(e, {
+x: -378,
+opacity: 255
+}, {
+easing: "sineInOut"
+}).start();
+cc.Tween.stopAllByTarget(this.turnRight.node);
+cc.tween(this.turnRight.node).set({
+x: 578,
+opacity: 0
+}).to(e, {
+x: 378,
+opacity: 255
+}, {
+easing: "sineInOut"
+}).start();
+};
+n([ T(h.default) ], t.prototype, "turnLeft", void 0);
+n([ T(h.default) ], t.prototype, "turnRight", void 0);
+n([ T(cc.Layout) ], t.prototype, "tipChessParent", void 0);
+n([ T(cc.Node) ], t.prototype, "tipChessLine", void 0);
+n([ T(cc.Node) ], t.prototype, "tip", void 0);
+n([ T(sp.Skeleton) ], t.prototype, "boardAnimation", void 0);
+n([ T(sp.Skeleton) ], t.prototype, "boardAnimation1", void 0);
+n([ T(sp.Skeleton) ], t.prototype, "boardAnimation2", void 0);
+n([ T(cc.Prefab) ], t.prototype, "tipChessPrefab", void 0);
+n([ T(cc.Prefab) ], t.prototype, "chessPrefab", void 0);
+n([ T(cc.Prefab) ], t.prototype, "ticTacToePreAim", void 0);
+n([ T(cc.Prefab) ], t.prototype, "ticTacToePreAimSmall", void 0);
+n([ T(cc.Node) ], t.prototype, "chessParent", void 0);
+return n([ m ], t);
+}(cc.Component);
+i.default = g;
+cc._RF.pop();
+}, {
+"../GLTictactoeChangeSkin2": "GLTictactoeChangeSkin2",
+"../GLTictactoeFeature": "GLTictactoeFeature",
+"../const/GLTictactoeConst": "GLTictactoeConst",
+"../manager/GLTictactoeSoundManager": "GLTictactoeSoundManager",
+"../traits/GLTictactoeFirstWinShowEncourageCtrl": "GLTictactoeFirstWinShowEncourageCtrl",
+"../traits/GLTictactoeLastStepWinEncourageCtrl": "GLTictactoeLastStepWinEncourageCtrl",
+"./GLTictactoeChess": "GLTictactoeChess",
+"./GLTictactoePreAim": "GLTictactoePreAim",
+"./GLTictactoeTurnNode": "GLTictactoeTurnNode"
+} ],
+GLTictactoeDataManager: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "a6eb02jPzpCt7BA20Wa+2vu", "GLTictactoeDataManager");
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var o;
+(function(e) {
+var t = null;
+e.setTables = function(e) {
+t = e;
+};
+function i() {
+if (!t) {
+cc.error("Tables 未初始化！");
+return null;
+}
+return t;
+}
+e.getTables = i;
+e.getTbTextConfig = function(e, t) {
+var o = i();
+return o.hasOwnProperty(e) && o[e].Text[t] || null;
+};
+})(o || (o = {}));
+i.default = o;
+cc._RF.pop();
+}, {} ],
+GLTictactoeEventManager: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "3df73Y1KaZFlIydceQEU+aQ", "GLTictactoeEventManager");
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var o;
+(function(e) {
+var t;
+(function(e) {
+e.GMEvent = "GMEvent";
+e.GuideEvent = "GuideEvent";
+e.GameDataEvent = "GameDataEvent";
+e.ItemUseEvent = "ItemUseEvent";
+e.GameTipEvent = "GameTipEvent";
+})(t || (t = {}));
+var i = new cc.EventTarget();
+e.emitGMEvent = function(e, o) {
+i.emit(t.GMEvent, e, o);
+};
+e.onGMEvent = function(e, o) {
+i.on(t.GMEvent, e, o);
+};
+e.offGMEvent = function(e, o) {
+i.off(t.GMEvent, e, o);
+};
+e.emitGuideEvent = function(e, o) {
+i.emit(t.GuideEvent, e, o);
+};
+e.onGuideEvent = function(e, o) {
+i.on(t.GuideEvent, e, o);
+};
+e.offGuideEvent = function(e) {
+i.off(t.GuideEvent, e);
+};
+e.emitGameDataEvent = function(e, o) {
+i.emit(t.GameDataEvent, e, o);
+};
+e.onGameDataEvent = function(e, o) {
+i.on(t.GameDataEvent, e, o);
+};
+e.offGameDataEvent = function(e, o) {
+i.off(t.GameDataEvent, e, o);
+};
+e.emitItemUseEvent = function(e, o) {
+i.emit(t.ItemUseEvent, e, o);
+};
+e.onItemUseEvent = function(e, o) {
+i.on(t.ItemUseEvent, e, o);
+};
+e.offItemUseEvent = function(e, o) {
+i.off(t.ItemUseEvent, e, o);
+};
+e.emitGameTipEvent = function(e, o) {
+i.emit(t.GameTipEvent, e, o);
+};
+e.onGameTipEvent = function(e, o) {
+i.on(t.GameTipEvent, e, o);
+};
+e.offGameTipEvent = function(e, o) {
+i.off(t.GameTipEvent, e, o);
+};
+})(o || (o = {}));
+i.default = o;
+cc._RF.pop();
+}, {} ],
+GLTictactoeEventPermeate: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "bbd7fAnujBAm45CcwBp6OVs", "GLTictactoeEventPermeate");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = e("../const/GLTictactoeConst"), r = e("../manager/GLTictactoeEventManager"), c = e("./GLTictactoeGuideManager"), l = cc._decorator, u = l.ccclass, h = l.property, d = function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.target = null;
+t.isTouched = !1;
+return t;
+}
+t.prototype.onLoad = function() {
+this.node.on(cc.Node.EventType.TOUCH_START, this.onPointerDown, this, !0);
+this.node.on(cc.Node.EventType.TOUCH_CANCEL, this.onPointerUp, this, !0);
+this.node.on(cc.Node.EventType.TOUCH_MOVE, this.onPointerMove, this, !0);
+this.node.on(cc.Node.EventType.TOUCH_END, this.onPointerUp, this, !0);
+};
+t.prototype.onDestroy = function() {
+this.node.off(cc.Node.EventType.TOUCH_START, this.onPointerDown, this, !0);
+this.node.off(cc.Node.EventType.TOUCH_CANCEL, this.onPointerUp, this, !0);
+this.node.off(cc.Node.EventType.TOUCH_MOVE, this.onPointerMove, this, !0);
+this.node.off(cc.Node.EventType.TOUCH_END, this.onPointerUp, this, !0);
+};
+t.prototype.onPointerDown = function(e) {
+if (c.default.IsGuiding) {
+r.default.emitGuideEvent(s.default.GameGuideType.GuideViewTouch, 0);
+if (this.target) {
+var t = this.target.getBoundingBoxToWorld();
+t && t.contains(e.getLocation()) ? this.isTouched = !0 : e.stopPropagation();
+} else e.stopPropagation();
+}
+};
+t.prototype.onPointerMove = function(e) {
+c.default.IsGuiding && (this.isTouched || e.stopPropagation());
+};
+t.prototype.onPointerUp = function(e) {
+c.default.IsGuiding && (this.isTouched ? this.isTouched = !1 : e.stopPropagation());
+};
+n([ h(cc.Node) ], t.prototype, "target", void 0);
+return n([ u ], t);
+}(cc.Component);
+i.default = d;
+cc._RF.pop();
+}, {
+"../const/GLTictactoeConst": "GLTictactoeConst",
+"../manager/GLTictactoeEventManager": "GLTictactoeEventManager",
+"./GLTictactoeGuideManager": "GLTictactoeGuideManager"
+} ],
+GLTictactoeFeature: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "351c9BKnCRLU7hmfkrvYn4b", "GLTictactoeFeature");
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+i.GLTictactoeFeat = void 0;
+(function(e) {
+e.GLTictactoeResetScoreOnLargeGap = "GLTictactoeResetScoreOnLargeGap";
+e.GLTictactoeWinReward = "GLTictactoeWinReward";
+e.GLTictactoeWinFirstMove = "GLTictactoeWinFirstMove";
+e.GLTictactoeSkipDrawLoseResult = "GLTictactoeSkipDrawLoseResult";
+e.GLTictactoeSaveScore = "GLTictactoeSaveScore";
+e.GLTictactoeChangeSkin = "GLTictactoeChangeSkin";
+})(i.GLTictactoeFeat || (i.GLTictactoeFeat = {}));
+var o = function() {
+function e() {}
+e.isOpen = function(e) {
+return GL.Game.IsFeatureOpen(e);
+};
+return e;
+}();
+i.default = o;
+cc._RF.pop();
+}, {} ],
+GLTictactoeFirstWinShowEncourageCtrl: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "ee491L2QmRBaq4YH4fRj9z0", "GLTictactoeFirstWinShowEncourageCtrl");
+var o = this && this.__awaiter || function(e, t, i, o) {
+return new (i || (i = Promise))(function(a, n) {
+function s(e) {
+try {
+c(o.next(e));
+} catch (e) {
+n(e);
+}
+}
+function r(e) {
+try {
+c(o.throw(e));
+} catch (e) {
+n(e);
+}
+}
+function c(e) {
+e.done ? a(e.value) : (t = e.value, t instanceof i ? t : new i(function(e) {
+e(t);
+})).then(s, r);
+var t;
+}
+c((o = o.apply(e, t || [])).next());
+});
+}, a = this && this.__generator || function(e, t) {
+var i, o, a, n, s = {
+label: 0,
+sent: function() {
+if (1 & a[0]) throw a[1];
+return a[1];
+},
+trys: [],
+ops: []
+};
+return n = {
+next: r(0),
+throw: r(1),
+return: r(2)
+}, "function" == typeof Symbol && (n[Symbol.iterator] = function() {
+return this;
+}), n;
+function r(e) {
+return function(t) {
+return c([ e, t ]);
+};
+}
+function c(n) {
+if (i) throw new TypeError("Generator is already executing.");
+for (;s; ) try {
+if (i = 1, o && (a = 2 & n[0] ? o.return : n[0] ? o.throw || ((a = o.return) && a.call(o), 
+0) : o.next) && !(a = a.call(o, n[1])).done) return a;
+(o = 0, a) && (n = [ 2 & n[0], a.value ]);
+switch (n[0]) {
+case 0:
+case 1:
+a = n;
+break;
+
+case 4:
+s.label++;
+return {
+value: n[1],
+done: !1
+};
+
+case 5:
+s.label++;
+o = n[1];
+n = [ 0 ];
+continue;
+
+case 7:
+n = s.ops.pop();
+s.trys.pop();
+continue;
+
+default:
+if (!(a = s.trys, a = a.length > 0 && a[a.length - 1]) && (6 === n[0] || 2 === n[0])) {
+s = 0;
+continue;
+}
+if (3 === n[0] && (!a || n[1] > a[0] && n[1] < a[3])) {
+s.label = n[1];
+break;
+}
+if (6 === n[0] && s.label < a[1]) {
+s.label = a[1];
+a = n;
+break;
+}
+if (a && s.label < a[2]) {
+s.label = a[2];
+s.ops.push(n);
+break;
+}
+a[2] && s.ops.pop();
+s.trys.pop();
+continue;
+}
+n = t.call(e, s);
+} catch (e) {
+n = [ 6, e ];
+o = 0;
+} finally {
+i = a = 0;
+}
+if (5 & n[0]) throw n[1];
+return {
+value: n[0] ? n[1] : void 0,
+done: !0
+};
+}
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var n = e("../guide/GLTictactoeGuideManager"), s = function() {
+function e() {
+this._featureName = "GLTictactoeFirstWinShowEncourage";
+this.bundleName = "Remote_gl_tictactoe_firstWinEncourage";
+this.encourageEffectPrefabName = "prefabs/encourageEffect";
+this.encourageEffectName = "jingziqi";
+this.resIsLoading = !1;
+this.effectPrefab = null;
+this.effectIsPlaying = !1;
+}
+e.getInstance = function() {
+null == this._instance && (this._instance = new e());
+return this._instance;
+};
+e.prototype.isOpen = function() {
+return GL.Game.IsFeatureOpen(this._featureName);
+};
+e.prototype.isFirstWin = function() {
+return !cc.sys.localStorage.getItem("GLTictactoeFirstWinShowEncourageData");
+};
+e.prototype.setFirstWin = function() {
+cc.sys.localStorage.setItem("GLTictactoeFirstWinShowEncourageData", !0);
+};
+e.prototype.loadRes = function() {
+return o(this, void 0, void 0, function() {
+var e, t = this;
+return a(this, function(i) {
+switch (i.label) {
+case 0:
+return null != this.effectPrefab || 1 == this.resIsLoading ? [ 2 ] : GL.Game.resLoaderLoadBundle ? [ 4, GL.Game.resLoaderLoadBundle(this.bundleName, !0) ] : [ 2 ];
+
+case 1:
+(e = i.sent()) ? e.load(this.encourageEffectPrefabName, function(e, i) {
+e || (t.effectPrefab = i);
+t.resIsLoading = !1;
+}) : this.resIsLoading = !1;
+return [ 2 ];
+}
+});
+});
+};
+e.prototype.showEncourage = function(e, t) {
+var i = this;
+if (null != e && !n.default.IsGuiding && this.isFirstWin() && null != this.effectPrefab && !this.effectIsPlaying) {
+var o = cc.instantiate(this.effectPrefab);
+if (null != o) {
+var a = o.getComponent(sp.Skeleton);
+if (null != a) {
+this.effectIsPlaying = !0;
+a.setCompleteListener(function() {
+null == a || a.setCompleteListener(null);
+if (null != o && cc.isValid(o)) {
+o.active = !1;
+t && t();
+i.effectIsPlaying = !1;
+}
+});
+a.setAnimation(0, this.encourageEffectName, !1);
+o.setParent(e);
+this.setFirstWin();
+}
+}
+}
+};
+e._instance = null;
+return e;
+}();
+i.default = s;
+cc._RF.pop();
+}, {
+"../guide/GLTictactoeGuideManager": "GLTictactoeGuideManager"
+} ],
+GLTictactoeGameModel: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "936fdSTvjFHV76ONuTyjbHB", "GLTictactoeGameModel");
+var o, a = this && this.__assign || function() {
+return (a = Object.assign || function(e) {
+for (var t, i = 1, o = arguments.length; i < o; i++) {
+t = arguments[i];
+for (var a in t) Object.prototype.hasOwnProperty.call(t, a) && (e[a] = t[a]);
+}
+return e;
+}).apply(this, arguments);
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var n = e("../../../gl_hall/script/func/experiment/GLShowInsertAdsBySecondsCtrl"), s = e("../../../gl_hall/script/func/GLAdjustInsertByPlayTimeCtrl"), r = e("../../../gl_hall/script/func/GLAdjustInsertShowTimesCtrl"), c = null === (o = null === window || void 0 === window ? void 0 : window._GLHallClassMap_) || void 0 === o ? void 0 : o.GLHallController, l = e("../const/GLTictactoeConst"), u = e("../GLTictactoeRoundLogEventCtr"), h = e("../manager/GLTictactoeEventManager"), d = e("./bitai/GLTictactoeMMBitAi"), p = e("./GLTictactoeChessModel"), f = e("../GLTictactoeFeature"), y = e("../manager/traits/GLTictactoeCheckDrawTraitCtrl"), m = e("../../../gl_hall/script/traits/GLGameAdStrategyOptimizeTraitCtrl"), T = [ [ [ -1, 0 ], [ 1, 0 ] ], [ [ 0, -1 ], [ 0, 1 ] ], [ [ -1, -1 ], [ 1, 1 ] ], [ [ -1, 1 ], [ 1, -1 ] ] ], g = function() {
+function e() {
+var e, t, i, o, a;
+this.gameStatus = l.default.GameStatus.NoGame;
+this.playerType = l.default.PlayerType.None;
+this.gameType = l.default.GameType.Machine;
+this.difficulty = l.default.LevelDifficulty.EASY;
+this.redScore = 0;
+this.blueScore = 0;
+this.chessModelList = [];
+this.row = 3;
+this.column = 3;
+this.chessWinCount = 3;
+this.lastPlayerType = l.default.PlayerType.None;
+this.gamePlayType = l.default.GamePlayType.THREE;
+this.stageRedScore = 0;
+this.stageBlueScore = 0;
+this.shouldShowStageResult = !1;
+this.lastGameFirstPlayer = l.default.PlayerType.None;
+this.lastGameResult = null;
+this.currentGameFirstPlayer = l.default.PlayerType.None;
+this.mmAi = null;
+this.putChessList = [];
+this.data = null;
+this.isRestoreOldGame = !1;
+this.isGuideing = !1;
+this.clickSaveData = null;
+this._lastInsertionAdsOpenTime = 0;
+this.data = GL.Saved.Get("Tictactoe");
+this.data || (this.data = {
+FinishGuideData: (e = {}, e[l.default.GamePlayType.THREE] = !1, e[l.default.GamePlayType.FOUR] = !1, 
+e[l.default.GamePlayType.FIVE] = !1, e),
+StorageGameData: (t = {}, t[l.default.GamePlayType.THREE] = [], t[l.default.GamePlayType.FOUR] = [], 
+t[l.default.GamePlayType.FIVE] = [], t)
+});
+this.clickSaveData = GL.Saved.Get("TictactoeClickSaveData");
+this.clickSaveData || (this.clickSaveData = {
+realTime: (i = {}, i[l.default.GamePlayType.THREE] = -1, i[l.default.GamePlayType.FOUR] = -1, 
+i[l.default.GamePlayType.FIVE] = -1, i),
+gameid: (o = {}, o[l.default.GamePlayType.THREE] = 0, o[l.default.GamePlayType.FOUR] = 0, 
+o[l.default.GamePlayType.FIVE] = 0, o),
+sessionid: (a = {}, a[l.default.GamePlayType.THREE] = 0, a[l.default.GamePlayType.FOUR] = 0, 
+a[l.default.GamePlayType.FIVE] = 0, a)
+});
+}
+e.prototype.resetLastInsertionAdsOpenTime = function() {
+var e, t = null == c ? void 0 : c.data;
+this._lastInsertionAdsOpenTime = (null === (e = null == t ? void 0 : t.totalTime) || void 0 === e ? void 0 : e.gl_tictactoe) || 0;
+};
+e.prototype.checkCanOpenInsertionAds = function() {
+var e, t = null == c ? void 0 : c.data, i = null === (e = null == t ? void 0 : t.totalTime) || void 0 === e ? void 0 : e.gl_tictactoe, o = 60;
+n.default.getInstance().isOpen() && (o = 50);
+var a = i - this._lastInsertionAdsOpenTime > o;
+console.log("检测是否可以播放插屏,60秒内不播放广告==>", a, i, this._lastInsertionAdsOpenTime, o);
+return a;
+};
+e.prototype.openInsertionAds = function(e, t) {
+var i = this;
+void 0 === e && (e = "");
+if (!m.default.getInstance().isOpen() || "end" == e && m.default.getInstance().checkCanPlayAd()) {
+var o = "";
+"end" == e ? o = "后插屏" : (e = "frontInsert") && (o = "前插屏");
+var a = this.getAdSubmitdata(o, "INTER", t);
+if (s.default.getInstance().isOpen()) "end" == e && s.default.getInstance().showInsertAds(a); else if (r.default.getInstance().isOpen()) {
+if ("end" == e) {
+r.default.getInstance().updateMiniGameSum();
+r.default.getInstance().showInsertAds(a);
+}
+} else {
+if (!(m.default.getInstance().isOpen() && m.default.getInstance().checkSkipGameOrigAdCD("gl_tictactoe") || this.checkCanOpenInsertionAds())) return;
+GL.Ad.showInsertAd(function(e) {
+e && 1 === (null == e ? void 0 : e.state) && i.resetLastInsertionAdsOpenTime();
+}, this, a);
+}
+}
+};
+e.prototype.getGameDifficulty = function() {
+return this.difficulty;
+};
+e.prototype.save = function() {
+GL.Saved.Set("Tictactoe", this.data);
+};
+e.prototype.setGamePlayType = function(e) {
+this.gamePlayType = e;
+if (e === l.default.GamePlayType.THREE) {
+this.row = 3;
+this.column = 3;
+this.chessWinCount = 3;
+} else if (e === l.default.GamePlayType.FOUR) {
+this.row = 6;
+this.column = 6;
+this.chessWinCount = 4;
+} else if (e === l.default.GamePlayType.FIVE) {
+this.row = 9;
+this.column = 9;
+this.chessWinCount = 5;
+}
+this.mmAi.init(this.row, this.column, this.chessWinCount, e);
+this.initChessModel();
+};
+e.prototype.setDifficulty = function(e) {
+this.difficulty = e;
+};
+e.prototype.initModel = function(e) {
+this.mmAi = new d.default();
+this.setGamePlayType(e);
+this.gameStatus = l.default.GameStatus.NoGame;
+this.playerType = l.default.PlayerType.None;
+this.lastPlayerType = l.default.PlayerType.None;
+this.isRestoreOldGame = !1;
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeSaveScore)) {
+console.log("[井字棋] 特性 GLTictactoeSaveScore 已开启，恢复保存的比分");
+this.restoreScore();
+} else {
+this.blueScore = 0;
+this.redScore = 0;
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeResetScoreOnLargeGap)) {
+console.log("[井字棋] 特性 GLTictactoeResetScoreOnLargeGap 已开启，初始化阶段比分");
+this.stageRedScore = 0;
+this.stageBlueScore = 0;
+this.shouldShowStageResult = !1;
+}
+}
+this.putChessList = [];
+};
+e.prototype.initChessModel = function() {
+this.chessModelList = [];
+for (var e = 0; e < this.row; e++) {
+this.chessModelList[e] = [];
+for (var t = 0; t < this.column; t++) {
+var i = new p.default();
+i.index = e * this.column + t;
+i.playerType = l.default.PlayerType.None;
+this.chessModelList[e][t] = i;
+}
+}
+};
+e.prototype.isFull = function() {
+for (var e = 0; e < this.row; e++) for (var t = 0; t < this.column; t++) if (this.chessModelList[e][t].playerType === l.default.PlayerType.None) return !1;
+return !0;
+};
+e.prototype.checkWin = function() {
+for (var e = 0; e < this.row; e++) for (var t = 0; t < this.column; t++) {
+var i = this.chessModelList[e][t];
+if (i.playerType !== l.default.PlayerType.None && this.getLinkChessByCount(i, this.chessWinCount)) return !0;
+}
+return !1;
+};
+e.prototype.getLinkChessByCount = function(e, t) {
+for (var i = 0; i < T.length; i++) {
+for (var o = 1, a = [ e ], n = 0; n < T[i].length; n++) for (var s = Math.floor(e.index / this.column), r = e.index % this.column, c = T[i][n][0], l = T[i][n][1]; ;) {
+r += l;
+if ((s += c) < 0 || s >= this.row || r < 0 || r >= this.column) break;
+var u = this.chessModelList[s][r];
+if (u.playerType !== e.playerType) break;
+o++;
+a.push(u);
+}
+if (o >= t) return a;
+}
+return null;
+};
+e.prototype.addWinnerScore = function(e) {
+e === l.default.PlayerType.Blue ? this.blueScore++ : this.redScore++;
+console.log("[井字棋] 更新比分：" + (e === l.default.PlayerType.Red ? "玩家" : "机器人") + "获胜，当前比分：玩家 " + this.redScore + " : 机器人 " + this.blueScore);
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeSaveScore)) {
+console.log("[井字棋] 特性 GLTictactoeSaveScore 已开启，保存比分到本地");
+this.saveScore();
+}
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeResetScoreOnLargeGap)) {
+console.log("[井字棋] 特性 GLTictactoeResetScoreOnLargeGap 已开启，检查是否需要重置比分");
+this.checkAndResetScoreIfNeeded();
+}
+};
+e.prototype.resetScore = function() {
+console.log("[井字棋] 重置比分：清空当前比分");
+this.blueScore = 0;
+this.redScore = 0;
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeResetScoreOnLargeGap)) {
+console.log("[井字棋] 特性 GLTictactoeResetScoreOnLargeGap 已开启，重置阶段比分标记");
+this.stageRedScore = 0;
+this.stageBlueScore = 0;
+this.shouldShowStageResult = !1;
+}
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeSaveScore)) {
+console.log("[井字棋] 特性 GLTictactoeSaveScore 已开启，保存重置后的比分到本地");
+this.saveScore();
+}
+};
+e.prototype.checkAndResetScoreIfNeeded = function() {
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeResetScoreOnLargeGap)) {
+var e = this.redScore + this.blueScore;
+if (!(e < 5)) {
+var t = this.redScore / e, i = this.blueScore / e;
+if (t >= .7 || i >= .7) {
+this.stageRedScore = this.redScore;
+this.stageBlueScore = this.blueScore;
+this.shouldShowStageResult = !0;
+this.redScore = 0;
+this.blueScore = 0;
+console.log("[井字棋] 比分差距过大，重置比分。阶段比分：玩家 " + this.stageRedScore + " : 机器人 " + this.stageBlueScore);
+}
+}
+}
+};
+e.prototype.restoreScore = function() {
+var e, t;
+if (this.clickSaveData) {
+this.clickSaveData.redScore || (this.clickSaveData.redScore = ((e = {})[l.default.GamePlayType.THREE] = 0, 
+e[l.default.GamePlayType.FOUR] = 0, e[l.default.GamePlayType.FIVE] = 0, e));
+this.clickSaveData.blueScore || (this.clickSaveData.blueScore = ((t = {})[l.default.GamePlayType.THREE] = 0, 
+t[l.default.GamePlayType.FOUR] = 0, t[l.default.GamePlayType.FIVE] = 0, t));
+var i = this.clickSaveData.redScore[this.gamePlayType], o = this.clickSaveData.blueScore[this.gamePlayType];
+this.redScore = void 0 !== i ? i : 0;
+this.blueScore = void 0 !== o ? o : 0;
+console.log("[井字棋] 恢复比分：玩家 " + this.redScore + " : 机器人 " + this.blueScore + " (游戏类型: " + this.gamePlayType + ")");
+} else {
+console.log("[井字棋] clickSaveData 不存在，比分重置为 0");
+this.redScore = 0;
+this.blueScore = 0;
+}
+};
+e.prototype.validateScoreResetCondition = function() {
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeResetScoreOnLargeGap)) {
+console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+console.log("🧪 [井字棋] 比分重置条件校验");
+console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+console.log("📊 当前比分：");
+console.log("   玩家（Red）: " + this.redScore + " 分");
+console.log("   机器人（Blue）: " + this.blueScore + " 分");
+var e = this.redScore + this.blueScore;
+console.log("\n📈 总局数（去掉平局）: " + e + " 局");
+if (e > 0) {
+var t = this.redScore / e * 100, i = this.blueScore / e * 100;
+console.log("\n📉 胜率统计：");
+console.log("   玩家胜率: " + t.toFixed(2) + "%");
+console.log("   机器人胜率: " + i.toFixed(2) + "%");
+console.log("\n🔍 重置条件检查：");
+var o = e >= 5, a = t >= 70, n = i >= 70, s = o && (a || n);
+console.log("   ✓ 总局数 >= 5: " + (o ? "✅" : "❌") + " (当前: " + e + ")");
+console.log("   ✓ 玩家胜率 >= 70%: " + (a ? "✅" : "❌") + " (当前: " + t.toFixed(2) + "%)");
+console.log("   ✓ 机器人胜率 >= 70%: " + (n ? "✅" : "❌") + " (当前: " + i.toFixed(2) + "%)");
+if (s) {
+console.log("\n⚠️  结论: 符合重置条件，下次胜利后会重置比分");
+a && console.log("   原因: 玩家胜率 " + t.toFixed(2) + "% >= 70%");
+n && console.log("   原因: 机器人胜率 " + i.toFixed(2) + "% >= 70%");
+} else {
+console.log("\n✅ 结论: 不符合重置条件");
+o ? console.log("   原因: 双方胜率都 < 70%") : console.log("   原因: 总局数 " + e + " < 5");
+}
+} else console.log("\n⚠️  总局数为0，无法计算胜率");
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeResetScoreOnLargeGap)) {
+if (this.stageRedScore > 0 || this.stageBlueScore > 0) {
+console.log("\n📋 阶段比分（上次重置前）:");
+console.log("   玩家: " + this.stageRedScore + " 分");
+console.log("   机器人: " + this.stageBlueScore + " 分");
+}
+if (this.shouldShowStageResult) {
+console.log("\n🎯 状态: 下次结算将显示阶段结果");
+this.stageRedScore > this.stageBlueScore ? console.log("   阶段结果: 玩家胜利 (" + this.stageRedScore + " : " + this.stageBlueScore + ")") : this.stageBlueScore > this.stageRedScore ? console.log("   阶段结果: 机器人胜利 (" + this.stageRedScore + " : " + this.stageBlueScore + ")") : console.log("   阶段结果: 平局 (" + this.stageRedScore + " : " + this.stageBlueScore + ")");
+}
+}
+console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+} else console.log("❌ [校验] 特性 GLTictactoeResetScoreOnLargeGap 未开启");
+};
+e.prototype.saveScore = function() {
+var e, t;
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeSaveScore) && this.clickSaveData) {
+this.clickSaveData.redScore || (this.clickSaveData.redScore = ((e = {})[l.default.GamePlayType.THREE] = 0, 
+e[l.default.GamePlayType.FOUR] = 0, e[l.default.GamePlayType.FIVE] = 0, e));
+this.clickSaveData.blueScore || (this.clickSaveData.blueScore = ((t = {})[l.default.GamePlayType.THREE] = 0, 
+t[l.default.GamePlayType.FOUR] = 0, t[l.default.GamePlayType.FIVE] = 0, t));
+this.clickSaveData.redScore[this.gamePlayType] = this.redScore;
+this.clickSaveData.blueScore[this.gamePlayType] = this.blueScore;
+console.log("[井字棋] 特性 GLTictactoeSaveScore：保存比分到本地，玩家 " + this.redScore + " : 机器人 " + this.blueScore + " (游戏类型: " + this.gamePlayType + ")");
+this.setClickSaveData();
+}
+};
+e.prototype.setAiT = function(e) {
+this.mmAi.setT(e);
+};
+e.prototype.isCanTouchChess = function() {
+return this.gameType !== l.default.GameType.Machine || this.playerType === l.default.PlayerType.Red;
+};
+e.prototype.putChess = function(e, t, i) {
+var o = e * this.column + t;
+this.putChessList.find(function(e) {
+return e.index === o;
+}) || this.putChessList.push({
+index: o,
+playerType: i
+});
+this.setStorageGameDataByType({
+index: o,
+playerType: i
+});
+h.default.emitGameDataEvent(l.default.GameDataEvent.ChessCountChange, this.getPutCount());
+};
+e.prototype.getPutCount = function() {
+return this.putChessList.length;
+};
+e.prototype.getStorageGameDataByType = function() {
+return this.data.StorageGameData[this.gamePlayType] || [];
+};
+e.prototype.clearStorageGameDataByType = function() {
+this.data.StorageGameData[this.gamePlayType] && this.data.StorageGameData[this.gamePlayType].splice(0);
+};
+e.prototype.setStorageGameDataByType = function(e) {
+this.data.StorageGameData[this.gamePlayType].push(e);
+this.save();
+};
+e.prototype.initRestoreGame = function(e) {
+this.isGuideing = e;
+this.isRestoreOldGame = !1;
+if (!this.isGuideing && this.gameType === l.default.GameType.Machine) {
+var t = this.getStorageGameDataByType();
+if (t.length > 0) {
+for (var i = 0; i < t.length; i++) {
+var o = t[i], a = o.index, n = o.playerType, s = Math.floor(a / this.row), r = a % this.column;
+this.chessModelList[s][r].playerType = n;
+this.putChessList.push({
+index: a,
+playerType: n
+});
+}
+if (this.checkWin()) {
+for (i = 0; i < this.row; i++) for (var c = 0; c < this.column; c++) this.chessModelList[i][c].playerType = l.default.PlayerType.None;
+this.putChessList = [];
+this.clearStorageGameDataByType();
+this.save();
+} else this.isRestoreOldGame = !0;
+}
+}
+h.default.emitGameDataEvent(l.default.GameDataEvent.ChessCountChange, this.getPutCount());
+};
+e.prototype.genaratePlayerType = function() {
+if (this.gameType == l.default.GameType.Friends) this.playerType = l.default.PlayerType.Red; else {
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeWinFirstMove)) if (null !== this.lastGameResult && this.lastGameFirstPlayer !== l.default.PlayerType.None) if (this.lastGameResult === l.default.GameResult.Win) {
+this.playerType = l.default.PlayerType.Red;
+console.log("[井字棋] 特性 GLTictactoeWinFirstMove：上一局玩家获胜，本局玩家先手");
+} else if (this.lastGameResult === l.default.GameResult.Lose) {
+this.playerType = l.default.PlayerType.Blue;
+console.log("[井字棋] 特性 GLTictactoeWinFirstMove：上一局机器人获胜，本局机器人先手");
+} else if (this.lastGameResult === l.default.GameResult.Draw) {
+this.playerType = this.lastGameFirstPlayer === l.default.PlayerType.Red ? l.default.PlayerType.Blue : l.default.PlayerType.Red;
+console.log("[井字棋] 特性 GLTictactoeWinFirstMove：上一局平局，本局" + (this.playerType === l.default.PlayerType.Red ? "玩家" : "机器人") + "先手");
+} else {
+this.playerType = this.lastPlayerType === l.default.PlayerType.Red ? l.default.PlayerType.Blue : l.default.PlayerType.Red;
+console.log("[井字棋] 特性 GLTictactoeWinFirstMove：其他情况，使用原逻辑，" + (this.playerType === l.default.PlayerType.Red ? "玩家" : "机器人") + "先手");
+} else {
+this.playerType = this.lastPlayerType === l.default.PlayerType.Red ? l.default.PlayerType.Blue : l.default.PlayerType.Red;
+console.log("[井字棋] 特性 GLTictactoeWinFirstMove：无上一局记录，使用原逻辑，" + (this.playerType === l.default.PlayerType.Red ? "玩家" : "机器人") + "先手");
+} else this.playerType = this.lastPlayerType === l.default.PlayerType.Red ? l.default.PlayerType.Blue : l.default.PlayerType.Red;
+this.lastPlayerType = this.playerType;
+}
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeWinFirstMove)) {
+this.currentGameFirstPlayer = this.playerType;
+console.log("[井字棋] 特性 GLTictactoeWinFirstMove：记录本局先手为" + (this.currentGameFirstPlayer === l.default.PlayerType.Red ? "玩家" : "机器人"));
+}
+};
+e.prototype.genarateRestorePlayerType = function() {
+var e = this.getStorageGameDataByType(), t = e.length;
+if (t > 0) {
+var i = e[t - 1].playerType;
+this.isRestoreOldGame = !1;
+this.playerType = i === l.default.PlayerType.Blue ? l.default.PlayerType.Red : l.default.PlayerType.Blue;
+this.lastPlayerType = t % 2 == 0 ? this.playerType : this.playerType === l.default.PlayerType.Blue ? l.default.PlayerType.Red : l.default.PlayerType.Blue;
+f.default.isOpen(f.GLTictactoeFeat.GLTictactoeWinFirstMove) && (this.currentGameFirstPlayer = t % 2 == 0 ? this.playerType : this.playerType === l.default.PlayerType.Red ? l.default.PlayerType.Blue : l.default.PlayerType.Red);
+}
+};
+e.prototype.recordGameResult = function(e) {
+if (f.default.isOpen(f.GLTictactoeFeat.GLTictactoeWinFirstMove)) {
+this.lastGameFirstPlayer = this.currentGameFirstPlayer;
+this.lastGameResult = e;
+var t = e === l.default.GameResult.Win ? "玩家获胜" : e === l.default.GameResult.Lose ? "机器人获胜" : e === l.default.GameResult.Draw ? "平局" : "其他";
+console.log("[井字棋] 特性 GLTictactoeWinFirstMove：记录本局结果，先手：" + (this.lastGameFirstPlayer === l.default.PlayerType.Red ? "玩家" : "机器人") + "，结果：" + t);
+}
+};
+e.prototype.setChessModelType = function(e, t, i) {
+this.chessModelList[e][t].playerType = i;
+};
+e.prototype.getMachineNextChess = function(e) {
+var t = this.mmAi.getMachineNextChess(this.chessModelList, e), i = Math.floor(t / this.row), o = t % this.column;
+return this.chessModelList[i][o];
+};
+e.prototype.gameIsOver = function() {
+return !!this.isFull() || !!this.checkWin() || !(!y.default.getInstance().isOpen() || !y.default.getInstance().checkDraw());
+};
+e.prototype.getWinChess = function() {
+for (var e = [], t = l.default.PlayerType.None, i = 0; i < this.row; i++) for (var o = function(o) {
+var n = a.chessModelList[i][o];
+if (n.playerType !== l.default.PlayerType.None) {
+var s = a.getLinkChessByCount(n, a.chessWinCount);
+if (s) {
+t = n.playerType;
+var r = s.map(function(e) {
+return e.index;
+});
+r.sort(function(e, t) {
+return e - t;
+});
+e.some(function(e) {
+return e.length === r.length && e.every(function(e, t) {
+return e === r[t];
+});
+}) || e.push(r);
+}
+}
+}, a = this, n = 0; n < this.column; n++) o(n);
+return {
+playerType: t,
+winChess: e
+};
+};
+e.prototype.gameDataReset = function(e) {
+void 0 === e && (e = !1);
+for (var t = 0; t < this.row; t++) for (var i = 0; i < this.column; i++) this.chessModelList[t][i].playerType = l.default.PlayerType.None;
+this.gameStatus = l.default.GameStatus.GameIng;
+this.putChessList = [];
+this.isGuideing || this.gameType !== l.default.GameType.Machine || this.clearStorageGameDataByType();
+if (e && f.default.isOpen(f.GLTictactoeFeat.GLTictactoeWinFirstMove)) {
+console.log("[井字棋] 特性 GLTictactoeWinFirstMove：Replay时清除上一局记录");
+this.lastGameFirstPlayer = l.default.PlayerType.None;
+this.lastGameResult = null;
+}
+e || this.genaratePlayerType();
+this.isRestoreOldGame = !1;
+this.isGuideing = !1;
+this.clickSaveData.realTime[this.gamePlayType] = 0;
+h.default.emitGameDataEvent(l.default.GameDataEvent.ChessCountChange, this.getPutCount());
+};
+e.prototype.clearStorageGameData = function() {
+if (this.gameType === l.default.GameType.Machine) {
+this.clearStorageGameDataByType();
+this.save();
+}
+};
+e.prototype.addClickData = function(e) {
+var t, i, o, n;
+try {
+var s = null == c ? void 0 : c.data, r = {
+GameType: "15",
+game_subtype: "6",
+gameid: (null === (t = this.clickSaveData) || void 0 === t ? void 0 : t.gameid[this.gamePlayType]) || 0,
+session_id: (null === (i = this.clickSaveData) || void 0 === i ? void 0 : i.sessionid[this.gamePlayType]) || 0,
+ResultType: this.getResultTypeByType(e),
+GameTime: (null === (o = null == s ? void 0 : s.totalTime) || void 0 === o ? void 0 : o.gl_tictactoe) || 0,
+RealTime: (null === (n = this.clickSaveData) || void 0 === n ? void 0 : n.realTime[this.gamePlayType]) / 1e3 || 0,
+blast_cnt: this.getBlastCnt()
+}, l = u.default.getInstance().getLogEventData();
+l && (r = a(a({}, r), l));
+GL.Submit.sendGameEndData(r);
+u.default.getInstance().setRealGameTime(r.RealTime);
+u.default.getInstance().recordRoundDataPreClear(null, u.default.getInstance().getOperationStepEventData(), u.default.getInstance().getSomeGamedata());
+u.default.getInstance().resetData();
+this.clickSaveData.realTime[this.gamePlayType] = 0;
+} catch (e) {
+console.log("打点失败 ", e);
+}
+this.clickSaveData.gameid[this.gamePlayType]++;
+this.setClickSaveData();
+};
+e.prototype.getResultTypeByType = function(e) {
+var t = -1;
+switch (e) {
+case l.default.GameResult.Win:
+t = 1;
+break;
+
+case l.default.GameResult.Lose:
+t = 2;
+break;
+
+case l.default.GameResult.Draw:
+t = 5;
+break;
+
+case l.default.GameResult.RestartGame:
+t = 4;
+}
+return t;
+};
+e.prototype.getBlastCnt = function() {
+for (var e = 0, t = 0; t < this.putChessList.length; t++) {
+var i = this.putChessList[t];
+i && i.playerType === l.default.PlayerType.Red && e++;
+}
+return e;
+};
+e.prototype.setClickSaveData = function() {
+GL.Saved.Set("TictactoeClickSaveData", this.clickSaveData);
+};
+e.prototype.getGameNum = function() {
+var e;
+return (null === (e = this.clickSaveData) || void 0 === e ? void 0 : e.gameid[this.gamePlayType]) || 0;
+};
+e.prototype.getAdSubmitdata = function(t, i, o) {
+var a = {
+game_subtype: e.game_subtype,
+ad_position: t,
+adFormat: i,
+ResultType: o
+};
+if ("后插屏" == t && "INTER" == i) {
+var n = u.default.getInstance().getRoundDataPreClear();
+n && Object.assign(a, n);
+return a;
+}
+var s = u.default.getInstance().getOperationStepEventData();
+s && Object.assign(a, s);
+var r = u.default.getInstance().getSomeGamedata();
+r && Object.assign(a, r);
+return a;
+};
+e.prototype.getRealGameTime = function() {
+var e;
+return (null === (e = this.clickSaveData) || void 0 === e ? void 0 : e.realTime[this.gamePlayType]) / 1e3 || 0;
+};
+e.game_subtype = 6;
+return e;
+}();
+i.default = g;
+cc._RF.pop();
+}, {
+"../../../gl_hall/script/func/GLAdjustInsertByPlayTimeCtrl": void 0,
+"../../../gl_hall/script/func/GLAdjustInsertShowTimesCtrl": void 0,
+"../../../gl_hall/script/func/experiment/GLShowInsertAdsBySecondsCtrl": void 0,
+"../../../gl_hall/script/traits/GLGameAdStrategyOptimizeTraitCtrl": void 0,
+"../GLTictactoeFeature": "GLTictactoeFeature",
+"../GLTictactoeRoundLogEventCtr": "GLTictactoeRoundLogEventCtr",
+"../const/GLTictactoeConst": "GLTictactoeConst",
+"../manager/GLTictactoeEventManager": "GLTictactoeEventManager",
+"../manager/traits/GLTictactoeCheckDrawTraitCtrl": "GLTictactoeCheckDrawTraitCtrl",
+"./GLTictactoeChessModel": "GLTictactoeChessModel",
+"./bitai/GLTictactoeMMBitAi": "GLTictactoeMMBitAi"
+} ],
+GLTictactoeGuideHand: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "37e7bCFBV5Go6HdeQNuVZV1", "GLTictactoeGuideHand");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = cc._decorator, r = s.ccclass, c = s.property, l = function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.handNode = null;
+return t;
+}
+t.prototype.onLoad = function() {
+var e = cc.tween(this.handNode).to(.5, {
+x: 0,
+y: 0
+}).to(.5, {
+x: 50,
+y: -50
+});
+cc.tween(this.handNode).repeatForever(e).start();
+};
+n([ c(cc.Node) ], t.prototype, "handNode", void 0);
+return n([ r ], t);
+}(cc.Component);
+i.default = l;
+cc._RF.pop();
+}, {} ],
+GLTictactoeGuideManager: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "e377bPGDypGIpCLvWFJ+ze/", "GLTictactoeGuideManager");
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var o = e("../const/GLTictactoeConst"), a = e("../GLTictactoeMain"), n = e("../manager/GLTictactoeEventManager"), s = e("../manager/GLTictactoePlayerDataManager"), r = e("./GLTictactoeGuideView"), c = e("../../../gl_hall/gl_lang/config/GLLangKeyDefine"), l = function() {
+function e() {}
+e.IsShowGuide = function(e) {
+return e === o.default.GamePlayType.THREE ? s.default.getFinishGuideData(e) : !!s.default.isOpenMoreGuide() && s.default.getFinishGuideData(e);
+};
+e.GetInitBoard = function(e) {
+return e === o.default.GamePlayType.THREE ? [ [ 1, 1, 1 ], [ 2, 0, 2 ] ] : e === o.default.GamePlayType.FOUR ? [ [ 1, 3, 1 ], [ 1, 4, 1 ], [ 1, 5, 2 ], [ 2, 4, 2 ] ] : e === o.default.GamePlayType.FIVE ? [ [ 2, 5, 1 ], [ 2, 6, 1 ], [ 3, 5, 1 ], [ 3, 6, 2 ], [ 4, 5, 2 ], [ 5, 4, 2 ] ] : null;
+};
+e.getGuideStepBoard = function() {
+return this.StepConfig;
+};
+e.getGuideStepCount = function() {
+return this.StepCount - 1;
+};
+e.GetRobotStep = function() {
+var e = this.RobotStepConfig;
+if (e && e.length >= this.StepCount) {
+var t = this.StepCount - 1;
+t < 0 && (t = 0);
+return e[t];
+}
+return [ -1, -1 ];
+};
+e.InitGuide = function(e, t, i, o) {
+this.playType = e;
+this.eventPermeate = o;
+this.InitConfig();
+var a = t, n = cc.instantiate(a);
+i.addChild(n);
+this._guideView = n.getComponent(r.default);
+this._guideView.HideBlock();
+this.eventPermeate.target = null;
+};
+e.InitConfig = function() {
+if (this.playType === o.default.GamePlayType.THREE) {
+this.StepConfig = [ [ 0, 0, 2, c.default.TICTACTOE_GUIDE_NOTICE_1 ], [ 2, 1, 1, c.default.TICTACTOE_GUIDE_NOTICE_2 ], [ 0, 1, 2, c.default.TICTACTOE_GUIDE_NOTICE_3 ] ];
+this.RobotStepConfig = [ [ 2, 2 ], [ 1, 2 ] ];
+} else if (this.playType === o.default.GamePlayType.FOUR) {
+this.StepConfig = [ [ 2, 3, 2, c.default.TICTACTOE_GUIDE_NOTICE_1 ], [ 4, 2, 1, c.default.TICTACTOE_GUIDE_NOTICE_2 ], [ 3, 2, 1, c.default.TICTACTOE_GUIDE_NOTICE_1 ], [ 4, 1, 1, c.default.TICTACTOE_GUIDE_NOTICE_4 ] ];
+this.RobotStepConfig = [ [ 3, 3 ], [ 3, 4 ], [ 4, 4 ] ];
+} else if (this.playType === o.default.GamePlayType.FIVE) {
+this.StepConfig = [ [ 2, 7, 2, c.default.TICTACTOE_GUIDE_NOTICE_1 ], [ 7, 2, 1, c.default.TICTACTOE_GUIDE_NOTICE_2 ], [ 2, 4, 2, c.default.TICTACTOE_GUIDE_NOTICE_1 ], [ 2, 3, 2, c.default.TICTACTOE_GUIDE_NOTICE_5 ] ];
+this.RobotStepConfig = [ [ 6, 3 ], [ 4, 4 ], [ 2, 8 ] ];
+}
+};
+e.StartGuide = function(e, t) {
+this.callback = t;
+this.IsGuiding = !0;
+this._list = e;
+this.StepCount = 0;
+this.AddGuideListener();
+this.StartStep();
+this.logEventGuideStart();
+};
+e.FinishGuide = function() {
+this.RemoveGuideListener();
+this.IsGuiding = !1;
+if (this._guideView) {
+this._guideView.node.destroy();
+this._guideView = null;
+}
+s.default.setFinishGuideData(this.playType);
+if (this.callback) {
+this.callback(!1);
+this.callback = null;
+}
+this.logEventGuideEnd();
+};
+e.SkipGuide = function() {
+this.RemoveGuideListener();
+this.IsGuiding = !1;
+if (this._guideView) {
+this._guideView.node.destroy();
+this._guideView = null;
+}
+s.default.setFinishGuideData(this.playType);
+n.default.emitGuideEvent(o.default.GameGuideType.SkipGuide);
+if (this.callback) {
+this.callback(!0);
+this.callback = null;
+}
+this.logEventGuideEnd();
+};
+e.ClearGuide = function() {
+this.IsGuiding && this.RemoveGuideListener();
+this.IsGuiding = !1;
+};
+e.AddGuideListener = function() {
+n.default.onGuideEvent(this.GuideEventListener, this);
+};
+e.RemoveGuideListener = function() {
+n.default.offGuideEvent(this.GuideEventListener, this);
+};
+e.GuideEventListener = function(e) {
+e == o.default.GameGuideType.ClickChess ? this.FinishOneStep() : e == o.default.GameGuideType.FinishRobotChess && this.StartStep();
+};
+e.showLastStep = function() {
+this._guideView.ShowBlock(!0);
+this._guideView.HideAniNode();
+this.eventPermeate.target = null;
+var e = c.default.TICTACTOE_GUIDE_NOTICE_LAST, t = cc.v3(0, 0, 0);
+this._guideView.ShowTitleKuang(t, e, .5);
+this._guideView.StartLastTouch();
+this._guideView.ShowUIAnimation();
+this.StepCount++;
+s.default.setFinishGuideData(this.playType);
+};
+e.StartStep = function() {
+var e;
+if (this._list.length !== this.StepCount) {
+var t = this.getGuideStepBoard();
+if (t && !(this.StepCount >= t.length)) {
+var i = this._list[this.StepCount];
+if (i) {
+this.eventPermeate.target = i;
+var o = t[this.StepCount][3], a = t[this.StepCount][2];
+this.SetRectangle(i, o, a);
+null === (e = this._guideView) || void 0 === e || e.ShowBlock();
+this.StepCount++;
+}
+}
+}
+};
+e.SetRectangle = function(e, t, i) {
+if (null != this._guideView) {
+var a = this._guideView.Image.node.convertToNodeSpaceAR(e.convertToWorldSpaceAR(cc.Vec2.ZERO)), n = 1;
+this.playType === o.default.GamePlayType.FOUR ? n = .49 : this.playType === o.default.GamePlayType.FIVE && (n = .32);
+this._guideView.SetAniNodePosition(a, n);
+if ("" === t) this._guideView.HideTitleKuang(); else {
+var s = cc.v3(0, 0, 0), r = .5;
+if (1 === i) {
+s.y = a.y + 400;
+r = 0;
+} else {
+s.y = a.y - 200;
+r = 1;
+}
+this._guideView.ShowTitleKuang(s, t, r);
+}
+this._guideView.ShowUIAnimation();
+}
+};
+e.FinishOneStep = function() {
+if (this._guideView) {
+this._guideView.HideBlock();
+this.eventPermeate.target = null;
+}
+};
+e.logEventGuideStart = function() {
+a.default.Instance.usrGuideStartSubmit(s.default.getGameModel().getGameNum(), 6);
+};
+e.logEventGuideEnd = function() {
+a.default.Instance.usrGuideEndSubmit(s.default.getGameModel().getGameNum(), 6);
+};
+e.IsGuiding = !1;
+e._guideView = null;
+e._list = [];
+e.StepCount = 0;
+e.callback = null;
+e.StepConfig = null;
+e.RobotStepConfig = null;
+e.eventPermeate = null;
+return e;
+}();
+i.default = l;
+cc._RF.pop();
+}, {
+"../../../gl_hall/gl_lang/config/GLLangKeyDefine": void 0,
+"../GLTictactoeMain": "GLTictactoeMain",
+"../const/GLTictactoeConst": "GLTictactoeConst",
+"../manager/GLTictactoeEventManager": "GLTictactoeEventManager",
+"../manager/GLTictactoePlayerDataManager": "GLTictactoePlayerDataManager",
+"./GLTictactoeGuideView": "GLTictactoeGuideView"
+} ],
+GLTictactoeGuideView: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "0a396dPePhPIr7/Ty9uyAb5", "GLTictactoeGuideView");
+var o, a, n = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), s = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var r = null === (a = null === window || void 0 === window ? void 0 : window._GLHallClassMap_) || void 0 === a ? void 0 : a.GLHallControllerClass, c = e("../const/GLTictactoeConst"), l = e("../manager/GLTictactoeEventManager"), u = e("./GLTictactoeGuideManager"), h = e("../../../gl_hall/gl_lang/config/GLLangKeyDefine"), d = e("../../../gl_hall/gl_lang/scripts/GLMultiLangManager"), p = cc._decorator, f = p.ccclass, y = p.property, m = function(e) {
+n(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.chessPrefab = null;
+t.UiObject = null;
+t.Image = null;
+t.AniNode = null;
+t.YuMiao = null;
+t.YuMiaoBg = null;
+t.TitleKuang = null;
+t.TitleKuangText = null;
+t.BackBtn = null;
+t.UpdateBtn = null;
+t.TopCanvasGroup = null;
+t.YuMiaoImage = null;
+t.skipLabel = null;
+t.IsLastTouch = !1;
+return t;
+}
+t.prototype.onLoad = function() {
+var e = this;
+this.UpdateBtn.node.on("click", this.OnClickSkipBtn, this);
+GL.Game.AdpterBangleScreen(this.TopCanvasGroup);
+cc.instantiate(this.chessPrefab).parent = this.YuMiaoBg;
+this.HideButton();
+this.scheduleOnce(function() {
+e.ShowButton();
+}, 1);
+this.skipLabel.string = h.default.TICTACTOE_GUIDE_SKIP;
+this.skipLabel._forceUpdateRenderData();
+this.UpdateBtn.node.setContentSize(cc.size(this.skipLabel.node.getContentSize().width, this.UpdateBtn.node.getContentSize().height));
+l.default.onGuideEvent(this.onTouchEnd, this);
+};
+t.prototype.onDestroy = function() {
+l.default.offGuideEvent(this.onTouchEnd, this);
+};
+t.prototype.OnClickCloseBtn = function() {
+null == r || r.Exit(GL.Const.ExitGameType.FromGameMain);
+};
+t.prototype.OnClickSkipBtn = function() {
+u.default.SkipGuide();
+};
+t.prototype.onTouchEnd = function(e) {
+e === c.default.GameGuideType.GuideViewTouch && this.IsLastTouch && u.default.IsGuiding;
+};
+t.prototype.HideBlock = function() {
+this.Image.node.active = !1;
+this.UiObject.active = !1;
+};
+t.prototype.ShowBlock = function(e) {
+void 0 === e && (e = !1);
+this.Image.node.active = !0;
+this.UiObject.active = !0;
+if (e) {
+this.node.getChildByName("Background").addComponent(cc.BlockInputEvents);
+this.node.getChildByName("Background").once(cc.Node.EventType.TOUCH_START, function() {
+u.default.FinishGuide();
+});
+}
+};
+t.prototype.SetAniNodePosition = function(e, t) {
+this.AniNode.setPosition(e);
+this.YuMiao.setScale(t, t, t);
+};
+t.prototype.HideTitleKuang = function() {
+this.TitleKuang.active = !1;
+};
+t.prototype.ShowTitleKuang = function(e, t, i) {
+this.TitleKuang.active = !0;
+this.TitleKuang.setPosition(e);
+this.TitleKuangText.string = t;
+"KO" == d.default.getInstance().getCurrentLanguage() && (this.TitleKuangText.lineHeight = 80);
+var o = this.TitleKuang.getComponent(cc.Widget);
+o && o.node.setAnchorPoint(.5, i);
+};
+t.prototype.HideAniNode = function() {
+this.AniNode.active = !1;
+};
+t.prototype.StartLastTouch = function() {
+var e = this;
+this.scheduleOnce(function() {
+e.IsLastTouch = !0;
+}, 1);
+};
+t.prototype.ShowUIAnimation = function() {
+this.Image.node.active = !0;
+};
+t.prototype.HideButton = function() {
+this.BackBtn.node.active = !1;
+this.UpdateBtn.node.active = !1;
+};
+t.prototype.ShowButton = function() {
+this.TopCanvasGroup.opacity = 0;
+this.BackBtn.node.active = !0;
+this.UpdateBtn.node.active = !0;
+cc.tween(this.TopCanvasGroup).to(.25, {
+opacity: 255
+}).start();
+};
+s([ y(cc.Prefab) ], t.prototype, "chessPrefab", void 0);
+s([ y(cc.Node) ], t.prototype, "UiObject", void 0);
+s([ y(cc.Sprite) ], t.prototype, "Image", void 0);
+s([ y(cc.Node) ], t.prototype, "AniNode", void 0);
+s([ y(cc.Node) ], t.prototype, "YuMiao", void 0);
+s([ y(cc.Node) ], t.prototype, "YuMiaoBg", void 0);
+s([ y(cc.Node) ], t.prototype, "TitleKuang", void 0);
+s([ y(cc.Label) ], t.prototype, "TitleKuangText", void 0);
+s([ y(cc.Button) ], t.prototype, "BackBtn", void 0);
+s([ y(cc.Button) ], t.prototype, "UpdateBtn", void 0);
+s([ y(cc.Node) ], t.prototype, "TopCanvasGroup", void 0);
+s([ y(cc.Sprite) ], t.prototype, "YuMiaoImage", void 0);
+s([ y(cc.Label) ], t.prototype, "skipLabel", void 0);
+return s([ f ], t);
+}(cc.Component);
+i.default = m;
+cc._RF.pop();
+}, {
+"../../../gl_hall/gl_lang/config/GLLangKeyDefine": void 0,
+"../../../gl_hall/gl_lang/scripts/GLMultiLangManager": void 0,
+"../const/GLTictactoeConst": "GLTictactoeConst",
+"../manager/GLTictactoeEventManager": "GLTictactoeEventManager",
+"./GLTictactoeGuideManager": "GLTictactoeGuideManager"
+} ],
+GLTictactoeHeader: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "3f2d5ZkL5pHwKaAxzQlXDjO", "GLTictactoeHeader");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = e("../GLTictactoeFeature"), r = cc._decorator, c = r.ccclass, l = r.property, u = function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.backButton = null;
+t.replayButton = null;
+t.scoreNode = null;
+t.redLabel = null;
+t.blueLabel = null;
+return t;
+}
+t.prototype.onLoad = function() {
+var e = this;
+this.backButton.on("click", function() {
+return e.node.emit("back");
+});
+this.replayButton.on("click", function() {
+return e.node.emit("replay");
+});
+if (s.default.isOpen(s.GLTictactoeFeat.GLTictactoeSaveScore)) {
+if (this.redLabel) {
+this.redLabel.node.width = 130;
+this.redLabel.overflow = cc.Label.Overflow.SHRINK;
+this.redLabel.enableWrapText = !1;
+}
+if (this.blueLabel) {
+this.blueLabel.node.width = 130;
+this.blueLabel.overflow = cc.Label.Overflow.SHRINK;
+this.blueLabel.enableWrapText = !1;
+}
+}
+};
+t.prototype.setScore = function(e, t) {
+var i = e, o = t;
+if (s.default.isOpen(s.GLTictactoeFeat.GLTictactoeSaveScore)) {
+i = Math.min(e, 999999);
+o = Math.min(t, 999999);
+} else {
+i = Math.min(e, 99);
+o = Math.min(t, 99);
+}
+this.redLabel.string = "" + i;
+this.blueLabel.string = "" + o;
+};
+t.prototype.setHeaderButtonActive = function(e) {
+this.backButton.active = e;
+this.replayButton.active = e;
+};
+t.prototype.setScoreActive = function(e) {
+this.scoreNode.active = e;
+};
+t.prototype.playStartAnimation = function(e) {
+cc.Tween.stopAllByTarget(this.scoreNode);
+cc.tween(this.scoreNode).set({
+y: 100,
+opacity: 0
+}).to(e, {
+y: 0,
+opacity: 255
+}, {
+easing: "sineInOut"
+}).start();
+};
+n([ l(cc.Node) ], t.prototype, "backButton", void 0);
+n([ l(cc.Node) ], t.prototype, "replayButton", void 0);
+n([ l(cc.Node) ], t.prototype, "scoreNode", void 0);
+n([ l(cc.Label) ], t.prototype, "redLabel", void 0);
+n([ l(cc.Label) ], t.prototype, "blueLabel", void 0);
+return n([ c ], t);
+}(cc.Component);
+i.default = u;
+cc._RF.pop();
+}, {
+"../GLTictactoeFeature": "GLTictactoeFeature"
+} ],
+GLTictactoeLastStepWinEncourageCtrl: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "68357CM/JhB/pHdq2bViMCJ", "GLTictactoeLastStepWinEncourageCtrl");
+var o = this && this.__awaiter || function(e, t, i, o) {
+return new (i || (i = Promise))(function(a, n) {
+function s(e) {
+try {
+c(o.next(e));
+} catch (e) {
+n(e);
+}
+}
+function r(e) {
+try {
+c(o.throw(e));
+} catch (e) {
+n(e);
+}
+}
+function c(e) {
+e.done ? a(e.value) : (t = e.value, t instanceof i ? t : new i(function(e) {
+e(t);
+})).then(s, r);
+var t;
+}
+c((o = o.apply(e, t || [])).next());
+});
+}, a = this && this.__generator || function(e, t) {
+var i, o, a, n, s = {
+label: 0,
+sent: function() {
+if (1 & a[0]) throw a[1];
+return a[1];
+},
+trys: [],
+ops: []
+};
+return n = {
+next: r(0),
+throw: r(1),
+return: r(2)
+}, "function" == typeof Symbol && (n[Symbol.iterator] = function() {
+return this;
+}), n;
+function r(e) {
+return function(t) {
+return c([ e, t ]);
+};
+}
+function c(n) {
+if (i) throw new TypeError("Generator is already executing.");
+for (;s; ) try {
+if (i = 1, o && (a = 2 & n[0] ? o.return : n[0] ? o.throw || ((a = o.return) && a.call(o), 
+0) : o.next) && !(a = a.call(o, n[1])).done) return a;
+(o = 0, a) && (n = [ 2 & n[0], a.value ]);
+switch (n[0]) {
+case 0:
+case 1:
+a = n;
+break;
+
+case 4:
+s.label++;
+return {
+value: n[1],
+done: !1
+};
+
+case 5:
+s.label++;
+o = n[1];
+n = [ 0 ];
+continue;
+
+case 7:
+n = s.ops.pop();
+s.trys.pop();
+continue;
+
+default:
+if (!(a = s.trys, a = a.length > 0 && a[a.length - 1]) && (6 === n[0] || 2 === n[0])) {
+s = 0;
+continue;
+}
+if (3 === n[0] && (!a || n[1] > a[0] && n[1] < a[3])) {
+s.label = n[1];
+break;
+}
+if (6 === n[0] && s.label < a[1]) {
+s.label = a[1];
+a = n;
+break;
+}
+if (a && s.label < a[2]) {
+s.label = a[2];
+s.ops.push(n);
+break;
+}
+a[2] && s.ops.pop();
+s.trys.pop();
+continue;
+}
+n = t.call(e, s);
+} catch (e) {
+n = [ 6, e ];
+o = 0;
+} finally {
+i = a = 0;
+}
+if (5 & n[0]) throw n[1];
+return {
+value: n[0] ? n[1] : void 0,
+done: !0
+};
+}
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var n = function() {
+function e() {
+this._featureName = "GLTictactoeLastStepWinEncourage";
+this.bundleName = "Remote_gl_tictactoe_lastStepWinEncourage";
+this.encourageEffectPrefabName = "prefabs/encourageEffect";
+this.encourageEffectName = "animation";
+this.resIsLoading = !1;
+this.effectPrefab = null;
+this.effectIsPlaying = !1;
+}
+e.getInstance = function() {
+null == this._instance && (this._instance = new e());
+return this._instance;
+};
+e.prototype.isOpen = function() {
+return GL.Game.IsFeatureOpen(this._featureName);
+};
+e.prototype.loadRes = function() {
+return o(this, void 0, void 0, function() {
+var e, t = this;
+return a(this, function(i) {
+switch (i.label) {
+case 0:
+return null != this.effectPrefab || 1 == this.resIsLoading ? [ 2 ] : GL.Game.resLoaderLoadBundle ? [ 4, GL.Game.resLoaderLoadBundle(this.bundleName, !0) ] : [ 2 ];
+
+case 1:
+(e = i.sent()) ? e.load(this.encourageEffectPrefabName, function(e, i) {
+e || (t.effectPrefab = i);
+t.resIsLoading = !1;
+}) : this.resIsLoading = !1;
+return [ 2 ];
+}
+});
+});
+};
+e.prototype.showEncourage = function(e, t) {
+var i = this;
+if (null != e && null != this.effectPrefab && !this.effectIsPlaying) {
+var o = cc.instantiate(this.effectPrefab);
+if (null != o) {
+var a = o.getComponent(sp.Skeleton);
+if (null != a) {
+this.effectIsPlaying = !0;
+a.setCompleteListener(function() {
+null == a || a.setCompleteListener(null);
+if (null != o && cc.isValid(o)) {
+o.active = !1;
+t && t();
+i.effectIsPlaying = !1;
+}
+});
+a.setAnimation(0, this.encourageEffectName, !1);
+o.setParent(e);
+}
+}
+}
+};
+e._instance = null;
+return e;
+}();
+i.default = n;
+cc._RF.pop();
+}, {} ],
+GLTictactoeMMBitAi: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "69f41m45NFCGaxuUhN4A4qt", "GLTictactoeMMBitAi");
+var o = this && this.__read || function(e, t) {
+var i = "function" == typeof Symbol && e[Symbol.iterator];
+if (!i) return e;
+var o, a, n = i.call(e), s = [];
+try {
+for (;(void 0 === t || t-- > 0) && !(o = n.next()).done; ) s.push(o.value);
+} catch (e) {
+a = {
+error: e
+};
+} finally {
+try {
+o && !o.done && (i = n.return) && i.call(n);
+} finally {
+if (a) throw a.error;
+}
+}
+return s;
+}, a = this && this.__spread || function() {
+for (var e = [], t = 0; t < arguments.length; t++) e = e.concat(o(arguments[t]));
+return e;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var n = e("../../const/GLTictactoeConst"), s = e("../../manager/GLTictactoeDataManager"), r = [ [ -1, 0 ], [ 1, 0 ], [ 0, -1 ], [ 0, 1 ], [ -1, 1 ], [ 1, 1 ], [ -1, -1 ], [ 1, -1 ], [ -2, 2 ], [ -1, 2 ], [ 0, 2 ], [ 1, 2 ], [ 2, 2 ], [ -2, -2 ], [ -1, -2 ], [ 0, -2 ], [ 1, -2 ], [ 2, -2 ], [ -2, 1 ], [ 2, 1 ], [ -2, 0 ], [ 2, 0 ], [ -2, -1 ], [ 2, -1 ] ], c = function() {
+function e() {
+this.row = 3;
+this.column = 3;
+this.chessWinCount = 0;
+this.bitCount = 0;
+this.magnificationCount = 1;
+this.selfType = n.default.PlayerType.Blue;
+this.otherType = n.default.PlayerType.Red;
+this.gamePlayType = n.default.GamePlayType.THREE;
+this.evaluationCache = null;
+this._t = 1;
+this.threeMinMaxT = null;
+this.threeMinMaxO = null;
+this.nineMinMaxT = null;
+this.nineMinMaxO = null;
+this.evaluationCache = {};
+this.threeMinMaxT = {};
+this.threeMinMaxO = {};
+this.nineMinMaxT = {};
+this.nineMinMaxO = {};
+}
+e.prototype.init = function(e, t, i, o) {
+var a = this;
+this.row = e;
+this.column = t;
+this.bitCount = this.row * this.column;
+this.initMinMaxParameters();
+this.chessWinCount = i;
+this.gamePlayType = o;
+this.magnificationCount = this.gamePlayType === n.default.GamePlayType.FIVE ? 1.772 : 15;
+this._t = this.getTValue();
+this.chessList = Array.from({
+length: this.row
+}, function() {
+return Array(a.column).fill(null);
+});
+for (var s = 0; s < this.row; s++) for (var r = 0; r < this.column; r++) {
+var c = {
+index: s * this.column + r,
+playerType: n.default.PlayerType.None
+};
+this.chessList[s][r] = c;
+}
+};
+e.prototype.initMinMaxParameters = function() {
+var e = this, t = s.default.getTables()[3];
+t.ThreeTemp.forEach(function(i, o) {
+e.threeMinMaxT[o] = i;
+e.threeMinMaxO[o] = t.ThreeOptimal[o];
+console.log("3*3-MinMax-T: " + i);
+console.log("3*3-MinMax-O: " + t.ThreeOptimal[o]);
+});
+t.NineTemp.forEach(function(i, o) {
+e.nineMinMaxT[o] = i;
+e.nineMinMaxO[o] = t.NineOptimal[o];
+console.log("9*9-MinMax-T: " + i);
+console.log("9*9-MinMax-O: " + t.NineOptimal[o]);
+});
+};
+e.prototype.getTValue = function() {
+return this.nineMinMaxT[this.gamePlayType] || 0;
+};
+e.prototype.setT = function(e) {
+this._t = e;
+};
+e.prototype.printBoardStateBitByBit = function() {
+for (var e = 0; e < this.row; e++) for (var t = 0; t < this.column; t++) console.log(this.getChess(e, t).toString());
+};
+e.prototype.setChess = function(e, t, i) {
+this.chessList[e][t].playerType = i;
+};
+e.prototype.getChess = function(e, t) {
+return this.chessList[e][t].playerType;
+};
+e.prototype.isDrawIng = function(e, t) {
+for (var i = 0, o = 0; o < this.row; o++) for (var a = 0; a < this.column; a++) if ((c = e[o][a]).playerType !== n.default.PlayerType.None) this.setChess(o, a, c.playerType); else {
+this.setChess(o, a, t);
+i += 1;
+}
+var s = this.checkPlayerWin(t);
+if (1 === i && !s) return !0;
+var r = t === n.default.PlayerType.Red ? n.default.PlayerType.Blue : n.default.PlayerType.Red;
+for (o = 0; o < this.row; o++) for (a = 0; a < this.column; a++) {
+var c;
+(c = e[o][a]).playerType !== n.default.PlayerType.None ? this.setChess(o, a, c.playerType) : this.setChess(o, a, r);
+}
+var l = this.checkPlayerWin(r);
+return !s && !l;
+};
+e.prototype.getMachineNextChess = function(e, t) {
+void 0 === t && (t = n.default.PlayerType.Blue);
+this.selfType = t;
+this.otherType = t === n.default.PlayerType.Blue ? n.default.PlayerType.Red : n.default.PlayerType.Blue;
+for (var i = 0; i < this.row; i++) for (var o = 0; o < this.column; o++) {
+var a = e[i][o];
+this.setChess(i, o, a.playerType);
+}
+if (this.isFirst()) {
+if (this.gamePlayType === n.default.GamePlayType.FOUR) {
+var s = Math.floor(this.row / 2), r = Math.floor(this.column / 2), c = s * this.column + r, l = [ c, c - 1, c - this.row, c - this.row - 1 ];
+return l[Math.floor(Math.random() * l.length)];
+}
+s = Math.floor(this.row / 2), r = Math.floor(this.column / 2);
+return s * this.column + r;
+}
+var u = this.getRimChess();
+u.length <= 0 && (u = this.traverseFromCenter());
+var h = this.getDepthByDifficulty();
+this.evaluationCache = {};
+if (this.gamePlayType === n.default.GamePlayType.FIVE) {
+var d = this.getImmediateWinOrLoseMoves(this.selfType), p = d.winMoves, f = d.loseMoves;
+if (p.length > 0) return p[0];
+if (f.length > 0) return f[0];
+}
+var y = performance.now(), m = this.iterativeDeepening(u, h), T = performance.now();
+console.log("time: " + (T - y) + "ms");
+return m;
+};
+e.prototype.getImmediateWinOrLoseMoves = function(e) {
+for (var t = [], i = [], o = 0; o < this.row; o++) for (var a = 0; a < this.column; a++) if (this.getChess(o, a) === n.default.PlayerType.None) {
+this.setChess(o, a, e);
+this.checkPlayerWin(e) && t.push(o * this.column + a);
+this.setChess(o, a, n.default.PlayerType.None);
+var s = e === n.default.PlayerType.Blue ? n.default.PlayerType.Red : n.default.PlayerType.Blue;
+this.setChess(o, a, s);
+this.checkPlayerWin(s) && i.push(o * this.column + a);
+this.setChess(o, a, n.default.PlayerType.None);
+}
+return {
+winMoves: t,
+loseMoves: i
+};
+};
+e.prototype.getEmptyIndex = function() {
+for (var e = 0; e < this.row; e++) for (var t = 0; t < this.column; t++) if (this.getChess(e, t) === n.default.PlayerType.None) return e * this.column + t;
+return 0;
+};
+e.prototype.minimax = function(e, t, i, a, s, r, c) {
+var l = this.getNodeKey(e);
+if (this.evaluationCache[l]) return [ this.evaluationCache[l], [], c ];
+if (i) {
+if (this.checkPlayerWin(this.otherType)) return [ Number.MIN_SAFE_INTEGER + t, [], c ];
+} else if (this.checkPlayerWin(this.selfType)) return [ Number.MAX_SAFE_INTEGER - t, [], c ];
+if (this.isFull()) return [ 0, [], c ];
+if (t >= r) return [ this.evaluateBoard(), [], c ];
+var u = [], h = [];
+if (i) {
+for (var d = Number.MIN_SAFE_INTEGER, p = 0; p < e.length; p++) {
+var f = e[p], y = Math.floor(f / this.column), m = f % this.column;
+if (this.getChess(y, m) === n.default.PlayerType.None) {
+this.setChess(y, m, this.selfType);
+var T = o(this.minimax(e, t + 1, !1, a, s, r, u), 3), g = T[0];
+T[1], T[2];
+this.setChess(y, m, n.default.PlayerType.None);
+h.push([ g, f ]);
+if (g > d) {
+d = g;
+u.length = 0;
+u.push(f);
+} else g === d && (u.includes(f) || u.push(f));
+if (s <= (a = Math.max(a, d))) break;
+}
+}
+this.evaluationCache[l] = d;
+return [ d, h, u ];
+}
+for (d = Number.MAX_SAFE_INTEGER, p = 0; p < e.length; p++) {
+f = e[p], y = Math.floor(f / this.column), m = f % this.column;
+if (this.getChess(y, m) === n.default.PlayerType.None) {
+this.setChess(y, m, this.otherType);
+var G = o(this.minimax(e, t + 1, !0, a, s, r, u), 3);
+g = G[0], G[1], G[2];
+this.setChess(y, m, n.default.PlayerType.None);
+h.push([ g, f ]);
+if (g < d) {
+d = g;
+u.length = 0;
+u.push(f);
+} else g === d && (u.includes(f) || u.push(f));
+if ((s = Math.min(s, d)) <= a) break;
+}
+}
+this.evaluationCache[l] = d;
+return [ d, h, u ];
+};
+e.prototype.iterativeDeepening = function(e, t) {
+for (var i = Number.MIN_SAFE_INTEGER, a = Number.MIN_SAFE_INTEGER, n = Number.MAX_SAFE_INTEGER, s = null, r = 1; r <= t; r++) {
+var c = o(this.minimax(e, 0, !0, a, n, r, [ e[0] ]), 3), l = c[0], u = c[1];
+c[2];
+if (l > i) {
+i = l;
+s = u;
+}
+}
+if (s) {
+for (var h = s.length - 1; h >= 0; h--) s.length > 1 && (l = s[h])[0] <= Number.MIN_SAFE_INTEGER + t && s.splice(h, 1);
+var d = s.map(function(e) {
+return e[0];
+}), p = this.softmax(d, this._t), f = this.rollByRates(p), y = this.getOptimalNum();
+if (y < 100 && p.length > 1) {
+var m = [ 100 - y, y ];
+if (1 === this.rollByRates(m)) return s[f][1];
+var T = p.filter(function(e, t) {
+return t !== f;
+}), g = this.rollByRates(T);
+s.splice(f, 1);
+return s[g][1];
+}
+return s[f][1];
+}
+return 0;
+};
+e.prototype.softmax = function(e, t) {
+var i = Math.max.apply(Math, a(e)), o = e.map(function(e) {
+return Math.exp((e - i) / t);
+}), n = o.reduce(function(e, t) {
+return e + t;
+}, 0);
+return o.map(function(e) {
+return e / n;
+});
+};
+e.prototype.rollByRates = function(e) {
+for (var t = e.reduce(function(e, t) {
+return e + t;
+}, 0), i = 0, o = Math.random(), a = 0; a < e.length; a++) if (o < (i += e[a] / t)) return a;
+return 0;
+};
+e.prototype.traverseFromCenter = function() {
+for (var e, t = [], i = this.row, a = Math.floor(i / 2), s = Math.floor(i / 2), r = 0; r < i; r++) for (var c = a - r; c <= a + r; c++) for (var l = s - r; l <= s + r; l++) if (c >= 0 && c < i && l >= 0 && l < i) {
+var u = this.getChess(c, l), h = c * this.column + l;
+u !== n.default.PlayerType.None || t.includes(h) || t.push(h);
+}
+var d = t.length >= 8 ? 8 : t.length;
+if (d > 1) for (c = 0; c < d; c++) {
+var p = Math.floor(Math.random() * d);
+c !== p && (e = o([ t[p], t[c] ], 2), t[c] = e[0], t[p] = e[1]);
+}
+return t;
+};
+e.prototype.getRimChess = function() {
+for (var e, t = [], i = 0; i < this.row; i++) for (var a = 0; a < this.column; a++) if (this.getChess(i, a) !== n.default.PlayerType.None) for (var s = 0; s < r.length; s++) {
+var c = i + r[s][0], l = a + r[s][1];
+if (c >= 0 && c < this.row && l >= 0 && l < this.column) {
+var u = c * this.column + l;
+this.getChess(c, l) !== n.default.PlayerType.None || t.includes(u) || t.push(u);
+}
+}
+var h = t.length >= 8 ? 8 : t.length;
+if (h > 1) for (i = 0; i < h; i++) {
+var d = Math.floor(Math.random() * h);
+i !== d && (e = o([ t[d], t[i] ], 2), t[i] = e[0], t[d] = e[1]);
+}
+return t;
+};
+e.prototype.isFirst = function() {
+for (var e = 0; e < this.row; e++) for (var t = 0; t < this.column; t++) if (this.getChess(e, t) !== n.default.PlayerType.None) return !1;
+return !0;
+};
+e.prototype.getNodeKey = function(e) {
+var t = e.map(function(e) {
+return e;
+}), i = new ArrayBuffer(4 * t.length), o = new DataView(i);
+t.forEach(function(e, t) {
+o.setInt32(4 * t, e, !0);
+});
+var n = new Uint8Array(i);
+return btoa(String.fromCharCode.apply(String, a(Array.from(n))));
+};
+e.prototype.checkPlayerWin = function(e) {
+for (var t = 0; t < this.row; t++) for (var i = 0; i <= this.column - this.chessWinCount; i++) {
+for (var o = !0, a = 0; a < this.chessWinCount; a++) if (this.getChess(t, i + a) !== e) {
+o = !1;
+break;
+}
+if (o) return !0;
+}
+for (i = 0; i < this.column; i++) for (t = 0; t <= this.row - this.chessWinCount; t++) {
+for (o = !0, a = 0; a < this.chessWinCount; a++) if (this.getChess(t + a, i) !== e) {
+o = !1;
+break;
+}
+if (o) return !0;
+}
+for (t = 0; t <= this.row - this.chessWinCount; t++) for (i = 0; i <= this.column - this.chessWinCount; i++) {
+for (o = !0, a = 0; a < this.chessWinCount; a++) if (this.getChess(t + a, i + a) !== e) {
+o = !1;
+break;
+}
+if (o) return !0;
+}
+for (t = 0; t <= this.row - this.chessWinCount; t++) for (i = this.chessWinCount - 1; i < this.column; i++) {
+for (o = !0, a = 0; a < this.chessWinCount; a++) if (this.getChess(t + a, i - a) !== e) {
+o = !1;
+break;
+}
+if (o) return !0;
+}
+return !1;
+};
+e.prototype.isFull = function() {
+for (var e = 0; e < this.row; e++) for (var t = 0; t < this.column; t++) if (this.getChess(e, t) === n.default.PlayerType.None) return !1;
+return !0;
+};
+e.prototype.evaluateBoard = function() {
+for (var e = 0, t = 0; t < this.row; t++) for (var i = 0; i < this.column; i++) {
+var o = this.getChess(t, i);
+o === this.selfType ? e += this.evaluatePosition(t, i, this.selfType) : o === this.otherType && (e -= this.evaluatePosition(t, i, this.otherType) * this.magnificationCount);
+}
+return Math.floor(e);
+};
+e.prototype.evaluatePosition = function(e, t, i) {
+var o = 0;
+o += this.evaluateDirection(e, t, 0, 1, i);
+o += this.evaluateDirection(e, t, 1, 0, i);
+return (o += this.evaluateDirection(e, t, 1, 1, i)) + this.evaluateDirection(e, t, 1, -1, i);
+};
+e.prototype.evaluateDirectionNew = function(e, t, i, o, a) {
+for (var s = 0, r = 0, c = 0, l = !1, u = !1, h = !1, d = 0; ;) {
+var p = t + d * o;
+if ((f = e + d * i) < 0 || f >= this.row || p < 0 || p >= this.column) break;
+if ((y = this.getChess(f, p)) === a) {
+l ? l && h && (u = !0) : l = !0;
+s++;
+} else {
+if (y !== n.default.PlayerType.None) break;
+l && (h = !0);
+c++;
+}
+d++;
+}
+d = -1;
+for (;;) {
+var f, y;
+p = t + d * o;
+if ((f = e + d * i) < 0 || f >= this.row || p < 0 || p >= this.column) break;
+if ((y = this.getChess(f, p)) === a) {
+l ? l && h && (u = !0) : l = !0;
+s++;
+} else {
+if (y !== n.default.PlayerType.None) break;
+l && (h = !0);
+r++;
+}
+d--;
+}
+return this.classifyPattern(s, r, c, l, u, h, a, e, t);
+};
+e.prototype.evaluateDirection = function(e, t, i, o, a) {
+for (var s = 0, r = 0, c = 0, l = this.chessWinCount - 1, u = !1, h = !1, d = !1, p = 0; p <= l; p++) {
+var f = t + p * o;
+if ((y = e + p * i) < 0 || y >= this.row || f < 0 || f >= this.column) break;
+if ((m = this.getChess(y, f)) === a) {
+s++;
+u ? u && d && (h = !0) : u = !0;
+} else {
+if (m !== n.default.PlayerType.None) break;
+u && (d = !0);
+if (++c > 1) break;
+}
+}
+for (p = 1; p <= l; p++) {
+var y, m;
+f = t - p * o;
+if ((y = e - p * i) < 0 || y >= this.row || f < 0 || f >= this.column) break;
+if ((m = this.getChess(y, f)) === a) {
+if (r <= 0) {
+s++;
+u ? u && d && (h = !0) : u = !0;
+}
+} else {
+if (m !== n.default.PlayerType.None) break;
+u && (d = !0);
+if (++r > 1) break;
+}
+}
+return this.classifyPattern(s, r, c, u, h, d, a, e, t);
+};
+e.prototype.classifyPattern = function(e, t, i, o, a, s, r, c, l) {
+if (this.gamePlayType === n.default.GamePlayType.FIVE) {
+if (4 === e) {
+if (t > 0 && i > 0) return o && a && s ? 6e3 : 2e4;
+if (t > 0 || i > 0) return 5e3;
+} else if (3 === e) {
+if (t > 0 && i > 0) return (t > 1 || i > 1) && o && a && s ? 5500 : 1500;
+if (t > 1 || i > 1) return 500;
+} else if (2 === e) {
+if (t > 1 && i > 1) return o && a && s ? 300 : 200;
+if (t > 1 || i > 1) return 50;
+}
+} else if (this.gamePlayType === n.default.GamePlayType.FOUR) {
+if (3 === e) {
+if (t > 0 && i > 0) return 1e4;
+if (t > 0 || i > 0) return 2e3;
+} else if (2 === e) {
+if (t > 0 && i > 0) return o && a && s ? 800 : 200;
+if (t > 0 || i > 0) return 50;
+}
+} else {
+if (2 === e && (t > 0 || i > 0)) return 1e4;
+if (1 === c && 1 === l) return 100;
+if (0 === c && 0 === l || 0 === c && 2 === l || 3 === c && 0 === l || 3 === c && 2 === l) return 50;
+}
+return 0;
+};
+e.prototype.isValidPosition = function(e, t) {
+return e >= 0 && e < this.row && t >= 0 && t < this.column;
+};
+e.prototype.getDepthByDifficulty = function() {
+return 5;
+};
+e.prototype.getOptimalNum = function() {
+return this.nineMinMaxO[this.gamePlayType] || 0;
+};
+e.prototype.setOptimalNum = function(e) {
+this.nineMinMaxO[this.gamePlayType] = e;
+};
+return e;
+}();
+i.default = c;
+cc._RF.pop();
+}, {
+"../../const/GLTictactoeConst": "GLTictactoeConst",
+"../../manager/GLTictactoeDataManager": "GLTictactoeDataManager"
+} ],
+GLTictactoeMain: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "79226GzLXdASKdhkb84FBYw", "GLTictactoeMain");
+var o, a, n, s = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), r = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+}, c = this && this.__awaiter || function(e, t, i, o) {
+return new (i || (i = Promise))(function(a, n) {
+function s(e) {
+try {
+c(o.next(e));
+} catch (e) {
+n(e);
+}
+}
+function r(e) {
+try {
+c(o.throw(e));
+} catch (e) {
+n(e);
+}
+}
+function c(e) {
+e.done ? a(e.value) : (t = e.value, t instanceof i ? t : new i(function(e) {
+e(t);
+})).then(s, r);
+var t;
+}
+c((o = o.apply(e, t || [])).next());
+});
+}, l = this && this.__generator || function(e, t) {
+var i, o, a, n, s = {
+label: 0,
+sent: function() {
+if (1 & a[0]) throw a[1];
+return a[1];
+},
+trys: [],
+ops: []
+};
+return n = {
+next: r(0),
+throw: r(1),
+return: r(2)
+}, "function" == typeof Symbol && (n[Symbol.iterator] = function() {
+return this;
+}), n;
+function r(e) {
+return function(t) {
+return c([ e, t ]);
+};
+}
+function c(n) {
+if (i) throw new TypeError("Generator is already executing.");
+for (;s; ) try {
+if (i = 1, o && (a = 2 & n[0] ? o.return : n[0] ? o.throw || ((a = o.return) && a.call(o), 
+0) : o.next) && !(a = a.call(o, n[1])).done) return a;
+(o = 0, a) && (n = [ 2 & n[0], a.value ]);
+switch (n[0]) {
+case 0:
+case 1:
+a = n;
+break;
+
+case 4:
+s.label++;
+return {
+value: n[1],
+done: !1
+};
+
+case 5:
+s.label++;
+o = n[1];
+n = [ 0 ];
+continue;
+
+case 7:
+n = s.ops.pop();
+s.trys.pop();
+continue;
+
+default:
+if (!(a = s.trys, a = a.length > 0 && a[a.length - 1]) && (6 === n[0] || 2 === n[0])) {
+s = 0;
+continue;
+}
+if (3 === n[0] && (!a || n[1] > a[0] && n[1] < a[3])) {
+s.label = n[1];
+break;
+}
+if (6 === n[0] && s.label < a[1]) {
+s.label = a[1];
+a = n;
+break;
+}
+if (a && s.label < a[2]) {
+s.label = a[2];
+s.ops.push(n);
+break;
+}
+a[2] && s.ops.pop();
+s.trys.pop();
+continue;
+}
+n = t.call(e, s);
+} catch (e) {
+n = [ 6, e ];
+o = 0;
+} finally {
+i = a = 0;
+}
+if (5 & n[0]) throw n[1];
+return {
+value: n[0] ? n[1] : void 0,
+done: !0
+};
+}
+}, u = this && this.__read || function(e, t) {
+var i = "function" == typeof Symbol && e[Symbol.iterator];
+if (!i) return e;
+var o, a, n = i.call(e), s = [];
+try {
+for (;(void 0 === t || t-- > 0) && !(o = n.next()).done; ) s.push(o.value);
+} catch (e) {
+a = {
+error: e
+};
+} finally {
+try {
+o && !o.done && (i = n.return) && i.call(n);
+} finally {
+if (a) throw a.error;
+}
+}
+return s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var h = null === (a = null === window || void 0 === window ? void 0 : window._GLHallClassMap_) || void 0 === a ? void 0 : a.GLResultViewFeature, d = e("../../gl_hall/script/hall/GlBaseScene"), p = null === (n = null === window || void 0 === window ? void 0 : window._GLHallClassMap_) || void 0 === n ? void 0 : n.GLHallControllerClass, f = e("../../gl_hall/script/HallFeature"), y = e("./const/GLTictactoeConst"), m = e("./GLTictactoeRoundLogEventCtr"), T = e("./guide/GLTictactoeEventPermeate"), g = e("./guide/GLTictactoeGuideManager"), G = e("./manager/GLTictactoeDataManager"), v = e("./manager/GLTictactoeEventManager"), L = e("./manager/GLTictactoePlayerDataManager"), S = e("./manager/GLTictactoeSoundManager"), C = e("./model/GLTictactoeGameModel"), _ = e("./ui/GLTictactoeContent"), P = e("./ui/GLTictactoeHeader"), w = e("../../gl_hall/gl_lang/config/GLLangKeyDefine"), R = e("./traits/GLTictactoeLastStepWinEncourageCtrl"), b = e("./traits/GLTictactoeFirstWinShowEncourageCtrl"), O = e("./GLTictactoeFeature"), E = e("./manager/traits/GLTictactoeCheckDrawTraitCtrl"), M = e("../../gl_hall/script/traits/GLGameAdStrategyOptimizeTraitCtrl"), F = e("./GLTictactoeChangeSkinTs"), I = cc._decorator, A = I.ccclass, N = I.property, D = function(e) {
+s(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.configFile = null;
+t.content = null;
+t.header = null;
+t.guideNode = null;
+t.guidePrefab = null;
+t.eventPermeate = null;
+t.model = null;
+t.PutTouchCD = .5;
+t.isAutoPutChess = !1;
+t.isOpenResetView = !1;
+t.isOpenBackView = !1;
+t.isPauseing = !1;
+t.timer = null;
+t.keyDelayTime = 1e3;
+t.gameStartTime = 0;
+t.isKeyEnabled = !1;
+t.chessChildPrefab = null;
+t.isGameOver = !1;
+t.hasShownResult = !1;
+return t;
+}
+i = t;
+t.prototype.onLoad = function() {
+var t;
+e.prototype.onLoad.call(this);
+i.Instance = this;
+O.default.isOpen(O.GLTictactoeFeat.GLTictactoeChangeSkin) && this.node.addComponent(F.default);
+this.gameStartTime = Date.now();
+this.isKeyEnabled = !1;
+GL.Game.AdpterCanvas();
+GL.Game.AdpterBangleScreen(this.header.node);
+cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+this.content.node.on("clickChess", this.clickChess, this);
+this.header.node.on("back", this.onClickBackButton, this);
+this.header.node.on("replay", this.onClickReplayButton, this);
+G.default.setTables(this.configFile.json);
+this.model = new C.default();
+this.model.initModel(y.default.GamePlayType.THREE);
+this.model.setDifficulty(y.default.LevelDifficulty.Extreme);
+this.model.gameType = y.default.GameType.Machine;
+this.model.genaratePlayerType();
+this.model.resetLastInsertionAdsOpenTime();
+L.default.initGameModel(this.model);
+m.default.getInstance().loadData();
+R.default.getInstance().isOpen() && R.default.getInstance().loadRes();
+b.default.getInstance().isOpen() && b.default.getInstance().loadRes();
+this.model && this.header && this.header.setScore(this.model.redScore, this.model.blueScore);
+v.default.onGuideEvent(this.guideEventListener, this);
+this.updateRealTime();
+M.default.getInstance().isOpen() && M.default.getInstance().onEnterGame("gl_tictactoe");
+this.usrStartSubmit(null === (t = this.model.clickSaveData) || void 0 === t ? void 0 : t.gameid[this.model.gamePlayType], 6);
+};
+t.prototype.onKeyDown = function(e) {
+var t, i = this;
+if (!this.isKeyEnabled) {
+if (!(Date.now() - this.gameStartTime >= this.keyDelayTime)) return;
+this.isKeyEnabled = !0;
+}
+switch (e.keyCode) {
+case cc.macro.KEY.left:
+case cc.macro.KEY.back:
+var o = function() {
+i.model && i.model.saveScore();
+null == p || p.Exit(GL.Const.ExitGameType.FromGameMain);
+};
+if (f.default.isOpen(f.HallFeat.HallNotShowResultView)) {
+o();
+return;
+}
+(null === (t = this.model) || void 0 === t ? void 0 : t.gameStatus) !== y.default.GameStatus.GameOver && o();
+}
+};
+t.prototype.updateRealTime = function() {
+var e = this, t = cc.director._kSpeed ? cc.director._kSpeed : 1;
+this.timer = this.schedule(function() {
+e.updateGameUsedTime();
+}, 1 * t, cc.macro.REPEAT_FOREVER, 0);
+};
+t.prototype.updateGameUsedTime = function() {
+this.model && this.model.clickSaveData && this.model.clickSaveData.realTime && this.model.clickSaveData.realTime[this.model.gamePlayType] && (this.model.clickSaveData.realTime[this.model.gamePlayType] += 1e3);
+};
+t.prototype.unscheduleTimer = function() {
+if (this.timer) {
+this.model && this.model.clickSaveData && this.model.clickSaveData.realTime && this.model.clickSaveData.realTime[this.model.gamePlayType] && (this.model.clickSaveData.realTime[this.model.gamePlayType] = 0);
+this.unschedule(this.timer);
+this.timer = null;
+}
+};
+t.prototype.onDestroy = function() {
+e.prototype.onDestroy.call(this);
+cc.systemEvent.off(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
+L.default.clearAllGameManager();
+v.default.offGuideEvent(this.guideEventListener, this);
+this.unscheduleTimer();
+this.model && this.model.saveScore();
+};
+t.prototype.guideEventListener = function(e) {
+e === y.default.GameGuideType.ClickChess ? this.finishClickChess() : e === y.default.GameGuideType.SkipGuide && this.model.clearStorageGameData();
+};
+t.prototype.onEnable = function() {
+e.prototype.onEnable.call(this);
+this.hasShownResult && this.gameReset(y.default.GameStartType.NewGame);
+};
+t.prototype.start = function() {
+var e, t, i = this, o = g.default.IsShowGuide(this.model.gamePlayType);
+this.model.initRestoreGame(o);
+var a = this.model.gamePlayType;
+this.model.isRestoreOldGame ? this.sendGGameStartEvent(null === (e = this.model.clickSaveData) || void 0 === e ? void 0 : e.gameid[a], 6, !0, {
+saved_operation_steps: this.model.getPutCount() || 0
+}) : this.sendGGameStartEvent(null === (t = this.model.clickSaveData) || void 0 === t ? void 0 : t.gameid[a], 6, !1);
+this.header.playStartAnimation(.3);
+this.content.playStartAnimation(.3);
+var n = function() {
+i.model.gameType === y.default.GameType.Machine && o ? i.startGuide() : i.startGame();
+};
+O.default.isOpen(O.GLTictactoeFeat.GLTictactoeChangeSkin) ? this.preloadChessChild().then(function() {
+n();
+}).catch(function() {
+n();
+}) : n();
+};
+t.prototype.preloadChessChild = function() {
+var e = this;
+return this.chessChildPrefab ? Promise.resolve(this.chessChildPrefab) : new Promise(function(t, i) {
+var o = cc.assetManager.getBundle("gl_tictactoe");
+if (o) o.load("resource/prefab/ChessChild", cc.Prefab, function(o, a) {
+if (o) {
+console.error("GLTictactoeChess: failed to load ChessChild prefab", o);
+i(o);
+} else {
+e.chessChildPrefab = a;
+t(a);
+}
+}); else {
+console.error("GLTictactoeChess: gl_tictactoe bundle not found");
+i(new Error("gl_tictactoe bundle not found"));
+}
+});
+};
+t.prototype.startGame = function() {
+var e = this;
+this.content.initChess(this.model);
+this.model.isRestoreOldGame ? this.model.genarateRestorePlayerType() : S.default.playSoundNewLevel();
+this.scheduleOnce(function() {
+e.content.showTipChess(e.model.gamePlayType);
+}, .7);
+this.scheduleOnce(function() {
+e.showTurnAni();
+}, 1);
+};
+t.prototype.startGuide = function() {
+var e = this;
+g.default.GetInitBoard(this.model.gamePlayType).forEach(function(t) {
+var i = u(t, 3), o = i[0], a = i[1], n = i[2];
+e.model.setChessModelType(o, a, n);
+});
+this.content.initChess(this.model);
+this.header.setScoreActive(!1);
+this.header.setHeaderButtonActive(!1);
+g.default.InitGuide(this.model.gamePlayType, this.guidePrefab, this.guideNode, this.eventPermeate);
+this.scheduleOnce(function() {
+var t;
+e.model.gameStatus = y.default.GameStatus.GameIng;
+for (var i = g.default.getGuideStepBoard(), o = [], a = 0; a < i.length; a++) {
+var n = u(i[a], 2), s = n[0], r = n[1];
+o.push(null === (t = e.content.getChess(s, r)) || void 0 === t ? void 0 : t.node);
+}
+g.default.StartGuide(o, function() {
+e.header.setScoreActive(!0);
+e.header.setHeaderButtonActive(!0);
+e.content.showTipChess(e.model.gamePlayType);
+e.gameReset(y.default.GameStartType.None);
+e.model.genaratePlayerType();
+});
+e.content.updateTurn(e.model.playerType);
+}, .7);
+};
+t.prototype.clickChess = function(e, t) {
+if (this.model.gameStatus !== y.default.GameStatus.GameOver) {
+console.log("在 " + e + ";" + t + " 放置了棋子");
+if (this.model.chessModelList[e][t].playerType !== y.default.PlayerType.None) cc.log("棋子已经添加"); else if (this.model.gameStatus === y.default.GameStatus.GameIng) {
+if (g.default.IsGuiding && this.model.playerType === y.default.PlayerType.Red) {
+var i = g.default.getGuideStepBoard();
+if (i) {
+var o = g.default.getGuideStepCount();
+if (i[o] && (i[o][0] != e || i[o][1] != t)) {
+console.log("放在正确位置", i);
+return;
+}
+}
+}
+this.playerPutChess(e, t);
+m.default.getInstance().forwardStep();
+} else cc.log("不能触摸中");
+} else cc.log("游戏已经结束");
+};
+t.prototype.playerPutChess = function(e, t) {
+this.putChessDeal(e, t);
+g.default.IsGuiding && v.default.emitGuideEvent(y.default.GameGuideType.ClickChess, 0);
+if (this.model.gameIsOver()) {
+cc.log("游戏结束");
+this.isGameOver = !0;
+this.toGameOver();
+} else this.noOverToNext(!0);
+};
+t.prototype.noOverToNext = function(e) {
+var t = this;
+if (e) {
+this.model.gameStatus = y.default.GameStatus.Interrupt;
+this.model.playerType = this.model.playerType === y.default.PlayerType.Red ? y.default.PlayerType.Blue : y.default.PlayerType.Red;
+this.scheduleOnce(function() {
+t.showTurnAni();
+}, this.PutTouchCD);
+} else {
+this.model.gameStatus = y.default.GameStatus.Interrupt;
+this.scheduleOnce(function() {
+t.showTurnAni();
+}, this.PutTouchCD);
+this.scheduleOnce(function() {
+t.model.gameStatus = y.default.GameStatus.GameIng;
+t.model.playerType = y.default.PlayerType.Red;
+}, .2);
+}
+};
+t.prototype.showTurnAni = function(e) {
+void 0 === e && (e = !0);
+if (this.model.gameStatus !== y.default.GameStatus.GameOver) if (e) {
+var t = (this.model.playerType, y.default.PlayerType.Blue, 1);
+if (this.model.playerType === y.default.PlayerType.Blue) {
+this.model.gameStatus = y.default.GameStatus.Interrupt;
+this.content.updateTurn(this.model.playerType);
+var i = this.model.gameType === y.default.GameType.Machine ? .4 : t;
+this.scheduleOnce(this.TurnAniFinished, i);
+} else {
+this.content.updateTurn(this.model.playerType);
+this.TurnAniFinished();
+}
+} else this.TurnAniFinished();
+};
+t.prototype.TurnAniFinished = function() {
+var e = this;
+if (this.model.gameStatus !== y.default.GameStatus.GameOver && !g.default.IsGuiding) {
+this.model.gameStatus = y.default.GameStatus.GameIng;
+this.model.gameType === y.default.GameType.Machine && (this.model.playerType === y.default.PlayerType.Blue ? this.machinePutChess() : this.isAutoPutChess && this.scheduleOnce(function() {
+e.isAutoPutChess && e.model.playerType === y.default.PlayerType.Red && e.RedPutChess();
+}, .5));
+}
+};
+t.prototype.RedPutChess = function() {
+var e = this.model.getMachineNextChess(y.default.PlayerType.Red), t = Math.floor(e.index / this.model.column), i = e.index % this.model.column;
+cc.log("红方人下棋坐标 " + t + ";" + i);
+this.putChessDeal(t, i);
+if (this.model.gameIsOver()) {
+cc.log("游戏结束");
+this.isGameOver = !0;
+this.toGameOver();
+} else {
+this.model.gameStatus = y.default.GameStatus.GameIng;
+this.model.playerType = y.default.PlayerType.Blue;
+this.showTurnAni();
+}
+};
+t.prototype.machinePutChess = function() {
+var e = this.model.getMachineNextChess(y.default.PlayerType.Blue), t = Math.floor(e.index / this.model.column), i = e.index % this.model.column;
+cc.log("机器人下棋坐标 " + t + ";" + i);
+this.putChessDeal(t, i);
+if (this.model.gameIsOver()) {
+cc.log("游戏结束");
+this.isGameOver = !0;
+this.toGameOver();
+} else this.noOverToNext(!1);
+};
+t.prototype.putChessDeal = function(e, t) {
+this.content.putChess(e, t, this.model.playerType, this.model.gameType);
+this.model.putChess(e, t, this.model.playerType);
+};
+t.prototype.toGameOver = function() {
+var e = this;
+this.model.gameStatus = y.default.GameStatus.GameOver;
+GL.Game.GameEmit(GL.Game.GameEventType.HidePopup);
+if (this.isOpenBackView || this.isOpenResetView) this.isPauseing = !0; else {
+this.model.clearStorageGameData();
+var t = this.model.getWinChess(), i = t.playerType, o = t.winChess;
+if (o && o.length > 0) {
+o.forEach(function(e) {
+cc.log(e.join(";"));
+});
+if (!g.default.IsGuiding || GL.Game.IsFeatureOpen("GLTictactoeGuideAsFirstVictory")) {
+this.model.addWinnerScore(i);
+this.model.shouldShowStageResult && O.default.isOpen(O.GLTictactoeFeat.GLTictactoeResetScoreOnLargeGap) ? this.header.setScore(this.model.stageRedScore, this.model.stageBlueScore) : this.header.setScore(this.model.redScore, this.model.blueScore);
+}
+this.scheduleOnce(function() {
+if (O.default.isOpen(O.GLTictactoeFeat.GLTictactoeWinReward) && e.isPlayerWin() && !g.default.IsGuiding) {
+var t = e.model.getBlastCnt();
+console.log("[井字棋] 特性 GLTictactoeWinReward：玩家获胜，步数：" + t + "，准备播放激励动画");
+e.showWinRewardAnimation(t);
+}
+e.content.showWinChessNewEffect(o, i, function() {
+if (GL.Game.IsFeatureOpen("GLTictactoeGuideAsFirstVictory")) {
+g.default.IsGuiding && g.default.FinishGuide();
+e.toShowGameOver();
+} else g.default.IsGuiding ? g.default.showLastStep() : e.toShowGameOver();
+});
+}, .8);
+} else if (this.model.isFull()) {
+cc.log("下满了");
+this.gameDraw();
+}
+if (E.default.getInstance().isOpen() && E.default.getInstance().checkDraw()) {
+cc.log("检测到没人能赢");
+this.gameDraw();
+}
+}
+};
+t.prototype.gameReset = function(e) {
+var t, i, o = this;
+if (null != this.node) {
+this.unscheduleAllCallbacks();
+this.ResetData();
+if (this.content && cc.isValid(this.content)) {
+this.content.resetChess();
+this.content.resetTurns();
+this.model.gameDataReset();
+this.model.clearStorageGameData();
+this.isGameOver = !1;
+O.default.isOpen(O.GLTictactoeFeat.GLTictactoeResetScoreOnLargeGap) && this.model && this.header && this.header.setScore(this.model.redScore, this.model.blueScore);
+this.gameStartTime = Date.now();
+this.isKeyEnabled = !1;
+this.scheduleOnce(function() {
+o.showTurnAni();
+o.model.clickSaveData.gameid[o.model.gamePlayType] >= 2 && (M.default.getInstance().isOpen() && e == y.default.GameStartType.RestartGame ? o.model.openInsertionAds("end", 4) : o.model.openInsertionAds("frontInsert", 4));
+}, .5);
+S.default.playSoundNewLevel();
+this.updateRealTime();
+this.usrStartSubmit(null === (t = this.model.clickSaveData) || void 0 === t ? void 0 : t.gameid[this.model.gamePlayType], 6);
+this.sendGGameStartEvent(null === (i = this.model.clickSaveData) || void 0 === i ? void 0 : i.gameid[this.model.gamePlayType], 6, !1);
+} else console.log("GLTictactoeMain content is not valid");
+}
+};
+t.prototype.continueGame = function() {
+if (this.isPauseing) {
+this.isPauseing = !1;
+this.toGameOver();
+}
+};
+t.prototype.finishClickChess = function() {
+var e = this, t = u(g.default.GetRobotStep(), 2), i = t[0], o = t[1];
+i < 0 ? v.default.emitGuideEvent(y.default.GameGuideType.FinishRobotChess, 0) : this.scheduleOnce(function() {
+e.model.playerType = y.default.PlayerType.Blue;
+e.putChessDeal(i, o);
+e.scheduleOnce(function() {
+v.default.emitGuideEvent(y.default.GameGuideType.FinishRobotChess, 0);
+e.model.playerType = y.default.PlayerType.Red;
+e.model.gameStatus = y.default.GameStatus.GameIng;
+e.showTurnAni();
+}, .5);
+}, .5);
+};
+t.prototype.ResetData = function() {
+this.isOpenResetView = !1;
+this.isOpenBackView = !1;
+this.isPauseing = !1;
+this.hasShownResult = !1;
+};
+t.prototype.gameDraw = function() {
+var e = this;
+this.model.recordGameResult(y.default.GameResult.Draw);
+e.scheduleOnce(function() {
+e.playCommonResult(y.default.GameResult.Draw, function() {
+e.gameReset(y.default.GameStartType.DrawStartGame);
+});
+}, .8);
+this.model.clearStorageGameData();
+};
+t.prototype.playCommonResult = function(e, t) {
+var i, o, a = this, n = this.getResultType(e), s = e === y.default.GameResult.Draw ? 2 : e === y.default.GameResult.Win ? 0 : 1;
+this.unscheduleTimer();
+var r = window.GL;
+if (null !== (i = null == r ? void 0 : r.gamelobby) && void 0 !== i && i.isChapterFusionMode()) {
+this.model.addClickData(e);
+var c = 1 === s ? -1 : 1;
+null === (o = r.gamelobby) || void 0 === o || o.openResultView(c, function() {
+p.Exit(GL.Const.ExitGameType.FromGameResult);
+}, function() {
+if (a.content && cc.isValid(a.content)) {
+a.content.hideBoardAnimation();
+null == t || t();
+} else console.log("GLTictactoeMain content is not valid");
+});
+1 === c && p.Exit(GL.Const.ExitGameType.FromGameResult);
+} else if (!O.default.isOpen(O.GLTictactoeFeat.GLTictactoeSkipDrawLoseResult) || 2 !== s && 1 !== s) {
+this.model.addClickData(e);
+(null == h ? void 0 : h.isOpenJingZiQiDraw()) && 2 == s || (null == h ? void 0 : h.isOpenJingZiQiWin()) && s < 2 ? GL.ResultTool.createResultView(null, 6, 1, function() {
+if (a.content && cc.isValid(a.content)) {
+if (null != a.model) {
+a.model.clickSaveData.sessionid[a.model.gamePlayType] = a.model.clickSaveData.gameid[a.model.gamePlayType];
+a.model.setClickSaveData();
+a.model.saveScore();
+}
+null == p || p.Exit(GL.Const.ExitGameType.FromGameResult);
+}
+}, function() {
+if (a.content && cc.isValid(a.content)) {
+a.content.hideBoardAnimation();
+null == t || t();
+} else console.log("GLTictactoeMain content is not valid");
+}, 0, s, 2, function() {
+a.hasShownResult = !0;
+}) : GL.ResultTool.createResultView(null, 3, 1, function() {
+if (a.content && cc.isValid(a.content)) {
+if (null != a.model) {
+a.model.clickSaveData.sessionid[a.model.gamePlayType] = a.model.clickSaveData.gameid[a.model.gamePlayType];
+a.model.setClickSaveData();
+a.model.saveScore();
+}
+null == p || p.Exit(GL.Const.ExitGameType.FromGameResult);
+}
+}, function() {
+if (a.content && cc.isValid(a.content)) {
+a.content.hideBoardAnimation();
+null == t || t();
+} else console.log("GLTictactoeMain content is not valid");
+}, 0, s, 2, function() {
+a.hasShownResult = !0;
+});
+this.scheduleOnce(function() {
+GL.Game.IsFeatureOpen("gl_jingZiQi_AD") ? a.model.clickSaveData.gameid[a.model.gamePlayType] > 1 && a.model.openInsertionAds("end", n) : a.model.openInsertionAds("end", n);
+}, .1);
+} else {
+var l = 2 === s ? "平局" : "失败";
+console.log("[井字棋] 特性 GLTictactoeSkipDrawLoseResult：" + l + "，跳过结算界面、数据上报和广告");
+var u = 2 === s ? .2 : .5;
+this.scheduleOnce(function() {
+if (a.content && cc.isValid(a.content)) {
+a.content.hideBoardAnimation();
+null == t || t();
+} else console.log("GLTictactoeMain content is not valid");
+}, u);
+}
+};
+t.prototype.toShowGameOver = function() {
+if (this.model.shouldShowStageResult && O.default.isOpen(O.GLTictactoeFeat.GLTictactoeResetScoreOnLargeGap)) {
+console.log("[井字棋] 特性 GLTictactoeResetScoreOnLargeGap：显示阶段结果，阶段比分：玩家 " + this.model.stageRedScore + " : 机器人 " + this.model.stageBlueScore);
+this.model.shouldShowStageResult = !1;
+this.model.gameType === y.default.GameType.Machine ? this.model.stageRedScore > this.model.stageBlueScore ? this.gameOver(y.default.GameResult.Win) : this.model.stageBlueScore > this.model.stageRedScore ? this.gameOver(y.default.GameResult.Lose) : this.gameOver(y.default.GameResult.Draw) : this.model.stageRedScore > this.model.stageBlueScore ? this.gameOver(y.default.GameResult.RedWin) : this.model.stageBlueScore > this.model.stageRedScore ? this.gameOver(y.default.GameResult.BlueWin) : this.gameOver(y.default.GameResult.Draw);
+} else this.model.gameType === y.default.GameType.Machine ? this.gameOver(this.model.playerType === y.default.PlayerType.Red ? y.default.GameResult.Win : y.default.GameResult.Lose) : this.gameOver(this.model.playerType === y.default.PlayerType.Red ? y.default.GameResult.RedWin : y.default.GameResult.BlueWin);
+};
+t.prototype.gameOver = function(e) {
+var t = this;
+this.model.recordGameResult(e);
+this.scheduleOnce(function() {
+t.isOpenBackView = !1;
+t.isOpenResetView = !1;
+t.playCommonResult(e, function() {
+t.gameReset(y.default.GameStartType.NewGame);
+});
+t.isAutoPutChess && t.scheduleOnce(function() {
+t.model.gameStatus === y.default.GameStatus.GameOver && t.gameReset(y.default.GameStartType.NewGame);
+}, .5);
+}, .1);
+};
+t.prototype.onClickBackButton = function() {
+GL.Audio.playNormal2();
+this.model.clickSaveData.sessionid[this.model.gamePlayType] = this.model.clickSaveData.gameid[this.model.gamePlayType];
+this.model.setClickSaveData();
+this.model.saveScore();
+null == p || p.Exit(GL.Const.ExitGameType.FromGameMain);
+};
+t.prototype.onClickReplayButton = function() {
+var e = this;
+if (!this.isGameOver) {
+var t = function() {
+e.model && e.model.addClickData(y.default.GameResult.RestartGame);
+e.isOpenResetView = !1;
+e.model.resetScore();
+if (e.model.gameType === y.default.GameType.Machine) {
+e.model.addWinnerScore(y.default.PlayerType.Blue);
+e.header.setScore(e.model.redScore, e.model.blueScore);
+}
+m.default.getInstance().resetData();
+e.model.clickSaveData.gameid[e.model.gamePlayType]++;
+e.model.setClickSaveData();
+e.gameReset(y.default.GameStartType.RestartGame);
+GL.Game.GameEmit(GL.Game.GameEventType.HidePopup);
+}, i = {
+label: w.default.TICTACTOE_POPUP_RESTART_BUTTON_YES,
+style: GL.Popup.ButtonStyle.Blue,
+effect: GL.Popup.ButtonEffectStyle.playNormal1,
+action: function() {
+t();
+}
+}, o = {
+label: w.default.TICTACTOE_POPUP_RESTART_BUTTON_NO,
+style: GL.Popup.ButtonStyle.White,
+effect: GL.Popup.ButtonEffectStyle.playNormal2,
+action: function() {
+e.isOpenResetView = !1;
+e.continueGame();
+GL.Game.GameEmit(GL.Game.GameEventType.HidePopup);
+}
+}, a = [];
+a.push(i);
+if (GL.Game.IsPopupTwiceCheckOpen()) {
+if (GL.Game.GetPopupTwiceCheck()) {
+t();
+return;
+}
+a.push({
+label: "Never Ask Again",
+style: GL.Popup.ButtonStyle.White,
+effect: GL.Popup.ButtonEffectStyle.playNormal2,
+action: function() {
+GL.Game.SetPopupTwiceCheck(!0);
+GL.Game.GameEmit(GL.Game.GameEventType.HidePopup);
+}
+});
+} else a.push(o);
+GL.Game.GameEmit(GL.Game.GameEventType.ShowPopup, {
+icon: GL.Popup.Icon.Restart,
+title: w.default.TICTACTOE_POPUP_RESTART_TITLE,
+content: w.default.TICTACTOE_POPUP_RESTART_DESC,
+buttons: a
+});
+}
+};
+t.prototype.getResultType = function(e) {
+return e == y.default.GameResult.Win ? 1 : e == y.default.GameResult.Lose ? 2 : e == y.default.GameResult.Draw ? 5 : -1;
+};
+t.prototype.isPlayerWin = function() {
+if (!this.model) return !1;
+if (!this.model.gameIsOver()) return !1;
+var e = this.model.getWinChess(), t = e.playerType, i = e.winChess;
+return !!(i && i.length > 0 && t === y.default.PlayerType.Red);
+};
+t.prototype.showWinRewardAnimation = function(e) {
+return c(this, void 0, Promise, function() {
+var t, i, o, a, n, s, r;
+return l(this, function(c) {
+switch (c.label) {
+case 0:
+if (!O.default.isOpen(O.GLTictactoeFeat.GLTictactoeWinReward)) {
+console.log("[井字棋] 特性 GLTictactoeWinReward 未开启，跳过激励动画");
+return [ 2 ];
+}
+if (3 !== e && 4 !== e) {
+console.log("[井字棋] 特性 GLTictactoeWinReward：步数 " + e + " 不符合条件（需3或4步），跳过激励动画");
+return [ 2 ];
+}
+t = 3 === e ? "1_dominated (三步完胜)" : "2_bigwin (四步胜利)";
+console.log("[井字棋] 特性 GLTictactoeWinReward：开始播放激励动画，步数：" + e + "，动画：" + t);
+c.label = 1;
+
+case 1:
+c.trys.push([ 1, 3, , 4 ]);
+if (!(i = cc.assetManager.getBundle("gl_tictactoe"))) {
+console.warn("GLTictactoeMain: gl_tictactoe bundle not found");
+return [ 2 ];
+}
+return [ 4, new Promise(function(e, t) {
+i.load("resource/prefab/Word", cc.Prefab, function(i, o) {
+if (i) {
+console.error("GLTictactoeMain: failed to load Word prefab", i);
+t(i);
+} else e(o);
+});
+}) ];
+
+case 2:
+if (!(o = c.sent())) return [ 2 ];
+if (!(a = cc.instantiate(o))) return [ 2 ];
+a.setParent(this.content.node);
+a.position = cc.v3(0, 0, 0);
+if (!(n = a.getComponent(sp.Skeleton))) {
+console.warn("GLTictactoeMain: Word prefab has no Skeleton component");
+a.destroy();
+return [ 2 ];
+}
+s = "";
+3 === e ? s = "1_dominated" : 4 === e && (s = "2_bigwin");
+if (s) {
+a.active = !0;
+n.setAnimation(0, s, !1);
+console.log("[井字棋] 特性 GLTictactoeWinReward：激励动画已开始播放");
+n.setCompleteListener(function() {
+n.setCompleteListener(null);
+console.log("[井字棋] 特性 GLTictactoeWinReward：激励动画播放完成");
+cc.isValid(a) && a.destroy();
+});
+} else a.destroy();
+return [ 3, 4 ];
+
+case 3:
+r = c.sent();
+console.error("[井字棋] 特性 GLTictactoeWinReward：播放激励动画失败", r);
+return [ 3, 4 ];
+
+case 4:
+return [ 2 ];
+}
+});
+});
+};
+t.prototype.getSavedOperationDurationGameSubtype = function() {
+return "6";
+};
+var i;
+t.Instance = null;
+r([ N(cc.JsonAsset) ], t.prototype, "configFile", void 0);
+r([ N(_.default) ], t.prototype, "content", void 0);
+r([ N(P.default) ], t.prototype, "header", void 0);
+r([ N(cc.Node) ], t.prototype, "guideNode", void 0);
+r([ N(cc.Prefab) ], t.prototype, "guidePrefab", void 0);
+r([ N(T.default) ], t.prototype, "eventPermeate", void 0);
+return i = r([ A ], t);
+}(d.default);
+i.default = D;
+cc._RF.pop();
+}, {
+"../../gl_hall/gl_lang/config/GLLangKeyDefine": void 0,
+"../../gl_hall/script/HallFeature": void 0,
+"../../gl_hall/script/hall/GlBaseScene": void 0,
+"../../gl_hall/script/traits/GLGameAdStrategyOptimizeTraitCtrl": void 0,
+"./GLTictactoeChangeSkinTs": "GLTictactoeChangeSkinTs",
+"./GLTictactoeFeature": "GLTictactoeFeature",
+"./GLTictactoeRoundLogEventCtr": "GLTictactoeRoundLogEventCtr",
+"./const/GLTictactoeConst": "GLTictactoeConst",
+"./guide/GLTictactoeEventPermeate": "GLTictactoeEventPermeate",
+"./guide/GLTictactoeGuideManager": "GLTictactoeGuideManager",
+"./manager/GLTictactoeDataManager": "GLTictactoeDataManager",
+"./manager/GLTictactoeEventManager": "GLTictactoeEventManager",
+"./manager/GLTictactoePlayerDataManager": "GLTictactoePlayerDataManager",
+"./manager/GLTictactoeSoundManager": "GLTictactoeSoundManager",
+"./manager/traits/GLTictactoeCheckDrawTraitCtrl": "GLTictactoeCheckDrawTraitCtrl",
+"./model/GLTictactoeGameModel": "GLTictactoeGameModel",
+"./traits/GLTictactoeFirstWinShowEncourageCtrl": "GLTictactoeFirstWinShowEncourageCtrl",
+"./traits/GLTictactoeLastStepWinEncourageCtrl": "GLTictactoeLastStepWinEncourageCtrl",
+"./ui/GLTictactoeContent": "GLTictactoeContent",
+"./ui/GLTictactoeHeader": "GLTictactoeHeader"
+} ],
+GLTictactoePlayerDataManager: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "3c634MimEJLGb+mMcch0SgJ", "GLTictactoePlayerDataManager");
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var o, a = e("../guide/GLTictactoeGuideManager");
+(function(e) {
+var t = null;
+e.initGameModel = function(e) {
+t = e;
+};
+e.isOpenMoreGuide = function() {
+return !0;
+};
+e.getFinishGuideData = function(e) {
+if (!t) {
+cc.error("GameModel 未初始化！");
+return !1;
+}
+return !t.data.FinishGuideData[e];
+};
+e.setFinishGuideData = function(e) {
+if (t) {
+if (!t.data.FinishGuideData[e]) {
+t.data.FinishGuideData[e] = !0;
+i();
+}
+} else cc.error("GameModel 未初始化！");
+};
+function i() {
+t ? t.save() : cc.error("GameModel 未初始化！");
+}
+e.saveData = i;
+e.clearAllGameManager = function() {
+a.default.ClearGuide();
+};
+e.getGameModel = function() {
+return t;
+};
+})(o || (o = {}));
+i.default = o;
+cc._RF.pop();
+}, {
+"../guide/GLTictactoeGuideManager": "GLTictactoeGuideManager"
+} ],
+GLTictactoePlayerData: [ function(e, t) {
+"use strict";
+cc._RF.push(t, "ef9e9njV79E55fOcJDaBFha", "GLTictactoePlayerData");
+cc._RF.pop();
+}, {} ],
+GLTictactoePreAim: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "8642ashpvJKBoQS0+nLwtf9", "GLTictactoePreAim");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = e("../const/GLTictactoeConst"), r = cc._decorator, c = r.ccclass, l = r.property, u = function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.ImgH = null;
+t.ImgV = null;
+t.IsTouch = !1;
+t.IsHide = !1;
+t.TouchTime = 0;
+t._chessBoard = null;
+t._red = null;
+t._white = null;
+return t;
+}
+t.prototype.SetChessBoard = function(e) {
+this._chessBoard = e;
+this._red = new cc.Color(255, 0, 0, this.ImgH.node.color.a);
+this._white = new cc.Color(255, 255, 255, this.ImgH.node.color.a);
+};
+t.prototype.GetWidthAndHeight = function(e, t) {
+var i = this._chessBoard.yuMiaoWidth, o = this._chessBoard.yuMiaoWidth, a = !1, n = this._chessBoard.getChessModel(e, t);
+n && n.playerType !== s.default.PlayerType.None && (a = !0);
+return {
+width: o,
+height: i,
+isHit: a
+};
+};
+t.prototype.ShowPreAimAni = function(e, t) {
+if (!this.IsHide) {
+this.IsTouch = !0;
+this.node.active = !0;
+var i = this.GetWidthAndHeight(e, t), o = i.width, a = i.height, n = i.isHit;
+cc.Tween.stopAllByTarget(this.ImgH.node);
+cc.Tween.stopAllByTarget(this.ImgV.node);
+this.ImgH.node.setContentSize(300 * this._chessBoard.chessScale, a);
+this.ImgV.node.setContentSize(o, 300 * this._chessBoard.chessScale);
+var s = this._chessBoard.getChess(e, t).node.position;
+this.ImgH.node.setPosition(s.x, this._chessBoard.middleY);
+this.ImgV.node.setPosition(this._chessBoard.middleX, s.y);
+if (n) {
+this.ImgH.node.color = this._red;
+this.ImgV.node.color = this._red;
+} else {
+this.ImgH.node.color = this._white;
+this.ImgV.node.color = this._white;
+}
+}
+};
+t.prototype.HidePreAimAni = function() {
+var e = this;
+this.IsHide = !0;
+this.scheduleOnce(function() {
+e.IsHide = !1;
+}, .31);
+this.IsTouch = !1;
+this.TouchTime = 0;
+var t = this.GetWidthAndHeight(-1, -1), i = t.width, o = t.height;
+cc.tween(this.ImgH.node).to(.2, {
+width: 0,
+height: o
+}).call(function() {
+e.ImgH.node.active = !1;
+e.ImgV.node.active = !1;
+}).start();
+cc.tween(this.ImgV.node).to(.2, {
+width: i,
+height: 0
+}).start();
+};
+t.prototype.update = function(e) {
+if (this.IsTouch) {
+this.TouchTime += e;
+if (this.TouchTime >= .2) {
+this.ImgH.node.active = !0;
+this.ImgV.node.active = !0;
+}
+}
+};
+n([ l(cc.Sprite) ], t.prototype, "ImgH", void 0);
+n([ l(cc.Sprite) ], t.prototype, "ImgV", void 0);
+return n([ c ], t);
+}(cc.Component);
+i.default = u;
+cc._RF.pop();
+}, {
+"../const/GLTictactoeConst": "GLTictactoeConst"
+} ],
+GLTictactoeRoundLogEventCtr: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "193461Ru2tECLHy3QmZEk4y", "GLTictactoeRoundLogEventCtr");
+var o;
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var a = null === (o = null === window || void 0 === window ? void 0 : window._GLHallClassMap_) || void 0 === o ? void 0 : o.GLHallController, n = e("./manager/GLTictactoePlayerDataManager"), s = function() {
+function e() {
+this.step = 0;
+this.forward_step = 0;
+}
+e.prototype.reset = function() {
+this.step = 0;
+this.forward_step = 0;
+};
+return e;
+}(), r = function() {
+function e() {
+this._dataVo = new s();
+this._realGameTime = -1;
+this._roundDataPreClear = null;
+}
+e.prototype.setRealGameTime = function(e) {
+this._realGameTime = e;
+};
+e.getInstance = function() {
+null == this._instance && (this._instance = new e());
+return this._instance;
+};
+e.assignData = function(e, t) {
+var i = new t();
+Object.assign(i, e);
+return i;
+};
+e.prototype.loadData = function() {
+var t = cc.sys.localStorage.getItem(e.SaveKey);
+if (t && "" != t) {
+var i = JSON.parse(t);
+this._dataVo = e.assignData(i, s);
+} else this._dataVo = new s();
+};
+e.prototype.saveData = function() {
+this._dataVo && cc.sys.localStorage.setItem(e.SaveKey, JSON.stringify(this._dataVo));
+};
+e.prototype.resetData = function() {
+if (this._dataVo) {
+this._dataVo.reset();
+this.saveData();
+}
+};
+e.prototype.clear = function() {
+cc.sys.localStorage.removeItem(e.SaveKey);
+};
+e.prototype.forwardStep = function() {
+if (this._dataVo) {
+this._dataVo.step++;
+this._dataVo.forward_step++;
+this.saveData();
+}
+};
+e.prototype.getLogEventData = function() {
+return {
+step: this._dataVo.step,
+forward_step: this._dataVo.forward_step
+};
+};
+e.prototype.getOperationStepEventData = function() {
+return {
+step: this._dataVo.step,
+forward_step: this._dataVo.forward_step
+};
+};
+e.prototype.getSomeGamedata = function() {
+var e, t = null == a ? void 0 : a.data, i = 0;
+if (-1 != this._realGameTime) {
+i = this._realGameTime;
+this._realGameTime = -1;
+} else {
+var o = n.default.getGameModel();
+o && (i = o.getRealGameTime());
+}
+return {
+GameTime: Math.ceil((null === (e = null == t ? void 0 : t.totalTime) || void 0 === e ? void 0 : e.gl_tictactoe) || 0),
+RealTime: i
+};
+};
+e.prototype.recordRoundDataPreClear = function(e, t, i) {
+this._roundDataPreClear = {};
+e && Object.assign(this._roundDataPreClear, e);
+t && Object.assign(this._roundDataPreClear, t);
+i && Object.assign(this._roundDataPreClear, i);
+};
+e.prototype.getRoundDataPreClear = function() {
+return this._roundDataPreClear;
+};
+e._instance = null;
+e.SaveKey = "gl_tictactoe_user_round_log_event";
+return e;
+}();
+i.default = r;
+cc._RF.pop();
+}, {
+"./manager/GLTictactoePlayerDataManager": "GLTictactoePlayerDataManager"
+} ],
+GLTictactoeSoundManager: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "12f21pu4ktCh70BKA8tnAm1", "GLTictactoeSoundManager");
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var o;
+(function(e) {
+e.playSoundO = function() {
+t("tictactoe_o");
+};
+e.playSoundX = function() {
+t("tictactoe_x");
+};
+e.playSoundWin3 = function() {
+t("tictactoe_row_3");
+};
+e.playSoundWin4 = function() {
+t("tictactoe_row_4");
+};
+e.playSoundWin5 = function() {
+t("tictactoe_row_5");
+};
+e.playSoundDraw = function() {
+t("HsHallplatform_win_revive", !1);
+};
+e.playSoundNewLevel = function() {
+t("onet_birth");
+};
+function t(e, t) {
+void 0 === t && (t = !0);
+GL.Audio.playEffect("resource/audio/" + e, "gl_tictactoe");
+}
+})(o || (o = {}));
+i.default = o;
+cc._RF.pop();
+}, {} ],
+GLTictactoeTipsItem: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "1fc062JaipP3ZMaTcIGShfl", "GLTictactoeTipsItem");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = cc._decorator, r = s.ccclass, c = s.property, l = function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.bgRect = null;
+t.bgImage = null;
+t.toastLabel = null;
+t.curve = null;
+t.maxWidth = 0;
+t._tween = null;
+return t;
+}
+t.prototype.SetData = function(e, t, i) {
+var o = this;
+this.TryCancel();
+this.toastLabel.string = e;
+var a = this.toastLabel.node.getContentSize().width, n = Math.min(a, this.maxWidth);
+this.toastLabel.node.setContentSize(n, this.toastLabel.node.getContentSize().height);
+this.node.opacity = 255;
+this.bgRect.setPosition(cc.v2(0, 0));
+this._tween = cc.tween(this.node).to(t, {
+opacity: 0
+}).call(function() {
+i && i(o);
+o._tween = null;
+}).start();
+};
+t.prototype.TryCancel = function() {
+if (this._tween) {
+this._tween.stop();
+this._tween = null;
+}
+};
+t.prototype.onDestroy = function() {
+this.TryCancel();
+};
+n([ c(cc.Node) ], t.prototype, "bgRect", void 0);
+n([ c(cc.Sprite) ], t.prototype, "bgImage", void 0);
+n([ c(cc.Label) ], t.prototype, "toastLabel", void 0);
+n([ c(cc.AnimationCurve) ], t.prototype, "curve", void 0);
+n([ c ], t.prototype, "maxWidth", void 0);
+return n([ r ], t);
+}(cc.Component);
+i.default = l;
+cc._RF.pop();
+}, {} ],
+GLTictactoeTipsManager: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "479092LZCZCaanodZXDnk0y", "GLTictactoeTipsManager");
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var o, a = e("./GLTictactoeEventManager");
+(function(e) {
+e.ShowTips = function(e, t) {
+a.default.emitGameTipEvent(e, t);
+};
+})(o || (o = {}));
+i.default = o;
+cc._RF.pop();
+}, {
+"./GLTictactoeEventManager": "GLTictactoeEventManager"
+} ],
+GLTictactoeTurnNode: [ function(e, t, i) {
+"use strict";
+cc._RF.push(t, "e33a8/QxrVIP6M9TkkRQqRo", "GLTictactoeTurnNode");
+var o, a = this && this.__extends || (o = function(e, t) {
+return (o = Object.setPrototypeOf || {
+__proto__: []
+} instanceof Array && function(e, t) {
+e.__proto__ = t;
+} || function(e, t) {
+for (var i in t) Object.prototype.hasOwnProperty.call(t, i) && (e[i] = t[i]);
+})(e, t);
+}, function(e, t) {
+o(e, t);
+function i() {
+this.constructor = e;
+}
+e.prototype = null === t ? Object.create(t) : (i.prototype = t.prototype, new i());
+}), n = this && this.__decorate || function(e, t, i, o) {
+var a, n = arguments.length, s = n < 3 ? t : null === o ? o = Object.getOwnPropertyDescriptor(t, i) : o;
+if ("object" == typeof Reflect && "function" == typeof Reflect.decorate) s = Reflect.decorate(e, t, i, o); else for (var r = e.length - 1; r >= 0; r--) (a = e[r]) && (s = (n < 3 ? a(s) : n > 3 ? a(t, i, s) : a(t, i)) || s);
+return n > 3 && s && Object.defineProperty(t, i, s), s;
+};
+Object.defineProperty(i, "__esModule", {
+value: !0
+});
+var s = cc._decorator, r = s.ccclass, c = s.property, l = function(e) {
+a(t, e);
+function t() {
+var t = null !== e && e.apply(this, arguments) || this;
+t.arrowNode = null;
+t.isInRound = !1;
+return t;
+}
+t.prototype.onLoad = function() {
+this.arrowNode.active = !1;
+};
+t.prototype.exitRound = function() {
+if (this.isInRound) {
+this.isInRound = !1;
+cc.Tween.stopAllByTarget(this.arrowNode);
+this.arrowNode.anchorX = .5;
+this.arrowNode.active = !1;
+var e = this.node.getChildByName("mask");
+e && (e.active = !0);
+}
+};
+t.prototype.enterRound = function() {
+if (!this.isInRound) {
+var e = this.node.getChildByName("mask");
+e && (e.active = !1);
+this.isInRound = !0;
+this.arrowNode.active = !0;
+cc.Tween.stopAllByTarget(this.arrowNode);
+var t = cc.tween(this.arrowNode).to(20 / 60, {
+anchorX: .45
+}).to(20 / 60, {
+anchorX: .55
+});
+cc.tween(this.arrowNode).repeatForever(t).start();
+}
+};
+n([ c(cc.Node) ], t.prototype, "arrowNode", void 0);
+return n([ r ], t);
+}(cc.Component);
+i.default = l;
+cc._RF.pop();
+}, {} ]
+}, {}, [ "GLTictactoeChangeSkin", "GLTictactoeChangeSkin2", "GLTictactoeChangeSkinTs", "GLTictactoeFeature", "GLTictactoeMain", "GLTictactoeRoundLogEventCtr", "GLTictactoeConst", "GLTictactoeEventPermeate", "GLTictactoeGuideHand", "GLTictactoeGuideManager", "GLTictactoeGuideView", "GLTictactoeDataManager", "GLTictactoeEventManager", "GLTictactoePlayerDataManager", "GLTictactoeSoundManager", "GLTictactoeTipsManager", "GLTictactoeCheckDrawTraitCtrl", "GLTictactoeChessModel", "GLTictactoeGameModel", "GLTictactoePlayerData", "GLTictactoeMMBitAi", "GLTictactoeFirstWinShowEncourageCtrl", "GLTictactoeLastStepWinEncourageCtrl", "GLTictactoeBanner", "GLTictactoeChess", "GLTictactoeContent", "GLTictactoeHeader", "GLTictactoePreAim", "GLTictactoeTipsItem", "GLTictactoeTurnNode" ]);

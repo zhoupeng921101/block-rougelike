@@ -1,0 +1,12 @@
+{
+ "chapterHighScore": "fangkuaipintutravel#high_cord:number",
+ "chapterRoundNum": "fangkuaipintutravel#roundNum:number",
+ "chapterGameNum": "fangkuaipintutravel#gameNum:number",
+ "chapterNum": "fangkuaipintutravel#chapterNum:number",
+ "chapterFaceBlocks": "fangkuaipintutravel#save_arr:object",
+ "chapterProducerBlocks": "fangkuaipintutravel#opera_arr:object",
+ "chapterColorLists": "fangkuaipintutravel#opera_color_arr:object",
+ "chapterCondition": "fangkuaipintutravel#Condition:object",
+ "winStreakCount": "fangkuaipintutravel#winStreakCount:number",
+ "chapterZiMuShangZengCount": "fangkuaipintutravel#ziMuShangZengCount:number"
+}

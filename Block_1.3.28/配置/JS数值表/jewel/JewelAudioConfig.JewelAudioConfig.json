@@ -1,0 +1,44 @@
+{
+ "s_combo_1": {
+  "url": "audios/eliminate/s_combo_1",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "jewel"
+ },
+ "s_combo_2": {
+  "url": "audios/eliminate/s_combo_2",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "jewel"
+ },
+ "s_combo_3": {
+  "url": "audios/eliminate/s_combo_3",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "jewel"
+ },
+ "s_combo_4": {
+  "url": "audios/eliminate/s_combo_4",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 0.5,
+  "bundleName": "jewel"
+ },
+ "s_combo_5": {
+  "url": "audios/eliminate/s_combo_5",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "jewel"
+ },
+ "s_combo_6": {
+  "url": "audios/eliminate/s_combo_6",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "jewel"
+ },
+ "bgmMusic": {
+  "url": "audios/bgMusic/bg",
+  "type": "@r.AudioType.SOUND",
+  "volume": 1,
+  "bundleName": "jewel"
+ }
+}

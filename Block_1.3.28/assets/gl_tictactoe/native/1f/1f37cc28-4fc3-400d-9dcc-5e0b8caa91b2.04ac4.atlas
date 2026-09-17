@@ -1,0 +1,188 @@
+
+gameplay_word.png
+size: 997,657
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+text_tictactoe_bigwin
+  rotate: false
+  xy: 2, 285
+  size: 520, 208
+  orig: 526, 214
+  offset: 3, 3
+  index: -1
+text_tictactoe_bigwin_sg_00000
+  rotate: true
+  xy: 905, 51
+  size: 95, 85
+  orig: 263, 107
+  offset: 4, 16
+  index: -1
+text_tictactoe_bigwin_sg_00001
+  rotate: false
+  xy: 620, 77
+  size: 134, 93
+  orig: 263, 107
+  offset: 3, 10
+  index: -1
+text_tictactoe_bigwin_sg_00002
+  rotate: false
+  xy: 775, 148
+  size: 172, 98
+  orig: 263, 107
+  offset: 3, 6
+  index: -1
+text_tictactoe_bigwin_sg_00003
+  rotate: false
+  xy: 768, 248
+  size: 211, 100
+  orig: 263, 107
+  offset: 4, 4
+  index: -1
+text_tictactoe_bigwin_sg_00004
+  rotate: true
+  xy: 723, 409
+  size: 246, 99
+  orig: 263, 107
+  offset: 6, 4
+  index: -1
+text_tictactoe_bigwin_sg_00005
+  rotate: false
+  xy: 524, 310
+  size: 242, 97
+  orig: 263, 107
+  offset: 10, 5
+  index: -1
+text_tictactoe_bigwin_sg_00006
+  rotate: true
+  xy: 900, 421
+  size: 234, 95
+  orig: 263, 107
+  offset: 19, 7
+  index: -1
+text_tictactoe_bigwin_sg_00007
+  rotate: false
+  xy: 2, 121
+  size: 195, 86
+  orig: 263, 107
+  offset: 61, 17
+  index: -1
+text_tictactoe_bigwin_sg_00008
+  rotate: false
+  xy: 756, 68
+  size: 147, 78
+  orig: 263, 107
+  offset: 111, 26
+  index: -1
+text_tictactoe_bigwin_sg_00009
+  rotate: false
+  xy: 342, 16
+  size: 102, 76
+  orig: 263, 107
+  offset: 157, 27
+  index: -1
+text_tictactoe_bigwin_sg_00010
+  rotate: false
+  xy: 636, 2
+  size: 80, 73
+  orig: 263, 107
+  offset: 178, 29
+  index: -1
+text_tictactoe_bigwin_sg_00011
+  rotate: false
+  xy: 947, 353
+  size: 27, 66
+  orig: 263, 107
+  offset: 228, 35
+  index: -1
+text_tictactoe_dominated
+  rotate: false
+  xy: 2, 495
+  size: 719, 160
+  orig: 725, 166
+  offset: 3, 3
+  index: -1
+text_tictactoe_dominated_sg_00000
+  rotate: false
+  xy: 446, 22
+  size: 95, 70
+  orig: 363, 83
+  offset: 4, 7
+  index: -1
+text_tictactoe_dominated_sg_00001
+  rotate: false
+  xy: 2, 44
+  size: 136, 75
+  orig: 363, 83
+  offset: 3, 4
+  index: -1
+text_tictactoe_dominated_sg_00002
+  rotate: false
+  xy: 524, 417
+  size: 173, 76
+  orig: 363, 83
+  offset: 3, 4
+  index: -1
+text_tictactoe_dominated_sg_00003
+  rotate: false
+  xy: 199, 131
+  size: 216, 76
+  orig: 363, 83
+  offset: 5, 4
+  index: -1
+text_tictactoe_dominated_sg_00004
+  rotate: false
+  xy: 278, 209
+  size: 266, 74
+  orig: 363, 83
+  offset: 8, 4
+  index: -1
+text_tictactoe_dominated_sg_00005
+  rotate: true
+  xy: 824, 350
+  size: 305, 74
+  orig: 363, 83
+  offset: 15, 4
+  index: -1
+text_tictactoe_dominated_sg_00006
+  rotate: false
+  xy: 2, 209
+  size: 274, 74
+  orig: 363, 83
+  offset: 78, 3
+  index: -1
+text_tictactoe_dominated_sg_00007
+  rotate: false
+  xy: 546, 172
+  size: 227, 74
+  orig: 363, 83
+  offset: 126, 4
+  index: -1
+text_tictactoe_dominated_sg_00008
+  rotate: false
+  xy: 417, 94
+  size: 201, 76
+  orig: 363, 83
+  offset: 156, 4
+  index: -1
+text_tictactoe_dominated_sg_00009
+  rotate: false
+  xy: 199, 53
+  size: 141, 76
+  orig: 363, 83
+  offset: 217, 4
+  index: -1
+text_tictactoe_dominated_sg_00010
+  rotate: false
+  xy: 543, 2
+  size: 91, 73
+  orig: 363, 83
+  offset: 267, 6
+  index: -1
+text_tictactoe_dominated_sg_00011
+  rotate: false
+  xy: 900, 358
+  size: 45, 61
+  orig: 363, 83
+  offset: 309, 16
+  index: -1

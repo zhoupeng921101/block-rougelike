@@ -1,0 +1,134 @@
+{
+ "MusicBlock1": {
+  "url": "audios/note 1",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlock2": {
+  "url": "audios/note 2",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlock3": {
+  "url": "audios/note 3",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlock4": {
+  "url": "audios/note 4",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlock5": {
+  "url": "audios/note 5",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlock6": {
+  "url": "audios/note 6",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlock7": {
+  "url": "audios/note 7",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockPlus1": {
+  "url": "audios/note+1",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockPlus2": {
+  "url": "audios/note+2",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockPlus3": {
+  "url": "audios/note+3",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockPlus4": {
+  "url": "audios/note+4",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockPlus5": {
+  "url": "audios/note+5",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockPlus6": {
+  "url": "audios/note+6",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockPlus7": {
+  "url": "audios/note+7",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockMinus1": {
+  "url": "audios/note-1",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockMinus2": {
+  "url": "audios/note-2",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockMinus3": {
+  "url": "audios/note-3",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockMinus4": {
+  "url": "audios/note-4",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockMinus5": {
+  "url": "audios/note-5",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockMinus6": {
+  "url": "audios/note-6",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockMinus7": {
+  "url": "audios/note-7",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ },
+ "MusicBlockTime": {
+  "url": "audios/music_time",
+  "type": "@hs.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "IsOpenClassMusicBlockTrait"
+ }
+}

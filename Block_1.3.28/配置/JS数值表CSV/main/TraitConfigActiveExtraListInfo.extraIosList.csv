@@ -1,0 +1,5 @@
+﻿id,name,param
+146100403,CTAgloNameIOSTrait,"{""firing"": 1}"
+19243001,CTkeepBottomAlgoTravelTrait,"{""firing"": 1}"
+19248001,CTFirstAlgoIOSTrait,"{""firing"": 1}"
+146100437,CTHighScoreDecayFixTrait,"{""firing"": 1}"

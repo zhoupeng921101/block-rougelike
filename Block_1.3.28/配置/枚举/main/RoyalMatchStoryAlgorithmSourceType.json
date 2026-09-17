@@ -1,0 +1,15 @@
+{
+ "PuzzleNone": 0,
+ "Puzzle100": 1,
+ "PuzzleTimeFirst": 2,
+ "PuzzleTimeOther": 3,
+ "LaneScheme": 4,
+ "AlgoGuide": 5,
+ "AlgoRevive": 6,
+ "AlgoReviveTrait": 7,
+ "AlgoTrait": 8,
+ "Priority": 9,
+ "AlgoFirstRound": 10,
+ "AlgoNoReplaceBottom": 11,
+ "RatoChapter": 12
+}

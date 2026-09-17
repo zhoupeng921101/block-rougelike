@@ -1,0 +1,11 @@
+{
+ "TOP_LAYER_PREFAB": "res/prefabs/mainItems/topLayer",
+ "COMBO_ADD_SCORE_PREFAB": "pixel/score/comboAddScore",
+ "COMBO_ADD_SCORE_TOTAL_PREFAB": "pixel/score/comboAddScoreTotal",
+ "TUTORIAL_PREFAB": "pixel/Tutorial/TutorialUI",
+ "HIGH_SCORE_ICON": "sand_main_high_score_icon",
+ "HIGH_SCORE_FONT": "sand_main_high_score_font",
+ "SCORE_FONT": "sand_main_score_font",
+ "SETTING": "sand_main_setting",
+ "COMBO_SCORE_TIP_FONT": "sand_main_combo_score_tip_font"
+}

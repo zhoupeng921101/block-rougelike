@@ -1,0 +1,8 @@
+{
+ "ClassWin": 1,
+ "ChapterWin": 2,
+ "ClassFail": 3,
+ "ChapterFail": 4,
+ "ClassRevive": 5,
+ "ChapterRevive": 6
+}

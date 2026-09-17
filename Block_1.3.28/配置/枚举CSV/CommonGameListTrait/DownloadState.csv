@@ -1,0 +1,5 @@
+﻿成员,值
+NONE,0
+PENDING,1
+SUCCESS,2
+FAIL,3

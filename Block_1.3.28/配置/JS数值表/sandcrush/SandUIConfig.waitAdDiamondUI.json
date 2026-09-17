@@ -1,0 +1,7 @@
+{
+ "bundle": "woodskin",
+ "prefab": "prefabs/diamond/waitAdDiamondUI",
+ "cnName": "等待广告界面--钻石模式",
+ "layer": "@o.HSLayerType.PopUp",
+ "cache": false
+}

@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/toastUI",
+ "cnName": "toast提示弹窗",
+ "layer": "@o.HSLayerType.MainUI",
+ "cache": false
+}

@@ -1,0 +1,646 @@
+{
+ "preCompile": {
+  "url": "audios/e_score_streak_1",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 0
+ },
+ "e_score_streak_1": {
+  "url": "audios/e_score_streak_1",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "e_score_streak_2": {
+  "url": "audios/e_score_streak_2",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "e_score_streak_3": {
+  "url": "audios/e_score_streak_3",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "e_score_streak_4": {
+  "url": "audios/e_score_streak_4",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "e_score_streak_5": {
+  "url": "audios/e_score_streak_5",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "e_score_streak_6": {
+  "url": "audios/e_score_streak_6",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "e_score_streak_7": {
+  "url": "audios/e_score_streak_7",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "e_score_streak_8": {
+  "url": "audios/e_score_streak_8",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "e_score_streak_9": {
+  "url": "audios/e_score_streak_9",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "e_score_streak_10": {
+  "url": "audios/e_score_streak_10",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "s_button": {
+  "url": "audios/s_button"
+ },
+ "s_put": {
+  "url": "audios/s_put",
+  "volume": 1
+ },
+ "s_restart": {
+  "url": "audios/s_restart"
+ },
+ "s_fail": {
+  "url": "audios/over/s_fail"
+ },
+ "s_win": {
+  "url": "audios/over/s_win"
+ },
+ "travel_nowayput": {
+  "url": "audios/over/travel_nowayput"
+ },
+ "travel_return": {
+  "url": "audios/travel_return",
+  "platform": "ios"
+ },
+ "s_touch": {
+  "url": "audios/s_touch"
+ },
+ "site_button": {
+  "url": "audios/site_button"
+ },
+ "time": {
+  "url": "audios/time"
+ },
+ "number": {
+  "url": "audios/number",
+  "volume": 0.1
+ },
+ "s_btnShow": {
+  "url": "audios/s_btnShow"
+ },
+ "ios_btnShow": {
+  "url": "audios/SOUND_btn_play_over",
+  "platform": "ios"
+ },
+ "s_new_record": {
+  "url": "audios/s_new_record"
+ },
+ "arrow": {
+  "url": "audios/arrow",
+  "platform": "ios"
+ },
+ "Good2": {
+  "url": "audios/Good2",
+  "volume": 1
+ },
+ "Great2": {
+  "url": "audios/Great2",
+  "volume": 1
+ },
+ "Excellect2": {
+  "url": "audios/Excellect2",
+  "volume": 1
+ },
+ "Amazing2": {
+  "url": "audios/Amazing2",
+  "volume": 1
+ },
+ "Unbelievable2": {
+  "url": "audios/Unbelievable2",
+  "volume": 1
+ },
+ "txt_Magic_tanhao": {
+  "url": "audio/magic",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "ScenarioEncourageWordsTrait"
+ },
+ "txt_Lucky_tanhao": {
+  "url": "audio/lucky",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "ScenarioEncourageWordsTrait"
+ },
+ "txt_Jackpot_tanhao": {
+  "url": "audio/jackpot",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "ScenarioEncourageWordsTrait"
+ },
+ "Good1": {
+  "url": "audios/trait/personSound/Good1",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios"
+ },
+ "Great1": {
+  "url": "audios/trait/personSound/Great1",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios"
+ },
+ "Excellect1": {
+  "url": "audios/trait/personSound/Excellect1",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios"
+ },
+ "Amazing1": {
+  "url": "audios/trait/personSound/Amazing1",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios"
+ },
+ "Unbelievable1": {
+  "url": "audios/trait/personSound/Unbelievable1",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios"
+ },
+ "DianZan1": {
+  "url": "audios/trait/gamePlayDianzan/put_thumb1",
+  "volume": 1
+ },
+ "DianZan2": {
+  "url": "audios/trait/gamePlayDianzan/put_thumb2",
+  "volume": 1
+ },
+ "DianZan3": {
+  "url": "audios/trait/gamePlayDianzan/put_thumb3",
+  "volume": 1
+ },
+ "DianZan4": {
+  "url": "audios/trait/gamePlayDianzan/put_thumb4",
+  "volume": 1
+ },
+ "putRightPerfect": {
+  "url": "audios/trait/isOpenRightPut/feature_click",
+  "volume": 1
+ },
+ "CommonBgm": {
+  "url": "audios/bgm/commonBgm",
+  "type": "@r.AudioType.SOUND",
+  "volume": 1
+ },
+ "iosCommonBgm": {
+  "url": "audios/bgm/bg2",
+  "type": "@r.AudioType.SOUND",
+  "volume": 1,
+  "platform": "ios"
+ },
+ "iosCommonBgmFast": {
+  "url": "audio/bg2",
+  "type": "@r.AudioType.SOUND",
+  "volume": 1,
+  "platform": "ios",
+  "bundleName": "TimeBgmSpeedTrait"
+ },
+ "BackgroundWhiteNoise": {
+  "url": "audios/trait/backgroundWhiteNoise/rain",
+  "volume": 1,
+  "loop": true
+ },
+ "BlockReturn": {
+  "url": "audio/s_return",
+  "volume": 1,
+  "bundleName": "BlockBackPlayAudioTrait"
+ },
+ "EffectAllClean": {
+  "url": "audios/all_clean",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "Remote_effectAllClearPlus"
+ },
+ "RightPutHintThumb1": {
+  "url": "audios/thumb1",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "Remote_19855"
+ },
+ "RightPutHintThumb2": {
+  "url": "audios/thumb2",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "Remote_19855"
+ },
+ "GamelobbyMoreGameBgm": {
+  "url": "resource/audio/platform_menubgm",
+  "type": "@r.AudioType.SOUND",
+  "volume": 1,
+  "bundleName": "gl_hall",
+  "isRemote": true
+ },
+ "all_clean_new": {
+  "url": "audio/all_clean_new",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "Remote_14605_f_ClearBoardEffectOptimizeTrait",
+  "isRemote": true
+ },
+ "restart_slide": {
+  "url": "vietnam/sound/restart_slide",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "Vietnam_f_VietnamCtrTrait",
+  "isRemote": true
+ },
+ "click1": {
+  "url": "vietnam/sound/click1",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "Vietnam_f_VietnamCtrTrait",
+  "isRemote": true
+ },
+ "s_restart_rock": {
+  "url": "audio/restar_rock",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "RainbowAudioTrait",
+  "isRemote": true
+ },
+ "piano_death": {
+  "url": "audios/put_fail_piano",
+  "bundleName": "PlaceDeathBlockPianoSoundTrait",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1
+ },
+ "unbelievable2": {
+  "url": "audio/unbelievable2",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "great2d": {
+  "url": "audio/great2d",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "good2": {
+  "url": "audio/good2",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "excellect2": {
+  "url": "audio/excellect2",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_9_1": {
+  "url": "audio/e_score_streak_9",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_8_1": {
+  "url": "audio/e_score_streak_8",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_7_1": {
+  "url": "audio/e_score_streak_7",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_6_1": {
+  "url": "audio/e_score_streak_6",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_5_1": {
+  "url": "audio/e_score_streak_5",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_4_1": {
+  "url": "audio/e_score_streak_4",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_3_1": {
+  "url": "audio/e_score_streak_3",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_2_1": {
+  "url": "audio/e_score_streak_2",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_10_1": {
+  "url": "audio/e_score_streak_10",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_1_1": {
+  "url": "audio/e_score_streak_1",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "amazing2": {
+  "url": "audio/amazing2",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplaceTrait",
+  "isRemote": true
+ },
+ "e_score_streak_10_3": {
+  "url": "audio/e_score_streak_10",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace3Trait",
+  "isRemote": true
+ },
+ "e_score_streak_9_3": {
+  "url": "audio/e_score_streak_9",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace3Trait",
+  "isRemote": true
+ },
+ "e_score_streak_8_3": {
+  "url": "audio/e_score_streak_8",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace3Trait",
+  "isRemote": true
+ },
+ "e_score_streak_7_3": {
+  "url": "audio/e_score_streak_7",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace3Trait",
+  "isRemote": true
+ },
+ "e_score_streak_6_3": {
+  "url": "audio/e_score_streak_6",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace3Trait",
+  "isRemote": true
+ },
+ "e_score_streak_5_3": {
+  "url": "audio/e_score_streak_5",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace3Trait",
+  "isRemote": true
+ },
+ "e_score_streak_4_3": {
+  "url": "audio/e_score_streak_4",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace3Trait",
+  "isRemote": true
+ },
+ "e_score_streak_3_3": {
+  "url": "audio/e_score_streak_3",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace3Trait",
+  "isRemote": true
+ },
+ "e_score_streak_2_3": {
+  "url": "audio/e_score_streak_2",
+  "volume": 1,
+  "platform": "ios",
+  "bundleName": "AudioReplace3Trait",
+  "isRemote": true
+ },
+ "e_score_streak_1_3": {
+  "url": "audio/e_score_streak_1",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace3Trait",
+  "isRemote": true
+ },
+ "e_score_streak_10_2": {
+  "url": "audio/e_score_streak_10",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace2Trait",
+  "isRemote": true
+ },
+ "e_score_streak_9_2": {
+  "url": "audio/e_score_streak_9",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace2Trait",
+  "isRemote": true
+ },
+ "e_score_streak_8_2": {
+  "url": "audio/e_score_streak_8",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace2Trait",
+  "isRemote": true
+ },
+ "e_score_streak_7_2": {
+  "url": "audio/e_score_streak_7",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace2Trait",
+  "isRemote": true
+ },
+ "e_score_streak_6_2": {
+  "url": "audio/e_score_streak_6",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace2Trait",
+  "isRemote": true
+ },
+ "e_score_streak_5_2": {
+  "url": "audio/e_score_streak_5",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace2Trait",
+  "isRemote": true
+ },
+ "e_score_streak_4_2": {
+  "url": "audio/e_score_streak_4",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace2Trait",
+  "isRemote": true
+ },
+ "e_score_streak_3_2": {
+  "url": "audio/e_score_streak_3",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace2Trait",
+  "isRemote": true
+ },
+ "e_score_streak_2_2": {
+  "url": "audio/e_score_streak_2",
+  "volume": 1,
+  "platform": "ios",
+  "bundleName": "AudioReplace2Trait",
+  "isRemote": true
+ },
+ "e_score_streak_1_2": {
+  "url": "audio/e_score_streak_1",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "AudioReplace2Trait",
+  "isRemote": true
+ },
+ "GLGameCommonTransition": {
+  "url": "audios/platform_transition",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 2,
+  "bundleName": "GLGameCommonTransitionTrait"
+ },
+ "e_score_streak_change_1": {
+  "url": "audios/e_score_streak_1",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "ComboAudiosReplaceTrait",
+  "isRemote": true,
+  "platform": "gp"
+ },
+ "e_score_streak_change_2": {
+  "url": "audios/e_score_streak_2",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "ComboAudiosReplaceTrait",
+  "isRemote": true,
+  "platform": "gp"
+ },
+ "e_score_streak_change_3": {
+  "url": "audios/e_score_streak_3",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "ComboAudiosReplaceTrait",
+  "isRemote": true,
+  "platform": "gp"
+ },
+ "e_score_streak_change_4": {
+  "url": "audios/e_score_streak_4",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "ComboAudiosReplaceTrait",
+  "isRemote": true,
+  "platform": "gp"
+ },
+ "e_score_streak_change_5": {
+  "url": "audios/e_score_streak_5",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "ComboAudiosReplaceTrait",
+  "isRemote": true,
+  "platform": "gp"
+ },
+ "enhanceCollection_gem_collet": {
+  "url": "audios/travel_gem_collet",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "EnhanceCollectionFeedbackTrait",
+  "isRemote": true
+ },
+ "enhanceCollection_gem_streak": {
+  "url": "audios/travel_gem_streak",
+  "type": "@r.AudioType.EFFECT",
+  "volume": 1,
+  "bundleName": "EnhanceCollectionFeedbackTrait",
+  "isRemote": true
+ },
+ "hint_25percent": {
+  "url": "audio/hint_25percent",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "LevelPercentageTipsTrait",
+  "isRemote": true
+ },
+ "hint_50percent": {
+  "url": "audio/hint_50percent",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "LevelPercentageTipsTrait",
+  "isRemote": true
+ },
+ "hint_75percent": {
+  "url": "audio/hint_75percent",
+  "volume": 1,
+  "type": "@r.AudioType.EFFECT",
+  "platform": "ios",
+  "bundleName": "LevelPercentageTipsTrait",
+  "isRemote": true
+ }
+}

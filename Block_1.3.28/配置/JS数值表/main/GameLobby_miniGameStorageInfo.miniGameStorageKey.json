@@ -1,0 +1,17 @@
+{
+ "gl_oneline": "BlockFillPlayerData",
+ "gl_fruit": "gl_fruit_user",
+ "gl_mahjong": "gl_mahjong_user",
+ "gl_onet": "HsOnet_local",
+ "gl_sudoku": "LS_SudokuData",
+ "gl_watersort": [
+  "GlWaterGuilde",
+  "GLWaterLevelId",
+  "gl_GLWaterGameNum",
+  "GLWaterUnlockNum",
+  "GLWaterLightNum",
+  "GLWaterRevertNum",
+  "GLWaterNewTubeAddNum",
+  "GLWaterMainData"
+ ]
+}

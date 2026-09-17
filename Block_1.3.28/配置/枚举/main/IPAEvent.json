@@ -1,0 +1,16 @@
+{
+ "ui_setting_activate_click": "ui_setting_activate_click",
+ "subs_show_success": "subs_show_success",
+ "subs_show_fail": "subs_show_fail",
+ "subs_explanation_click": "subs_explanation_click",
+ "subs_restore_purchases_click": "subs_restore_purchases_click",
+ "subs_restore_result_end": "subs_restore_result_end",
+ "subs_subscription_click": "subs_subscription_click",
+ "subs_subscription_manage_click": "subs_subscription_manage_click",
+ "subs_load_fail_show": "subs_load_fail_show",
+ "subs_load_fail_retry": "subs_load_fail_retry",
+ "subs_load_fail_close": "subs_load_fail_close",
+ "subs_pay_success": "subs_pay_success",
+ "subs_pay_fail": "subs_pay_fail",
+ "subs_pay_cancel": "subs_pay_cancel"
+}

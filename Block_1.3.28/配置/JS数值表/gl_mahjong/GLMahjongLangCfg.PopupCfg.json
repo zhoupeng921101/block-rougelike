@@ -1,0 +1,53 @@
+{
+ "again": {
+  "icon": 0,
+  "title": "@r.default.MAHJONG_POPUP_AGAIN_TITLE",
+  "content": "@r.default.MAHJONG_POPUP_AGAIN_DESC",
+  "btnText1": "@r.default.MAHJONG_POPUP_AGAIN_BUTTON_RESTART",
+  "btnText2": "@r.default.MAHJONG_POPUP_AGAIN_BUTTON_NEWGAME",
+  "hideCloseBtn": false,
+  "name": "again"
+ },
+ "againGuide": {
+  "icon": 0,
+  "title": "@r.default.MAHJONG_POPUP_AGAIN_TITLE",
+  "content": "@r.default.MAHJONG_POPUP_AGAIN_DESC",
+  "btnText1": "@r.default.MAHJONG_POPUP_AGAIN_BUTTON_RESTART",
+  "btnText2": "@r.default.MAHJONG_POPUP_AGAIN_BUTTON_CANCEL",
+  "hideCloseBtn": false,
+  "name": "againGuide"
+ },
+ "hint": {
+  "icon": 1,
+  "title": "@r.default.MAHJONG_POPUP_HINT_TITLE",
+  "content": "",
+  "btnText1": "@r.default.MAHJONG_POPUP_HINT_BUTTON_YES",
+  "btnText2": "@r.default.MAHJONG_POPUP_HINT_BUTTON_NO",
+  "hideCloseBtn": false,
+  "isBtn1Video": true,
+  "propId": "@n.GLMahjongPropIdDefine.Hint",
+  "name": "hint"
+ },
+ "shuffle": {
+  "icon": 2,
+  "title": "@r.default.MAHJONG_POPUP_SHUFFLE_TITLE",
+  "content": "",
+  "btnText1": "@r.default.MAHJONG_POPUP_SHUFFLE_BUTTON_YES",
+  "btnText2": "@r.default.MAHJONG_POPUP_SHUFFLE_BUTTON_NO",
+  "hideCloseBtn": false,
+  "isBtn1Video": true,
+  "propId": "@n.GLMahjongPropIdDefine.Shuffle",
+  "name": "shuffle"
+ },
+ "Lose": {
+  "icon": 3,
+  "title": "@r.default.MAHJONG_POPUP_LOSE_TITLE",
+  "content": "@r.default.MAHJONG_POPUP_LOSE_DESC",
+  "btnText1": "@r.default.MAHJONG_POPUP_LOSE_BUTTON_SHUFFLE",
+  "btnText2": "@r.default.MAHJONG_POPUP_LOSE_BUTTON_RESTART",
+  "hideCloseBtn": true,
+  "isBtn1Video": true,
+  "propId": "@n.GLMahjongPropIdDefine.Shuffle",
+  "name": "Lose"
+ }
+}

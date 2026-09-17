@@ -1,0 +1,26 @@
+[
+ [
+  2,
+  3,
+  2,
+  "@c.default.TICTACTOE_GUIDE_NOTICE_1"
+ ],
+ [
+  4,
+  2,
+  1,
+  "@c.default.TICTACTOE_GUIDE_NOTICE_2"
+ ],
+ [
+  3,
+  2,
+  1,
+  "@c.default.TICTACTOE_GUIDE_NOTICE_1"
+ ],
+ [
+  4,
+  1,
+  1,
+  "@c.default.TICTACTOE_GUIDE_NOTICE_4"
+ ]
+]

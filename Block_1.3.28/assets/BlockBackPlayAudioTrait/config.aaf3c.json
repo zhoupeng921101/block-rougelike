@@ -1,0 +1,1 @@
+{"paths":{"0":["audio/s_return",0]},"types":["cc.AudioClip"],"uuids":["70Vmz0xAhO0ZhX/BMR6AIb"],"scenes":{},"redirect":[],"deps":[],"packs":{},"name":"BlockBackPlayAudioTrait","importBase":"import","nativeBase":"native","debug":false,"isZip":false,"encrypted":false,"versions":{"import":[0,"818bf"],"native":[0,"98ea5"]}}

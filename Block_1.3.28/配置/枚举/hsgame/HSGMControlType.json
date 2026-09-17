@@ -1,0 +1,9 @@
+{
+ "Toggle": "toggle",
+ "Slider": "slider",
+ "Input": "input",
+ "Dropdown": "dropdown",
+ "DropdownCheckBox": "DropdownCheckBox",
+ "Button": "button",
+ "Info": "info"
+}

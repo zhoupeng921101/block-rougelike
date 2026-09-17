@@ -1,0 +1,16 @@
+[
+ {
+  "id": 146100101,
+  "name": "CTRobotAddReviveNumTrait",
+  "param": {
+   "firing": 1
+  }
+ },
+ {
+  "id": 146100102,
+  "name": "CTRobotChapterTrait",
+  "param": {
+   "firing": 1
+  }
+ }
+]

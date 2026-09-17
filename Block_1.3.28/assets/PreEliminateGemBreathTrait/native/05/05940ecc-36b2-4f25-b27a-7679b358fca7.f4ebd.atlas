@@ -1,0 +1,97 @@
+
+gameplay_xingxing_g.png
+size: 307,954
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+tx/111
+  rotate: true
+  xy: 163, 616
+  size: 149, 142
+  orig: 149, 142
+  offset: 0, 0
+  index: -1
+tx/a_2
+  rotate: false
+  xy: 2, 454
+  size: 150, 150
+  orig: 150, 150
+  offset: 0, 0
+  index: -1
+tx/a_5
+  rotate: false
+  xy: 154, 344
+  size: 150, 150
+  orig: 150, 150
+  offset: 0, 0
+  index: -1
+tx/a_6
+  rotate: false
+  xy: 2, 302
+  size: 150, 150
+  orig: 150, 150
+  offset: 0, 0
+  index: -1
+tx/baixingxing
+  rotate: false
+  xy: 191, 900
+  size: 53, 52
+  orig: 53, 53
+  offset: 0, 1
+  index: -1
+tx/dian_32
+  rotate: true
+  xy: 163, 496
+  size: 118, 121
+  orig: 154, 156
+  offset: 19, 15
+  index: -1
+tx/dian_33
+  rotate: false
+  xy: 2, 152
+  size: 149, 148
+  orig: 190, 192
+  offset: 20, 19
+  index: -1
+tx/dian_33_LV
+  rotate: false
+  xy: 153, 43
+  size: 149, 148
+  orig: 190, 192
+  offset: 20, 19
+  index: -1
+tx/dian_33ye
+  rotate: false
+  xy: 2, 2
+  size: 149, 148
+  orig: 190, 192
+  offset: 20, 19
+  index: -1
+tx/fang1 1
+  rotate: false
+  xy: 246, 906
+  size: 46, 46
+  orig: 58, 58
+  offset: 5, 8
+  index: -1
+tx/lan1
+  rotate: true
+  xy: 2, 767
+  size: 185, 187
+  orig: 197, 199
+  offset: 6, 6
+  index: -1
+tx/mb_23
+  rotate: false
+  xy: 154, 193
+  size: 150, 149
+  orig: 150, 149
+  offset: 0, 0
+  index: -1
+tx/xuanzhuan1
+  rotate: false
+  xy: 2, 606
+  size: 159, 159
+  orig: 205, 212
+  offset: 24, 28
+  index: -1

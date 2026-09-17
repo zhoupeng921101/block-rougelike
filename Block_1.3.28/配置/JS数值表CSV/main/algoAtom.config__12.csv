@@ -1,0 +1,4 @@
+﻿id,data
+@y.BLOCK_WEIGHT,
+@y.BLOCK_SORT,"{""sort"": ""@f.RANDOM""}"
+SELECT_BLOCK_716001,"{""overTime"": 100}"

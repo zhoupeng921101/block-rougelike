@@ -1,0 +1,58 @@
+[
+ {
+  "type": "@c.OFFER_TYPE.ALGO_MIX_TKXC",
+  "name": "混合填空2"
+ },
+ {
+  "type": "@c.OFFER_TYPE.ALGO_QUICK",
+  "name": "快速填空"
+ },
+ {
+  "type": "@c.OFFER_TYPE.ALGO_FILL_MORE_AREA",
+  "name": "大面积填空"
+ },
+ {
+  "type": "@c.OFFER_TYPE.CLEAR_BOARD",
+  "name": "清屏plus"
+ },
+ {
+  "type": "@c.OFFER_TYPE.SIMPLE_ZHIJUE",
+  "name": "简单直觉题"
+ },
+ {
+  "type": "@c.OFFER_TYPE.CLASSTERMINATE_CYCLE",
+  "name": "终止刷分"
+ },
+ {
+  "type": "@c.OFFER_TYPE.TERMINATE_REFRESH_SCORE_FIX",
+  "name": "终止刷分"
+ },
+ {
+  "type": "@c.OFFER_TYPE.INVALID_REMOVE_FIXED_GROUP",
+  "name": "无效消除1"
+ },
+ {
+  "type": "@c.OFFER_TYPE.INVALID_REMOVE_LOOP_OUT_BLOCK",
+  "name": "无效消除2"
+ },
+ {
+  "type": "@c.OFFER_TYPE.CHAPTERTERMINATE_CYCLE",
+  "name": "终止刷分"
+ },
+ {
+  "type": "@c.OFFER_TYPE.KUN_NAN_TI_HELP",
+  "name": "死亡难题"
+ },
+ {
+  "type": "@c.OFFER_TYPE.LINK_SMALL_BORDER_HELP",
+  "name": "连续边数少难题"
+ },
+ {
+  "type": "@c.OFFER_TYPE.ELIMINTE_PLEASURE",
+  "name": "消除爽"
+ },
+ {
+  "type": "@c.OFFER_TYPE.STAY_IN_BLANK_FILL",
+  "name": "滞留清除填空"
+ }
+]

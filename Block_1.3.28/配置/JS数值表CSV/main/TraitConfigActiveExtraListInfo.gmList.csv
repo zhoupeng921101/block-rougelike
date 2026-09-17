@@ -1,0 +1,5 @@
+﻿id,name,param
+146100301,CTGMAlgorithmTrait,"{""firing"": 1}"
+146100303,CTLogAddAdLogTrait,"{""firing"": 1}"
+146100304,CTGMReviveTrait,"{""firing"": 1}"
+146100304,CTGMIsOpenOperaPosTrait,"{""firing"": 1}"

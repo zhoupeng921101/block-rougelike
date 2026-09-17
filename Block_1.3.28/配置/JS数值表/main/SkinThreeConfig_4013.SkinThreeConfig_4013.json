@@ -1,0 +1,193 @@
+{
+ "block_1_normal": {
+  "assetPath": "res/game_cube_1_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "block_2_normal": {
+  "assetPath": "res/game_cube_2_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "block_3_normal": {
+  "assetPath": "res/game_cube_1_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "block_4_normal": {
+  "assetPath": "res/game_cube_2_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "block_5_normal": {
+  "assetPath": "res/game_cube_1_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "block_6_normal": {
+  "assetPath": "res/game_cube_2_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "block_7_normal": {
+  "assetPath": "res/game_cube_1_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "block_put_spine_effect": {
+  "assetPath": "effect/gameplay_light_startBlock_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "block_shadow": {
+  "assetPath": "res/game_cube_shadow_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "board_bg": {
+  "assetPath": "res/backgroundkuai2-8x8_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "combo_spine": {
+  "assetPath": "effect/gameplay_combo_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "combo_spine_font": {
+  "assetPath": "font/gameplay_combo_fnt_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013",
+  "fontLayout": {
+   "spacingX": -15,
+   "fontSize": 150,
+   "position": {
+    "x": 30,
+    "y": -60
+   },
+   "lineHeight": 50
+  }
+ },
+ "combo_spine_sprite": {
+  "assetPath": "res/gameplay_combo_txt_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "combotips_spine_effect": {
+  "assetPath": "effect/gameplay_comboTips_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "crown": {
+  "assetPath": "res/backgroundscore_highest3_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "eliminate_effect": {
+  "assetPath": "effect/gameplay_eliminate_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "eliminate_prompt_effect": {
+  "assetPath": "effect/gameplay_ready_eliminate_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "encourage_spine_effect": {
+  "assetPath": "effect/gameplay_word_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "game_bg": {
+  "assetPath": "res/backgroundbg_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "revive_round_bg": {
+  "assetPath": "res/die_quan_bg_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "revive_spine_countdown": {
+  "assetPath": "effect/revive_countdown_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "setting_btn": {
+  "assetPath": "res/backgroundstop_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "setting_close_btn": {
+  "assetPath": "res/set_btn_close_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "setting_in_bg": {
+  "assetPath": "res/set_bg_2_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "setting_line": {
+  "assetPath": "res/set_bg_line_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "setting_out_bg": {
+  "assetPath": "res/setting_bg_common_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "sound_clear": {
+  "assetPath": "sound/bread_streak",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ },
+ "spine_comboscoretip_font": {
+  "assetPath": "font/gameplay_num_grade_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013",
+  "fontLayout": {
+   "spacingX": -5,
+   "fontSize": 80,
+   "position": {
+    "x": 0,
+    "y": 0
+   },
+   "lineHeight": 160
+  }
+ },
+ "spine_highscore_font": {
+  "assetPath": "font/typefacehigh_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013",
+  "fontLayout": {
+   "spacingX": -17,
+   "fontSize": 90,
+   "position": {
+    "x": 51,
+    "y": 0
+   },
+   "lineHeight": 70
+  }
+ },
+ "spine_score_font": {
+  "assetPath": "font/typeFaceCurrent_material_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013",
+  "fontLayout": {
+   "spacingX": 0,
+   "fontSize": 80,
+   "position": {
+    "x": 0,
+    "y": -20
+   },
+   "lineHeight": 50
+  }
+ },
+ "unbelievable_spine_effect": {
+  "assetPath": "effect/gameplay_clear_unbelievable_4013",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_4013"
+ }
+}

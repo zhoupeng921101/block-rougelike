@@ -1,0 +1,24 @@
+{
+ "SubscribePanel": {
+  "name": "adSubScribePopSubscribePanel",
+  "url": "prefabs/adSubScribePopSubscribePanel",
+  "bundleName": "@o.AD_SUBSCRIBE_POP_MODEL_BUNDLE_NAME",
+  "ease": "@hs.PanelScaleEase"
+ },
+ "SetPanel": {
+  "name": "adSubScribePopSetPanel",
+  "url": "prefabs/adSubScribePopSetPanel",
+  "bundleName": "@o.AD_SUBSCRIBE_POP_MODEL_BUNDLE_NAME",
+  "ease": "@hs.PanelScaleEase"
+ },
+ "GameOverNode": {
+  "name": "adSubscribePopGameOverNode",
+  "url": "prefabs/adSubscribePopGameOverNode",
+  "bundleName": "@o.AD_SUBSCRIBE_POP_MODEL_BUNDLE_NAME"
+ },
+ "PopItem": {
+  "name": "adSubScribePopItem",
+  "url": "prefabs/adSubScribePopItem",
+  "bundleName": "@o.AD_SUBSCRIBE_POP_MODEL_BUNDLE_NAME"
+ }
+}

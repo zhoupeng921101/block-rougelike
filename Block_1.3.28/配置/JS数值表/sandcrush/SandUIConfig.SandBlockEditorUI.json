@@ -1,0 +1,7 @@
+{
+ "bundle": "sandgm",
+ "prefab": "editor/block/SandBlockEditorUI",
+ "cnName": "Block编辑",
+ "layer": "@o.HSLayerType.Dialog",
+ "cache": false
+}

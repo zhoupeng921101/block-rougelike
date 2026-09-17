@@ -1,0 +1,73 @@
+﻿bundle,资产路径,类型,名称,细节
+AddChapterUnlockProcessTrait,animations/ChapterBtnUnlockReddotAnim,cc.AnimationClip,ChapterBtnUnlockReddotAnim,时长0.283s
+IsOpenScoreFlyInnFeedbackTrait,animations/IsOpenScoreFlyInnFeedback,cc.AnimationClip,IsOpenScoreFlyInnFeedback,时长0.430s
+ReviveXBlockCurlUpTrait,animations/x,cc.AnimationClip,x,时长0.667s
+gl_onet,resource/Effect/anims/Anim_Click_error_01,cc.AnimationClip,Anim_Click_error_01,时长1.000s
+gl_onet,resource/Effect/anims/Anim_Clock_2,cc.AnimationClip,Anim_Clock_2,时长0.800s
+gl_onet,resource/Effect/anims/Anim_Combo_tex,cc.AnimationClip,Anim_Combo_tex,时长1.000s
+gl_onet,resource/Effect/anims/Anim_Hint_01,cc.AnimationClip,Anim_Hint_01,时长1.500s
+gl_onet,resource/Effect/anims/Anim_Selected_01,cc.AnimationClip,Anim_Selected_01,时长0.333s
+gl_onet,resource/Effect/anims/Animator_Clock,cc.AnimationClip,Animator_Clock,时长1.000s
+gl_onet,resource/Effect/anims/Animator_Combo,cc.AnimationClip,Animator_Combo,时长1.000s
+gl_onet,resource/Effect/anims/Animator_Combo_good,cc.AnimationClip,Animator_Combo_good,时长1.000s
+gl_onet,resource/Effect/anims/Animator_Mahjong_hinthand,cc.AnimationClip,Animator_Mahjong_hinthand,时长1.000s
+gl_onet,resource/Effect/anims/onetTeachRes,cc.AnimationClip,onetTeachRes,时长1.000s
+gl_sudoku,res/anim/combo,cc.AnimationClip,combo,时长0.500s
+gl_sudoku,res/anim/smile,cc.AnimationClip,smile,时长1.300s
+gl_sudoku,res/anim/smile/clap,cc.AnimationClip,clap,时长2.625s
+ClearScreenSkinTransitionTrait,shader/swipe,cc.EffectAsset,swipe,"shader1 技法1 CC_USE_ALPHA_ATLAS_texture,CC_USE_MODEL,INPUT_IS_GAMMA,USE_ALPHA_TEST,USE_BGRA,USE_TEXTURE"
+MergeBlockTrait,materials/MergeBlock,cc.EffectAsset,MergeBlock,"shader1 技法1 CC_USE_MODEL,USE_ALPHA_TEST,USE_TEXTURE"
+SkinChangeSettlementEffectTrait,materials/skinchangesettlement_mask_effect,cc.EffectAsset,skinchangesettlement_mask_effect,"shader1 技法1 CC_USE_ALPHA_ATLAS_texture,CC_USE_ALPHA_ATLAS_texture_mask,CC_USE_MODEL,INPUT_IS_GAMMA,USE_ALPHA_TEST,USE_TEXTURE"
+gl_hall,gl_result/pefabs/gradient_miniGame,cc.EffectAsset,gradient_miniGame,"shader1 技法1 CC_USE_ALPHA_ATLAS_texture,CC_USE_MODEL,INPUT_IS_GAMMA,USE_ALPHA_TEST,USE_TEXTURE"
+gl_hall,resource/effect/eazax-avatar,cc.EffectAsset,eazax-avatar,"shader1 技法1 CC_USE_ALPHA_ATLAS_texture,CC_USE_MODEL,INPUT_IS_GAMMA,USE_TEXTURE"
+internal,effects/builtin-2d-graphics,cc.EffectAsset,,
+internal,effects/builtin-2d-gray-sprite,cc.EffectAsset,,
+internal,effects/builtin-2d-label,cc.EffectAsset,,
+internal,effects/builtin-2d-spine,cc.EffectAsset,,
+internal,effects/builtin-2d-sprite,cc.EffectAsset,,
+internal,effects/builtin-3d-trail,cc.EffectAsset,,
+internal,effects/builtin-clear-stencil,cc.EffectAsset,,
+internal,effects/builtin-unlit,cc.EffectAsset,,
+resources,materials/saturation/saturation-bg-effect,cc.EffectAsset,saturation-bg-effect,"shader1 技法1 CC_USE_ALPHA_ATLAS_texture,CC_USE_MODEL,INPUT_IS_GAMMA,USE_ALPHA_TEST,USE_TEXTURE"
+resources,materials/saturation/saturation-effect,cc.EffectAsset,saturation-effect,shader1 技法1 USE_TEXTURE
+resources,skin/effect/BrightnessToSaturation,cc.EffectAsset,BrightnessToSaturation,"shader1 技法1 CC_USE_ALPHA_ATLAS_texture,CC_USE_MODEL,INPUT_IS_GAMMA,USE_ALPHA_TEST,USE_TEXTURE"
+resources,skin/effect/CenterColorControl,cc.EffectAsset,CenterColorControl,"shader1 技法1 CC_USE_MODEL,USE_ALPHA_TEST,USE_TEXTURE"
+resources,skin/effect/FivePartColorControl,cc.EffectAsset,FivePartColorControl,"shader1 技法1 CC_USE_MODEL,USE_ALPHA_TEST,USE_TEXTURE"
+resources,skin/effect/traits/CenterColorControlFixed,cc.EffectAsset,CenterColorControlFixed,"shader1 技法1 CC_USE_MODEL,USE_ALPHA_TEST,USE_TEXTURE"
+sandcrush,res/mtls/gradient,cc.EffectAsset,gradient,"shader1 技法1 CC_USE_ALPHA_ATLAS_texture,CC_USE_MODEL,INPUT_IS_GAMMA,USE_ALPHA_TEST,USE_TEXTURE"
+sandcrush,res/tile/sandtile,cc.EffectAsset,sandtile,shader1 技法1 
+sandcrush,res/tile/sandtileDeath,cc.EffectAsset,sandtileDeath,shader1 技法1 
+sandcrush,res/tile/sandtileEffect,cc.EffectAsset,sandtileEffect,shader1 技法1 
+sandcrush,res/tile/sandtileEffectRainbow,cc.EffectAsset,sandtileEffectRainbow,shader1 技法1 
+sandcrush,res/tile/sandtileSimple,cc.EffectAsset,sandtileSimple,shader1 技法1 
+ClearScreenSkinTransitionTrait,shader/swipe,cc.Material,swipe,依赖1
+MergeBlockTrait,materials/MergeBlock,cc.Material,MergeBlock,依赖3
+SkinChangeSettlementEffectTrait,materials/skinchangesettlement_mask_material,cc.Material,skinchangesettlement_mask_material,依赖3
+gl_hall,gl_result/pefabs/gradient_blue,cc.Material,gradient_blue,依赖1
+gl_hall,resource/effect/glAvatar,cc.Material,glAvatar,依赖1
+internal,materials/builtin-2d-base,cc.Material,,
+internal,materials/builtin-2d-graphics,cc.Material,,
+internal,materials/builtin-2d-gray-sprite,cc.Material,,
+internal,materials/builtin-2d-label,cc.Material,,
+internal,materials/builtin-2d-spine,cc.Material,,
+internal,materials/builtin-2d-sprite,cc.Material,,
+internal,materials/builtin-3d-trail,cc.Material,,
+internal,materials/builtin-clear-stencil,cc.Material,,
+internal,materials/builtin-unlit,cc.Material,,
+mainTraits,materials/new_clear_effect/blue_3_effect,cc.Material,blue_3_effect,依赖1
+mainTraits,materials/new_clear_effect/blue_4_effect,cc.Material,blue_4_effect,依赖1
+mainTraits,materials/new_clear_effect/cyan_effect,cc.Material,cyan_effect,依赖1
+mainTraits,materials/new_clear_effect/purple_effect,cc.Material,purple_effect,依赖1
+resources,materials/saturation/saturation-bg-materials,cc.Material,saturation-bg-materials,依赖1
+resources,materials/saturation/saturation-effect-materials,cc.Material,saturation-effect-materials,依赖1
+resources,skin/materials/color_select,cc.Material,color_select,依赖1
+resources,skin/materials/five_area,cc.Material,five_area,依赖3
+resources,skin/materials/single_area,cc.Material,single_area,依赖1
+sandcrush,res/mtls/gradient_blue,cc.Material,gradient_blue,依赖1
+sandcrush,res/mtls/gradient_blue_mid,cc.Material,gradient_blue_mid,依赖1
+sandcrush,res/mtls/gradient_purple,cc.Material,gradient_purple,依赖1
+sandcrush,res/tile/sandtile,cc.Material,sandtile,依赖1
+sandcrush,res/tile/sandtileDeath,cc.Material,sandtileDeath,依赖1
+sandcrush,res/tile/sandtileEffect,cc.Material,sandtileEffect,依赖1
+sandcrush,res/tile/sandtileEffectRainbow,cc.Material,sandtileEffectRainbow,依赖2
+sandcrush,res/tile/sandtileSimple,cc.Material,sandtileSimple,依赖1

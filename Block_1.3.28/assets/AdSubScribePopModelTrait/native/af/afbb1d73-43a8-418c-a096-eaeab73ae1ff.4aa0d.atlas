@@ -1,0 +1,13 @@
+
+gameplay_popup_kuang.png
+size: 300,296
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+3_1
+  rotate: false
+  xy: 2, 2
+  size: 296, 292
+  orig: 298, 294
+  offset: 1, 1
+  index: -1

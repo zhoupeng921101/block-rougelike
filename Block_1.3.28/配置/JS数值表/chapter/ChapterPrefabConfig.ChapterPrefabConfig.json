@@ -1,0 +1,189 @@
+{
+ "ChapterGame": {
+  "name": "ChapterGame",
+  "url": "prefabs/game/ChapterGame",
+  "bundleName": "chapter",
+  "page": true
+ },
+ "ChapterTopInfo": {
+  "name": "ChapterTopInfo",
+  "url": "prefabs/topInfo/ChapterTopInfo",
+  "bundleName": "chapter"
+ },
+ "PassLevelReward": {
+  "name": "PassLevelReward",
+  "url": "prefabs/gameover/trait/continuityPassLevel/PassLevelReward",
+  "bundleName": "chapter",
+  "platform": "ios"
+ },
+ "ChapterHardLevelDefeat": {
+  "name": "ChapterHardLevelDefeat",
+  "url": "prefabs/hardLevel/ChapterHardLevelDefeat",
+  "bundleName": "chapter"
+ },
+ "ChapterHardLevelFailHardNode": {
+  "name": "ChapterHardLevelFailHardNode",
+  "url": "prefabs/hardLevel/ChapterHardLevelFailHardNode",
+  "bundleName": "chapter"
+ },
+ "ChapterTopInfoBtn": {
+  "name": "ChapterTopInfoBtn",
+  "url": "prefabs/topInfo/ChapterTopInfoBtn",
+  "bundleName": "chapter"
+ },
+ "ChapterTopInfoCollect": {
+  "name": "ChapterTopInfoCollect",
+  "url": "prefabs/topInfo/ChapterTopInfoCollect",
+  "bundleName": "chapter"
+ },
+ "ChapterTopInfoScore": {
+  "name": "ChapterTopInfoScore",
+  "url": "prefabs/topInfo/ChapterTopInfoScore",
+  "bundleName": "chapter"
+ },
+ "ChapterCollectItem": {
+  "name": "ChapterCollectItem",
+  "url": "prefabs/chapterCollectItem/ChapterCollectItem",
+  "bundleName": "chapter"
+ },
+ "ChapterScoreFail": {
+  "name": "ChapterScoreFail",
+  "url": "prefabs/fail/ChapterScoreFail",
+  "bundleName": "chapter",
+  "page": true
+ },
+ "ChapterCollectFail": {
+  "name": "ChapterCollectFail",
+  "url": "prefabs/fail/ChapterCollectFail",
+  "bundleName": "chapter",
+  "page": true
+ },
+ "ChapterScoreWin": {
+  "name": "ChapterScoreWin",
+  "url": "prefabs/win/ChapterScoreWin",
+  "bundleName": "chapter",
+  "page": true
+ },
+ "ChapterCollectWin": {
+  "name": "ChapterCollectWin",
+  "url": "prefabs/win/ChapterCollectWin",
+  "bundleName": "chapter",
+  "page": true
+ },
+ "ChapterReduceScoreFail": {
+  "name": "ChapterReduceScoreFail",
+  "url": "prefabs/fail/trait/reduceTravelSettlement/ChapterReduceScoreFail",
+  "bundleName": "chapter",
+  "mutex": "@o.PrefabMutexType.GAME_OVER"
+ },
+ "ChapterReduceCollectFail": {
+  "name": "ChapterReduceCollectFail",
+  "url": "prefabs/fail/trait/reduceTravelSettlement/ChapterReduceCollectFail",
+  "bundleName": "chapter",
+  "mutex": "@o.PrefabMutexType.GAME_OVER"
+ },
+ "ChapterReduceScoreWin": {
+  "name": "ChapterReduceScoreWin",
+  "url": "prefabs/win/trait/reduceTravelSettlement/ChapterReduceScoreWin",
+  "bundleName": "chapter",
+  "mutex": "@o.PrefabMutexType.GAME_OVER"
+ },
+ "ChapterReduceCollectWin": {
+  "name": "ChapterReduceCollectWin",
+  "url": "prefabs/win/trait/reduceTravelSettlement/ChapterReduceCollectWin",
+  "bundleName": "chapter",
+  "mutex": "@o.PrefabMutexType.GAME_OVER"
+ },
+ "ChapterGoal": {
+  "name": "ChapterGoal",
+  "url": "prefabs/goal/ChapterGoal",
+  "bundleName": "chapter"
+ },
+ "ChapterGoalScore": {
+  "name": "ChapterGoalScore",
+  "url": "prefabs/goal/ChapterGoalScore",
+  "bundleName": "chapter"
+ },
+ "ChapterGoalCollect": {
+  "name": "ChapterGoalCollect",
+  "url": "prefabs/goal/ChapterGoalCollect",
+  "bundleName": "chapter"
+ },
+ "ChapterGemFlyItem": {
+  "name": "ChapterGemFlyItem",
+  "url": "prefabs/ChapterGemFlyItem",
+  "bundleName": "ChapterGemFlyAnimationTrait"
+ },
+ "ChapterCollectEffectItem": {
+  "name": "ChapterCollectEffectItem",
+  "url": "prefabs/collectItem/ChapterCollectEffectItem",
+  "bundleName": "chapter"
+ },
+ "ChapterCollectTopItem": {
+  "name": "ChapterCollectTopItem",
+  "url": "prefabs/collectItem/ChapterCollectTopItem",
+  "bundleName": "chapter"
+ },
+ "ChapterTipsFail": {
+  "name": "ChapterTipsFail",
+  "url": "prefabs/fail/ChapterTipsFail",
+  "bundleName": "chapter"
+ },
+ "GrayEffect": {
+  "name": "GrayEffect",
+  "url": "prefabs/blocksProducer/traits/GrayEffect",
+  "bundleName": "chapter"
+ },
+ "Winstreak": {
+  "name": "Winstreak",
+  "url": "prefabs/gameover/trait/gateWinStreakState/Winstreak",
+  "bundleName": "chapter"
+ },
+ "repeatPreview": {
+  "name": "repeatPreview",
+  "url": "prefabs/repeatPreview/repeatPreviewPrefab",
+  "bundleName": "chapter"
+ },
+ "HardLevelRedUI": {
+  "name": "HardLevelRedUI",
+  "url": "prefab/HardLevelRedUI",
+  "bundleName": "Remote_HardLevelRedUI"
+ },
+ "levelSucClear": {
+  "name": "LevelSucClearPrefab",
+  "url": "prefabs/LevelSucClearPrefab",
+  "bundleName": "Remote_LevelSucClear"
+ },
+ "GameplayAniAllChange": {
+  "name": "GameplayAniAllChange",
+  "url": "prefabs/clear_tips_node_new",
+  "bundleName": "Remote_GameplayAniAllChange"
+ },
+ "IsTranspositionMovementNode": {
+  "name": "IsTranspositionMovementNode",
+  "url": "prefabs/TranspositionMovementPre",
+  "bundleName": "Remote_isTranspositionMovement",
+  "platform": "ios"
+ },
+ "ChapterWellDone": {
+  "name": "ChapterWellDone",
+  "url": "prefabs/wellDone/ChapterWellDone",
+  "bundleName": "chapter",
+  "platform": "ios"
+ },
+ "TravelShowStarInScoreBarFailed": {
+  "name": "TravelShowStarInScoreBarFailed",
+  "url": "prefabs/FailedView",
+  "bundleName": "TravelShowStarInScoreBarTrait"
+ },
+ "TravelShowStarInScoreBarWin": {
+  "name": "TravelShowStarInScoreBarWin",
+  "url": "prefabs/WinView",
+  "bundleName": "TravelShowStarInScoreBarTrait"
+ },
+ "TravelShowStarInScoreBar": {
+  "name": "TravelShowStarInScoreBar",
+  "url": "prefabs/StarInScoreBar",
+  "bundleName": "TravelShowStarInScoreBarTrait"
+ }
+}

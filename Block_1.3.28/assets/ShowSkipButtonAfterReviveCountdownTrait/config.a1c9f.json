@@ -1,0 +1,1 @@
+{"paths":{"0":["prefabs/SkipButton",0]},"types":["cc.Prefab"],"uuids":["5bFS15IFlD8bjpuI3039Ad","ecpdLyjvZBwrvm+cedCcQy"],"scenes":{},"redirect":[1,0],"deps":["internal"],"packs":{},"name":"ShowSkipButtonAfterReviveCountdownTrait","importBase":"import","nativeBase":"native","debug":false,"isZip":false,"encrypted":false,"versions":{"import":[0,"4ad41"],"native":[]}}

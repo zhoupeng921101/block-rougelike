@@ -1,0 +1,13 @@
+{
+ "BoxMoveCollisionState": "boxMoveCollisionState",
+ "BoxPutSuccess": "boxPutSuccess",
+ "BoxPutFail": "boxPutFail",
+ "BoxToMap": "boxToMap",
+ "MapDropStart": "mapDropStart",
+ "MapDropEnd": "mapDropEnd",
+ "ClearSandStart": "ClearSandStart",
+ "ClearSandEnd": "ClearSandEnd",
+ "MapStable": "mapStable",
+ "GameLogicOver": "gameLogicOver",
+ "EmptyColors": "emptyColors"
+}

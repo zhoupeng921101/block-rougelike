@@ -1,0 +1,45 @@
+[
+ {
+  "type": "@n.SkinThreePreEliminateType.spineSingleBlock",
+  "params": {
+   "effectConfig": "eliminate_prompt_effect",
+   "animConfig": {
+    "color_1": "in_up",
+    "color_2": "in_up",
+    "color_3": "in_up",
+    "color_4": "in_up",
+    "color_5": "in_up",
+    "color_6": "in_up",
+    "color_7": "in_up",
+    "color_8": "in_up"
+   },
+   "isAboveBlocks": true
+  }
+ },
+ {
+  "type": "@n.SkinThreePreEliminateType.spineRowAndColumn",
+  "params": {
+   "effectConfig": "eliminate_prompt_effect",
+   "animConfig": {
+    "color_1_x": "in_down",
+    "color_1_y": "in_down",
+    "color_2_x": "in_down",
+    "color_2_y": "in_down",
+    "color_3_x": "in_down",
+    "color_3_y": "in_down",
+    "color_4_x": "in_down",
+    "color_4_y": "in_down",
+    "color_5_x": "in_down",
+    "color_5_y": "in_down",
+    "color_6_x": "in_down",
+    "color_6_y": "in_down",
+    "color_7_x": "in_down",
+    "color_7_y": "in_down",
+    "color_8_x": "in_down",
+    "color_8_y": "in_down"
+   },
+   "needRotate": true,
+   "isAboveBlocks": false
+  }
+ }
+]

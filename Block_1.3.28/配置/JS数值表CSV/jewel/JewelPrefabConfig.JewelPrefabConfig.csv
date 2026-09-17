@@ -1,0 +1,8 @@
+﻿_key,name,url,bundleName,page
+JewelGame,JewelGame,prefabs/game/JewelGame,jewel,True
+JewelBoard,JewelBoard,prefabs/board/JewelBoard,jewel,
+JewelBlocksProducer,JewelBlocksProducer,prefabs/blocksProducer/JewelBlocksProducer,jewel,
+JewelBlocksProducerItem,JewelBlocksProducerItem,prefabs/blocksProducer/JewelBlocksProducerItem,jewel,
+JewelFail,JewelFail,prefabs/fail/JewelFail,jewel,True
+JewelBlock,JewelBlock,prefabs/block/JewelBlock,jewel,
+JewelTopInfo,JewelTopInfo,prefabs/topInfo/JewelTopInfo,jewel,

@@ -1,0 +1,12 @@
+{
+ "ENTER_GAME": "starview_enter_game",
+ "SCORE_CHANGED": "starview_score_changed",
+ "GAME_RESET": "starview_game_reset",
+ "NEW_RECORD": "starview_new_record",
+ "GAME_ENDED": "starview_game_ended",
+ "GAME_RESULT": "starview_game_result",
+ "COMBO_ACHIEVED": "starview_combo",
+ "TIME_SINGLE": "starview_single",
+ "TIME_CUMULATIVE": "starview_cumulative",
+ "STARVIEW_CLOSE": "starview_close"
+}

@@ -1,0 +1,137 @@
+{
+ "block_1_normal": {
+  "assetPath": "res/game_cube_1_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "block_2_normal": {
+  "assetPath": "res/game_cube_2_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "block_3_normal": {
+  "assetPath": "res/game_cube_3_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "block_4_normal": {
+  "assetPath": "res/game_cube_4_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "block_5_normal": {
+  "assetPath": "res/game_cube_5_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "block_6_normal": {
+  "assetPath": "res/game_cube_6_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "block_7_normal": {
+  "assetPath": "res/game_cube_7_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "board_bg": {
+  "assetPath": "res/backgroundkuai2-8x8_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "block_shadow": {
+  "assetPath": "res/block_shadow_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "game_bg": {
+  "assetPath": "res/backgroundbg_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "crown": {
+  "assetPath": "res/backgroundscore_highest3_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "setting_btn": {
+  "assetPath": "res/backgroundstop_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "setting_close_btn": {
+  "assetPath": "res/btn_Close_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "setting_line": {
+  "assetPath": "res/bg_settingLine_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "setting_out_bg": {
+  "assetPath": "res/bg_setting_down_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "setting_in_bg": {
+  "assetPath": "res/bg_setting_up_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "revive_effect": {
+  "assetPath": "res/fuhuoshuzi_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "combo_sprite": {
+  "assetPath": "res/combo",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "score_font": {
+  "assetPath": "font/typefacecurrent_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "combo_font": {
+  "assetPath": "font/playgame_num_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "combo_tips_effect": {
+  "assetPath": "effect/comnb_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "combo_tips_font": {
+  "assetPath": "font/num_grade_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "eliminate_prompt_effect": {
+  "assetPath": "effect/yuxc_kuai",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "encourage_effect": {
+  "assetPath": "effect/encourage_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "eliminate_effect": {
+  "assetPath": "effect/xc_material_021",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "eliminate_prompt_effect_yumao": {
+  "assetPath": "effect/yuxc_yumao",
+  "platform": "gp",
+  "bundleName": "Remote_Skin_Material_2021"
+ },
+ "block_put_effect": {
+  "assetPath": "effect/gameplay_spine_blocklight_plan1",
+  "platform": "gp",
+  "bundleName": "Remote_SkinThree_Material_Common"
+ }
+}

@@ -1,0 +1,56 @@
+{
+ "classGuideStep": "fangkuaipintu#guide:number",
+ "classScore": "fangkuaipintu#current_cord:number",
+ "classHighScore": "fangkuaipintu#high_cord:number",
+ "classRoundNum": "fangkuaipintu#roundNum:number",
+ "classGameNum": "fangkuaipintu#gameNum:number",
+ "classFaceBlocks": "fangkuaipintu#save_arr:object",
+ "classDefaultFirstState": "fangkuaipintu#defaultFirstState:boolean",
+ "classDefaultSurface": "fangkuaipintu#defaultNumArr:object",
+ "classAlgoActualName": "fangkuaipintu#currentBlockNameArr:object",
+ "classHardQuestionNum": "fangkuaipintu#hardOpenTopic:number",
+ "classBlockCenterPos": {
+  "x": "fangkuaipintu#putCenterCol:number",
+  "y": "fangkuaipintu#putCenterRow:number"
+ },
+ "classHardQuestionSuccess": "fangkuaipintu#hardSuccessTopic:number",
+ "classSolidColor": "fangkuaipintu#solidColor:number",
+ "classGameNumNoRefresh": "PUBLICGameDaTa#totalGameId:number",
+ "classUseInitialColor": "init_block_color_arr:object",
+ "classLastScore": "fangkuaipintu#lastRoundCord:number",
+ "classHighRecordScore": "fangkuaipintu#highRecordGrade:number",
+ "classHighScoreHistory": "fangkuaipintu#highTopicNote:object",
+ "classTurnAroundSurfaceInfo": "TurnAroundSurfaceControllerInfoData:object",
+ "classBlockProduceBoardLists": "online_round_save_arr:object",
+ "classBlockExtraList": {
+  "better_block": "fangkuaipintu#betterBlockCount:number",
+  "better_space": "fangkuaipintu#betterSpaceCount:number"
+ },
+ "classHardQuestionFirstRound": "clickRecordClass#first_difficult_fact:number",
+ "classComboDiffFirstBlock": "fangkuaipintu#firstDifficultBlockDex:number",
+ "classZiMuShangZengCount": "fangkuaipintu#ziMuShangZengCount:number",
+ "classClearBoardNum": "clearBoardNum:number",
+ "classComboContinuous": "fangkuaipintu#contiComboCount:number",
+ "classRecordHigh": "fangkuaipintu#achieve_cord:boolean",
+ "classTodayGameNum": "fangkuaipintu#topicGameNum:number",
+ "classLocalSaveData": "LocalSaveData:object",
+ "classHistoryRoundArr": "__baseData__historyRoundArr:object",
+ "classFiveRoundData": {
+  "scoreRound": "__baseData__SCORE_ROUND:object",
+  "scoreStep": "__baseData__SCORE_STEP:object",
+  "weightRound": "__baseData__W_ROUND:object",
+  "weightStep": "__baseData__W_STEP:object"
+ },
+ "classGameStartStatisticsInfo": {
+  "defaultBoardIndex": "LineBoardInfo#board_init_id:number",
+  "gameStartweight": "LineBoardInfo#board_init_weight:number"
+ },
+ "classRoundGBMServerData": "PostGameToServerController_curSaveTurn#turns:object",
+ "classReviveSuccessStatisticsInfo": {
+  "progress": "fangkuaipintu#RevivePositionList:object"
+ },
+ "classAdvertisementShowNum": "ClassClickDetailLocal#reward_ad_click_cnt:number",
+ "isOpenClassMoreReviveTraitKey": "localClassMoreRevive:object",
+ "classActualReviveNum": "fangkuaipintu#adPlayNum:number",
+ "classReviveNum": "fangkuaipintu#adPlayNum:number"
+}

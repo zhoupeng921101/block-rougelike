@@ -1,0 +1,69 @@
+
+HsBlockFill_0418.png
+size: 386,828
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+caidi
+  rotate: false
+  xy: 2, 2
+  size: 168, 168
+  orig: 168, 168
+  offset: 0, 0
+  index: -1
+circle
+  rotate: false
+  xy: 256, 712
+  size: 114, 114
+  orig: 114, 114
+  offset: 0, 0
+  index: -1
+circle2
+  rotate: false
+  xy: 2, 362
+  size: 210, 210
+  orig: 210, 210
+  offset: 0, 0
+  index: -1
+icon_crown
+  rotate: false
+  xy: 256, 648
+  size: 82, 62
+  orig: 90, 90
+  offset: 4, 18
+  index: -1
+icon_crown2
+  rotate: false
+  xy: 2, 574
+  size: 252, 252
+  orig: 256, 256
+  offset: 2, 2
+  index: -1
+wangge
+  rotate: false
+  xy: 214, 397
+  size: 170, 175
+  orig: 200, 200
+  offset: 15, 12
+  index: -1
+wangge02
+  rotate: false
+  xy: 214, 220
+  size: 170, 175
+  orig: 200, 200
+  offset: 15, 12
+  index: -1
+wangge4_2
+  rotate: true
+  xy: 200, 48
+  size: 170, 175
+  orig: 200, 200
+  offset: 15, 12
+  index: -1
+wangge_guang
+  rotate: true
+  xy: 2, 172
+  size: 188, 196
+  orig: 200, 200
+  offset: 6, 0
+  index: -1

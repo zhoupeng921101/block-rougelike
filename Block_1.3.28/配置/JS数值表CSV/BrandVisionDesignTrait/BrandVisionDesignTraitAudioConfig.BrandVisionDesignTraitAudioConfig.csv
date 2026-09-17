@@ -1,0 +1,7 @@
+﻿_key,url,type,volume,bundleName
+man_gaokang,audios/man_gaokang,@o.AudioType.EFFECT,1,BrandVisionDesignTrait
+man_lengjing,audios/man_lengjing,@o.AudioType.EFFECT,1,BrandVisionDesignTrait
+man_huopo,audios/man_huopo,@o.AudioType.EFFECT,1,BrandVisionDesignTrait
+man_dichen,audios/man_dichen,@o.AudioType.EFFECT,1,BrandVisionDesignTrait
+woman_lengjing,audios/woman_lengjing,@o.AudioType.EFFECT,1,BrandVisionDesignTrait
+woman_huopo,audios/woman_huopo,@o.AudioType.EFFECT,1,BrandVisionDesignTrait

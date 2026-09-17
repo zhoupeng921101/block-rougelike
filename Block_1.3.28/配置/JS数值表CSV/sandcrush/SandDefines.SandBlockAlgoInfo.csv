@@ -1,0 +1,13 @@
+﻿_key,algo,name
+SequenceDoubleColor,1001,序列双色
+RandomDoubleColor,1002,随机双色
+SequenceDoubleColor2,1003,序列双色2
+EfficientDoubleColor,1004,高效双色
+blockAlgoCC,1005,CC大小块出块算法概率
+blockAlgoIrregular1,1006,随机其中一个出异形块
+blockAlgoIrregular2,1007,3个块按概率出异形块
+blockAlgoChangeBlockPool,1008,块池变换
+FillPerfect2,1009,广告辅助消除块 完美填空2
+CCDoubleColor1,1010,简单回形双色填空
+CCDoubleColor2,1011,复杂回形双色填空
+CCDoubleColor3,1012,外过滤回形双色

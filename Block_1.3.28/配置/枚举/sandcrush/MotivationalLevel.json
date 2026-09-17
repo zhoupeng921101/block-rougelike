@@ -1,0 +1,8 @@
+{
+ "NONE": 0,
+ "GOOD": 1,
+ "GREAT": 2,
+ "AMAZING": 3,
+ "EXCELLENT": 4,
+ "UNBELIEVABLE": 5
+}

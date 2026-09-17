@@ -1,0 +1,6 @@
+{
+ "Unknown": 0,
+ "Banner": 1,
+ "Interstitial": 2,
+ "Reward": 3
+}

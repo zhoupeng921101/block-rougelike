@@ -1,0 +1,8 @@
+{
+ "KillCard": "KillCard",
+ "KillCardAnimationed": "KillCardAnimationed",
+ "KillCardColliderCall": "KillCardColliderCall",
+ "ClickedCardTile": "ClickedCardTile",
+ "UnClickedCardTile": "UnClickedCardTile",
+ "DragedCardTile": "DragedCardTile"
+}

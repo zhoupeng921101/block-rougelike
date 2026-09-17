@@ -1,0 +1,13 @@
+
+gameplay_redkuang.png
+size: 245,299
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+majiang01_2
+  rotate: false
+  xy: 2, 2
+  size: 241, 295
+  orig: 253, 307
+  offset: 6, 6
+  index: -1

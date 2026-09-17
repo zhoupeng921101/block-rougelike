@@ -1,0 +1,6 @@
+﻿成员,值
+NONE,0
+ERROR,1
+WARN,2
+LOG,3
+DEBUG,4

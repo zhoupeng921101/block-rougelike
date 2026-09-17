@@ -1,0 +1,5 @@
+﻿_key,bundleName,dragonAssetUrl,dragonAtlasAssetUrl,platform
+HardLevelRedUI_revivieShuzi,Remote_HardLevelRedUI,dragonbones/fuhuoshuzired_ske,dragonbones/fuhuoshuzired_tex,
+HardLevelRedUI_revivieBtn,Remote_HardLevelRedUI,dragonbones/revive_btn_revive_ske,dragonbones/revive_btn_revive_tex,
+heightFeelShow,chapter,dragonbones/gameOver/traits/30598_f_heightFeelShow/gameplay_peakVicotory_ske,dragonbones/gameOver/traits/30598_f_heightFeelShow/gameplay_peakVicotory_tex,ios
+mapcup_ios,chapter,dragonbones/chapterList/mapcup_ske,dragonbones/chapterList/mapcup_tex,ios

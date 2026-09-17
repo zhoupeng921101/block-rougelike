@@ -1,0 +1,22 @@
+{
+ "GLBFCrownTipsHelp": "GLBFCrownTipsHelp",
+ "GLBFCrownTipsHelpReplay": "GLBFCrownTipsHelpReplay",
+ "GLBFCrownTipsHelpWinStreak": "GLBFCrownTipsHelpWinStreak",
+ "GLBFResetOnReenter": "GLBFResetOnReenter",
+ "GLBFBackDirectExit": "GLBFBackDirectExit",
+ "GLBFPropAutoUseAfterAd": "GLBFPropAutoUseAfterAd",
+ "GLBFPassLevelFlashEffect": "GLBFPassLevelFlashEffect",
+ "GLBFNumberView": "GLBFNumberView",
+ "GLBFProgress": "GLBFProgress",
+ "GLBFTishiView": "GLBFTishiView",
+ "GLBFDeadBackView": "GLBFDeadBackView",
+ "GLBFMiddleTipsView": "GLBFMiddleTipsView",
+ "GLBFLineTipsView": "GLBFLineTipsView",
+ "GLBFProgressSound": "GLBFProgressSound",
+ "GLBFBackNum": "GLBFBackNum",
+ "GLBFDieReplay": "GLBFDieReplay",
+ "GLBFDieReplace": "GLBFDieReplace",
+ "GLBFWhiteWrap": "GLBFWhiteWrap",
+ "GLBFDeadRoadSound": "GLBFDeadRoadSound",
+ "AvoidIncorrectHandle": "AvoidIncorrectHandle"
+}

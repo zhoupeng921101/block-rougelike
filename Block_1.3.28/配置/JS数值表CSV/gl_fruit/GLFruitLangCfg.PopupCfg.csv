@@ -1,0 +1,5 @@
+﻿_key,icon,title,content,btnText1,btnText2,hideCloseBtn,isBtn1Video,propId
+again,0,@o.default.FRUIT_POPUP_RESTART_TITLE,@o.default.FRUIT_POPUP_RESTART_DESC,@o.default.FRUIT_POPUP_RESTART_BUTTON_YES,@o.default.FRUIT_POPUP_RESTART_BUTTON_NO,False,,
+bomb,6,@o.default.FRUIT_POPUP_BOMB_TITLE,,@o.default.FRUIT_POPUP_BOMB_BUTTON_YES,@o.default.FRUIT_POPUP_BOMB_BUTTON_NO,False,True,@r.GLFruitPropIdDefine.Bomb
+shake,5,@o.default.FRUIT_POPUP_SHAKE_TITLE,,@o.default.FRUIT_POPUP_SHAKE_BUTTON_YES,@o.default.FRUIT_POPUP_SHAKE_BUTTON_NO,False,True,@r.GLFruitPropIdDefine.Shake
+deathRevive,5,看视频复活,看激励视频复活并获得一次震荡机会,看视频复活,放弃,False,True,

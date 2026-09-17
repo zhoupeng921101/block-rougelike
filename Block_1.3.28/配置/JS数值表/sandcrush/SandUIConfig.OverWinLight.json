@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/overui/OverWinLight",
+ "cnName": "结算界面newscore",
+ "layer": "@o.HSLayerType.Dialog",
+ "cache": false
+}

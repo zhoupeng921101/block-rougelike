@@ -1,0 +1,29 @@
+{
+ "firstEntryTime": "fangkuaipintu#firstInstall:number",
+ "activeTimeArr": "fangkuaipintu#activeTimeArr:object",
+ "dotUpLoad": "fangkuaipintu#crowd:number",
+ "classGuideStep": "fangkuaipintu#guide:number",
+ "classScore": "fangkuaipintu#current_cord:number",
+ "classHighScore": "fangkuaipintu#high_cord:number",
+ "classHighRecordScore": "fangkuaipintu#highRecordGrade:number",
+ "classRoundNum": "fangkuaipintu#roundNum:number",
+ "classGameNum": "fangkuaipintu#gameNum:number",
+ "classFaceBlocks": "fangkuaipintu#save_arr:object",
+ "classActualReviveNum": "fangkuaipintu#adPlayNum:number",
+ "classReviveNum": "fangkuaipintu#adPlayNum:number",
+ "classDefaultSurface": "fangkuaipintu#defaultNumArr:object",
+ "classDefaultFirstState": "fangkuaipintu#defaultFirstState:boolean",
+ "classBlockExtraList": {
+  "better_block": "fangkuaipintu#betterBlockCount:number",
+  "better_space": "fangkuaipintu#betterSpaceCount:number"
+ },
+ "classRecordHigh": "fangkuaipintu#achieve_cord:boolean",
+ "GameEndAddPointControlClassKey": "fangkuaipintu#diePointArr:object",
+ "classBlockLists": "fangkuaipintu#opera_arr:object",
+ "classAlgoActualName": "fangkuaipintu#currentBlockNameArr:object",
+ "classHardQuestionSuccess": "fangkuaipintu#hardSuccessTopic:number",
+ "chapterEightHours": "fangkuaipintu#eightHoursTravel:number",
+ "classReviveShowNum": "fangkuaipintu#roundRevivePopCount:number",
+ "classGameNumNoRefresh": "PUBLICGameDaTa#totalGameId:number",
+ "ClassSelectClearRunControOldRoundBlocks": "fangkuaipintu#opera_arr:object"
+}

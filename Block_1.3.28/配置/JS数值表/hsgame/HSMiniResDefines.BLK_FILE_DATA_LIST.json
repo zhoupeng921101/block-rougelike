@@ -1,0 +1,430 @@
+[
+ {
+  "name": "e_score_streak_1",
+  "miniPath": "blk/resources/audios/e_score_streak_1",
+  "blkPath": "audios/e_score_streak_1",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "e_score_streak_2",
+  "miniPath": "blk/resources/audios/e_score_streak_2",
+  "blkPath": "audios/e_score_streak_2",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "e_score_streak_3",
+  "miniPath": "blk/resources/audios/e_score_streak_3",
+  "blkPath": "audios/e_score_streak_3",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "e_score_streak_4",
+  "miniPath": "blk/resources/audios/e_score_streak_4",
+  "blkPath": "audios/e_score_streak_4",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "e_score_streak_5",
+  "miniPath": "blk/resources/audios/e_score_streak_5",
+  "blkPath": "audios/e_score_streak_5",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "e_score_streak_6",
+  "miniPath": "blk/resources/audios/e_score_streak_6",
+  "blkPath": "audios/e_score_streak_6",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "e_score_streak_7",
+  "miniPath": "blk/resources/audios/e_score_streak_7",
+  "blkPath": "audios/e_score_streak_7",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "e_score_streak_8",
+  "miniPath": "blk/resources/audios/e_score_streak_8",
+  "blkPath": "audios/e_score_streak_8",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "e_score_streak_9",
+  "miniPath": "blk/resources/audios/e_score_streak_9",
+  "blkPath": "audios/e_score_streak_9",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "e_score_streak_10",
+  "miniPath": "blk/resources/audios/e_score_streak_10",
+  "blkPath": "audios/e_score_streak_10",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "amazing",
+  "miniPath": "blk/resources/audios/Amazing2",
+  "blkPath": "audios/Amazing2",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "good",
+  "miniPath": "blk/resources/audios/Good2",
+  "blkPath": "audios/Good2",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "great",
+  "miniPath": "blk/resources/audios/Great2",
+  "blkPath": "audios/Great2",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "excellent",
+  "miniPath": "blk/resources/audios/Excellect2",
+  "blkPath": "audios/Excellect2",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "unbelievable",
+  "miniPath": "blk/resources/audios/Unbelievable2",
+  "blkPath": "audios/Unbelievable2",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "s_button",
+  "miniPath": "blk/resources/audios/s_button",
+  "blkPath": "audios/s_button",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "bgm",
+  "miniPath": "blk/resources/audios/bgm/commonBgm",
+  "blkPath": "audios/bgm/commonBgm",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "sand_fail",
+  "miniPath": "blk/resources/audios/over/s_fail",
+  "blkPath": "audios/over/s_fail",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "blk/class/dragonbones/combo/comb_ske",
+  "miniPath": "",
+  "blkPath": "dragonbones/combo/comb_ske",
+  "blkBundle": "class"
+ },
+ {
+  "name": "blk/class/dragonbones/combo/comb_tex",
+  "miniPath": "",
+  "blkPath": "dragonbones/combo/comb_tex",
+  "blkBundle": "class"
+ },
+ {
+  "name": "blk/class/fonts/combo/combo_fnt",
+  "miniPath": "",
+  "blkPath": "fonts/combo/combo_fnt",
+  "blkBundle": "class"
+ },
+ {
+  "name": "blk/resources/dragonbones/encourage/encourage_ske",
+  "miniPath": "",
+  "blkPath": "dragonbones/encourage/encourage_ske",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "blk/resources/dragonbones/encourage/encourage_tex",
+  "miniPath": "",
+  "blkPath": "dragonbones/encourage/encourage_tex",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "blk/class/textures/combo/combo_txt",
+  "miniPath": "",
+  "blkPath": "textures/combo/combo_txt",
+  "blkBundle": "class"
+ },
+ {
+  "name": "@n.MiniCommonResName.COMMON_BG_DOWN",
+  "miniPath": "blk/resources/textures/commentskin/common_bg_setting_down",
+  "blkPath": "textures/commentskin/common_bg_setting_down",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniCommonResName.COMMON_BG_UP",
+  "miniPath": "blk/resources/textures/commentskin/common_bg_setting_up",
+  "blkPath": "textures/commentskin/common_bg_setting_up",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniCommonResName.COMMON_BTN_CLOSE",
+  "miniPath": "blk/resources/textures/commentskin/common_btn_close",
+  "blkPath": "textures/commentskin/common_btn_close",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniCommonResName.COMBO_TEXTURE",
+  "miniPath": "blk/class/textures/combo/combo_txt",
+  "blkPath": "textures/combo/combo_txt",
+  "blkBundle": "class"
+ },
+ {
+  "name": "@n.MiniSettingResName.BTN_BGM",
+  "miniPath": "blk/resources/textures/setup/setting_btn_BGM",
+  "blkPath": "textures/setup/setting_btn_BGM",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniSettingResName.BTN_COMMON",
+  "miniPath": "blk/resources/textures/setup/setting_btn_common",
+  "blkPath": "textures/setup/setting_btn_common",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniSettingResName.BTN_SOUND",
+  "miniPath": "blk/resources/textures/setup/setting_btn_sound",
+  "blkPath": "textures/setup/setting_btn_sound",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniSettingResName.BTN_VIBRATION",
+  "miniPath": "blk/resources/textures/setup/setting_btn_vibration",
+  "blkPath": "textures/setup/setting_btn_vibration",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniSettingResName.ICON_HOME",
+  "miniPath": "blk/resources/textures/setup/setting_icon_home",
+  "blkPath": "textures/setup/setting_icon_home",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniSettingResName.ICON_MORE_SETTINGS",
+  "miniPath": "blk/resources/textures/setup/setting_icon_moreSettings",
+  "blkPath": "textures/setup/setting_icon_moreSettings",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniSettingResName.ICON_REPLAY",
+  "miniPath": "blk/resources/textures/setup/setting_icon_replay",
+  "blkPath": "textures/setup/setting_icon_replay",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniSettingResName.TXT_HOME",
+  "miniPath": "blk/resources/textures/setup/setting_txt_home",
+  "blkPath": "textures/setup/setting_txt_home",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniSettingResName.TXT_MORE_SETTINGS",
+  "miniPath": "blk/resources/textures/setup/setting_txt_moreSettings",
+  "blkPath": "textures/setup/setting_txt_moreSettings",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniSettingResName.TXT_REPLAY",
+  "miniPath": "blk/resources/textures/setup/setting_txt_replay",
+  "blkPath": "textures/setup/setting_txt_replay",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniReviveResName.PROGRESS_BG",
+  "miniPath": "blk/resources/textures/revive/die_quan_bg",
+  "blkPath": "textures/revive/die_quan_bg",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniReviveResName.PROGRESS_BAR",
+  "miniPath": "blk/resources/textures/revive/die_quan",
+  "blkPath": "textures/revive/die_quan",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniReviveResName.DRAGONBONES_BTN_SKE",
+  "miniPath": "blk/resources/dragonbones/revive/btn/shipinbt_ske",
+  "blkPath": "dragonbones/revive/btn/shipinbt_ske",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniReviveResName.DRAGONBONES_BTN_TEX",
+  "miniPath": "blk/resources/dragonbones/revive/btn/shipinbt_tex",
+  "blkPath": "dragonbones/revive/btn/shipinbt_tex",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniReviveResName.DRAGONBONES_NUM_SKE",
+  "miniPath": "blk/resources/dragonbones/revive/num/fuhuoshuzi_ske",
+  "blkPath": "dragonbones/revive/num/fuhuoshuzi_ske",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniReviveResName.DRAGONBONES_NUM_TEX",
+  "miniPath": "blk/resources/dragonbones/revive/num/fuhuoshuzi_tex",
+  "blkPath": "dragonbones/revive/num/fuhuoshuzi_tex",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniMainResName.HIGH_SCORE_ICON",
+  "miniPath": "blk/class/textures/topInfo/backgroundscore_highest3",
+  "blkPath": "textures/topInfo/backgroundscore_highest3",
+  "blkBundle": "class"
+ },
+ {
+  "name": "@n.MiniMainResName.HIGH_SCORE_FONT",
+  "miniPath": "blk/resources/fonts/goal/typefacehigh",
+  "blkPath": "fonts/goal/typefacehigh",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniMainResName.SCORE_FONT",
+  "miniPath": "blk/resources/fonts/skin/score/typefacecurrent",
+  "blkPath": "fonts/skin/score/typefacecurrent",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniCommonResName.COMMON_NUM_FONT",
+  "miniPath": "blk/resources/fonts/commonFont/common_num_normal",
+  "blkPath": "fonts/commonFont/common_num_normal",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniCommonResName.COMMON_NUM_SPECIAL_FONT",
+  "miniPath": "blk/resources/fonts/commonFont/common_num_special",
+  "blkPath": "fonts/commonFont/common_num_special",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniMainResName.COMBO_SCORE_TIP_FONT",
+  "miniPath": "blk/resources/fonts/comboScoreTip/scoreTip1",
+  "blkPath": "fonts/comboScoreTip/scoreTip1",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniOverResName.LOSE_TITLE",
+  "miniPath": "blk/resources/textures/gameOver/overview_name",
+  "blkPath": "textures/gameOver/overview_name",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniOverResName.LOSE_CURR_SCORE_ICON",
+  "miniPath": "blk/resources/textures/gameOver/overview_score",
+  "blkPath": "textures/gameOver/overview_score",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniOverResName.LOSE_BEST_SCORE_ICON",
+  "miniPath": "blk/class/textures/fail/overview_title_s",
+  "blkPath": "textures/fail/overview_title_s",
+  "blkBundle": "class"
+ },
+ {
+  "name": "@n.MiniOverResName.CURRENT_SCORE_FONT",
+  "miniPath": "blk/resources/fonts/gameOver/typefaceover1",
+  "blkPath": "fonts/gameOver/typefaceover1",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniOverResName.LOSE_BEST_SCORE_FONT",
+  "miniPath": "blk/resources/fonts/goal/typefacehigh",
+  "blkPath": "fonts/goal/typefacehigh",
+  "blkBundle": "resources"
+ },
+ {
+  "name": "@n.MiniOverResName.LOSE_REPLAY_BTN",
+  "miniPath": "blk/class/textures/fail/overview_lose_btn",
+  "blkPath": "textures/fail/overview_lose_btn",
+  "blkBundle": "class"
+ },
+ {
+  "name": "@n.MiniOverResName.WIN_REPLAY_BTN",
+  "miniPath": "blk/class/textures/win/btn_winPlay",
+  "blkPath": "textures/win/btn_winPlay",
+  "blkBundle": "class"
+ },
+ {
+  "name": "@n.MiniOverResName.WIN_DRAGONBONES_SKE",
+  "miniPath": "blk/class/dragonbones/win/NewProject_ske",
+  "blkPath": "dragonbones/win/NewProject_ske",
+  "blkBundle": "class"
+ },
+ {
+  "name": "@n.MiniOverResName.WIN_DRAGONBONES_TEX",
+  "miniPath": "blk/class/dragonbones/win/NewProject_tex",
+  "blkPath": "dragonbones/win/NewProject_tex",
+  "blkBundle": "class"
+ },
+ {
+  "name": "@n.MiniStageResName.NEXT_LEVEL_BTN",
+  "miniPath": "blk/chapter/textures/win/btn_NextLevel",
+  "blkPath": "textures/win/btn_NextLevel",
+  "blkBundle": "chapter"
+ },
+ {
+  "name": "res/json/sandalgo",
+  "miniPath": "new/json/sandalgo"
+ },
+ {
+  "name": "res/json/scorerate",
+  "miniPath": "new/json/scorerate"
+ },
+ {
+  "name": "res/json/triggeralgo",
+  "miniPath": "new/json/triggeralgo"
+ },
+ {
+  "name": "@n.MiniMainResName.SETTING",
+  "miniPath": "new/texture/backgroundstop"
+ },
+ {
+  "name": "@n.MiniSettingResName.BTN_OFF",
+  "miniPath": "new/texture/setting_btn_off"
+ },
+ {
+  "name": "@n.MiniSettingResName.BG_LINE",
+  "miniPath": "new/texture/setting_bg_line"
+ },
+ {
+  "name": "@n.MiniSettingResName.TXT_TITLE",
+  "miniPath": "new/texture/setting_txt_title"
+ },
+ {
+  "name": "@n.MiniMainResName.TUTORIAL_PREFAB",
+  "miniPath": "new/prefabs/MiniTutorialUI"
+ },
+ {
+  "name": "@n.MiniSettingResName.SETTING_PREFAB",
+  "miniPath": "new/prefabs/Setting"
+ },
+ {
+  "name": "@n.MiniReviveResName.REVIVE_PREFAB",
+  "miniPath": "new/prefabs/Revive"
+ },
+ {
+  "name": "@n.MiniOverResName.OVER_LOSE_PREFAB",
+  "miniPath": "new/prefabs/GameOverLose"
+ },
+ {
+  "name": "@n.MiniOverResName.OVER_WIN_PREFAB",
+  "miniPath": "new/prefabs/GameOverWin"
+ },
+ {
+  "name": "@n.MiniMainResName.TOP_LAYER_PREFAB",
+  "miniPath": "new/prefabs/TopLayer"
+ },
+ {
+  "name": "@n.MiniMainResName.COMBO_ADD_SCORE_PREFAB",
+  "miniPath": "new/prefabs/ComboAddScore"
+ },
+ {
+  "name": "@n.MiniMainResName.COMBO_ADD_SCORE_TOTAL_PREFAB",
+  "miniPath": "new/prefabs/ComboAddScoreTotal"
+ },
+ {
+  "name": "@n.MiniStageResName.STAGE_GOAL_PREFAB",
+  "miniPath": "new/prefabs/SandLevelUp"
+ },
+ {
+  "name": "@n.MiniScoreTipResName.SCORE_TIP_PREFAB",
+  "miniPath": "new/prefabs/ScoreTip"
+ }
+]

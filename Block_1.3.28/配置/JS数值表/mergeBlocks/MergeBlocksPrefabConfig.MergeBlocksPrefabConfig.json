@@ -1,0 +1,42 @@
+{
+ "MergeBlocksGuide": {
+  "name": "MergeBlocksGuide",
+  "url": "prefabs/guide/MergeBlocksGuide",
+  "bundleName": "mergeBlocks"
+ },
+ "MergeBlocksGuideEffect": {
+  "name": "MergeBlocksGuideEffect",
+  "url": "prefabs/guide/MergeBlocksGuideEffect",
+  "bundleName": "mergeBlocks"
+ },
+ "MergeBlocksGuideWithoutComp": {
+  "name": "MergeBlocksGuideWithoutComp",
+  "url": "prefabs/guide/MergeBlocksGuideWithoutComp",
+  "bundleName": "mergeBlocks"
+ },
+ "MergeBlocksWin": {
+  "name": "MergeBlocksWin",
+  "url": "prefabs/win/MergeBlocksWin",
+  "bundleName": "mergeBlocks",
+  "page": true
+ },
+ "MergeBlocksFail": {
+  "name": "MergeBlocksFail",
+  "url": "prefabs/fail/MergeBlocksFail",
+  "bundleName": "mergeBlocks",
+  "page": true
+ },
+ "MergeBlocksOverRevive": {
+  "name": "MergeBlocksOverRevive",
+  "url": "prefabs/overRevive/MergeBlocksOverRevive",
+  "bundleName": "mergeBlocks",
+  "modal": true,
+  "clickModalNotClose": true,
+  "mutex": "@r.PrefabMutexType.GAME_OVER_REVIVE"
+ },
+ "MergeBlocksTopInfo": {
+  "name": "MergeBlocksTopInfo",
+  "url": "prefabs/topInfo/MergeBlocksTopInfo",
+  "bundleName": "mergeBlocks"
+ }
+}

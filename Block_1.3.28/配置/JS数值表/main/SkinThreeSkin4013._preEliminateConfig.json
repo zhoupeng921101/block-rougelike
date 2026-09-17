@@ -1,0 +1,56 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.spineSingleBlockRandom",
+  "params": {
+   "effectConfig": "eliminate_prompt_effect",
+   "animConfig": {
+    "color_1": [
+     "orange_in_1",
+     "orange_in_2",
+     "orange_in_3",
+     "orange_in_4"
+    ],
+    "color_2": [
+     "yellow_in_1",
+     "yellow_in_2",
+     "yellow_in_3",
+     "yellow_in_4"
+    ],
+    "color_3": [
+     "orange_in_1",
+     "orange_in_2",
+     "orange_in_3",
+     "orange_in_4"
+    ],
+    "color_4": [
+     "yellow_in_1",
+     "yellow_in_2",
+     "yellow_in_3",
+     "yellow_in_4"
+    ],
+    "color_5": [
+     "orange_in_1",
+     "orange_in_2",
+     "orange_in_3",
+     "orange_in_4"
+    ],
+    "color_6": [
+     "yellow_in_1",
+     "yellow_in_2",
+     "yellow_in_3",
+     "yellow_in_4"
+    ],
+    "color_7": [
+     "orange_in_1",
+     "orange_in_2",
+     "orange_in_3",
+     "orange_in_4"
+    ]
+   },
+   "loop": false,
+   "isAboveBlocks": true,
+   "isHideBlocks": true,
+   "useNoRepeatRandom": true
+  }
+ }
+]

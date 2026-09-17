@@ -1,0 +1,6 @@
+{
+ "Radiate": 0,
+ "Diagonal": 1,
+ "SShaped": 2,
+ "SShapedFall": 3
+}

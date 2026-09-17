@@ -1,0 +1,7 @@
+{
+ "bundle": "sand_prefab",
+ "prefab": "res/prefabs/UI/ad/waitAdCD",
+ "cnName": "等待广告界面--CD倒计时模式",
+ "layer": "@o.HSLayerType.Dialog",
+ "cache": false
+}

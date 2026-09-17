@@ -1,0 +1,6 @@
+{
+ "Loading": 1,
+ "NoEnterGame": 2,
+ "HomePage": 4,
+ "EnterGameIng": 8
+}

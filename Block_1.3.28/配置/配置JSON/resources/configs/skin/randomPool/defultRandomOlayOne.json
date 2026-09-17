@@ -1,0 +1,12 @@
+[
+ {
+  "ID": 1000,
+  "name": "Default",
+  "unlock_type": 0,
+  "unlock_num": 1,
+  "dexc_ch": "原皮肤",
+  "desc_en": "first",
+  "isShow": 1,
+  "iconName": "skin_000"
+ }
+]

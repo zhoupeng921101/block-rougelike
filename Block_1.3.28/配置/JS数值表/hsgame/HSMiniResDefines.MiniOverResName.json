@@ -1,0 +1,13 @@
+{
+ "OVER_LOSE_PREFAB": "res/prefabs/UI/overUI",
+ "OVER_WIN_PREFAB": "res/prefabs/UI/overUIBest",
+ "LOSE_TITLE": "sand_over_lose_title",
+ "LOSE_CURR_SCORE_ICON": "sand_over_lose_curr_score_icon",
+ "LOSE_BEST_SCORE_ICON": "sand_over_lose_best_score_icon",
+ "CURRENT_SCORE_FONT": "sand_over_lose_current_score_font",
+ "LOSE_BEST_SCORE_FONT": "sand_over_lose_best_score_font",
+ "LOSE_REPLAY_BTN": "sand_over_lose_replay_btn",
+ "WIN_REPLAY_BTN": "sand_over_win_replay_btn",
+ "WIN_DRAGONBONES_SKE": "sand_over_win_dragonbones_ske",
+ "WIN_DRAGONBONES_TEX": "sand_over_win_dragonbones_tex"
+}

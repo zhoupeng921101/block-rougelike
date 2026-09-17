@@ -1,0 +1,7 @@
+{
+ "bundle": "woodskin",
+ "prefab": "prefabs/overui/OverWinSpeedLine",
+ "cnName": "结算界面newscore",
+ "layer": "@o.HSLayerType.Dialog",
+ "cache": false
+}

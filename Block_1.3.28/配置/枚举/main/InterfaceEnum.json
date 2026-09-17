@@ -1,0 +1,20 @@
+{
+ "FEATURE_CONTROL": "featureControl",
+ "IS_RIGHTS_USER": "isRightsUser",
+ "START_CAMERA": "startCamera",
+ "STOP_CAMERA": "stopCamera",
+ "SWITCH_CAMERA": "switchCamera",
+ "CHECK_PERMISSION": "checkPermission",
+ "REQUEST_PERMISSION": "requestPermission",
+ "LOGIN_RESULT": "loginResult",
+ "LOGOUT_RESULT": "logoutResult",
+ "DELETE_RESULT": "deleteResult",
+ "GET_USER_INFO": "getUserInfo",
+ "TOKEN_RESULT": "tokenResult",
+ "IS_BIND_USER": "isBindUser",
+ "BIND_USER_OPEN_WEB": "bindUserAndOpenWeb",
+ "OPEN_GAME_MODE": "openGameMode",
+ "APPS_FLYER": "appsflyer",
+ "CLEAR_USE_UPLOAD": "clearUseUpload",
+ "USE_LAST_UPLOAD": "useLastUpload"
+}

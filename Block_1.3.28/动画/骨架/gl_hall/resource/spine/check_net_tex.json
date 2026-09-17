@@ -1,0 +1,1 @@
+{"width": 949, "imagePath": "check_net_tex.png", "SubTexture": [{"width": 664, "y": 1, "height": 139, "name": "Check_text", "x": 1}, {"width": 166, "y": 1, "height": 132, "name": "net", "x": 667}, {"width": 112, "y": 1, "height": 151, "name": "line", "x": 835}], "height": 154, "name": "check_net"}

@@ -1,0 +1,8 @@
+﻿_key,name,url,bundleName,page,modal,clickModalNotClose,mutex
+MergeBlocksGuide,MergeBlocksGuide,prefabs/guide/MergeBlocksGuide,mergeBlocks,,,,
+MergeBlocksGuideEffect,MergeBlocksGuideEffect,prefabs/guide/MergeBlocksGuideEffect,mergeBlocks,,,,
+MergeBlocksGuideWithoutComp,MergeBlocksGuideWithoutComp,prefabs/guide/MergeBlocksGuideWithoutComp,mergeBlocks,,,,
+MergeBlocksWin,MergeBlocksWin,prefabs/win/MergeBlocksWin,mergeBlocks,True,,,
+MergeBlocksFail,MergeBlocksFail,prefabs/fail/MergeBlocksFail,mergeBlocks,True,,,
+MergeBlocksOverRevive,MergeBlocksOverRevive,prefabs/overRevive/MergeBlocksOverRevive,mergeBlocks,,True,True,@r.PrefabMutexType.GAME_OVER_REVIVE
+MergeBlocksTopInfo,MergeBlocksTopInfo,prefabs/topInfo/MergeBlocksTopInfo,mergeBlocks,,,,

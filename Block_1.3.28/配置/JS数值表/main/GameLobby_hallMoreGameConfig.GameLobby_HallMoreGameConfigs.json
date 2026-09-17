@@ -1,0 +1,58 @@
+[
+ {
+  "name": "一笔画",
+  "bundle": "gl_oneline",
+  "cover": "",
+  "weight": 100,
+  "resName": "oneLine"
+ },
+ {
+  "name": "井字棋",
+  "bundle": "gl_tictactoe",
+  "cover": "",
+  "weight": 90,
+  "resName": "ticTacToe"
+ },
+ {
+  "name": "合成大西瓜",
+  "bundle": "gl_fruit",
+  "cover": "",
+  "weight": 80,
+  "resName": "fruitMerge"
+ },
+ {
+  "name": "水排序",
+  "bundle": "gl_watersort",
+  "cover": "",
+  "weight": 70,
+  "resName": "waterSort"
+ },
+ {
+  "name": "连连看",
+  "bundle": "gl_onet",
+  "cover": "",
+  "weight": 60,
+  "resName": "onet"
+ },
+ {
+  "name": "麻将",
+  "bundle": "gl_mahjong",
+  "cover": "",
+  "weight": 50,
+  "resName": "mahjong"
+ },
+ {
+  "name": "数独",
+  "bundle": "gl_sudoku",
+  "cover": "",
+  "weight": 40,
+  "resName": "sudoku"
+ },
+ {
+  "name": "土耳其方块",
+  "bundle": "gl_blockslide",
+  "cover": "",
+  "weight": 30,
+  "resName": "blockSlide"
+ }
+]

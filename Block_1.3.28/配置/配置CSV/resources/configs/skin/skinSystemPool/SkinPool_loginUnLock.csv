@@ -1,0 +1,41 @@
+﻿ID,name,unlock_type,unlock_num,dexc_ch,desc_en,isShow,iconName
+1000,Default,0,1,原皮肤,first,1,skin_000
+1001,Pure Pink,4,1,累计登陆{0}天,Log in for {0} consecutive days,1,skin_001
+1002,Macaron,4,1,累计登陆{0}天,Log in for {0} consecutive days,1,skin_002
+1003,Gradient Pink,4,1,累计登陆{0}天,Log in for {0} consecutive days,1,skin_003
+1004,Morandi ,4,1,累计登陆{0}天,Log in for {0} consecutive days,1,skin_004
+1005,Pure Green,4,2,累计登陆{0}天,Log in for {0} consecutive days,1,skin_005
+1006,Sunflowers,4,2,累计登陆{0}天,Log in for {0} consecutive days,1,skin_006
+1007,The Starry Night,4,2,累计登陆{0}天,Log in for {0} consecutive days,1,skin_007
+1008,Dark Pop,4,2,累计登陆{0}天,Log in for {0} consecutive days,1,skin_008
+1009,Mondrian,4,3,累计登陆{0}天,Log in for {0} consecutive days,1,skin_009
+1010,Cyberpunk,4,3,累计登陆{0}天,Log in for {0} consecutive days,1,skin_010
+1011,Countryside,4,3,累计登陆{0}天,Log in for {0} consecutive days,1,skin_011
+1012,Ocean,4,3,累计登陆{0}天,Log in for {0} consecutive days,1,skin_012
+1013,Forest,4,4,累计登陆{0}天,Log in for {0} consecutive days,1,skin_013
+1014,Ukiyoe,4,4,累计登陆{0}天,Log in for {0} consecutive days,1,skin_014
+1015,Memphis,4,4,累计登陆{0}天,Log in for {0} consecutive days,1,skin_015
+1016,Rococo,4,4,累计登陆{0}天,Log in for {0} consecutive days,1,skin_016
+1017,Matisse,4,5,累计登陆{0}天,Log in for {0} consecutive days,1,skin_017
+1018,Latte,4,5,累计登陆{0}天,Log in for {0} consecutive days,1,skin_018
+1019,Pantone,4,5,累计登陆{0}天,Log in for {0} consecutive days,1,skin_019
+1020,Ground,4,5,累计登陆{0}天,Log in for {0} consecutive days,1,skin_020
+1021,Blue-white,4,6,累计登陆{0}天,Log in for {0} consecutive days,1,skin_021
+1022,Classic Black,4,6,累计登陆{0}天,Log in for {0} consecutive days,1,skin_022
+1023,Earth,4,6,累计登陆{0}天,Log in for {0} consecutive days,1,skin_023
+1024,Air Pink,4,6,累计登陆{0}天,Log in for {0} consecutive days,1,skin_024
+1025,Tiffany Blue,4,7,累计登陆{0}天,Log in for {0} consecutive days,1,skin_025
+1026,Dessert,4,7,累计登陆{0}天,Log in for {0} consecutive days,1,skin_026
+1027,Macaw,4,7,累计登陆{0}天,Log in for {0} consecutive days,1,skin_027
+1028,Mountains,4,7,累计登陆{0}天,Log in for {0} consecutive days,1,skin_028
+1029,Glaciers,4,8,累计登陆{0}天,Log in for {0} consecutive days,1,skin_029
+1030,Warm Cold,4,8,累计登陆{0}天,Log in for {0} consecutive days,1,skin_030
+1031,Wizard,4,8,累计登陆{0}天,Log in for {0} consecutive days,1,skin_031
+1032,Passion,4,8,累计登陆{0}天,Log in for {0} consecutive days,1,skin_032
+1033,Peaceful,4,9,累计登陆{0}天,Log in for {0} consecutive days,1,skin_033
+1034,Mystery,4,9,累计登陆{0}天,Log in for {0} consecutive days,1,skin_034
+1035,Fresh,4,9,累计登陆{0}天,Log in for {0} consecutive days,1,skin_035
+1036,Romantic,4,9,累计登陆{0}天,Log in for {0} consecutive days,1,skin_036
+1037,Calm,4,10,累计登陆{0}天,Log in for {0} consecutive days,1,skin_037
+1038,Lovely,4,10,累计登陆{0}天,Log in for {0} consecutive days,1,skin_038
+1039,Energy,4,10,累计登陆{0}天,Log in for {0} consecutive days,1,skin_039

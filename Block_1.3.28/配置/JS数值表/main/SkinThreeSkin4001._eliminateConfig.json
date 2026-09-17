@@ -1,0 +1,40 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.spineCenterSpreadEliminate",
+  "params": {
+   "effectConfig": "eliminate_effect",
+   "animConfig": {
+    "color_1": {
+     "x": "in_x",
+     "y": "in_y"
+    },
+    "color_2": {
+     "x": "in_x",
+     "y": "in_y"
+    },
+    "color_3": {
+     "x": "in_x",
+     "y": "in_y"
+    },
+    "color_4": {
+     "x": "in_x",
+     "y": "in_y"
+    },
+    "color_5": {
+     "x": "in_x",
+     "y": "in_y"
+    },
+    "color_6": {
+     "x": "in_x",
+     "y": "in_y"
+    },
+    "color_7": {
+     "x": "in_x",
+     "y": "in_y"
+    }
+   },
+   "delayPerBlock": 0.067,
+   "isAboveBlocks": true
+  }
+ }
+]

@@ -1,0 +1,50 @@
+[
+ {
+  "type": "@o.SkinThreePreEliminateType.spineSBRAndRC",
+  "params": {
+   "effectConfig": "eliminate_prompt_effect",
+   "singleBlockAnimConfig": {
+    "color_1": [
+     "a_init_1",
+     "a_init_2",
+     "a_init_3"
+    ],
+    "color_2": [
+     "b_init_1",
+     "b_init_2",
+     "b_init_3"
+    ],
+    "color_3": [
+     "c_init_1",
+     "c_init_2",
+     "c_init_3"
+    ],
+    "color_4": [
+     "d_init_1",
+     "d_init_2",
+     "d_init_3"
+    ],
+    "color_5": [
+     "a_init_1",
+     "a_init_2",
+     "a_init_3"
+    ],
+    "color_6": [
+     "b_init_1",
+     "b_init_2",
+     "b_init_3"
+    ],
+    "color_7": [
+     "c_init_1",
+     "c_init_2",
+     "c_init_3"
+    ]
+   },
+   "rowAnimName": "efx_x",
+   "colAnimName": "efx_y",
+   "scale": 1,
+   "isAboveBlocks": true,
+   "isHideBlocks": true
+  }
+ }
+]

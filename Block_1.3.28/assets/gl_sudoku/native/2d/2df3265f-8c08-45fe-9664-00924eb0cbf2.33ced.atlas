@@ -1,0 +1,76 @@
+
+gameplay_fzjl.png
+size: 424,231
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+9_1
+  rotate: false
+  xy: 231, 38
+  size: 191, 191
+  orig: 191, 191
+  offset: 0, 0
+  index: -1
+gameplay_bg_allclear_light1
+  rotate: false
+  xy: 2, 2
+  size: 227, 227
+  orig: 240, 254
+  offset: 7, 13
+  index: -1
+lizi2_blue
+  rotate: false
+  xy: 346, 18
+  size: 17, 18
+  orig: 18, 18
+  offset: 1, 0
+  index: -1
+lizi2_cyan
+  rotate: false
+  xy: 327, 18
+  size: 17, 18
+  orig: 18, 18
+  offset: 1, 0
+  index: -1
+lizi2_green
+  rotate: false
+  xy: 308, 18
+  size: 17, 18
+  orig: 18, 18
+  offset: 1, 0
+  index: -1
+lizi2_orange
+  rotate: false
+  xy: 270, 18
+  size: 17, 18
+  orig: 18, 18
+  offset: 1, 0
+  index: -1
+lizi2_pink
+  rotate: false
+  xy: 231, 18
+  size: 18, 18
+  orig: 20, 20
+  offset: 1, 1
+  index: -1
+lizi2_purple
+  rotate: false
+  xy: 365, 18
+  size: 17, 18
+  orig: 18, 18
+  offset: 1, 0
+  index: -1
+lizi2_red
+  rotate: false
+  xy: 251, 18
+  size: 17, 18
+  orig: 18, 18
+  offset: 1, 0
+  index: -1
+lizi2_yellow
+  rotate: false
+  xy: 289, 18
+  size: 17, 18
+  orig: 18, 18
+  offset: 1, 0
+  index: -1

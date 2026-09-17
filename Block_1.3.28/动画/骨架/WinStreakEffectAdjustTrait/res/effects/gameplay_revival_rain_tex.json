@@ -1,0 +1,1 @@
+{"width": 256, "imagePath": "gameplay_revival_rain_tex.png", "name": "gameplay_revival_rain", "SubTexture": [{"width": 122, "y": 1, "height": 125, "name": "yinyong", "x": 1}, {"width": 11, "y": 77, "height": 22, "name": "yu", "x": 167}, {"width": 40, "y": 77, "height": 46, "name": "sdian", "x": 125}, {"width": 118, "y": 1, "height": 74, "name": "yun", "x": 125}], "height": 128}

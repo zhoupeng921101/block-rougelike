@@ -1,0 +1,14 @@
+﻿成员,值
+LEVEL_FAIL,LEVEL_FAIL
+LEVEL_SUCCESS,LEVEL_SUCCESS
+AD_PLAYING,adPlaying
+DATA_PROCESSING,dataProcessing
+DEATH_ANIMATION,deathAnimation
+GAME_RESULT,gameResult
+GAME_OVER,gameover
+IDLE,idle
+INIT,init
+PAUSED,paused
+REVIVE,revive
+REVIVE_PROCESS,reviveProcess
+RUNNING,running

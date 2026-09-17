@@ -1,0 +1,13 @@
+
+main_mosaic.png
+size: 151,183
+format: RGBA8888
+filter: MipMap,MipMap
+repeat: none
+main_bg_percent
+  rotate: false
+  xy: 4, 4
+  size: 143, 175
+  orig: 145, 176
+  offset: 1, 1
+  index: -1

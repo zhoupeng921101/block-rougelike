@@ -1,0 +1,5 @@
+{
+ "LOADING": 0,
+ "RETRY": 1,
+ "LOADED": 2
+}

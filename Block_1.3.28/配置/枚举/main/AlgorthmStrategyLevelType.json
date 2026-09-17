@@ -1,0 +1,19 @@
+{
+ "Priority": "priority",
+ "Normal": "normal",
+ "Success": "success",
+ "Fail": "fail",
+ "FollowUp": "followup",
+ "StrategyOver": "strategyOver",
+ "BottomStart": "bottomStart",
+ "HistoryBottomBefore": "historyBottomBefore",
+ "BottomBefore": "bottomBefore",
+ "BottomBeforeIOS": "bottomBeforeIOS",
+ "Bottom": "bottom",
+ "BottomNew": "bottomNew",
+ "FallBack": "fallback",
+ "Replace": "replace",
+ "SaveBottom": "saveBottom",
+ "ReplaceAfterBottomOffer": "replaceAfterBottomOffer",
+ "BottomSequence": "bottomSequence"
+}

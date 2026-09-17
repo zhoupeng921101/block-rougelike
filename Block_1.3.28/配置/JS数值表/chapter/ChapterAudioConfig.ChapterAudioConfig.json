@@ -1,0 +1,52 @@
+{
+ "travel_game_collect_item1": {
+  "url": "audios/collects/travel_game_collect_item1",
+  "bundleName": "chapter"
+ },
+ "travel_game_collect_item2": {
+  "url": "audios/collects/travel_game_collect_item2",
+  "bundleName": "chapter"
+ },
+ "travel_targetui_show": {
+  "url": "audios/travel_targetui_show",
+  "bundleName": "chapter"
+ },
+ "travel_score_change": {
+  "url": "audios/travel_score_change",
+  "bundleName": "chapter"
+ },
+ "travel_score_suc": {
+  "url": "audios/travel_score_suc",
+  "bundleName": "chapter"
+ },
+ "travel_overui_score_suc": {
+  "url": "audios/travel_overui_score_suc",
+  "bundleName": "chapter"
+ },
+ "travel_overui_show_btn": {
+  "url": "audios/travel_overui_show_btn",
+  "bundleName": "chapter",
+  "platform": "ios"
+ },
+ "travel_win_logo": {
+  "url": "audios/travel_win_logo",
+  "bundleName": "chapter"
+ },
+ "travel_overui_collect_items": {
+  "url": "audios/travel_overui_collect_items",
+  "bundleName": "chapter"
+ },
+ "travel_cup_award": {
+  "url": "audios/travel_cup_award",
+  "bundleName": "chapter"
+ },
+ "travel_unlock_lvmark": {
+  "url": "audios/travel_unlock_lvmark",
+  "bundleName": "chapter"
+ },
+ "travel_collect_suc": {
+  "url": "audios/travel_collect_suc",
+  "bundleName": "chapter",
+  "platform": "ios"
+ }
+}

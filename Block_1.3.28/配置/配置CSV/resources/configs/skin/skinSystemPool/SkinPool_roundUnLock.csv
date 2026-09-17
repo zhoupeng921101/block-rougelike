@@ -1,0 +1,41 @@
+﻿ID,name,unlock_type,unlock_num,dexc_ch,desc_en,isShow,iconName
+1000,Default,0,1,原皮肤,first,1,skin_000
+1001,Pure Pink,1,2,完成{0}次游戏,After completing {0} games,1,skin_001
+1002,Macaron,1,4,完成{0}次游戏,After completing {0} games,1,skin_002
+1003,Gradient Pink,1,6,完成{0}次游戏,After completing {0} games,1,skin_003
+1004,Morandi ,1,8,完成{0}次游戏,After completing {0} games,1,skin_004
+1005,Pure Green,1,10,完成{0}次游戏,After completing {0} games,1,skin_005
+1006,Sunflowers,1,12,完成{0}次游戏,After completing {0} games,1,skin_006
+1007,The Starry Night,1,14,完成{0}次游戏,After completing {0} games,1,skin_007
+1008,Dark Pop,1,16,完成{0}次游戏,After completing {0} games,1,skin_008
+1009,Mondrian,1,18,完成{0}次游戏,After completing {0} games,1,skin_009
+1010,Cyberpunk,1,20,完成{0}次游戏,After completing {0} games,1,skin_010
+1011,Countryside,1,22,完成{0}次游戏,After completing {0} games,1,skin_011
+1012,Ocean,1,24,完成{0}次游戏,After completing {0} games,1,skin_012
+1013,Forest,1,26,完成{0}次游戏,After completing {0} games,1,skin_013
+1014,Ukiyoe,1,28,完成{0}次游戏,After completing {0} games,1,skin_014
+1015,Memphis,1,30,完成{0}次游戏,After completing {0} games,1,skin_015
+1016,Rococo,1,32,完成{0}次游戏,After completing {0} games,1,skin_016
+1017,Matisse,1,34,完成{0}次游戏,After completing {0} games,1,skin_017
+1018,Latte,1,36,完成{0}次游戏,After completing {0} games,1,skin_018
+1019,Pantone,1,38,完成{0}次游戏,After completing {0} games,1,skin_019
+1020,Ground,1,40,完成{0}次游戏,After completing {0} games,1,skin_020
+1021,Blue-white,1,42,完成{0}次游戏,After completing {0} games,1,skin_021
+1022,Classic Black,1,44,完成{0}次游戏,After completing {0} games,1,skin_022
+1023,Earth,1,46,完成{0}次游戏,After completing {0} games,1,skin_023
+1024,Air Pink,1,48,完成{0}次游戏,After completing {0} games,1,skin_024
+1025,Tiffany Blue,1,50,完成{0}次游戏,After completing {0} games,1,skin_025
+1026,Dessert,1,52,完成{0}次游戏,After completing {0} games,1,skin_026
+1027,Macaw,1,54,完成{0}次游戏,After completing {0} games,1,skin_027
+1028,Mountains,1,56,完成{0}次游戏,After completing {0} games,1,skin_028
+1029,Glaciers,1,58,完成{0}次游戏,After completing {0} games,1,skin_029
+1030,Warm Cold,1,60,完成{0}次游戏,After completing {0} games,1,skin_030
+1031,Wizard,1,62,完成{0}次游戏,After completing {0} games,1,skin_031
+1032,Passion,1,64,完成{0}次游戏,After completing {0} games,1,skin_032
+1033,Peaceful,1,66,完成{0}次游戏,After completing {0} games,1,skin_033
+1034,Mystery,1,68,完成{0}次游戏,After completing {0} games,1,skin_034
+1035,Fresh,1,70,完成{0}次游戏,After completing {0} games,1,skin_035
+1036,Romantic,1,72,完成{0}次游戏,After completing {0} games,1,skin_036
+1037,Calm,1,74,完成{0}次游戏,After completing {0} games,1,skin_037
+1038,Lovely,1,76,完成{0}次游戏,After completing {0} games,1,skin_038
+1039,Energy,1,78,完成{0}次游戏,After completing {0} games,1,skin_039

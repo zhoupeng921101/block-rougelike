@@ -1,0 +1,10 @@
+{
+ "GLMahjongLoadStateNode": "GLMahjongLoadStateNode",
+ "GLMahjongExitStateNode": "GLMahjongExitStateNode",
+ "GLMahjongEntryStateNode": "GLMahjongEntryStateNode",
+ "GLMahjongPlayStateNode": "GLMahjongPlayStateNode",
+ "GLMahjongShuffStateNode": "GLMahjongShuffStateNode",
+ "GLMahjongAllComboStateNode": "GLMahjongAllComboStateNode",
+ "GLMahjongWinStateNode": "GLMahjongWinStateNode",
+ "GLMahjongLoseStateNode": "GLMahjongLoseStateNode"
+}

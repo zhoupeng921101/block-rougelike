@@ -1,0 +1,44 @@
+{
+ "comboRainbowEffectPrompt": {
+  "dragonAssetUrl": "dragonbones/eliminate/comboRainbow/gameplay_eliminatePrompt_ske",
+  "dragonAtlasAssetUrl": "dragonbones/eliminate/comboRainbow/gameplay_eliminatePrompt_tex",
+  "frameSplitting": true,
+  "bundleName": "mainTraits"
+ },
+ "comboRainbowEffectPromptPerform": {
+  "dragonAssetUrl": "dragonbones/eliminate/comboRainbow/newArt/gameplay_eliminatePrompt_ske",
+  "dragonAtlasAssetUrl": "dragonbones/eliminate/comboRainbow/newArt/gameplay_eliminatePrompt_tex",
+  "frameSplitting": true,
+  "bundleName": "mainTraits"
+ },
+ "comboRainbowEffectEliminate1": {
+  "dragonAssetUrl": "dragonbones/eliminate/comboRainbow/playgame_elimination_ske",
+  "dragonAtlasAssetUrl": "dragonbones/eliminate/comboRainbow/playgame_elimination_tex",
+  "frameSplitting": true,
+  "bundleName": "mainTraits"
+ },
+ "comboRainbowEffectEliminate1Perform": {
+  "dragonAssetUrl": "dragonbones/eliminate/comboRainbow/newArt/playgame_elimination_ske",
+  "dragonAtlasAssetUrl": "dragonbones/eliminate/comboRainbow/newArt/playgame_elimination_tex",
+  "frameSplitting": true,
+  "bundleName": "mainTraits"
+ },
+ "comboRainbowEffectEliminate2": {
+  "dragonAssetUrl": "dragonbones/eliminate/comboRainbow/playgame_elimination2_ske",
+  "dragonAtlasAssetUrl": "dragonbones/eliminate/comboRainbow/playgame_elimination2_tex",
+  "frameSplitting": true,
+  "bundleName": "mainTraits"
+ },
+ "clearComboAnim": {
+  "dragonAssetUrl": "dragonbones/boardEffect/clearComboAnim/gameplay_welldone_ske",
+  "dragonAtlasAssetUrl": "dragonbones/boardEffect/clearComboAnim/gameplay_welldone_tex",
+  "frameSplitting": true,
+  "bundleName": "mainTraits"
+ },
+ "gameplay_eliminatePrompt": {
+  "dragonAssetUrl": "dragonbones/preEliminate/gameplay_eliminatePrompt_ske",
+  "dragonAtlasAssetUrl": "dragonbones/preEliminate/gameplay_eliminatePrompt_tex",
+  "frameSplitting": true,
+  "bundleName": "mainTraits"
+ }
+}

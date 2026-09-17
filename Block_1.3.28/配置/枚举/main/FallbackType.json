@@ -1,0 +1,10 @@
+{
+ "New": 0,
+ "Active": 1,
+ "P5New": 2,
+ "P5Active": 3,
+ "PureBucketNew": 4,
+ "PureBucketActive": 5,
+ "Season5New": 6,
+ "Season5Active": 7
+}

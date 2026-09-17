@@ -1,0 +1,132 @@
+﻿_key,assetPath,platform,bundleName,fontLayout,backgroundType,spriteLayout
+board_bg,res/backgroundkuai-8x8_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_board_bg,res/backgroundkuai-8x8_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_collect_fail_play_btn,res/chapter/btn_Retry_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_collect_win_effect_spine,effect/gamePlay_welldone_gem_5005,gp,Remote_Skin_Material_5005,,,
+chapter_collect_win_play_btn_continue,res/chapter/btn_Continue_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_collect_win_play_btn_hard,res/chapter/btn_nextHardLevel_purple_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_collect_win_play_btn_next,res/chapter/btn_nextLevel_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_combo_spine,effect/gameplay_combo_5005,gp,Remote_Skin_Material_5005,,,
+chapter_combo_spine_font,font/gameplay_num_combo_material_5005,gp,Remote_Skin_Material_5005,"{""spacingX"": -30, ""fontSize"": 150, ""position"": {""x"": 0, ""y"": 0}, ""lineHeight"": 0}",,
+chapter_combo_spine_sprite,res/common_game/gameplay_txt_combo_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_encourage_spine_effect,effect/gameplay_word_5005,gp,Remote_Skin_Material_5005,,,
+chapter_game_back_btn,res/btn_BackHome_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_game_bg,mat/background_bg_5005,gp,Remote_Skin_Material_5005,,gradient,
+chapter_goal_bg,res/chapter/bg_Target_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_goal_collect_way_title,res/chapter/txt_TargetCollection_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": 0, ""y"": 170}}"
+chapter_goal_score_goal_score_bg,res/chapter/bg_TargetScore_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_goal_score_goal_score_lb_font,font/num_target_material_5005,gp,Remote_Skin_Material_5005,"{""spacingX"": -10, ""fontSize"": 95, ""position"": {""x"": 0, ""y"": -10}}",,
+chapter_goal_score_way_title,res/chapter/txt_Target_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": 0, ""y"": 170}}"
+chapter_score_fail_effect_spine,effect/gamePlay_soclose_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": 0, ""y"": -150}}"
+chapter_score_fail_mask,,gp,Remote_Skin_Material_5005,,,
+chapter_score_fail_play_btn,res/chapter/btn_Retry_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_score_fail_progress_bg,res/chapter/bg_ProgressL_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 4}"
+chapter_score_fail_progress_img,res/chapter/img_ProgressL_material_5005,gp,Remote_Skin_Material_5005,,,"{""contentSize"": {""width"": 534, ""height"": 54}}"
+chapter_score_fail_score_bg,res/chapter/bg_Score_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_score_win_play_btn_continue,res/chapter/btn_Continue_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_score_win_play_btn_hard,res/chapter/btn_nextHardLevel_purple_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_score_win_play_btn_next,res/chapter/btn_nextLevel_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_score_win_spine_effect,effect/gamePlay_welldone_score_5005,gp,Remote_Skin_Material_5005,,,
+chapter_score_win_welldone_score_font,font/num_target_material_5005,gp,Remote_Skin_Material_5005,"{""fontSize"": 50, ""spacingX"": -2, ""y"": -10}",,
+chapter_setting_bottom_btn_bg,res/setup/setting_btn_common_material_5005,gp,Remote_Skin_Material_5005,,,"{""contentSize"": {""width"": 626, ""height"": 158}}"
+chapter_setting_btn_SetAddDefultSkinBtn_bg,res/setup/setting_btn_defaultSkin_material_5005,gp,Remote_Skin_Material_5005,,,"{""contentSize"": {""width"": 626, ""height"": 158}}"
+chapter_setting_btn_SetAddDefultSkinBtn_icon,res/setup/setting_icon_defaultSkin_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 10}"
+chapter_setting_btn_SetAddDefultSkinBtn_txt,res/setup/setting_txt_defaultSkin_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 10}"
+chapter_setting_btn_BGM,res/setup/setting_btn_BGM_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_btn_BGM_txt,res/setup/setting_txt_BGM_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_btn_home_icon,res/setup/setting_icon_home_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -208, ""y"": 8}}"
+chapter_setting_btn_home_txt,res/setup/setting_txt_home_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -126.198, ""y"": 8}}"
+chapter_setting_btn_moreGames_icon,res/setup/setting_icon_moreGames_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -208, ""y"": 6}}"
+chapter_setting_btn_moreGames_txt,res/setup/setting_txt_moreGames_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -126.198, ""y"": 6}}"
+chapter_setting_btn_moreSettings_icon,res/setup/setting_icon_moreSettings_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -208, ""y"": 6}}"
+chapter_setting_btn_moreSettings_txt,res/setup/setting_txt_moreSettings_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_btn_replay_icon,res/setup/setting_icon_replay_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -208, ""y"": 8}}"
+chapter_setting_btn_replay_txt,res/setup/setting_txt_replay_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -126.198, ""y"": 8}}"
+chapter_setting_btn_sound,res/setup/setting_btn_sound_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_btn_sound_txt,res/setup/setting_txt_sound_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_btn_vibration,res/setup/setting_btn_vibration_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_btn_vibration_txt,res/setup/setting_txt_vibration_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_close_btn,res/setup/setting_btn_close_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_in_bg,res/setup/set_bg_2_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_line,res/setup/setting_bg_line_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_off_img_bg,res/setup/setting_btn_off_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_out_bg,res/setup/set_bg_1_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setting_title,res/setup/setting_txt_title_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_setup_btn,res/class/backgroundstop_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_top_info_score_cur_score_bg,res/chapter/bg_Score_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_top_info_score_progress_bg,res/chapter/bg_ProgressS_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_top_info_score_progress_img,res/chapter/img_ProgressL_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_top_info_score_target_lab_font,font/num_target_material_5005,gp,Remote_Skin_Material_5005,"{""spacingX"": -5, ""fontSize"": 80, ""y"": -10, ""lineHeight"": 40}",,
+class_fail_over_title,res/class/result_gameOver_material_5005,gp,Remote_Skin_Material_5005,,,
+class_fail_play_btn,res/class/result_lose_btn_material_5005,gp,Remote_Skin_Material_5005,,,
+class_win_bg,res/class/result_bestScore_material_5005,gp,Remote_Skin_Material_5005,,,
+class_win_congratulation_spine,effect/result_bestScore_5005,gp,Remote_Skin_Material_5005,,,
+class_win_play_btn,res/class/result_best_btn_material_5005,gp,Remote_Skin_Material_5005,,,
+combo_spine,effect/gameplay_combo_5005,gp,Remote_Skin_Material_5005,,,
+combo_spine_font,font/gameplay_num_combo_material_5005,gp,Remote_Skin_Material_5005,"{""spacingX"": -30, ""fontSize"": 150, ""position"": {""x"": 0, ""y"": 0}, ""lineHeight"": 0}",,
+combo_spine_sprite,res/common_game/gameplay_txt_combo_material_5005,gp,Remote_Skin_Material_5005,,,
+combotips_spine_effect,effect/gameplay_comboTips_5005,gp,Remote_Skin_Material_5005,,,
+crown,res/class/backgroundscore_highest3_material_5005,gp,Remote_Skin_Material_5005,,,
+encourage_spine_effect,effect/gameplay_word_5005,gp,Remote_Skin_Material_5005,,,
+game_bg,mat/background_bg_5005,gp,Remote_Skin_Material_5005,,gradient,
+more_games_popup_bg,res/setup/setting_bg_common_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_close_btn_bg,res/setup/setting_btn_close_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": -10}"
+more_games_popup_item_bg,res/setup/setting_btn_common_material_5005,gp,Remote_Skin_Material_5005,,,"{""contentSize"": {""width"": 626, ""height"": 158}}"
+more_games_popup_item_icon_2248,res/setup/setting_icon_2248_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 8}"
+more_games_popup_item_icon_blockSlide,res/setup/setting_icon_blockSlide_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 8}"
+more_games_popup_item_icon_fruitMerge,res/setup/setting_icon_fruitMerge_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 8}"
+more_games_popup_item_icon_mahjong,res/setup/setting_icon_mahjong_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 8}"
+more_games_popup_item_icon_oneLine,res/setup/setting_icon_oneLine_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 8}"
+more_games_popup_item_icon_onet,res/setup/setting_icon_onet_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 8}"
+more_games_popup_item_icon_sand,res/setup/setting_icon_sandCrush_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 8}"
+more_games_popup_item_icon_sudoku,res/setup/setting_icon_sudoku_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 8}"
+more_games_popup_item_icon_ticTacToe,res/setup/setting_icon_ticTacToe_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 8}"
+more_games_popup_item_icon_waterSort,res/setup/setting_icon_waterSort_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 8}"
+more_games_popup_item_name_2248,res/setup/setting_txt_2248_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_item_name_blockSlide,res/setup/setting_txt_blockSlide_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_item_name_fruitMerge,res/setup/setting_txt_fruitMerge_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_item_name_mahjong,res/setup/setting_txt_mahjong_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_item_name_oneLine,res/setup/setting_txt_oneLine_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_item_name_onet,res/setup/setting_txt_onet_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_item_name_sand,res/setup/setting_txt_sandCrush_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_item_name_sudoku,res/setup/setting_txt_sudoku_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_item_name_ticTacToe,res/setup/setting_txt_ticTacToe_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_item_name_waterSort,res/setup/setting_txt_waterSort_material_5005,gp,Remote_Skin_Material_5005,,,
+more_games_popup_title,res/setup/setting_txt_title_moreGames_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 571}"
+revive_round_bg,res/revive/die_quan_bg_material_5005,gp,Remote_Skin_Material_5005,,,
+revive_round_progress,res/revive/die_quan_material_5005,gp,Remote_Skin_Material_5005,,,
+revive_spine_countdown,effect/revive_countdown_5005,gp,Remote_Skin_Material_5005,,,
+revive_btn_spine_effect,effect/revive_button_5005,gp,Remote_Skin_Material_5005,,,
+chapter_revive_round_bg,res/revive/die_quan_bg_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_revive_round_progress,res/revive/die_quan_material_5005,gp,Remote_Skin_Material_5005,,,
+chapter_revive_spine_countdown,effect/revive_countdown_5005,gp,Remote_Skin_Material_5005,,,
+chapter_revive_btn_spine_effect,effect/revive_button_5005,gp,Remote_Skin_Material_5005,,,
+setting_bottom_btn_bg,res/setup/setting_btn_common_material_5005,gp,Remote_Skin_Material_5005,,,"{""contentSize"": {""width"": 626, ""height"": 158}}"
+setting_btn_SetAddDefultSkinBtn_bg,res/setup/setting_btn_defaultSkin_material_5005,gp,Remote_Skin_Material_5005,,,"{""contentSize"": {""width"": 626, ""height"": 158}}"
+setting_btn_SetAddDefultSkinBtn_icon,res/setup/setting_icon_defaultSkin_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 10}"
+setting_btn_SetAddDefultSkinBtn_txt,res/setup/setting_txt_defaultSkin_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": 10}"
+setting_icon_redpoint,res/setup/setting_icon_redpoint_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_btn,res/class/backgroundstop_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_btn_BGM,res/setup/setting_btn_BGM_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_btn_BGM_txt,res/setup/setting_txt_BGM_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_btn_home_icon,res/setup/setting_icon_home_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -208, ""y"": 8}}"
+setting_btn_home_txt,res/setup/setting_txt_home_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -126.198, ""y"": 8}}"
+setting_btn_moreGames_icon,res/setup/setting_icon_moreGames_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -208, ""y"": 6}}"
+setting_btn_moreGames_txt,res/setup/setting_txt_moreGames_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -126.198, ""y"": 6}}"
+setting_btn_moreSettings_icon,res/setup/setting_icon_moreSettings_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -208, ""y"": 6}}"
+setting_btn_moreSettings_txt,res/setup/setting_txt_moreSettings_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_btn_replay_icon,res/setup/setting_icon_replay_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -208, ""y"": 8}}"
+setting_btn_replay_txt,res/setup/setting_txt_replay_material_5005,gp,Remote_Skin_Material_5005,,,"{""position"": {""x"": -126.198, ""y"": 8}}"
+setting_btn_sound,res/setup/setting_btn_sound_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_btn_sound_txt,res/setup/setting_txt_sound_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_btn_vibration,res/setup/setting_btn_vibration_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_btn_vibration_txt,res/setup/setting_txt_vibration_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_close_btn,res/setup/setting_btn_close_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_in_bg,res/setup/set_bg_2_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_line,res/setup/setting_bg_line_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_off_img_bg,res/setup/setting_btn_off_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_out_bg,res/setup/set_bg_1_material_5005,gp,Remote_Skin_Material_5005,,,
+setting_title,res/setup/setting_txt_title_material_5005,gp,Remote_Skin_Material_5005,,,"{""y"": -12}"
+spine_highscore_font,font/typefacehigh_material_5005,gp,Remote_Skin_Material_5005,"{""spacingX"": 0, ""fontSize"": 80, ""position"": {""x"": 50, ""y"": -4}, ""lineHeight"": 70}",,
+spine_score_font,font/typeFaceCurrent_material_5005,gp,Remote_Skin_Material_5005,"{""spacingX"": 0, ""fontSize"": 80, ""position"": {""x"": 0, ""y"": -20}, ""lineHeight"": 40}",,
+unbelievable_spine_effect,effect/gameplay_clear_unbelievable_5005_1,gp,Remote_Skin_Material_5005,,,

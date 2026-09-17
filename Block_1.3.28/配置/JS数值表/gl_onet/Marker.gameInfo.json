@@ -1,0 +1,21 @@
+{
+ "auto_shuffle_array": [],
+ "auto_shuffle_tiles_num_array": [],
+ "combo_num_array": [],
+ "combo_step_array": [],
+ "effect_combo_num_max": 0,
+ "hint_array": [],
+ "hint_tiles_num_array": [],
+ "initiative_overtime_array": [],
+ "initiative_shuffle_array": [],
+ "initiative_shuffle_tiles_num_array": [],
+ "show_overtime_array": [],
+ "overtime_array": [],
+ "overtime_tiles_num_array": [],
+ "show_overtime_tiles_num_array": [],
+ "slide_step_num": 0,
+ "click_step_num": 0,
+ "first_operation_timestamp": 0,
+ "z_score": 0,
+ "starDivide": []
+}

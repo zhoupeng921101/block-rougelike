@@ -1,0 +1,2 @@
+﻿_key,Level1,Level2,Level3,Level4
+QuestionConfig,"{""6GONG_KL"": {""weight"": 100, ""level"": [1, 100]}}","{""CHB"": {""weight"": 100, ""level"": [1, 60]}}","{""CHB"": {""weight"": 38, ""level"": [20, 100]}, ""CHR"": {""weight"": 20, ""level"": [1, 100]}, ""CHC"": {""weight"": 32, ""level"": [1, 100]}, ""NS"": {""weight"": 10, ""level"": [1, 100]}}","{""CHB"": {""weight"": 8, ""level"": [80, 100]}, ""CHR"": {""weight"": 32, ""level"": [30, 100]}, ""CHC"": {""weight"": 40, ""level"": [30, 100]}, ""NS"": {""weight"": 20, ""level"": [20, 100]}}"

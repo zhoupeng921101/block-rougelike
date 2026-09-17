@@ -1,0 +1,27 @@
+{
+ "basic": {
+  "storageKey": "dataCompatibilityBasicGateKey",
+  "keys": "@l.DataCompatibilityBasicTypeKeys",
+  "Ctor": "@m.DataCompatibilityIosBasicProcessor"
+ },
+ "trait": {
+  "storageKey": "dataCompatibilityTraitGateKey",
+  "keys": "@u.DataCompatibilityTraitTypeKeys",
+  "Ctor": "@h.DataCompatibilityIosTraitProcessor"
+ },
+ "jewel": {
+  "storageKey": "dataCompatibilityJewelGateKey",
+  "keys": "@d.DataCompatibilityJewelTypeKeys",
+  "Ctor": "@_.DataCompatibilityIosJewelProcessor"
+ },
+ "class": {
+  "storageKey": "dataCompatibilityClassGateKey",
+  "keys": "@c.DataCompatibilityClassTypeKeys",
+  "Ctor": "@f.DataCompatibilityIosClassProcessor"
+ },
+ "chapter": {
+  "storageKey": "dataCompatibilityChapterGateKey",
+  "keys": "@s.DataCompatibilityChapterTypeKeys",
+  "Ctor": "@p.DataCompatibilityIosChapterProcessor"
+ }
+}

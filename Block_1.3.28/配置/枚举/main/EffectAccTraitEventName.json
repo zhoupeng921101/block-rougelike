@@ -1,0 +1,11 @@
+{
+ "ChapterDefaultBoard_ReadyComplete": "E_ChapterDefaultBoard_ReadyComplete",
+ "OpenGame_UI": "OpenGame_UI",
+ "GameOver_GameEnd": "E_GameOver_GameEnd",
+ "ModeChoice_Show": "E_ModeChoice_Show",
+ "ChapterList_Show": "E_ChapterList_Show",
+ "E_Revive_Show": "E_Revive_Show",
+ "E_Revive_Close": "E_Revive_Close",
+ "Game_InitComplete": "E_Game_InitComplete",
+ "AtomEngine_enterGame": "E_AtomEngine_enterGame"
+}

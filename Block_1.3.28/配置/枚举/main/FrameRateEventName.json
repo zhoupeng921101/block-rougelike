@@ -1,0 +1,8 @@
+{
+ "OpenGame_UI": "OpenGame_UI",
+ "Game_InitComplete": "Game_InitComplete",
+ "HomePage_Show": "HomePage_Show",
+ "GameOver_GameEnd": "GameOver_GameEnd",
+ "AtomEngine_enterGame": "AtomEngine_enterGame",
+ "AtomEngine_exitGame": "AtomEngine_exitGame"
+}

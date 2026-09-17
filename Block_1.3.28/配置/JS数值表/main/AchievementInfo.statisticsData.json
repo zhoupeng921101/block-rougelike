@@ -1,0 +1,22 @@
+[
+ {
+  "name": "Highest Combo",
+  "targetType": "@u.Achievement_Target_Type.achieve_high_combo",
+  "sKey": "achieve_high_combo"
+ },
+ {
+  "name": "Rounds",
+  "targetType": "@u.Achievement_Target_Type.achieve_all_levels",
+  "sKey": "achieve_all_levels"
+ },
+ {
+  "name": "Best Score",
+  "targetType": "@u.Achievement_Target_Type.achieve_high_score",
+  "sKey": "achieve_high_score"
+ },
+ {
+  "name": "Login Days",
+  "targetType": "@u.Achievement_Target_Type.achieve_login_day",
+  "sKey": "achieve_login_day"
+ }
+]

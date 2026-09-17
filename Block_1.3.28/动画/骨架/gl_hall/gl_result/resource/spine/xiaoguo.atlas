@@ -1,0 +1,55 @@
+
+xiaoguo.png
+size: 172,283
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+glow1
+  rotate: false
+  xy: 2, 52
+  size: 77, 77
+  orig: 77, 77
+  offset: 0, 0
+  index: -1
+glow3
+  rotate: false
+  xy: 2, 52
+  size: 77, 77
+  orig: 77, 77
+  offset: 0, 0
+  index: -1
+glow2
+  rotate: false
+  xy: 2, 131
+  size: 150, 150
+  orig: 150, 150
+  offset: 0, 0
+  index: -1
+glow4
+  rotate: true
+  xy: 2, 2
+  size: 48, 122
+  orig: 52, 128
+  offset: 2, 3
+  index: -1
+star1
+  rotate: true
+  xy: 126, 9
+  size: 46, 44
+  orig: 50, 50
+  offset: 2, 3
+  index: -1
+star2
+  rotate: false
+  xy: 81, 57
+  size: 70, 72
+  orig: 96, 98
+  offset: 13, 13
+  index: -1
+star3
+  rotate: false
+  xy: 81, 57
+  size: 70, 72
+  orig: 96, 98
+  offset: 13, 13
+  index: -1

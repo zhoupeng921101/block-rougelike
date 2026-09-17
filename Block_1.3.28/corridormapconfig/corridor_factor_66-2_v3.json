@@ -1,0 +1,347 @@
+[
+  {
+    "conditions": {
+      "country": ["AU","CA","GB","JP","KR","NZ"],
+      "abtest": ["bx6601","fs6425","fs6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "floor1": 20,
+        "floor2": 12,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AT","BE","BG","CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HK", "HR", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK"],
+      "abtest": ["bx6601","fs6425","fs6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "floor1": 10,
+        "floor2": 6,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BD", "BN", "BT", "CN", "ID", "IN", "KH", "KP", "LA", "LK", "MM", "MN", "MV", "MY", "NP", "PH", "PK", "RU", "SG", "TH", "TL", "TW", "VN"],
+      "abtest": ["bx6601","fs6425","fs6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "floor1": 2.4,
+        "floor2": 1.5,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AR", "BL", "BO", "BR", "BZ", "CL", "CO", "CR", "CU", "DO", "EC", "GF", "GP", "GT", "GY", "HN", "HT", "MF", "MQ", "MX", "NI", "PA", "PE", "PR", "PY", "SR", "SV", "UY", "VE"],
+      "abtest": ["bx6601","fs6425","fs6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "floor1": 3.6,
+        "floor2": 2,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["US"],
+      "abtest": ["bx6601","fs6425","fs6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "8d8fbdcb108ee9f6": {
+        "floor1": 30,
+        "floor2": 20,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+
+
+  {
+    "conditions": {
+      "country": ["AU","CA","GB","JP","KR","NZ"],
+      "abtest": ["bx6601","fs6425","fs6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "afe53469a2b9298c": {
+        "floor1": 9,
+        "floor2": 1,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AT","BE","BG","CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HK", "HR", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK"],
+      "abtest": ["bx6601","fs6425","fs6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "afe53469a2b9298c": {
+        "floor1": 4.5,
+        "floor2": 0,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BD", "BN", "BT", "CN", "ID", "IN", "KH", "KP", "LA", "LK", "MM", "MN", "MV", "MY", "NP", "PH", "PK", "RU", "SG", "TH", "TL", "TW", "VN"],
+      "abtest": ["bx6601","fs6425","fs6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "afe53469a2b9298c": {
+        "floor1": 1,
+        "floor2": 0,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AR", "BL", "BO", "BR", "BZ", "CL", "CO", "CR", "CU", "DO", "EC", "GF", "GP", "GT", "GY", "HN", "HT", "MF", "MQ", "MX", "NI", "PA", "PE", "PR", "PY", "SR", "SV", "UY", "VE"],
+      "abtest": ["bx6601","fs6425","fs6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "afe53469a2b9298c": {
+        "floor1": 1.6,
+        "floor2": 0,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["US"],
+      "abtest": ["bx6601","fs6425","fs6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "afe53469a2b9298c": {
+        "floor1": 15,
+        "floor2": 6,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+
+
+  {
+    "conditions": {
+      "country": ["AU","CA","GB","JP","KR","NZ"],
+      "abtest": ["bx6601","rv6425","rv6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "ab18eea0331c9f88": {
+        "floor1": 45,
+        "floor2": 20,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AT","BE","BG","CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HK", "HR", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK"],
+      "abtest": ["bx6601","rv6425","rv6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "ab18eea0331c9f88": {
+        "floor1": 25,
+        "floor2": 10,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BD", "BN", "BT", "CN", "ID", "IN", "KH", "KP", "LA", "LK", "MM", "MN", "MV", "MY", "NP", "PH", "PK", "RU", "SG", "TH", "TL", "TW", "VN"],
+      "abtest": ["bx6601","rv6425","rv6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "ab18eea0331c9f88": {
+        "floor1": 6,
+        "floor2": 3,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AR", "BL", "BO", "BR", "BZ", "CL", "CO", "CR", "CU", "DO", "EC", "GF", "GP", "GT", "GY", "HN", "HT", "MF", "MQ", "MX", "NI", "PA", "PE", "PR", "PY", "SR", "SV", "UY", "VE"],
+      "abtest": ["bx6601","rv6425","rv6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "ab18eea0331c9f88": {
+        "floor1": 10,
+        "floor2": 4,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["US"],
+      "abtest": ["bx6601","rv6425","rv6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "ab18eea0331c9f88": {
+        "floor1": 70,
+        "floor2": 30,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+
+  {
+    "conditions": {
+      "country": ["AU","CA","GB","JP","KR","NZ"],
+      "abtest": ["bx6601","rv6425","rv6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "431f3e8b8ae07da8": {
+        "floor1": 20,
+        "floor2": 8,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AT","BE","BG","CH", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HK", "HR", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK"],
+      "abtest": ["bx6601","rv6425","rv6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "431f3e8b8ae07da8": {
+        "floor1": 8,
+        "floor2": 3,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["BD", "BN", "BT", "CN", "ID", "IN", "KH", "KP", "LA", "LK", "MM", "MN", "MV", "MY", "NP", "PH", "PK", "RU", "SG", "TH", "TL", "TW", "VN"],
+      "abtest": ["bx6601","rv6425","rv6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "431f3e8b8ae07da8": {
+        "floor1": 1.5,
+        "floor2": 0,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["AR", "BL", "BO", "BR", "BZ", "CL", "CO", "CR", "CU", "DO", "EC", "GF", "GP", "GT", "GY", "HN", "HT", "MF", "MQ", "MX", "NI", "PA", "PE", "PR", "PY", "SR", "SV", "UY", "VE"],
+      "abtest": ["bx6601","rv6425","rv6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "431f3e8b8ae07da8": {
+        "floor1": 2,
+        "floor2": 0,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  },
+  {
+    "conditions": {
+      "country": ["US"],
+      "abtest": ["bx6601","rv6425","rv6624"],
+      "adwaynum": ["6601","6622","6624"]
+    },
+    "data": {
+      "431f3e8b8ae07da8": {
+        "floor1": 25,
+        "floor2": 12,
+        "ceiling1": 0,
+        "ceiling2": 0,
+        "floor_factor": 0,
+        "ceiling_factor": 0
+      }
+    }
+  }
+]

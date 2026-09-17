@@ -1,0 +1,7 @@
+{
+ "bundle": "sandcrush",
+ "prefab": "over/prefab/OverWinFull",
+ "cnName": "结束界面-全屏",
+ "layer": "@o.HSLayerType.Dialog",
+ "cache": false
+}

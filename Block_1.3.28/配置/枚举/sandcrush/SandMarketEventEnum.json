@@ -1,0 +1,7 @@
+{
+ "CLICK_REVIVE": "sc_clickrevive",
+ "END_GAME": "sc_endgame",
+ "CLICK_STAR": "sc_clickstar",
+ "CLEAN_COMBO": "sc_cleancombo",
+ "CLEAN_ACTIVE": "sc_cleanactive"
+}

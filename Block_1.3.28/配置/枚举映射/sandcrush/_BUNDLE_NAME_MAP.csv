@@ -1,0 +1,10 @@
+﻿键成员,键值,映射值,值来源
+wood,1,woodskin,字面量
+pixel,2,sand_prefab,字面量
+nonPixel,3,nonpixelskin,字面量
+neon,4,neonskin_sand,字面量
+wood2,5,woodskin2_sand,字面量
+light,6,lightskin,字面量
+liquid,7,liquidskin,字面量
+dark,8,darkskin,字面量
+green,9,greenskin,字面量

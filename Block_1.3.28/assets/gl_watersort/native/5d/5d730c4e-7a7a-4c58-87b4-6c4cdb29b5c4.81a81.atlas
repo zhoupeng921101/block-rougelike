@@ -1,0 +1,181 @@
+
+skeleton.png
+size: 683,532
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+Tex_point
+  rotate: false
+  xy: 276, 148
+  size: 28, 28
+  orig: 32, 32
+  offset: 2, 2
+  index: -1
+Tex_ring_03_50x50
+  rotate: false
+  xy: 67, 2
+  size: 54, 54
+  orig: 56, 56
+  offset: 1, 1
+  index: -1
+Tex_star_01_128x128
+  rotate: false
+  xy: 546, 110
+  size: 70, 72
+  orig: 96, 98
+  offset: 13, 13
+  index: -1
+Tex_star_02_128x128
+  rotate: false
+  xy: 443, 13
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+Tex_star_03_128x128
+  rotate: false
+  xy: 546, 18
+  size: 88, 90
+  orig: 96, 98
+  offset: 4, 4
+  index: -1
+Tex_trail_03_256x64
+  rotate: false
+  xy: 160, 54
+  size: 24, 238
+  orig: 24, 238
+  offset: 0, 0
+  index: -1
+Tex_water
+  rotate: false
+  xy: 432, 79
+  size: 112, 103
+  orig: 116, 107
+  offset: 2, 2
+  index: -1
+bottle_extra_large
+  rotate: false
+  xy: 2, 58
+  size: 156, 234
+  orig: 156, 234
+  offset: 0, 0
+  index: -1
+bottle_extra_large2
+  rotate: false
+  xy: 2, 294
+  size: 212, 236
+  orig: 212, 236
+  offset: 0, 0
+  index: -1
+bottle_extra_large_top
+  rotate: true
+  xy: 437, 374
+  size: 156, 234
+  orig: 156, 234
+  offset: 0, 0
+  index: -1
+bottle_extra_large_top2
+  rotate: true
+  xy: 635, 176
+  size: 196, 46
+  orig: 208, 53
+  offset: 6, 0
+  index: -1
+ct1
+  rotate: false
+  xy: 618, 142
+  size: 44, 32
+  orig: 44, 32
+  offset: 0, 0
+  index: -1
+ct2
+  rotate: true
+  xy: 636, 96
+  size: 44, 32
+  orig: 44, 32
+  offset: 0, 0
+  index: -1
+ct3
+  rotate: true
+  xy: 636, 50
+  size: 44, 32
+  orig: 44, 32
+  offset: 0, 0
+  index: -1
+ct4
+  rotate: false
+  xy: 416, 267
+  size: 19, 40
+  orig: 19, 40
+  offset: 0, 0
+  index: -1
+glow
+  rotate: false
+  xy: 216, 309
+  size: 219, 221
+  orig: 256, 256
+  offset: 18, 18
+  index: -1
+icon_lock
+  rotate: true
+  xy: 2, 2
+  size: 54, 63
+  orig: 72, 72
+  offset: 9, 6
+  index: -1
+icon_lock2
+  rotate: true
+  xy: 123, 6
+  size: 46, 61
+  orig: 80, 80
+  offset: 17, 8
+  index: -1
+liangkuang
+  rotate: true
+  xy: 437, 184
+  size: 188, 196
+  orig: 200, 200
+  offset: 6, 0
+  index: -1
+pinggai
+  rotate: true
+  xy: 186, 142
+  size: 150, 88
+  orig: 150, 88
+  offset: 0, 0
+  index: -1
+qipao
+  rotate: true
+  xy: 317, 62
+  size: 114, 113
+  orig: 128, 128
+  offset: 7, 7
+  index: -1
+water
+  rotate: true
+  xy: 186, 2
+  size: 138, 129
+  orig: 138, 129
+  offset: 0, 0
+  index: -1
+water_top
+  rotate: false
+  xy: 276, 178
+  size: 138, 129
+  orig: 138, 129
+  offset: 0, 0
+  index: -1
+wenhao
+  rotate: false
+  xy: 509, 24
+  size: 33, 53
+  orig: 72, 72
+  offset: 19, 11
+  index: -1
+yeti1
+  rotate: true
+  xy: 317, 21
+  size: 39, 124
+  orig: 39, 124
+  offset: 0, 0
+  index: -1

@@ -1,0 +1,12 @@
+[
+ {
+  "name": "ThanksAfterAd1",
+  "url": "prefabs/ThanksAfterAd1",
+  "bundleName": "ThanksAfterAdTrait"
+ },
+ {
+  "name": "ThanksAfterAd3",
+  "url": "prefabs/ThanksAfterAd3",
+  "bundleName": "ThanksAfterAdTrait"
+ }
+]

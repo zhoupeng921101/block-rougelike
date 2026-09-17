@@ -1,0 +1,10 @@
+{
+ "android_class": "org/cocos2dx/javascript/JsCallJava",
+ "android_method_load_inter": "callNativeAdxInterAdLoad",
+ "android_method_load_reward": "callNativeAdxRewardAdLoad",
+ "android_method_show_inter": "callNativeAdxInterAdShow",
+ "android_method_show_reward": "callNativeAdxRewardAdShow",
+ "android_method_isloaded_inter": "getNativeAdxInterAdIsLoaded",
+ "android_method_isloaded_reward": "getNativeAdxRewardAdIsLoaded",
+ "android_method_callNativeDecisionInfo": "callNativeDecisionInfo"
+}

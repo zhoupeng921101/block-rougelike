@@ -1,0 +1,12 @@
+{
+ "Sprite": "sprite",
+ "DragonBones_Ske": "dragonBones_ske",
+ "DragonBones_Tex": "dragonBones_tex",
+ "DragonBones_Png": "dragonBones_png",
+ "Spine": "spine",
+ "Spine_Atlas": "spine_atlas",
+ "Spine_Skel": "spine_skel",
+ "Font": "font",
+ "Json": "json",
+ "Other": "other"
+}

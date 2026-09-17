@@ -1,0 +1,7 @@
+{
+ "disPercent": 0.2,
+ "timeStep1": 0.25,
+ "timeStep2": 0.22,
+ "curveStep1": 3,
+ "curveStep2": 2
+}

@@ -1,0 +1,9 @@
+{
+ "enableConsoleIntercept": true,
+ "enableErrorIntercept": true,
+ "enableCocosLogIntercept": true,
+ "keepOriginalConsole": false,
+ "maxMessageLength": 2000.0,
+ "enableStackTrace": true,
+ "taskId": "sandcrush"
+}

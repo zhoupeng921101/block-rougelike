@@ -1,0 +1,7 @@
+[
+ {
+  "name": "@l.PrefabConfig.Revive.name",
+  "url": "@l.PrefabConfig.Revive.url",
+  "type": "@s.UIType.REVIVE"
+ }
+]

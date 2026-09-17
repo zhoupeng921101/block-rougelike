@@ -1,0 +1,104 @@
+{
+ "NewBestScoreEffect": {
+  "name": "NewBestScoreEffect",
+  "url": "prefabs/encourage/new_best_score/NewBestScoreEffect",
+  "bundleName": "mainTraits"
+ },
+ "GamePlayDianZan": {
+  "name": "GamePlayDianZan",
+  "url": "prefabs/boardEffect/gamePlayDianzan/GamePlayDianZan",
+  "bundleName": "mainTraits"
+ },
+ "GameInfoDisplay": {
+  "name": "GameInfoDisplay",
+  "url": "prefabs/game/gameInfoDisplay/gameInfoDisplay",
+  "bundleName": "mainTraits"
+ },
+ "BoardEffect": {
+  "name": "BoardEffect",
+  "url": "prefabs/boardEffect/new_clear_effect/BoardEffect",
+  "bundleName": "mainTraits"
+ },
+ "BGEffect": {
+  "name": "BGEffect",
+  "url": "prefabs/boardEffect/new_clear_effect/BGEffect",
+  "bundleName": "mainTraits"
+ },
+ "IsFirstHomeGuide": {
+  "name": "IsFirstHomeGuide",
+  "url": "prefabs/modeChoice/IsFirstHomeGuideTrait/firstHomeGuidePrefab",
+  "bundleName": "mainTraits"
+ },
+ "NewSeasonGuidance": {
+  "name": "NewSeasonGuidance",
+  "url": "prefabs/modeChoice/NewSeasonGuidanceTrait/newSeasonGuidancePrefab"
+ },
+ "preEliComboRainbow": {
+  "name": "preEliComboRainbow",
+  "url": "prefabs/preEliminate/comboRainbow/preEliComboRainbow",
+  "bundleName": "mainTraits"
+ },
+ "preEliComboRainbowPerform": {
+  "name": "preEliComboRainbow",
+  "url": "prefabs/preEliminate/comboRainbow/newArt/preEliComboRainbow",
+  "bundleName": "mainTraits"
+ },
+ "preEliminatePrefab": {
+  "name": "preEliminatePrefab",
+  "url": "prefabs/preEliminate/preEliminatePrefab",
+  "bundleName": "mainTraits"
+ },
+ "preEliComboRainbowEffectNode": {
+  "name": "preEliComboRainbowEffectNode",
+  "url": "prefabs/preEliminate/comboRainbow/preEliComboRainbowEffectNode",
+  "bundleName": "mainTraits"
+ },
+ "preEliminateShowEndSkinRainbow": {
+  "name": "preEliminateShowEndSkinRainbow",
+  "url": "prefabs/preEliminate/comboRainbow/preEliminateShowEndSkinRainbow",
+  "bundleName": "mainTraits"
+ },
+ "preEliminateShowEndSkin2": {
+  "name": "preEliminateShowEndSkin2",
+  "url": "prefabs/preEliminate/preEliminateShowEndSkin2",
+  "bundleName": "mainTraits"
+ },
+ "EncourageMotivationalWords": {
+  "name": "EncourageMotivationalWords",
+  "url": "prefabs/EncourageMotivationalWords",
+  "bundleName": "Remote_269"
+ },
+ "AdventureOverdueBtnEff": {
+  "name": "AdventureOverdueBtnEff",
+  "url": "prefabs/adventureOverdueBtnEff",
+  "bundleName": "Remote_AdventureOverdue",
+  "platform": "ios"
+ },
+ "AdventureOverdueChapterContent": {
+  "name": "AdventureOverdueChapterContent",
+  "url": "prefabs/adventureOverdueChapterContent",
+  "bundleName": "Remote_AdventureOverdue",
+  "platform": "ios"
+ },
+ "AdventureOverdueChapterItem": {
+  "name": "AdventureOverdueChapterItem",
+  "url": "prefabs/adventureOverdueChapterItem",
+  "bundleName": "Remote_AdventureOverdue",
+  "platform": "ios"
+ },
+ "FaqRedPointNew": {
+  "name": "FaqRedPointNew",
+  "url": "prefabs/FaqRedPointNew",
+  "bundleName": "Remote_AddFaqFunc"
+ },
+ "GLGameCommonTransition": {
+  "name": "GLGameCommonTransition",
+  "url": "prefabs/mainMask",
+  "bundleName": "GLGameCommonTransitionTrait"
+ },
+ "UserAgeSurvey": {
+  "name": "UserAgeSurvey",
+  "url": "prefabs/UserAgeSurvey",
+  "bundleName": "UserAgeSurveyTrait"
+ }
+}

@@ -1,0 +1,162 @@
+{
+ "chapter_game_bg": {
+  "assetName": "white",
+  "assetObject": null
+ },
+ "chapter_game_bg_material": {
+  "assetName": "gradient_blue_mid (Instance)",
+  "assetObject": null
+ },
+ "chapter_game_back_btn": {
+  "assetName": "btn_back",
+  "assetObject": null
+ },
+ "chapter_setup_btn": {
+  "assetName": "backgroundstop",
+  "assetObject": null
+ },
+ "chapter_collect_top_item_num_font": {
+  "assetName": "",
+  "assetObject": null
+ },
+ "chapter_top_info_score_target_lab_font": {
+  "assetName": "level",
+  "assetObject": null
+ },
+ "chapter_top_info_score_cur_score_lab_font": {
+  "assetName": "level",
+  "assetObject": null
+ },
+ "chapter_top_info_score_cur_score_bg": {
+  "assetName": "bg_Score",
+  "assetObject": null
+ },
+ "chapter_top_info_score_progress_bg": {
+  "assetName": "bg_ProgressS",
+  "assetObject": null
+ },
+ "chapter_top_info_score_progress_img": {
+  "assetName": "img_ProgressS",
+  "assetObject": null
+ },
+ "chapter_top_info_score_mask": {
+  "assetName": "",
+  "assetObject": null
+ },
+ "chapter_goal_score_goal_score_bg": {
+  "assetName": "bg_TargetScore",
+  "assetObject": null
+ },
+ "chapter_goal_score_goal_score_lb_font": {
+  "assetName": "typefacehigh",
+  "assetObject": null
+ },
+ "chapter_goal_score_way_title": {
+  "assetName": "txt_Target",
+  "assetObject": null
+ },
+ "chapter_goal_collect_way_title": {
+  "assetName": "txt_TargetCollection",
+  "assetObject": null
+ },
+ "chapter_goal_bg": {
+  "assetName": "bgGoal",
+  "assetObject": null
+ },
+ "chapter_goal_mask": {
+  "assetName": "die_mask",
+  "assetObject": null
+ },
+ "chapter_score_win_bg": {
+  "assetName": "die_mask",
+  "assetObject": null
+ },
+ "chapter_score_win_bg1": {
+  "assetName": "die_mask",
+  "assetObject": null
+ },
+ "chapter_score_win_score_img": {
+  "assetName": "txt_Score",
+  "assetObject": null
+ },
+ "chapter_score_win_score_font": {
+  "assetName": "level",
+  "assetObject": null
+ },
+ "chapter_score_win_welldone_score_font": {
+  "assetName": "level",
+  "assetObject": null
+ },
+ "chapter_score_win_score_effect_font": {
+  "assetName": "level",
+  "assetObject": null
+ },
+ "chapter_score_fail_bg": {
+  "assetName": "die_mask",
+  "assetObject": null
+ },
+ "chapter_score_fail_bg1": {
+  "assetName": "die_mask",
+  "assetObject": null
+ },
+ "chapter_score_fail_goal_num_font": {
+  "assetName": "level",
+  "assetObject": null
+ },
+ "chapter_score_fail_cur_num_font": {
+  "assetName": "level",
+  "assetObject": null
+ },
+ "chapter_score_fail_score_bg": {
+  "assetName": "bg_Score",
+  "assetObject": null
+ },
+ "chapter_score_fail_score_img": {
+  "assetName": "txt_Score",
+  "assetObject": null
+ },
+ "chapter_score_fail_progress_bg": {
+  "assetName": "bg_ProgressL",
+  "assetObject": null
+ },
+ "chapter_score_fail_mask": {
+  "assetName": "",
+  "assetObject": null
+ },
+ "chapter_score_fail_progress_img": {
+  "assetName": "img_ProgressL",
+  "assetObject": null
+ },
+ "chapter_score_fail_play_btn": {
+  "assetName": "btn_Retry",
+  "assetObject": null
+ },
+ "chapter_collect_fail_bg": {
+  "assetName": "die_mask",
+  "assetObject": null
+ },
+ "chapter_collect_fail_bg1": {
+  "assetName": "die_mask",
+  "assetObject": null
+ },
+ "chapter_collect_fail_collect_img": {
+  "assetName": "txt_Collection",
+  "assetObject": null
+ },
+ "chapter_collect_fail_play_btn": {
+  "assetName": "btn_Retry",
+  "assetObject": null
+ },
+ "chapter_collect_win_bg": {
+  "assetName": "die_mask",
+  "assetObject": null
+ },
+ "chapter_collect_win_bg1": {
+  "assetName": "die_mask",
+  "assetObject": null
+ },
+ "chapter_collect_win_collect_img": {
+  "assetName": "txt_Collection",
+  "assetObject": null
+ }
+}

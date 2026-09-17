@@ -1,0 +1,12 @@
+﻿成员,值
+ALERT,alert
+EFFECT,effect
+GAME_ALERT,gameAlert
+GAME_EFFECT,gameEffect
+GAME_UI,gameUI
+GUIDE,guide
+LOADING,loading
+PRELOAD,preload
+SCENE,scene
+TIP,tip
+UI,ui

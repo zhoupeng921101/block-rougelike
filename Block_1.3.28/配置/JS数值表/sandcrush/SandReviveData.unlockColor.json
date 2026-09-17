@@ -1,0 +1,8 @@
+{
+ "isActive": true,
+ "currentUnlockedCount": 4,
+ "targetColorCount": "@e",
+ "reviveStartRound": "@t",
+ "lastCheckRound": 0,
+ "currPlayCount": "@l.SandPlayingData.playingCount"
+}

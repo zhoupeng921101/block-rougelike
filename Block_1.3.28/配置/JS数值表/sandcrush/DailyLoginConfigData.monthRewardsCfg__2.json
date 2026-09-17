@@ -1,0 +1,22 @@
+[
+ {
+  "day": 8,
+  "amount": 40,
+  "currencyType": "@o.CurrencyType.DIAMOND"
+ },
+ {
+  "day": 15,
+  "amount": 60,
+  "currencyType": "@o.CurrencyType.DIAMOND"
+ },
+ {
+  "day": 22,
+  "amount": 80,
+  "currencyType": "@o.CurrencyType.DIAMOND"
+ },
+ {
+  "day": 30,
+  "amount": 100,
+  "currencyType": "@o.CurrencyType.DIAMOND"
+ }
+]

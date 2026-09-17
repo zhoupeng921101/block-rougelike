@@ -1,0 +1,8 @@
+{
+ "GLTictactoeResetScoreOnLargeGap": "GLTictactoeResetScoreOnLargeGap",
+ "GLTictactoeWinReward": "GLTictactoeWinReward",
+ "GLTictactoeWinFirstMove": "GLTictactoeWinFirstMove",
+ "GLTictactoeSkipDrawLoseResult": "GLTictactoeSkipDrawLoseResult",
+ "GLTictactoeSaveScore": "GLTictactoeSaveScore",
+ "GLTictactoeChangeSkin": "GLTictactoeChangeSkin"
+}
