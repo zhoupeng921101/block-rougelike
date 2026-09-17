@@ -122,7 +122,7 @@ python 工具/balatro_all.py --apk=D:\other.apk  # 换输入 APK
 | [资源/](资源/) | 244 个原件：图集 1x/2x、OGG 音频、18 个 GLSL 着色器、7 个字体 |
 | [安卓壳/](安卓壳/) | `classes.dex` / `AndroidManifest.xml` / `resources.arsc`；`jadx/` 下 1839 个 Java 文件 |
 | [原生库/](原生库/) | 7 个 `.so`，**只有 arm64-v8a** |
-| [报告/](报告/) | `Balatro肉鸽设计分析.html` —— 自包含单文件报告（两张图已内联），由 `balatro_report.py` 从分析 md 打包 |
+| `报告/` | **不入库**（`.gitignore` 里的 `**/报告/*.html`）。`balatro_report.py` 现跑现出：把**单篇** `肉鸽玩法设计分析.md` 打包成自包含 HTML（两张图内联），用于发给没有仓库的人。它只覆盖 12 篇分析文档里的 1 篇，也不在任何流水线里，所以产物入库必然腐烂 |
 | [图表/](图表/) | 分析用图 2 张：`成长曲线对照.svg`、`倍增关系图.svg`（都自带亮/暗两套配色，可直接嵌进 Markdown） |
 | 配置CSV 里另外两张 | `_小丑流派表.csv`(150 行，16 个流派标签) 与 `_小丑倍增关系.csv`(420 条关系)，由 `balatro_synergy.py` 产出，**不在 11 张总表之内** |
 | [工具/](工具/) | 15 个脚本，全部无参可跑，默认路径从脚本上一级拼。`balatro_curve.py`、`balatro_synergy.py`、`balatro_synergy_graph.py`、`balatro_report.py` 四个是分析脚本，不在 `balatro_all.py` 的 10 步链路里，要单独跑（graph 依赖 synergy 的产物，report 依赖两张图） |

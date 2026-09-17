@@ -6,3 +6,7 @@ __pycache__/
 *.apk
 *.aab
 *.ipa
+
+# 分析报告的 HTML 是衍生产物：只覆盖单篇文档、不在任何流水线里，
+# 入库必然腐烂。需要发给没有仓库的人时用 balatro_report.py 现跑。
+**/报告/*.html
