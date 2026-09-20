@@ -27,7 +27,7 @@
  *    （`card.lua:1370`）。那一组小丑还没实现，调用点先留着。
  */
 
-import { type Card, type Suit, type Value, makeCard } from '../card';
+import { type Card, type Suit, type Value, cardKey, makeBase } from '../card';
 import type { Consumable } from './types';
 import type { ConsumableSpec, UseContext } from './use-context';
 
@@ -37,22 +37,19 @@ const RANK_UP: Record<Value, Value> = {
     '9': '10', '10': 'Jack', Jack: 'Queen', Queen: 'King', King: 'Ace', Ace: '2',
 };
 
-const SUIT_LETTER: Record<Suit, string> = { Spades: 'S', Hearts: 'H', Clubs: 'C', Diamonds: 'D' };
-const VALUE_KEY: Record<Value, string> = {
-    '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
-    '10': 'T', Jack: 'J', Queen: 'Q', King: 'K', Ace: 'A',
-};
-
 /**
  * `card.lua:113` 的 `Card:set_base`：**原地换掉 `base`，保留身份**。
  *
  * `sort_id` / `unique_val` / `enhancement` 都不动——换点数换花色的是同一张牌，
- * 不是新造一张。新造会让 `pseudoshuffle` 的规范序变掉。
+ * 不是新造一张。
+ *
+ * **不能借 `makeCard` 造一张再抄过来**：那会白白推进 `sort_id` /
+ * `unique_val` 两个全局自增计数器，而 `sort_id` 正是 `pseudoshuffle` 的规范序。
+ * 所以这里用 `makeBase`（纯函数，不碰计数器）。
  */
 function setBase(card: Card, suit: Suit, value: Value): void {
-    const fresh = makeCard(`${SUIT_LETTER[suit]}_${VALUE_KEY[value]}`, suit, value);
-    Object.assign(card.base, fresh.base);
-    (card as { key: string }).key = fresh.key;
+    Object.assign(card.base, makeBase(suit, value));
+    (card as { key: string }).key = cardKey(suit, value);
 }
 
 /** `card.lua:547` 的 `change_suit`：只换花色，点数不动。 */

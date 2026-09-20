@@ -104,6 +104,14 @@ const SUIT_TABLE: Record<Suit, { suit_nominal: number; suit_nominal_original: nu
     Spades: { suit_nominal: 0.04, suit_nominal_original: 0.004 },
 };
 
+const SUIT_LETTER: Record<Suit, string> = {
+    Clubs: 'C', Diamonds: 'D', Hearts: 'H', Spades: 'S',
+};
+const VALUE_KEY: Record<Value, string> = {
+    '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
+    '10': 'T', Jack: 'J', Queen: 'Q', King: 'K', Ace: 'A',
+};
+
 let nextSortId = 1;
 let nextUniqueVal = 1;
 
@@ -111,6 +119,34 @@ let nextUniqueVal = 1;
 export function resetCardCounters(): void {
     nextSortId = 1;
     nextUniqueVal = 1;
+}
+
+/**
+ * 造一份 `base`。`makeCard` 与 `setBase`（塔罗换点数／换花色）共用。
+ *
+ * **单独提出来是因为 `setBase` 不能借 `makeCard`**：那会白白推进
+ * `sort_id` / `unique_val` 两个全局自增计数器，而 `sort_id` 正是
+ * `pseudoshuffle` 的规范序。今天没有「运行时造牌」的路径所以看不出来，
+ * 但 `增删牌` 那组小丑接进来之后，用过几次 The Sun 就会让新造的牌
+ * 拿到偏移过的 `sort_id`，同 seed 的洗牌跟着分叉。
+ */
+export function makeBase(suit: Suit, value: Value): CardBase {
+    const v = VALUE_TABLE[value];
+    const s = SUIT_TABLE[suit];
+    return {
+        suit,
+        value,
+        nominal: v.nominal,
+        face_nominal: v.face_nominal,
+        id: v.id,
+        suit_nominal: s.suit_nominal,
+        suit_nominal_original: s.suit_nominal_original,
+    };
+}
+
+/** `P_CARDS` 的 key，如 `S_K`。`setBase` 换牌面时也要换它 */
+export function cardKey(suit: Suit, value: Value): string {
+    return `${SUIT_LETTER[suit]}_${VALUE_KEY[value]}`;
 }
 
 export function makeCard(key: string, suit: Suit, value: Value): Card {
@@ -193,16 +229,10 @@ export function makeStandardDeck(): Card[] {
         '2', '3', '4', '5', '6', '7', '8', '9', '10',
         'Jack', 'Queen', 'King', 'Ace',
     ];
-    const letter: Record<Suit, string> = { Clubs: 'C', Diamonds: 'D', Hearts: 'H', Spades: 'S' };
-    const vkey: Record<Value, string> = {
-        '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
-        '10': 'T', Jack: 'J', Queen: 'Q', King: 'K', Ace: 'A',
-    };
-
     const deck: Card[] = [];
     for (const suit of suits) {
         for (const value of values) {
-            deck.push(makeCard(`${letter[suit]}_${vkey[value]}`, suit, value));
+            deck.push(makeCard(cardKey(suit, value), suit, value));
         }
     }
     return deck;

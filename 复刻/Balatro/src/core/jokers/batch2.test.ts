@@ -732,3 +732,48 @@ describe('Turtle Bean：手牌上限 +5，每回合 -1，到 0 自毁', () => {
         expect(joker.ability.extra.h_size).toBe(1); // 没被减，直接毁
     });
 });
+
+// ————————————————————————————————————————————————————————————————
+// `/code-review high` 逮到的三个洞的回归测试
+//
+// 前两个是同一种形态：**handler 写了但没人调**，
+// 而 `isJokerImplemented` 从 handler 表算，照样把它们报成已实现。
+// ————————————————————————————————————————————————————————————————
+
+describe('回归：after 那一趟真的会跑', () => {
+    /** `state_events.lua:1089`。漏掉它，`AFTER` 整张表都是死代码 */
+    it('Vagabond 在 evaluatePlay 里真的造得出塔罗（$3 ≤ $4）', () => {
+        const made: string[] = [];
+        const view = makeGameView({
+            jokers: [makeJoker('j_vagabond')],
+            dollars: 3,
+            consumableCount: 0,
+            consumable_slots: 2,
+            createConsumable: (set, keyAppend) => made.push(`${set}:${keyAppend}`),
+        });
+        evaluatePlay(hand('SK', 'HK', 'D9', 'C4', 'D3'), initialHands(), view);
+        expect(made).toEqual(['Tarot:vag']);
+    });
+
+    it('Ice Cream 打完一手会掉筹码（原先一直停在 100）', () => {
+        const joker = makeJoker('j_ice_cream');
+        const before = joker.ability.extra.chips;
+        evaluatePlay(
+            hand('SK', 'HK', 'D9', 'C4', 'D3'),
+            initialHands(),
+            makeGameView({ jokers: [joker] }),
+        );
+        expect(joker.ability.extra.chips).toBe(before - joker.ability.extra.chip_mod);
+    });
+
+    /** `after` 在原文里排在分数算完之后（`:1052` vs `:1089`），所以它改不了这一手 */
+    it('after 那一趟不改本手分数：Pair 仍是 (10 + 10+10) × 2 = 60', () => {
+        const out = evaluatePlay(
+            hand('SK', 'HK', 'D9', 'C4', 'D3'),
+            initialHands(),
+            makeGameView({ jokers: [makeJoker('j_ice_cream')] }),
+        );
+        // Ice Cream 起始 100 筹码：(10 + 20 + 100) × 2 = 260
+        expect(out.score).toBe(260);
+    });
+});

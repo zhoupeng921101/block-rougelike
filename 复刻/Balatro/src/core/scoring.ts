@@ -529,6 +529,32 @@ export function evaluatePlay(
     // —— 第 14 步：全局唯一的一次乘法 ——
     const score = Math.floor(handChips * mult);
 
+    // —— 出牌后的 `after` 遍历 ——
+    // `state_events.lua:1089`。**位置在分数算完之后**（`:1052` 就已经
+    // `math.floor(hand_chips*mult)` 了），所以它改不了这一手的分数——
+    // 它是善后：`Ice Cream` 掉筹码、`Vagabond` / `Superposition` 造塔罗。
+    //
+    // 漏掉这一趟的后果很隐蔽：那几张小丑**看起来是实现了的**
+    // （`isJokerImplemented` 从 handler 表算），玩起来却一次都不触发。
+    for (const joker of [...game.jokers]) {
+        const effects = evalCard(joker, {
+            cardarea: 'jokers',
+            full_hand: playedCards,
+            scoring_hand: scoringHand,
+            scoring_name: handName,
+            poker_hands: results.parts,
+            after: true,
+        }, game);
+
+        const e = effects.jokers;
+        if (!e) continue;
+        // **不动 handChips / mult**：分数已经定了。只记一条给表现层放动画
+        steps.push({
+            kind: 'joker', joker, chipMod: 0, multMod: 0, xMult: 1,
+            handChips, mult, message: e.message,
+        });
+    }
+
     return {
         handName, scoringHand, baseChips, baseMult, handChips, mult, score, steps,
         dollars: game.dollars + game.dollar_buffer - dollarsBefore,

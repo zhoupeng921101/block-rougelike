@@ -348,6 +348,21 @@ Label: wayfinder:map
   幽灵牌只能从幽灵补充包与 The Soul 来，所以「不做补充包」自动蕴含「不做幽灵牌」。
 - **`Card:set_base` 换点数换花色时不动 `sort_id` 与 `unique_val`**——
   换的是同一张牌，不是新造一张。新造会让 `pseudoshuffle` 的规范序跟着变。
+- **「写了 handler」不等于「有人调」。** `/code-review high` 在收尾时逮到两处
+  **整张 handler 表没有调用方**：`evaluate_play` 从没跑过 `context.after` 那一趟
+  （`state_events.lua:1089`，`Ice Cream` / `Vagabond` / `Superposition` 全是死代码），
+  `Run.useConsumable` 从没发过 `using_consumeable`
+  （`button_callbacks.lua:2330`，`Constellation` 同样）。
+  两处都被 `isJokerImplemented` 报成已实现——因为它从 handler 表算，
+  而表里有没有东西与「这张表会不会被调」是两回事。
+  **加新 context 表时，把「谁来调它」和 handler 一起写。**
+- **`after` 那一趟排在分数算完之后**（`state_events.lua:1052` 先算
+  `math.floor(hand_chips*mult)`，`:1089` 才跑 after），所以它改不了这一手的分数。
+- **换牌面不要借 `makeCard`。** `Card:set_base` 换的是同一张牌的 `base`，
+  而 `makeCard` 会推进 `sort_id` / `unique_val` 两个全局自增计数器，
+  `sort_id` 正是 `pseudoshuffle` 的规范序。今天看不出来（没有运行时造牌的路径），
+  但 `增删牌` 那组小丑接进来之后，用过几次 The Sun 就会让新造的牌拿到偏移过的
+  `sort_id`，同 seed 的洗牌跟着分叉。用 `makeBase`（纯函数）。
 - **有两张小丑「有 handler 但效果落空」**，且被 `isJokerImplemented` 报成已实现：
   `To Do List`（`pickToDoHand` 全仓没有调用方，牌型从没被抽过）与
   `Mr. Bones`（返回的 `saved` 标志没有读取方）。

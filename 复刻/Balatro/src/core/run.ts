@@ -471,6 +471,17 @@ export class Run {
 
         releaseUsed(this.poolContext(), consumable.key);
 
+        // `button_callbacks.lua:2330`：用完之后问一遍每张小丑。
+        // `Constellation` 靠它长 x_mult。**漏掉这一趟它就是个空实现**——
+        // 而 `isJokerImplemented` 会照样把它报成已实现
+        for (const joker of [...this.jokers]) {
+            calculateJoker(
+                joker,
+                { using_consumeable: true, consumeable: { set: consumable.center.set } },
+                this.round?.gameView() ?? this.shopGameView(),
+            );
+        }
+
         // `misc_functions.lua:1227` 的双层嵌套 immediate：
         // **在效果之后才写**，所以 `The Fool` 读到的是上一张、不是自己
         this.lastTarotPlanet = consumable.key;

@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { BLIND_CENTERS } from './blinds';
-import { makeStandardDeck } from './card';
+import { makeCard, makeStandardDeck, resetCardCounters } from './card';
 import { makeConsumable } from './consumables';
 import { makeJoker } from './jokers';
 import { Run } from './run';
@@ -439,5 +439,62 @@ describe('消耗品区', () => {
         const run = new Run('TUTORIAL');
         run.consumables.push(makeConsumable('c_pluto'));
         expect(run.canUseConsumable(0)).toBe(true);
+    });
+});
+
+describe('回归：用消耗品之后会问一遍小丑', () => {
+    /**
+     * `button_callbacks.lua:2330`。漏掉这一趟，`Constellation` 就是个空实现——
+     * 而 `isJokerImplemented` 会照样把它报成已实现。
+     */
+    it('Constellation 在 Run.useConsumable 之后真的长 x_mult', () => {
+        const run = new Run('TUTORIAL');
+        const joker = makeJoker('j_constellation');
+        run.jokers.push(joker);
+        run.consumables.push(makeConsumable('c_pluto'));
+
+        run.useConsumable(0);
+        expect(joker.ability.x_mult).toBeCloseTo(1.1);
+    });
+
+    it('用塔罗不长（Constellation 只认星球）', () => {
+        const run = new Run('TUTORIAL');
+        const joker = makeJoker('j_constellation');
+        run.jokers.push(joker);
+        // The Hermit 随时能用、不需要选牌
+        run.consumables.push(makeConsumable('c_hermit'));
+
+        run.useConsumable(0);
+        expect(joker.ability.x_mult).toBe(1);
+    });
+
+    it('用塔罗会让 Fortune Teller 的计数涨（consumeable_usage_tarot 接上了）', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_hermit'));
+        run.useConsumable(0);
+        expect(run.consumableUsage.total.tarot).toBe(1);
+    });
+});
+
+describe('回归：换牌面不推进全局自增计数器', () => {
+    /**
+     * `sort_id` 是 `pseudoshuffle` 的规范序。`setBase` 借 `makeCard` 造一张
+     * 再抄过来会白白推进它，等 `增删牌` 那组小丑接进来，新造的牌就会拿到
+     * 偏移过的 `sort_id`，同 seed 的洗牌跟着分叉。
+     */
+    it('The Sun 换三次花色之后，新造的牌 sort_id 不偏', () => {
+        resetCardCounters();
+        const deck = makeStandardDeck();
+        const probe1 = makeCard('S_A', 'Spades', 'Ace');
+
+        const run = new Run('TUTORIAL', deck);
+        run.consumables.push(
+            makeConsumable('c_sun'), makeConsumable('c_sun'), makeConsumable('c_sun'),
+        );
+        for (let i = 2; i >= 0; i--) run.useConsumable(i, [deck[0]]);
+
+        const probe2 = makeCard('S_A', 'Spades', 'Ace');
+        expect(probe2.sort_id).toBe(probe1.sort_id + 1);
+        expect(probe2.unique_val).toBe(probe1.unique_val + 1);
     });
 });
