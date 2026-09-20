@@ -17,6 +17,8 @@ export type UseContext = {
     hands: Record<HandName, HandInfo>;
     /** `G.hand.highlighted`——选中的手牌。换强化 / 换花色 / 销毁的目标 */
     highlighted: Card[];
+    /** `G.hand.cards`——手牌区**全部**的牌。幽灵牌里好几张要扫整手 */
+    handCards: Card[];
     jokers: Joker[];
     /** `G.consumeables.cards`。**注意不含正在用的这一张**（它已经被拿出来了） */
     consumables: Consumable[];
@@ -30,6 +32,12 @@ export type UseContext = {
     removeCards(cards: Card[]): void;
     addConsumable(consumable: Consumable): void;
     addJoker(joker: Joker): void;
+    /** 从小丑区拿走（`Ankh` / `Hex` 会毁掉其余的小丑） */
+    removeJoker(joker: Joker): void;
+    /** 造一张扑克牌进手牌与牌组（`create_playing_card`） */
+    addPlayingCard(card: Card): void;
+    /** `G.hand:change_size(delta)`。`Ouija` -1、`Ectoplasm` 递增地减 */
+    changeHandSize(delta: number): void;
 
     /**
      * `create_card(set, G.consumeables, …, keyAppend)`。**消费 RNG**，
@@ -38,7 +46,7 @@ export type UseContext = {
      */
     createConsumable(set: ConsumableSet, keyAppend: string): Consumable;
     /** `create_card('Joker', G.jokers, …, keyAppend)`。同样消费 RNG */
-    createJoker(keyAppend: string): Joker;
+    createJoker(keyAppend: string, options?: CreateJokerOptions): Joker;
     /** 按 key 造一张（`forced_key` 那条路，**不消费 RNG**）。`The Fool` 用 */
     makeConsumable(key: string): Consumable;
 
@@ -54,6 +62,21 @@ export type UseContext = {
      * `The Wheel of Fortune` 要从「没版本的小丑」里挑一张。
      */
     pickRandom<T>(list: T[], key: string): T | undefined;
+    /** `pseudoshuffle(list, pseudoseed(key))`。`Immolate` 洗一遍手牌再毁前 5 张 */
+    shuffled<T>(list: T[], key: string): T[];
+    /**
+     * `G.GAME.ecto_minus`：`Ectoplasm` 每用一次手牌上限多减一格
+     * （`card.lua:1497`，从 1 起）。**调用一次就推进一次**。
+     */
+    nextEctoplasmMinus(): number;
+};
+
+/** `create_card('Joker', …)` 的两个可选实参 */
+export type CreateJokerOptions = {
+    /** `legendary`。`The Soul` 传真值 → rarity 4 池，**池 key 不带 append 也不带 ante** */
+    legendary?: boolean;
+    /** `_rarity`。给了就**不掷 rarity 点**。`Wraith` 传 0.99（> 0.95 → 稀有） */
+    rarity?: number;
 };
 
 export type ConsumableSpec = {
@@ -80,6 +103,7 @@ export function makeUseContext(overrides: Partial<UseContext> = {}): UseContext 
     return {
         hands: initialHands(),
         highlighted: [],
+        handCards: [],
         jokers: [],
         consumables: [],
         consumableSlots: 2,
@@ -89,6 +113,9 @@ export function makeUseContext(overrides: Partial<UseContext> = {}): UseContext 
         removeCards: () => {},
         addConsumable: () => {},
         addJoker: () => {},
+        removeJoker: () => {},
+        addPlayingCard: () => {},
+        changeHandSize: () => {},
         createConsumable: noCreate,
         createJoker: noCreate,
         makeConsumable,
@@ -99,6 +126,8 @@ export function makeUseContext(overrides: Partial<UseContext> = {}): UseContext 
         pickRandom: () => {
             throw new Error('这个 UseContext 没有接 RNG，但有塔罗要抽元素——显式传进来');
         },
+        shuffled: (list) => [...list],
+        nextEctoplasmMinus: () => 1,
         ...overrides,
     };
 }

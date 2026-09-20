@@ -28,7 +28,7 @@
 
 import { type BoosterCenter, type BoosterKind } from './boosters';
 import { type Card, P_CARDS, makeCard } from './card';
-import { type Consumable, type ConsumableSet } from './consumables';
+import { type Consumable, type ConsumableSet, makeConsumable } from './consumables';
 import { pollEdition } from './editions';
 import { ENHANCEMENT_KEYS_BY_ORDER } from './enhancements';
 import type { Joker } from './jokers';
@@ -66,14 +66,15 @@ export type OpenPack = {
 /**
  * 这种包现在开得了吗。
  *
- * **幽灵包还没实现**（要 18 张幽灵牌，17 号票的最后一步）。
- * 商店会给它标 `⚠未实现`，买不了——与没行为的小丑、没行为的塔罗同一条机制。
+ * 五种全实现了，这张表因此恒为真——**但不要删掉它**。
+ * 它是「买了什么也不发生」那条闸的落点，挑战模式与 mod 会带别的 kind 进来。
  */
 const IMPLEMENTED_KINDS: ReadonlySet<BoosterKind> = new Set<BoosterKind>([
     'Arcana',
     'Celestial',
     'Buffoon',
     'Standard',
+    'Spectral',
 ]);
 
 export function isBoosterImplemented(key: string, centers: Record<string, BoosterCenter>): boolean {
@@ -92,9 +93,10 @@ const PACK_SPECS: Record<
     Celestial: { type: 'consumable', set: 'Planet', append: 'pl1' },
     // `card.lua:1775`：`create_card("Joker", …, true, true, nil, 'buf')`
     Buffoon: { type: 'joker', append: 'buf' },
+    // `card.lua:1758`：`create_card("Spectral", …, true, true, nil, 'spe')`
+    Spectral: { type: 'consumable', set: 'Spectral', append: 'spe' },
     // 标准包不走 `PACK_SPECS`——它造的是扑克牌，账完全不一样（见 `createPlayingCard`）
     Standard: null,
-    Spectral: null,
 };
 
 /**
@@ -185,13 +187,18 @@ export function openBooster(
     for (let i = 0; i < center.extra; i++) {
         if (spec.type === 'consumable') {
             // `soulable` 的那次（幽灵包是两次）掷点排在池子抽取**之前**。
-            // The Soul / Black Hole 还没实现，所以这里只消费、不落地——
-            // 与商店那两次 `edi` 掷点同一个处理
-            rollSoulable(rng, spec.set, context.ante);
-            cards.push({
-                kind: 'consumable',
-                consumable: createConsumableCard(rng, spec.set, context, spec.append),
-            });
+            // 中了就 `forced_key`，**那条路不抽池子**（`create_card` 的 if/else）
+            const forced = rollSoulable(rng, spec.set, context.ante);
+            if (forced) {
+                const soul = makeConsumable(forced);
+                context.usedJokers.add(forced);
+                cards.push({ kind: 'consumable', consumable: soul });
+            } else {
+                cards.push({
+                    kind: 'consumable',
+                    consumable: createConsumableCard(rng, spec.set, context, spec.append),
+                });
+            }
         } else {
             // 小丑包：`_type == 'Joker'` 不进 soulable 那两支
             cards.push({ kind: 'joker', joker: createJokerCard(rng, context, spec.append, 'pack') });
@@ -214,11 +221,20 @@ export function openBooster(
  * 而 The Soul / Black Hole 现在造不出来（幽灵牌在 17 号票后半段），
  * 所以那条守卫恒不成立、两次都掷。
  */
-function rollSoulable(rng: PseudorandomState, set: ConsumableSet, ante: number): void {
+function rollSoulable(rng: PseudorandomState, set: ConsumableSet, ante: number): string | null {
+    let forced: string | null = null;
+
     // The Soul 那一支只对 Tarot / Spectral / Tarot_Planet 跑
-    if (set === 'Tarot') rng.pseudorandom(`soul_Tarot${ante}`);
-    // Black Hole 那一支只对 Planet / Spectral 跑
-    if (set === 'Planet') rng.pseudorandom(`soul_Planet${ante}`);
+    if (set === 'Tarot' || set === 'Spectral') {
+        if (rng.pseudorandom(`soul_${set}${ante}`) > 0.997) forced = 'c_soul';
+    }
+    // Black Hole 那一支只对 Planet / Spectral 跑。
+    // **幽灵包两支都跑，所以掷两次同 key**，而且第二次能盖掉第一次
+    if (set === 'Planet' || set === 'Spectral') {
+        if (rng.pseudorandom(`soul_${set}${ante}`) > 0.997) forced = 'c_black_hole';
+    }
+
+    return forced;
 }
 
 /**

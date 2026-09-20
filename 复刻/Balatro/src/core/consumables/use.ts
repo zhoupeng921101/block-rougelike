@@ -20,6 +20,7 @@
 
 import { levelUpHand } from '../scoring';
 import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET } from './centers.generated';
+import { SPECTRAL_SPECS } from './spectral';
 import { TAROT_SPECS } from './tarot';
 import type { Consumable, ConsumableSet, PlanetConfig } from './types';
 import type { ConsumableSpec, UseContext } from './use-context';
@@ -36,11 +37,14 @@ export type { ConsumableSpec, UseContext };
  */
 export type ConsumableUsage = {
     byKey: Map<string, { count: number; set: ConsumableSet }>;
-    total: { tarot: number; planet: number; tarot_planet: number; all: number };
+    total: { tarot: number; planet: number; spectral: number; tarot_planet: number; all: number };
 };
 
 export function makeConsumableUsage(): ConsumableUsage {
-    return { byKey: new Map(), total: { tarot: 0, planet: 0, tarot_planet: 0, all: 0 } };
+    return {
+        byKey: new Map(),
+        total: { tarot: 0, planet: 0, spectral: 0, tarot_planet: 0, all: 0 },
+    };
 }
 
 /** `misc_functions.lua:1192`。**用掉的那一刻记，不管卡有没有真的产生效果。** */
@@ -50,12 +54,16 @@ export function recordConsumableUsage(usage: ConsumableUsage, consumable: Consum
     if (entry) entry.count++;
     else usage.byKey.set(key, { count: 1, set: center.set });
 
+    // `misc_functions.lua:1205`：**幽灵牌只进 `spectral` 与 `all`**，
+    // 不进 `tarot_planet`。`Fortune Teller` 数的是塔罗，别把幽灵牌算进去
     if (center.set === 'Tarot') {
         usage.total.tarot++;
         usage.total.tarot_planet++;
-    } else {
+    } else if (center.set === 'Planet') {
         usage.total.planet++;
         usage.total.tarot_planet++;
+    } else {
+        usage.total.spectral++;
     }
     usage.total.all++;
 }
@@ -90,15 +98,11 @@ const PLANET_SPECS: Record<string, ConsumableSpec> = Object.fromEntries(
     ]),
 );
 
-/**
- * 有行为的消耗品：12 张星球 + 21 张塔罗 = 33 / 34。
- *
- * 差的那一张是 `The Wheel of Fortune`——它给小丑加**版本**，
- * 而版本系统整个不在范围。见 `tarot.ts` 的文件头。
- */
+/** 有行为的消耗品：12 张星球 + 22 张塔罗 + 18 张幽灵 = 52 / 52。 */
 export const CONSUMABLE_SPECS: Record<string, ConsumableSpec> = {
     ...PLANET_SPECS,
     ...TAROT_SPECS,
+    ...SPECTRAL_SPECS,
 };
 
 /** 这张卡用了会不会真的发生点什么。**从 `CONSUMABLE_SPECS` 算，别手写名单。** */
@@ -120,9 +124,11 @@ export function canUseConsumable(consumable: Consumable, ctx: UseContext): boole
 
 /** 还没实现的那些，按 order 排。`⚠未实现` 标记与覆盖面测试读它 */
 export function unimplementedConsumables(): string[] {
-    return [...CONSUMABLE_KEYS_BY_SET.Tarot, ...CONSUMABLE_KEYS_BY_SET.Planet].filter(
-        (key) => !isConsumableImplemented(key),
-    );
+    return [
+        ...CONSUMABLE_KEYS_BY_SET.Tarot,
+        ...CONSUMABLE_KEYS_BY_SET.Planet,
+        ...CONSUMABLE_KEYS_BY_SET.Spectral,
+    ].filter((key) => !isConsumableImplemented(key));
 }
 
 /**

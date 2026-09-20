@@ -129,15 +129,15 @@ describe('150 张小丑的图集坐标', () => {
 });
 
 describe('消耗品的图集坐标', () => {
-    it('34 张塔罗／星球的 pos 全部在 Tarots 的网格内', () => {
+    it('52 张消耗品的 pos 全部在 Tarots 的网格内', () => {
         for (const [key, center] of Object.entries(CONSUMABLE_CENTERS)) {
             expect(inBounds(TAROT_ATLAS, center.pos), `${key} 的 pos 越界`).toBe(true);
         }
     });
 
-    it('34 张两两不共格', () => {
+    it('52 张两两不共格', () => {
         const frames = Object.values(CONSUMABLE_CENTERS).map((c) => frameIndex(TAROT_ATLAS, c.pos));
-        expect(new Set(frames).size).toBe(34);
+        expect(new Set(frames).size).toBe(52);
     });
 
     /**

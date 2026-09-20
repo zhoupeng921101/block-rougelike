@@ -654,23 +654,43 @@ describe('开包', () => {
         expect(() => run.takeFromPack(0)).toThrow(/满了/);
     });
 
-    it('还没实现的幽灵包买不了', () => {
+    it('五种包都买得了（覆盖面 5/5）', () => {
         const run = intoShopWithPack();
         run.leaveShop();
-        // 扫几个商店找一个幽灵包（权重只有 0.97/22.42 ≈ 4.3%，要多扫几轮）
-        for (let i = 0; i < 60; i++) {
+        const seen = new Set<string>();
+        for (let i = 0; i < 80 && seen.size < 5; i++) {
             const round = run.startRound();
             (round as unknown as { phase: string }).phase = 'won';
             run.finishRound();
             run.dollars = 50;
-            const idx = run.shop!.packs.findIndex((p) => p && p.center.kind === 'Spectral');
-            if (idx >= 0) {
-                expect(run.canBuyPack(idx)).toBe(false);
-                expect(() => run.buyAndOpenPack(idx)).toThrow(/还没有实现/);
-                return;
+            for (let p = 0; p < run.shop!.packs.length; p++) {
+                const slot = run.shop!.packs[p];
+                if (slot) {
+                    seen.add(slot.center.kind);
+                    expect(run.canBuyPack(p), slot.center.name).toBe(true);
+                }
             }
             run.leaveShop();
         }
-        throw new Error('60 个商店里一个幽灵包都没出现？');
+        expect([...seen].sort()).toEqual(
+            ['Arcana', 'Buffoon', 'Celestial', 'Spectral', 'Standard'],
+        );
+    });
+});
+
+describe('幽灵牌改手牌上限（跨回合持续）', () => {
+    it('用过 Ouija 之后，下一回合的手牌上限是 7', () => {
+        const run = new Run('TUTORIAL', makeStandardDeck());
+        const first = run.startRound();
+        expect(first.handLimit).toBe(8);
+
+        run.consumables.push(makeConsumable('c_ouija'));
+        run.useConsumable(0);
+        expect(run.handSizeDelta).toBe(-1);
+
+        (first as unknown as { phase: string }).phase = 'won';
+        run.finishRound();
+        run.leaveShop();
+        expect(run.startRound().handLimit).toBe(7);
     });
 });

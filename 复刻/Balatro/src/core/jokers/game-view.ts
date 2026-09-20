@@ -29,6 +29,10 @@ export function makeGameView(overrides: Partial<GameView> = {}): GameView {
         consumeable_usage_tarot: 0,
         consumableCount: 0,
         consumable_slots: 2,
+        consumableCards: [],
+        duplicateConsumableAsNegative: () => {
+            throw new Error('这个 GameView 没有接消耗品区，但 Perkeo 要复制一张');
+        },
         createConsumable: () => {
             throw new Error('这个 GameView 没有接造卡的口子，但有小丑要造塔罗——显式传进来');
         },

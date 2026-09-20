@@ -556,9 +556,26 @@ export function evaluatePlay(
     // `destroying_card` 那一组小丑（DNA / Hologram 之类）还没实现，先只做玻璃牌
     const destroyed: Card[] = [];
     for (const card of scoringHand) {
-        if (!isEnhancement(card, 'Glass Card') || card.debuff) continue;
-        const odds = ENHANCEMENT_CENTERS.m_glass.config.extra as number;
-        if (game.pseudorandom('glass') < game.probabilities.normal / odds) destroyed.push(card);
+        // `state_events.lua:977`：**小丑那一趟在玻璃牌判定之前**，
+        // 而且一旦有小丑说要毁就 `break`（不再问后面的小丑）
+        let byJoker = false;
+        for (const joker of game.jokers) {
+            const effect = calculateJoker(
+                joker,
+                { destroying_card: true, other_card: card, full_hand: playedCards },
+                game,
+            );
+            if (effect?.destroyCard) { byJoker = true; break; }
+        }
+
+        // **两个 if 是并列的**：小丑毁了也照样掷 `glass`（原文没有 elseif）
+        let byGlass = false;
+        if (isEnhancement(card, 'Glass Card') && !card.debuff) {
+            const odds = ENHANCEMENT_CENTERS.m_glass.config.extra as number;
+            byGlass = game.pseudorandom('glass') < game.probabilities.normal / odds;
+        }
+
+        if (byJoker || byGlass) destroyed.push(card);
     }
 
     // —— 第 14 步：全局唯一的一次乘法 ——

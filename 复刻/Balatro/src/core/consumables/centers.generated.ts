@@ -1,10 +1,9 @@
 /**
- * 塔罗 22 张 + 星球 12 张的 center 定义。**这个文件是生成的，不要手改**——
- * 改 `tools/gen-consumable-centers.mjs` 然后重跑
- * `node tools/gen-consumable-centers.mjs`。
+ * 52 张消耗品的 center：塔罗 22 + 星球 12 + 幽灵 18。
+ * **这个文件是生成的，不要手改**——改 `tools/gen-consumable-centers.mjs`
+ * 然后重跑 `node tools/gen-consumable-centers.mjs`。
  *
  * 源：`参考/产物/Balatro_1.0.1o/源码/game.lua` 的 `P_CENTERS` 消耗品段。
- * 幽灵牌不在这里，理由见生成器的文件头注释。
  */
 
 import type { ConsumableCenter } from './types';
@@ -44,6 +43,24 @@ export const CONSUMABLE_CENTERS: Record<string, ConsumableCenter> = {
     c_planet_x: {"order":10,"set":"Planet","cost":3,"name":"Planet X","pos":{"x":9,"y":2},"effect":"Hand Upgrade","config":{"hand_type":"Five of a Kind","softlock":true}},
     c_ceres: {"order":11,"set":"Planet","cost":3,"name":"Ceres","pos":{"x":8,"y":2},"effect":"Hand Upgrade","config":{"hand_type":"Flush House","softlock":true}},
     c_eris: {"order":12,"set":"Planet","cost":3,"name":"Eris","pos":{"x":3,"y":2},"effect":"Hand Upgrade","config":{"hand_type":"Flush Five","softlock":true}},
+    c_familiar: {"order":1,"set":"Spectral","cost":4,"name":"Familiar","pos":{"x":0,"y":4},"config":{"remove_card":true,"extra":3}},
+    c_grim: {"order":2,"set":"Spectral","cost":4,"name":"Grim","pos":{"x":1,"y":4},"config":{"remove_card":true,"extra":2}},
+    c_incantation: {"order":3,"set":"Spectral","cost":4,"name":"Incantation","pos":{"x":2,"y":4},"config":{"remove_card":true,"extra":4}},
+    c_talisman: {"order":4,"set":"Spectral","cost":4,"name":"Talisman","pos":{"x":3,"y":4},"config":{"extra":"Gold","max_highlighted":1}},
+    c_aura: {"order":5,"set":"Spectral","cost":4,"name":"Aura","pos":{"x":4,"y":4},"config":{}},
+    c_wraith: {"order":6,"set":"Spectral","cost":4,"name":"Wraith","pos":{"x":5,"y":4},"config":{}},
+    c_sigil: {"order":7,"set":"Spectral","cost":4,"name":"Sigil","pos":{"x":6,"y":4},"config":{}},
+    c_ouija: {"order":8,"set":"Spectral","cost":4,"name":"Ouija","pos":{"x":7,"y":4},"config":{}},
+    c_ectoplasm: {"order":9,"set":"Spectral","cost":4,"name":"Ectoplasm","pos":{"x":8,"y":4},"config":{}},
+    c_immolate: {"order":10,"set":"Spectral","cost":4,"name":"Immolate","pos":{"x":9,"y":4},"config":{"remove_card":true,"extra":{"destroy":5,"dollars":20}}},
+    c_ankh: {"order":11,"set":"Spectral","cost":4,"name":"Ankh","pos":{"x":0,"y":5},"config":{"extra":2}},
+    c_deja_vu: {"order":12,"set":"Spectral","cost":4,"name":"Deja Vu","pos":{"x":1,"y":5},"config":{"extra":"Red","max_highlighted":1}},
+    c_hex: {"order":13,"set":"Spectral","cost":4,"name":"Hex","pos":{"x":2,"y":5},"config":{"extra":2}},
+    c_trance: {"order":14,"set":"Spectral","cost":4,"name":"Trance","pos":{"x":3,"y":5},"config":{"extra":"Blue","max_highlighted":1}},
+    c_medium: {"order":15,"set":"Spectral","cost":4,"name":"Medium","pos":{"x":4,"y":5},"config":{"extra":"Purple","max_highlighted":1}},
+    c_cryptid: {"order":16,"set":"Spectral","cost":4,"name":"Cryptid","pos":{"x":5,"y":5},"config":{"extra":2,"max_highlighted":1}},
+    c_soul: {"order":17,"set":"Spectral","cost":4,"name":"The Soul","pos":{"x":2,"y":2},"effect":"Unlocker","config":{},"hidden":true},
+    c_black_hole: {"order":18,"set":"Spectral","cost":4,"name":"Black Hole","pos":{"x":9,"y":3},"config":{},"hidden":true},
 };
 
 /**
@@ -90,5 +107,25 @@ export const CONSUMABLE_KEYS_BY_SET = {
         'c_planet_x',
         'c_ceres',
         'c_eris',
+    ],
+    Spectral: [
+        'c_familiar',
+        'c_grim',
+        'c_incantation',
+        'c_talisman',
+        'c_aura',
+        'c_wraith',
+        'c_sigil',
+        'c_ouija',
+        'c_ectoplasm',
+        'c_immolate',
+        'c_ankh',
+        'c_deja_vu',
+        'c_hex',
+        'c_trance',
+        'c_medium',
+        'c_cryptid',
+        'c_soul',
+        'c_black_hole',
     ],
 } as const;

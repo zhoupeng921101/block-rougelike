@@ -1,12 +1,13 @@
 /**
- * 把 `game.lua` 里塔罗（22）与星球（12）的 center 定义抽成 TS。
+ * 把 `game.lua` 里塔罗（22）、星球（12）、幽灵（18）的 center 定义抽成 TS。
  *
  * 与 `gen-joker-centers.mjs` 同一套理由：纯数据，手抄不如重跑。
  *
- * **幽灵牌（18 张 `set = "Spectral"`）故意不抽**：
- * `G.GAME.spectral_rate` 默认 0，商店永远不出幽灵牌，它只能从幽灵补充包
- * 与 The Soul 来，而那两样都在 17 号票。抽了也没有池子装得下它，
- * 只会变成一堆「有数值没行为」的 center。接补充包时把 `SETS` 加一行即可。
+ * 三个 set：塔罗 22 + 星球 12 + 幽灵 18 = 52 张（外加 `c_base` 那张底板，不要）。
+ *
+ * **幽灵牌里 `The Soul` 与 `Black Hole` 是隐藏的**（`hidden = true`）：
+ * `get_current_pool` 有一条无条件剔除，它们只能从 `create_card` 的
+ * soulable 分支来。但 center 要抽进来——不然那条分支没东西可造。
  *
  *     node tools/gen-consumable-centers.mjs
  */
@@ -22,7 +23,7 @@ const SRC = resolve(HERE, '../../../参考/产物/Balatro_1.0.1o/源码/game.lua
 const OUT = resolve(HERE, '../src/core/consumables/centers.generated.ts');
 
 /** `set` → 期望张数。数字对不上就抛，这是唯一能挡住「原作改了表」的那道闸 */
-const SETS = { Tarot: 22, Planet: 12 };
+const SETS = { Tarot: 22, Planet: 12, Spectral: 18 };
 
 const lua = readFileSync(SRC, 'utf8');
 
@@ -39,7 +40,7 @@ for (const line of lines) {
 
     if (!(raw.set in SETS)) continue;
 
-    // 丢掉的字段：`discovered` / `cost_mult` / `freq` / `demo` / `hidden`
+    // 丢掉的字段：`discovered` / `cost_mult` / `freq` / `demo`
     // 是局外解锁与商店定价倍率，不在范围。`pos` 要留，图集坐标由 atlas.ts 推导
     centers[key] = {
         order: raw.order,
@@ -49,6 +50,9 @@ for (const line of lines) {
         pos: raw.pos,
         effect: raw.effect,
         config: raw.config ?? {},
+        // `hidden = true` 的两张（The Soul / Black Hole）被 `get_current_pool`
+        // 无条件剔出所有池子，只能从 soulable 分支来
+        hidden: raw.hidden ?? undefined,
     };
 }
 
@@ -64,18 +68,17 @@ for (const [set, expected] of Object.entries(SETS)) {
     bySet[set] = keys;
 }
 
-const all = [...bySet.Tarot, ...bySet.Planet];
+const all = [...bySet.Tarot, ...bySet.Planet, ...bySet.Spectral];
 const body = all.map((k) => `    ${k}: ${JSON.stringify(centers[k])},`).join('\n');
 
 writeFileSync(
     OUT,
     `/**
- * 塔罗 22 张 + 星球 12 张的 center 定义。**这个文件是生成的，不要手改**——
- * 改 \`tools/gen-consumable-centers.mjs\` 然后重跑
- * \`node tools/gen-consumable-centers.mjs\`。
+ * 52 张消耗品的 center：塔罗 22 + 星球 12 + 幽灵 18。
+ * **这个文件是生成的，不要手改**——改 \`tools/gen-consumable-centers.mjs\`
+ * 然后重跑 \`node tools/gen-consumable-centers.mjs\`。
  *
  * 源：\`参考/产物/Balatro_1.0.1o/源码/game.lua\` 的 \`P_CENTERS\` 消耗品段。
- * 幽灵牌不在这里，理由见生成器的文件头注释。
  */
 
 import type { ConsumableCenter } from './types';
@@ -99,4 +102,7 @@ ${Object.entries(bySet)
     'utf8',
 );
 
-console.log(`写出 ${all.length} 张消耗品（塔罗 ${bySet.Tarot.length} / 星球 ${bySet.Planet.length}） → ${OUT}`);
+console.log(
+    `写出 ${all.length} 张消耗品（塔罗 ${bySet.Tarot.length} / 星球 ${bySet.Planet.length}` +
+    ` / 幽灵 ${bySet.Spectral.length}） → ${OUT}`,
+);

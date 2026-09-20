@@ -76,7 +76,17 @@ describe('用量统计', () => {
         recordConsumableUsage(usage, makeConsumable('c_fool'));
         recordConsumableUsage(usage, makeConsumable('c_pluto'));
         recordConsumableUsage(usage, makeConsumable('c_pluto'));
-        expect(usage.total).toEqual({ tarot: 1, planet: 2, tarot_planet: 3, all: 3 });
+        expect(usage.total).toEqual({ tarot: 1, planet: 2, spectral: 0, tarot_planet: 3, all: 3 });
+    });
+
+    /**
+     * **幽灵牌只进 `spectral` 与 `all`**（`misc_functions.lua:1205`），
+     * 不进 `tarot_planet`。`Fortune Teller` 数的是塔罗，算进幽灵牌就多给倍率。
+     */
+    it('幽灵牌不算进 tarot_planet', () => {
+        const usage = makeConsumableUsage();
+        recordConsumableUsage(usage, makeConsumable('c_aura'));
+        expect(usage.total).toEqual({ tarot: 0, planet: 0, spectral: 1, tarot_planet: 0, all: 1 });
     });
 
     /**

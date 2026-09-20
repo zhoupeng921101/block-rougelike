@@ -147,12 +147,17 @@ export function getCurrentJokerPool(
     rng: PseudorandomState,
     context: PoolContext,
     keyAppend = '',
+    options: { legendary?: boolean; rarity?: number } = {},
 ): [string[], string] {
-    // `common_events.lua:2008`：**掷点在建池之前**
-    const roll = rng.pseudorandom(`rarity${context.ante}${keyAppend}`);
-    const rarity = roll > 0.95 ? 3 : roll > 0.7 ? 2 : 1;
+    // `common_events.lua:2008`：**掷点在建池之前**，而且
+    // **给了 `_rarity` 就不掷**（`Wraith` 传 0.99）。
+    // 但 `legendary` **不挡这次掷点**——它只在下一行把结果盖掉，
+    // 所以 `The Soul` 照样消费一次 `rarity<ante>sou`
+    const roll = options.rarity ?? rng.pseudorandom(`rarity${context.ante}${keyAppend}`);
+    const rarity = options.legendary ? 4 : roll > 0.95 ? 3 : roll > 0.7 ? 2 : 1;
 
-    const poolKey = `Joker${rarity}${keyAppend}`;
+    // `common_events.lua:2010`：**legendary 的池 key 不带 append**
+    const poolKey = `Joker${rarity}${options.legendary ? '' : keyAppend}`;
     const starting = JOKER_RARITY_POOLS[rarity];
 
     // Showman 让「本局见过的小丑」重新进池
@@ -181,10 +186,13 @@ export function getCurrentJokerPool(
         }
     }
 
-    // `common_events.lua:2077`：整池空了就退化成单元素池 `['j_joker']`
-    if (poolSize === 0) return [['j_joker'], `${poolKey}${context.ante}`];
+    // `common_events.lua:2087`：**legendary 的返回 key 连 ante 都不带**
+    const fullKey = `${poolKey}${options.legendary ? '' : context.ante}`;
 
-    return [pool, `${poolKey}${context.ante}`];
+    // `common_events.lua:2077`：整池空了就退化成单元素池 `['j_joker']`
+    if (poolSize === 0) return [['j_joker'], fullKey];
+
+    return [pool, fullKey];
 }
 
 /**
@@ -198,12 +206,11 @@ export function getCurrentJokerPool(
  * 3. **多一条 `softlock` 剔除**（`common_events.lua:2044`）：星球要对应牌型
  *    `played > 0` 才进池。所以新档的星球池是 12 个位置、9 张可用。
  *
- * `Black Hole` 与 `The Soul` 在原文里有一条无条件剔除
- * （`common_events.lua:2062`）——这里不用写，它们是幽灵牌，压根不在
- * `CONSUMABLE_KEYS_BY_SET` 里（见 16 号票）。
+ * `Black Hole` 与 `The Soul` 有一条**无条件剔除**（`common_events.lua:2062`），
+ * 靠 center 上的 `hidden` 标。它们只能从 `create_card` 的 soulable 分支来。
  *
- * 空池的退化值按 set 分：塔罗 `c_strength`、星球 `c_pluto`
- * （`common_events.lua:2079-2081`）。
+ * 空池的退化值按 set 分：塔罗 `c_strength`、星球 `c_pluto`、
+ * 幽灵 `c_incantation`（`common_events.lua:2079-2081`）。
  */
 export function getCurrentConsumablePool(
     set: ConsumableSet,
@@ -229,6 +236,9 @@ export function getCurrentConsumablePool(
             if (config.softlock && context.handsPlayed[config.hand_type] <= 0) add = false;
         }
 
+        // `common_events.lua:2062`：**The Soul 与 Black Hole 无条件剔除**
+        if (center.hidden) add = false;
+
         if (add) {
             pool.push(key);
             poolSize++;
@@ -238,7 +248,10 @@ export function getCurrentConsumablePool(
     }
 
     // `common_events.lua:2079`
-    if (poolSize === 0) return [[set === 'Tarot' ? 'c_strength' : 'c_pluto'], poolKey];
+    if (poolSize === 0) {
+        const fallback = set === 'Tarot' ? 'c_strength' : set === 'Planet' ? 'c_pluto' : 'c_incantation';
+        return [[fallback], poolKey];
+    }
 
     return [pool, poolKey];
 }
@@ -339,8 +352,9 @@ export function createJokerCard(
     context: PoolContext,
     keyAppend: string,
     origin: JokerCardOrigin,
+    options: { legendary?: boolean; rarity?: number } = {},
 ): Joker {
-    const [pool, poolKey] = getCurrentJokerPool(rng, context, keyAppend);
+    const [pool, poolKey] = getCurrentJokerPool(rng, context, keyAppend, options);
     const key = drawFromPool(rng, pool, poolKey);
     const joker = makeJoker(key);
 
@@ -404,7 +418,27 @@ function createConsumableForShop(
     context: PoolContext,
 ): ShopItem {
     const consumable = createConsumableCard(rng, set, context, 'sho');
-    return { kind: 'consumable', consumable, cost: consumable.cost };
+    return { kind: 'consumable', consumable, cost: shopCost(consumable.cost, set, context) };
+}
+
+/**
+ * `card.lua:380`：**`Astronomer` 让星球牌与天体补充包免费**。
+ *
+ * ```lua
+ * if (self.ability.set == 'Planet' or (self.ability.set == 'Booster' and
+ *     self.ability.name:find('Celestial'))) and #find_joker('Astronomer') > 0 then self.cost = 0 end
+ * ```
+ *
+ * 它在 `set_cost` 里，**不消费 RNG**——只改价。
+ */
+export function shopCost(
+    baseCost: number,
+    kind: ConsumableSet | 'Celestial' | 'other',
+    context: PoolContext,
+): number {
+    const free = kind === 'Planet' || kind === 'Celestial';
+    if (free && findJoker(context.jokers, 'Astronomer').length > 0) return 0;
+    return baseCost;
 }
 
 /**
@@ -454,7 +488,9 @@ export class Shop {
             const [key, consumed] = getPack(this.rng, { ...this.context, firstShopBuffoon: buffoonDone });
             if (!consumed) buffoonDone = true;
             const center = BOOSTER_CENTERS[key];
-            this.packs.push({ key, center, cost: center.cost });
+            // `card.lua:380`：`Astronomer` 让天体包免费
+            const cost = shopCost(center.cost, center.kind === 'Celestial' ? 'Celestial' : 'other', this.context);
+            this.packs.push({ key, center, cost });
         }
     }
 

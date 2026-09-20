@@ -468,6 +468,19 @@ const AFTER: Record<string, Handler> = {
         return { message: 'plus_tarot' };
     },
 
+    /**
+     * `card.lua:3790`。打出指定牌型就造一张**幽灵牌**。
+     * 读的是 `poker_hands[extra.poker_hand]` 而不是 `scoring_name`——
+     * **同花顺也算同花**这类「一手命中多个牌型」的情况要按命中表判。
+     */
+    Seance: (self, context, game) => {
+        if (game.consumableCount >= game.consumable_slots) return null;
+        const wanted = self.ability.extra.poker_hand as HandName;
+        if (!(context.poker_hands?.[wanted] ?? []).length) return null;
+        game.createConsumable('Spectral', 'sea');
+        return { message: 'plus_spectral', card: self };
+    },
+
     // `card.lua:3574`。掉到 0 就自毁。自毁本身由调用方处理，这里只回 message
     'Ice Cream': (self, context) => {
         if (context.blueprint) return null;
@@ -669,6 +682,41 @@ const SKIPPING_BOOSTER: Record<string, Handler> = {
         if (context.blueprint) return null;
         self.ability.mult += self.ability.extra;
         return { message: `+${self.ability.extra}`, card: self };
+    },
+};
+
+/**
+ * `card.lua:2606` 的 `context.destroying_card`：**结算后的销毁判定逐张问一遍**。
+ * 返回真值表示「这张我要毁掉」。
+ */
+const DESTROYING_CARD: Record<string, Handler> = {
+    /**
+     * `card.lua:2607`：**本回合第一手、只打了一张、而且是 6** →
+     * 毁掉它并造一张幽灵牌。三个条件都要。
+     */
+    'Sixth Sense': (_self, context, game) => {
+        if (context.blueprint) return null;
+        if ((context.full_hand ?? []).length !== 1) return null;
+        if (getId(context.full_hand![0]) !== 6) return null;
+        if (game.current_round.hands_played !== 0) return null;
+        if (game.consumableCount < game.consumable_slots) {
+            game.createConsumable('Spectral', 'sixth');
+        }
+        // **不管造没造成，牌都毁**（原文 `return true` 在 if 外面）
+        return { message: 'plus_spectral', destroyCard: true };
+    },
+};
+
+/** `card.lua:2415` 的 `context.ending_shop`。**离开商店那一刻** */
+const ENDING_SHOP: Record<string, Handler> = {
+    /**
+     * `card.lua:2416`：把消耗品区里**随机一张**复制成 **Negative** 的。
+     * 区里空着就什么也不做（而且**不掷点**）。
+     */
+    Perkeo: (self, _context, game) => {
+        if (game.consumableCards.length === 0) return null;
+        game.duplicateConsumableAsNegative('perkeo');
+        return { message: 'duplicated', card: self };
     },
 };
 
@@ -963,10 +1011,19 @@ export function calculateJoker(
     // 原文 elseif 链里还有这几条，但**没有一张已实现的小丑用它们**
     // （`Luchador` 要能 disable Boss、`Diet Cola` 要标签、`Invisible Joker` 要复制小丑）。
     // 显式拦掉：不拦的话这些调用会一路掉进 main 分支，在买卖时白算一遍出牌结算
-    if (context.buying_card || context.selling_self || context.ending_shop) return null;
+    if (context.ending_shop) {
+        return ENDING_SHOP[name]?.(self, context, game) ?? null;
+    }
+
+    // 原文 elseif 链里还有这两条，但没有一张已实现的小丑用它们
+    if (context.buying_card || context.selling_self) return null;
 
     if (context.using_consumeable) {
         return USING_CONSUMEABLE[name]?.(self, context, game) ?? null;
+    }
+
+    if (context.destroying_card) {
+        return DESTROYING_CARD[name]?.(self, context, game) ?? null;
     }
 
     if (context.setting_blind) {
@@ -1140,6 +1197,8 @@ const NAMES_WITH_HANDLERS: ReadonlySet<string> = new Set([
     ...Object.keys(SETTING_BLIND),
     ...Object.keys(OPEN_BOOSTER),
     ...Object.keys(SKIPPING_BOOSTER),
+    ...Object.keys(DESTROYING_CARD),
+    ...Object.keys(ENDING_SHOP),
     // `calculateJoker` 开头那条 copycat 分支，不走查表
     'Blueprint',
     'Brainstorm',
@@ -1170,6 +1229,8 @@ const IMPLEMENTED_ELSEWHERE: Readonly<Record<string, string>> = {
     // Satellite 数「用过几种星球」（consumables/use.ts 的 distinctPlanetsUsed）
     'Cloud 9': 'economy.ts 的 calculateDollarBonus + derived.ts 的 nine_tally',
     Satellite: 'economy.ts 的 calculateDollarBonus',
+    // `card.lua:380` 的 `set_cost`：星球牌与天体补充包免费。不消费 RNG，只改价
+    Astronomer: 'shop.ts 的 shopCost',
 
     // `modifiers.ts`：一进小丑区就改局面参数的那些。
     // 它们在原作里也没有 `calculate_joker` 分支——走 `add_to_deck` 与 `find_joker`

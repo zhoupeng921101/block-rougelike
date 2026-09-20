@@ -127,7 +127,6 @@ export type JokerContext = {
     blueprint_card?: Joker;
     /** `Mime` 要靠它判断「这张手牌本来有没有效果」 */
     card_effects?: JokerEffect[];
-    destroying_card?: Card;
     /** 弃牌。逐张调用，`other_card` 是当前那张、`full_hand` 是整批 */
     discard?: boolean;
     /** 弃牌前的整批一次性遍历（`Burnt Joker` 用）。排在逐张循环之前 */
@@ -156,7 +155,7 @@ export type JokerContext = {
      */
     using_consumeable?: boolean;
     /** 跟着 `using_consumeable` 一起来的那张牌 */
-    consumeable?: { set: 'Tarot' | 'Planet' };
+    consumeable?: { set: 'Tarot' | 'Planet' | 'Spectral' };
     /**
      * `card.lua:2521` 的 `context.setting_blind`：**刚选定盲注**。
      * `Cartomancer` 在这时造一张塔罗。
@@ -172,6 +171,11 @@ export type JokerContext = {
      * `Red Card` 靠它长倍率。**挑满自动关包不触发**，只有主动跳过才触发。
      */
     skipping_booster?: boolean;
+    /**
+     * `card.lua:2606` 的 `context.destroying_card`：结算之后的销毁判定。
+     * 返回 `destroyCard` 表示「这张我要毁掉」。`Sixth Sense` 读它。
+     */
+    destroying_card?: boolean;
     /**
      * `state_events.lua:996` 与 `card.lua:1370` 的 `remove_playing_cards`：
      * 有扑克牌被永久销毁（碎掉的玻璃牌 / The Hanged Man）。
@@ -246,7 +250,14 @@ export type GameView = {
      * 本复刻是**同步立即**造，所以那个 buffer 恒为 0——
      * 与 `dollar_buffer` 同一条理由（见 map 的已知的坑）。
      */
-    createConsumable(set: 'Tarot' | 'Planet', keyAppend: string): void;
+    createConsumable(set: 'Tarot' | 'Planet' | 'Spectral', keyAppend: string): void;
+    /** `G.consumeables.cards`。`Perkeo` 要查空没空 */
+    consumableCards: ReadonlyArray<unknown>;
+    /**
+     * `card.lua:2419`：把消耗品区里随机一张复制成 Negative 的。
+     * **消费一次 `pseudoseed(key)`**。
+     */
+    duplicateConsumableAsNegative(key: string): void;
     /**
      * `Smeared Joker` 在场——红桃认方块、黑桃认梅花。
      * 由 `modifiers.ts` 从小丑区算出来，不是每张小丑自己去 `find_joker`。
@@ -303,6 +314,8 @@ export type JokerEffect = {
     grosMichelExtinct?: boolean;
     /** `Mr. Bones` 把这一局从失败里救回来 */
     saved?: boolean;
+    /** `context.destroying_card` 下返回真值 = 这张牌要被毁掉（`Sixth Sense`） */
+    destroyCard?: boolean;
     /** `Burnt Joker`：把刚弃掉那手的牌型升一级 */
     levelUpDiscarded?: boolean;
     /** 效果来自哪张小丑，表现层用来 juice */

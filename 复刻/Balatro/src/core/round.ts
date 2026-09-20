@@ -129,6 +129,11 @@ export type RoundOptions = {
     /** 消耗品区的口子。由 `Run` 接上——结算里有小丑要造塔罗、要查空位 */
     consumables?: ConsumableHooks;
     /**
+     * `G.hand:change_size` 的累计量（`Ouija` -1、`Ectoplasm` 递增地减）。
+     * **跨回合持续**，所以由 `Run` 持有并传进来。
+     */
+    handSizeDelta?: number;
+    /**
      * 牌被永久销毁时（碎掉的玻璃牌）通知上层，好让 `Run.fullDeck` 也删掉。
      * **`Run` 跨回合持有同一批 `Card` 对象**，只从这一局的三个堆里删不够——
      * 下一回合又会从 `fullDeck` 洗回来。
@@ -150,7 +155,11 @@ export type ConsumableHooks = {
     count(): number;
     slots: number;
     usageTarot(): number;
-    create(set: 'Tarot' | 'Planet', keyAppend: string): void;
+    create(set: 'Tarot' | 'Planet' | 'Spectral', keyAppend: string): void;
+    /** `G.consumeables.cards`。`Perkeo` 查空没空 */
+    cards(): ReadonlyArray<unknown>;
+    /** `Perkeo`：把区里随机一张复制成 Negative 的 */
+    duplicateAsNegative(key: string): void;
 };
 
 /** 没接消耗品区时的默认实现：**造卡会抛**，查空位恒满。 */
@@ -160,6 +169,10 @@ export const NO_CONSUMABLES: ConsumableHooks = {
     usageTarot: () => 0,
     create: () => {
         throw new Error('这个 Round 没有接消耗品区，但有小丑要造塔罗');
+    },
+    cards: () => [],
+    duplicateAsNegative: () => {
+        throw new Error('这个 Round 没有接消耗品区，但 Perkeo 要复制一张');
     },
 };
 
@@ -260,8 +273,13 @@ export class Round {
         // 全部由 `runModifiers` 从小丑区**重算**而不是增量加减——
         // 小丑会被摧毁/被 debuff/被卖掉，加减一旦漏一处上限就永久跑偏
         this.mods = runModifiers(this.jokers);
-        this.handLimit =
-            STARTING_PARAMS.hand_size + this.mods.handSize + (this.blind?.handSizeMod ?? 0);
+        // `Ouija` / `Ectoplasm` 的 `G.hand:change_size` 是**跨回合持续**的，
+        // 所以由 `Run` 传进来，不在 `runModifiers` 里算
+        this.handLimit = Math.max(
+            0,
+            STARTING_PARAMS.hand_size + this.mods.handSize +
+            (options.handSizeDelta ?? 0) + (this.blind?.handSizeMod ?? 0),
+        );
 
         // `blind.lua:179-186` 的 `discards_sub` / `hands_sub`，**在进场时一次性扣掉**。
         // `The Water` 砍的是「进场时实际剩多少」（含 Drunkard 的 +1），
@@ -318,6 +336,10 @@ export class Round {
                 return round.consumables.slots;
             },
             createConsumable: (set, keyAppend) => round.consumables.create(set, keyAppend),
+            get consumableCards() {
+                return round.consumables.cards();
+            },
+            duplicateConsumableAsNegative: (key) => round.consumables.duplicateAsNegative(key),
             get hands_played() {
                 return round.handsPlayed;
             },
@@ -570,6 +592,17 @@ export class Round {
         for (const card of selected) {
             if (!this.hand.includes(card)) throw new Error(`${card.key} 不在手牌里`);
         }
+    }
+
+    /**
+     * 往手牌区加一张（`create_playing_card(…, G.hand)`）。
+     * 造牌的幽灵牌（Familiar / Grim / Incantation / Cryptid）走这条。
+     *
+     * **`T.x` 由 `alignHand` 重排**，这里只管进数组。
+     */
+    addToHand(card: Card): void {
+        this.hand.push(card);
+        alignHand(this.hand);
     }
 
     /**

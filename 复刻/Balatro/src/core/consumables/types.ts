@@ -14,8 +14,8 @@
 import type { Edition } from '../editions';
 import type { HandName } from '../poker-hands';
 
-/** 塔罗与星球两个 set。幽灵牌在 17 号票，那时加 `'Spectral'` */
-export type ConsumableSet = 'Tarot' | 'Planet';
+/** 三个 set。`'Spectral'` 只能从幽灵补充包与 The Soul 来（商店 `spectral_rate` 恒 0） */
+export type ConsumableSet = 'Tarot' | 'Planet' | 'Spectral';
 
 /** `P_CENTERS` 里的一行。由 `tools/gen-consumable-centers.mjs` 生成，运行时只读。 */
 export type ConsumableCenter = {
@@ -30,6 +30,13 @@ export type ConsumableCenter = {
     /** Lua 的 `config`，字段随卡而异 —— 03 号票认了直译带进来的弱类型 */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config: Record<string, any>;
+    /**
+     * `hidden = true`。只有 `The Soul` 与 `Black Hole` 有。
+     * `get_current_pool` 对它们有一条**无条件剔除**
+     * （`common_events.lua:2062` 按 name 判），所以它们进不了任何池子——
+     * 只能从 `create_card` 的 soulable 分支（`forced_key`）来。
+     */
+    hidden?: boolean;
 };
 
 /** 一张具体的消耗品。 */

@@ -14,14 +14,19 @@ import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET, makeConsumable } from './in
 import type { PlanetConfig } from './types';
 
 describe('张数与顺序', () => {
-    it('塔罗 22 张、星球 12 张，合起来 34', () => {
+    it('塔罗 22 张、星球 12 张、幽灵 18 张，合起来 52', () => {
         expect(CONSUMABLE_KEYS_BY_SET.Tarot).toHaveLength(22);
         expect(CONSUMABLE_KEYS_BY_SET.Planet).toHaveLength(12);
-        expect(Object.keys(CONSUMABLE_CENTERS)).toHaveLength(34);
+        expect(CONSUMABLE_KEYS_BY_SET.Spectral).toHaveLength(18);
+        expect(Object.keys(CONSUMABLE_CENTERS)).toHaveLength(52);
     });
 
-    it('两个 set 内部都按 order 严格递增（池子下标靠它）', () => {
-        for (const keys of [CONSUMABLE_KEYS_BY_SET.Tarot, CONSUMABLE_KEYS_BY_SET.Planet]) {
+    it('三个 set 内部都按 order 严格递增（池子下标靠它）', () => {
+        for (const keys of [
+            CONSUMABLE_KEYS_BY_SET.Tarot,
+            CONSUMABLE_KEYS_BY_SET.Planet,
+            CONSUMABLE_KEYS_BY_SET.Spectral,
+        ]) {
             const orders = keys.map((k) => CONSUMABLE_CENTERS[k].order);
             expect(orders).toEqual([...orders].sort((a, b) => a - b));
             expect(new Set(orders).size).toBe(orders.length);
@@ -41,9 +46,20 @@ describe('张数与顺序', () => {
         ]);
     });
 
-    it('没有混进幽灵牌（生成器只抽 Tarot 与 Planet）', () => {
+    it('只有三个 set，没有 `c_base` 那张底板混进来', () => {
         const sets = new Set(Object.values(CONSUMABLE_CENTERS).map((c) => c.set));
-        expect([...sets].sort()).toEqual(['Planet', 'Tarot']);
+        expect([...sets].sort()).toEqual(['Planet', 'Spectral', 'Tarot']);
+    });
+
+    /**
+     * `The Soul` 与 `Black Hole` 带 `hidden`，被 `get_current_pool` 无条件剔除
+     * （`common_events.lua:2062`）。它们只能从 `create_card` 的 soulable 分支来。
+     */
+    it('只有 The Soul 与 Black Hole 是 hidden', () => {
+        const hidden = Object.entries(CONSUMABLE_CENTERS)
+            .filter(([, c]) => c.hidden)
+            .map(([, c]) => c.name);
+        expect(hidden.sort()).toEqual(['Black Hole', 'The Soul']);
     });
 });
 
@@ -84,8 +100,13 @@ describe('价格', () => {
         expect(pluto.sell_cost).toBe(1);
     });
 
-    it('34 张的 base cost 全是 3', () => {
-        expect(Object.values(CONSUMABLE_CENTERS).every((c) => c.cost === 3)).toBe(true);
+    it('塔罗与星球 $3，幽灵牌 $4', () => {
+        for (const k of [...CONSUMABLE_KEYS_BY_SET.Tarot, ...CONSUMABLE_KEYS_BY_SET.Planet]) {
+            expect(CONSUMABLE_CENTERS[k].cost, k).toBe(3);
+        }
+        for (const k of CONSUMABLE_KEYS_BY_SET.Spectral) {
+            expect(CONSUMABLE_CENTERS[k].cost, k).toBe(4);
+        }
     });
 
     it('没有这张 key 就抛，不静默造一张空卡', () => {

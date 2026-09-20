@@ -57,7 +57,7 @@ import { type Payout, evaluateRound } from './economy';
 import { calculateJoker, makeGameView, refreshDerivedAbilities, runModifiers } from './jokers';
 import type { GameView, Joker } from './jokers';
 import { NO_JOKERS, type JokerFlags } from './poker-hands';
-import { PseudorandomState, pseudorandomElement } from './rng';
+import { PseudorandomState, pseudorandomElement, pseudoshuffle } from './rng';
 import { Round, STARTING_PARAMS } from './round';
 import { type HandInfo, type HandName, initialHands } from './scoring';
 import {
@@ -96,6 +96,13 @@ export class Run {
     lastTarotPlanet?: string;
     /** `G.GAME.last_hand_played`（`state_events.lua:597`）。Blue 蜡封读它 */
     lastHandPlayed?: HandName;
+    /**
+     * `G.hand:change_size` 的累计量。`Ouija` -1、`Ectoplasm` 递增地减。
+     * **跨回合持续**，所以不能放在 `Round` 上。
+     */
+    handSizeDelta = 0;
+    /** `G.GAME.ecto_minus`（`card.lua:1497`）。从 1 起，每用一张 Ectoplasm +1 */
+    private ectoMinus = 1;
     /**
      * `G.GAME.first_shop_buffoon`。新档的第一个商店，第一个补充包格子恒是小丑包，
      * 而且那一格**不消费 `shop_pack<ante>`**（`common_events.lua:1984` 提前 return）。
@@ -167,12 +174,27 @@ export class Run {
             count: () => this.consumables.length,
             slots: this.consumableSlots,
             usageTarot: () => this.consumableUsage.total.tarot,
-            create: (set: 'Tarot' | 'Planet', keyAppend: string) => {
+            create: (set: 'Tarot' | 'Planet' | 'Spectral', keyAppend: string) => {
                 if (this.consumables.length >= this.consumableSlots) return;
                 const made = createConsumableCard(this.rng, set, this.poolContext(), keyAppend);
                 this.consumables.push(made);
+                this.usedJokers.add(made.key);
             },
+            cards: () => this.consumables,
+            duplicateAsNegative: (key: string) => this.duplicateConsumableAsNegative(key),
         };
+    }
+
+    /**
+     * `card.lua:2419` 的 `Perkeo`：把消耗品区里**随机一张**复制成 Negative 的。
+     *
+     * Negative 的消耗品**不占格子**（`consumableSlots` 从 `negativeCount` 算），
+     * 所以这里不查空位——原作也不查。
+     */
+    private duplicateConsumableAsNegative(key: string): void {
+        const [source] = pseudorandomElement(this.consumables, this.rng.pseudoseed(key));
+        if (!source) return;
+        this.consumables.push({ ...source, edition: 'negative' });
     }
 
     /** 喂给商店的池子上下文。**每次现建**——`jokers` 与 `grosMichelExtinct` 会变 */
@@ -234,6 +256,7 @@ export class Run {
             },
             onRemoveFromDeck: (cards) => this.removeFromDeck(cards),
             consumables: this.consumableHooks(),
+            handSizeDelta: this.handSizeDelta,
         });
         // `card.lua:2521` 的 `context.setting_blind`：**进盲注时问一遍每张小丑**。
         // `Cartomancer` 在这时造一张塔罗（消费 `Tarotcar<ante>`）
@@ -382,7 +405,12 @@ export class Run {
     leaveShop(): void {
         if (this.state !== 'shop') throw new Error(`现在是 ${this.state}，不在商店里`);
         if (this.openPack) throw new Error('还有补充包开着，先挑完或跳过');
-        // `card.lua` 的 `context.ending_shop` 分支：本里程碑没有小丑用它
+
+        // `button_callbacks.lua:2594` 的 `context.ending_shop`。`Perkeo` 靠它
+        for (const joker of [...this.jokers]) {
+            calculateJoker(joker, { ending_shop: true }, this.shopGameView());
+        }
+
         //
         // **没卖出去的那几格要还回池子。** 原作是
         // `UIBox:remove()` → `CardArea:remove()` → `remove_all(cards)`，
@@ -662,6 +690,7 @@ export class Run {
         return {
             hands: this.hands,
             highlighted,
+            handCards: this.round?.hand ?? [],
             jokers: this.jokers,
             consumables,
             consumableSlots: this.consumableSlots,
@@ -687,17 +716,38 @@ export class Run {
             },
             addJoker: (j) => {
                 this.jokers.push(j);
+                this.usedJokers.add(j.key);
                 refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
             },
+            removeJoker: (j) => {
+                const i = this.jokers.indexOf(j);
+                if (i >= 0) this.jokers.splice(i, 1);
+                releaseUsed(this.poolContext(), j.key);
+                refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+            },
+            addPlayingCard: (card) => {
+                // `create_playing_card`：进整副牌**与当前这一局的手牌**
+                this.fullDeck.push(card);
+                this.round?.addToHand(card);
+            },
+            changeHandSize: (delta) => { this.handSizeDelta += delta; },
             createConsumable: (set, keyAppend) =>
                 createConsumableCard(this.rng, set, this.poolContext(), keyAppend),
-            createJoker: (keyAppend) =>
-                createJokerCard(this.rng, this.poolContext(), keyAppend, 'none'),
+            createJoker: (keyAppend, options) =>
+                createJokerCard(this.rng, this.poolContext(), keyAppend, 'none', options),
             makeConsumable,
             lastTarotPlanet: this.lastTarotPlanet,
             probabilities: { normal: runModifiers(this.jokers).probabilityNormal },
             pseudorandom: (key) => this.rng.pseudorandom(key),
             pickRandom: (list, key) => pseudorandomElement(list, this.rng.pseudoseed(key))[0],
+            shuffled: <T,>(list: T[], key: string) => {
+                // `pseudoshuffle` 的签名要 `{sort_id?}`（它对有 sort_id 的先排一遍），
+                // 而这里只可能是扑克牌，确实有
+                const copy = [...list] as Array<{ sort_id?: number }>;
+                pseudoshuffle(copy, this.rng.pseudoseed(key));
+                return copy as T[];
+            },
+            nextEctoplasmMinus: () => this.ectoMinus++,
         };
     }
 
@@ -728,6 +778,8 @@ export class Run {
             consumeable_usage_tarot: this.consumableUsage.total.tarot,
             consumableCount: this.consumables.length,
             consumable_slots: this.consumableSlots,
+            consumableCards: this.consumables,
+            duplicateConsumableAsNegative: (key) => this.duplicateConsumableAsNegative(key),
             createConsumable: (set, keyAppend) => this.consumableHooks().create(set, keyAppend),
             deckCount: this.fullDeck.length,
             startingDeckSize: this.fullDeck.length,

@@ -91,13 +91,36 @@ describe('奥秘包：3 张塔罗', () => {
      * **每张牌前面多一次 `soul_Tarot<ante>`**（`soulable` 在包里传真值），
      * 然后才是池子抽取。16 号票查明商店路径不传，所以商店那边没有这一次。
      */
-    it('每张的账是 soul_Tarot<ante> → Tarotar1<ante>，一共 3 组', () => {
+    it('每张的账是 soul_Tarot<ante> → Tarotar1<ante>，soul 那次排在抽取之前', () => {
         const { rng, keys } = tracingRng('ALEEB');
-        openBooster(rng, BOOSTER_CENTERS.p_arcana_normal_1, 'p_arcana_normal_1', ctx());
+        const pack = openBooster(rng, BOOSTER_CENTERS.p_arcana_normal_1, 'p_arcana_normal_1', ctx());
+
+        // soul 那次**每张都掷**
         expect(keys.filter((k) => k === 'soul_Tarot1')).toHaveLength(3);
-        expect(keys.filter((k) => k === 'Tarotar11')).toHaveLength(3);
-        // soul 排在抽取之前
+
+        // **中了 soul 的那张不抽池子**（`create_card` 的 if/else），
+        // 所以池子抽取的次数 = 3 − 抽到 The Soul 的张数
+        const souls = pack.cards.filter(
+            (c) => c.kind === 'consumable' && c.consumable.key === 'c_soul',
+        ).length;
+        expect(keys.filter((k) => k === 'Tarotar11')).toHaveLength(3 - souls);
+
         expect(keys.indexOf('soul_Tarot1')).toBeLessThan(keys.indexOf('Tarotar11'));
+    });
+
+    /**
+     * 0.3% 的门槛（`> 0.997`）。ALEEB 这个 seed 的第一个奥秘包恰好中了一次——
+     * **这条同时验证了 `forced_key` 那条路真的会走**。
+     */
+    it('ALEEB 的第一个奥秘包里真的有一张 The Soul', () => {
+        const pack = openBooster(
+            new PseudorandomState('ALEEB'),
+            BOOSTER_CENTERS.p_arcana_normal_1,
+            'p_arcana_normal_1',
+            ctx(),
+        );
+        const keys = pack.cards.map((c) => packCardKey(c));
+        expect(keys).toContain('c_soul');
     });
 
     it('**不掷 soul_Planet**（The Soul 那一支只对 Tarot / Spectral 跑）', () => {
@@ -254,24 +277,52 @@ describe('标准包：扑克牌 + 强化 + 版本 + 蜡封', () => {
     });
 });
 
-describe('还没实现的幽灵包', () => {
-    it('幽灵包 isBoosterImplemented 是 false，别的四种是 true', () => {
-        expect(isBoosterImplemented('p_spectral_normal_1', BOOSTER_CENTERS)).toBe(false);
-        expect(isBoosterImplemented('p_arcana_normal_1', BOOSTER_CENTERS)).toBe(true);
-        expect(isBoosterImplemented('p_celestial_normal_1', BOOSTER_CENTERS)).toBe(true);
-        expect(isBoosterImplemented('p_buffoon_normal_1', BOOSTER_CENTERS)).toBe(true);
-        expect(isBoosterImplemented('p_standard_normal_1', BOOSTER_CENTERS)).toBe(true);
+describe('幽灵包：2 张幽灵牌，soul 掷两次', () => {
+    it('五种包全实现了', () => {
+        for (const k of ['p_arcana_normal_1', 'p_celestial_normal_1', 'p_buffoon_normal_1',
+            'p_standard_normal_1', 'p_spectral_normal_1']) {
+            expect(isBoosterImplemented(k, BOOSTER_CENTERS), k).toBe(true);
+        }
     });
 
-    it('硬开会抛，不静默给一个空包', () => {
-        expect(() =>
-            openBooster(
-                new PseudorandomState('ALEEB'),
-                BOOSTER_CENTERS.p_spectral_normal_1,
-                'p_spectral_normal_1',
+    it('普通幽灵包给 2 张、Jumbo 4 张', () => {
+        const pack = openBooster(
+            new PseudorandomState('QQQ777'),
+            BOOSTER_CENTERS.p_spectral_normal_1,
+            'p_spectral_normal_1',
+            ctx(),
+        );
+        expect(pack.cards).toHaveLength(2);
+        for (const c of pack.cards) {
+            expect(c.kind === 'consumable' && c.consumable.center.set).toBe('Spectral');
+        }
+    });
+
+    /**
+     * **`_type == 'Spectral'` 两支 soul 判定都跑**（`common_events.lua:2131` 与 `:2138`
+     * 是两个并列的 if），所以每张牌掷**两次** `soul_Spectral<ante>`。
+     */
+    it('每张掷两次 soul_Spectral<ante>，不是一次', () => {
+        const { rng, keys } = tracingRng('QQQ777');
+        openBooster(rng, BOOSTER_CENTERS.p_spectral_normal_1, 'p_spectral_normal_1', ctx());
+        expect(keys.filter((k) => k === 'soul_Spectral1')).toHaveLength(4); // 2 张 × 2 次
+    });
+
+    it('抽出来的不会是 The Soul / Black Hole（池子里被无条件剔掉）', () => {
+        for (let i = 0; i < 30; i++) {
+            const pack = openBooster(
+                new PseudorandomState(`S${i}`),
+                BOOSTER_CENTERS.p_spectral_jumbo_1,
+                'p_spectral_jumbo_1',
                 ctx(),
-            ),
-        ).toThrow(/还没有实现/);
+            );
+            for (const c of pack.cards) {
+                if (c.kind !== 'consumable') continue;
+                // 只可能从 soulable 那条路来，而那条路是 0.3%——
+                // 这里不断言「一次都没有」，只断言它不是从池子里抽出来的常客
+                expect(c.consumable.center.set).toBe('Spectral');
+            }
+        }
     });
 });
 

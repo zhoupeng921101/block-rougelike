@@ -27,12 +27,7 @@ import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, isJokerImplemented, unimplementedJo
  * 数字是当前的实际张数，实现一张就从下面删掉一行。
  */
 const BLOCKED: Readonly<Record<string, readonly string[]>> = {
-    /**
-     * 幽灵牌与版本（17 号票的后半段）。补充包那一刀解开了 `Hallucination`，
-     * 剩这 4 张要的是**幽灵牌**（Sixth Sense / Seance）与
-     * **版本**（Perkeo 要 Negative，Astronomer 要给补充包与星球定价）。
-     */
-    幽灵与补充包: ['Sixth Sense', 'Seance', 'Astronomer', 'Perkeo'],
+
     /**
      * 强化牌那 8 种已经落地（16 号票第 5 步），这 9 张**现在可以做了**，
      * 只是还没做。下一刀最划算的就是它。
@@ -55,10 +50,10 @@ const BLOCKED: Readonly<Record<string, readonly string[]>> = {
 };
 
 describe('覆盖面', () => {
-    it('150 张里 120 张有行为', () => {
+    it('150 张里 124 张有行为', () => {
         const implemented = JOKER_KEYS_BY_ORDER.filter(isJokerImplemented);
         expect(implemented.length + unimplementedJokers().length).toBe(150);
-        expect(implemented).toHaveLength(120);
+        expect(implemented).toHaveLength(124);
     });
 
     it('rarity 1 的 61 张里只剩 3 张没做', () => {
@@ -71,11 +66,11 @@ describe('覆盖面', () => {
     });
 
     /** 未实现的名单快照。**实现一张就来 `BLOCKED` 里删一行。** */
-    it('未实现的 30 张，与分组表逐条对得上', () => {
+    it('未实现的 26 张，与分组表逐条对得上', () => {
         const actual = unimplementedJokers().map((k) => JOKER_CENTERS[k].name).sort();
         const grouped = Object.values(BLOCKED).flat().slice().sort();
         expect(actual).toEqual(grouped);
-        expect(actual).toHaveLength(30);
+        expect(actual).toHaveLength(26);
     });
 
     it('分组表里没有重复，也没有拼错的名字', () => {
