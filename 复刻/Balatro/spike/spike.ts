@@ -13,6 +13,7 @@
 import { AUTO, Game, GameObjects, Scale, Scene, type Types } from 'phaser';
 
 import { DECK_ATLAS } from '../src/core/atlas';
+import { CRT_FRAG, CRT_VERT, crtUniforms } from './crt-shader';
 import { DISSOLVE_FRAG, DISSOLVE_VERT } from './dissolve-shader';
 
 const CARD_W = DECK_ATLAS.frameWidth * 2;
@@ -27,6 +28,10 @@ const params = new URLSearchParams(location.search);
 const CARD_COUNT = Number(params.get('cards') ?? 40);
 /** 是否额外铺一层全屏 shader——上一张票判断真正的风险在这的 fill-rate */
 const FULLSCREEN_BG = params.get('bg') === '1';
+/** CRT 全屏后处理：setForceComposite + captureFrame + 全屏 Shader */
+const CRT = params.get('crt') === '1';
+/** G.SETTINGS.GRAPHICS.crt —— 移动 30 / 桌面 70，12 号票裁定取桌面值 */
+const CRT_STRENGTH = Number(params.get('crtStrength') ?? 70);
 const WARMUP_FRAMES = 60;
 const MEASURE_FRAMES = 240;
 
@@ -165,7 +170,47 @@ class SpikeScene extends Scene {
             });
         }
 
+        if (CRT) this.setupCrt();
+
         this.lastTs = performance.now();
+    }
+
+    /**
+     * CRT 全屏链路。出自 Phaser 4 自带的 skills/filters-and-postfx/SKILL.md：
+     * 相机开 composite → captureFrame 捕获到具名纹理 → 全屏 Shader 采样它。
+     */
+    private setupCrt(): void {
+        this.cameras.main.setForceComposite(true);
+        this.add.captureFrame('scene');
+
+        const { width, height } = this.scale;
+        const u = crtUniforms(CRT_STRENGTH, width, height, 0);
+
+        const crt = this.add.shader(
+            {
+                name: 'crt',
+                fragmentSource: CRT_FRAG,
+                vertexSource: CRT_VERT,
+                setupUniforms: (setUniform) => {
+                    const t = crtUniforms(CRT_STRENGTH, width, height, this.time.now / 1000);
+                    setUniform('uMainSampler', 0);
+                    setUniform('distortion_fac', t.distortion_fac);
+                    setUniform('scale_fac', t.scale_fac);
+                    setUniform('feather_fac', t.feather_fac);
+                    setUniform('crt_intensity', t.crt_intensity);
+                    setUniform('scanlines', t.scanlines);
+                    setUniform('time', t.time);
+                    setUniform('uScreenSize', t.uScreenSize);
+                },
+            },
+            width / 2,
+            height / 2,
+            width,
+            height,
+            ['scene'],
+        );
+        crt.setDepth(1000);
+        void u;
     }
 
     update(): void {
@@ -225,6 +270,7 @@ class SpikeScene extends Scene {
             })(),
             cards: CARD_COUNT,
             fullscreenBg: FULLSCREEN_BG,
+            crt: CRT ? CRT_STRENGTH : false,
             uniformIsolation: {
                 distinctColoursRead: distinct,
                 expectedDistinct: CARD_COUNT,

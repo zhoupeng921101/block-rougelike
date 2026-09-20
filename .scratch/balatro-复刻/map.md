@@ -70,6 +70,23 @@ Label: wayfinder:map
   本票原先的担忧不成立：`T` 是目标变换、`VT` 才是动画插值的，逻辑从不读 `VT`；
   没被拖的牌 `T.x` 每帧由下标重算，排序只是拖拽提交进数组的方式。
   **硬约束：`T` 全程用 tile 单位，像素换算只允许出现在渲染/输入边界。**
+- [外观基准是移动版还是桌面版](issues/12-外观基准是移动版还是桌面版.md) ——
+  **机制与数值对齐本产物（移动版），纯观感的四个常数取桌面值**（CRT 70、文字 ×1 等），
+  集中配置、逐条留痕。卡牌悬停倾斜在本产物里是死代码（`touch_collide_tilt` 在 `Card` 上
+  从不设置，**与 `F_MOBILE` 无关**），但照桌面观感实现——它是 Balatro 最具辨识度的动作。
+- [事件队列调度语义的复刻口径](issues/09-事件队列调度语义的复刻口径.md) ——
+  **对 RNG 而言 `delay` 不影响顺序**，复刻件可把动画 delay 压成 0，
+  只需保持 `base` 队列的 FIFO 与 blocking 语义。全仓 270 个 `add_event` 块里
+  11 个消费 RNG，6 个有 delay/blockable 风险，但**第一个切片零命中**。
+- [CRT 全屏链路验证](issues/14-CRT全屏链路验证.md) —— **链路跑通**，
+  `setForceComposite` + `captureFrame` + 全屏 `Shader` 采样具名纹理即可。
+  CRT.fs 移植成功，**开销约 +0.5ms**。剥掉 `bloom_fac` 与 `glitch_intensity` 两段死码
+  （原作硬编码为 0），有效代码从 153 行降到约 60 行。
+
+> **地图已走完：14 张票全部关闭。** 通往 destination 的路已经清楚，
+> 剩下的是实现，不是决策。下一步是按
+> [第一个可玩里程碑的切片边界](issues/07-第一个可玩里程碑的切片边界.md) 动手写
+> 出牌计分管线。新的未知会在实现中冒出来，那时再开票。
 
 ## Not yet specified
 
@@ -90,10 +107,16 @@ Label: wayfinder:map
 
 <!-- 不是待决策，是后面每个 session 都该记着的事实 -->
 
-- **产物是移动版构建**。`源码/version.jkr` 为 `PROD_mobile`，`info.txt` 为
-  `Singular-v12.11.0`（2026-01-26 构建）。已知差异：CRT 强度 30（桌面 70，`globals.lua:231`）、
-  卡牌 3D 倾斜恒关（`touch_collide_tilt` 在 `Card` 上从不设置，但盲注与标签会倾斜）。
-  基准口径见 [外观基准是移动版还是桌面版](issues/12-外观基准是移动版还是桌面版.md)。
+- **产物是移动版构建**（`PROD_mobile`，`Singular-v12.11.0`，2026-01-26）。
+  全仓 `F_MOBILE` 分支已枚举，与玩法有关的只有四条纯观感常数：
+  CRT 30/70（`globals.lua:231`）、FPS 60/200（`main.lua:85`）、
+  卡面文字 ×1.45/×1（`card.lua:767`）、描述文字 ×1.45/×1（`misc_functions.lua:1747`）。
+  **复刻件取桌面值，集中配置、逐条留痕**，见
+  [外观基准](issues/12-外观基准是移动版还是桌面版.md)。
+- **卡牌悬停倾斜在本产物里是死代码**，且**与 `F_MOBILE` 无关**：
+  `Card` 设了 `hover_tilt = 1`，但 shader 条件还要 `touch_collide_tilt`，
+  而那个标志全仓只在盲注与标签上设置。复刻件仍要实现它（Balatro 最具辨识度的动作），
+  这是全图唯一一处有意偏离产物的地方。
 - **`参考/产物/Balatro_1.0.1o/` 的目录名没有记录「移动版」这件事**，
   而 `AGENTS.md` 写着「版本以目录名为准」。这是**参考层**的问题，本图不处理，
   但 5 篇 Balatro 结论文档都建立在这份产物上，值得单独提给用户。
@@ -104,6 +127,8 @@ Label: wayfinder:map
 - **`#pragma phaserTemplate` 不是给用户着色器分节用的**。`vertexSource` 整体替换模板，
   自定义着色器要写完整程序，遵守 `uProjectionMatrix` / `inPosition` / `inTexCoord` / `outTexCoord` 契约，
   并 `setUniform('uMainSampler', 0)` 绑纹理单元。
+- **「delay 可以压成 0」这条结论不能带过第一个里程碑。** 消耗品与补充包路径上有 5 处
+  带 delay / `blockable=false` 的 RNG 消费，第二个里程碑就会进范围，那时虚拟时钟必须如实复刻。
 - **`T` 是目标变换，`VT` 是动画插值的那个。逻辑只读 `T`，绝不读 `VT`。**
   全仓九处按 `T.x` 排序（`align_cards` 六处 + `state_events` 三处），
   外加 `cardarea.lua:534` 的 pinned 特例（`-100*sort_id` 强制排前），直译时别简化掉。
