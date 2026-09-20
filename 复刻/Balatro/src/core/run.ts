@@ -36,6 +36,7 @@ import {
     type UseContext,
     applyConsumable,
     canUseConsumable,
+    distinctPlanetsUsed,
     isConsumableImplemented,
     makeConsumable,
     makeConsumableUsage,
@@ -127,6 +128,27 @@ export class Run {
         this.resetSpecialCards();
     }
 
+    /**
+     * 结算里那几张造塔罗的小丑（`8 Ball` / `Vagabond` / `Superposition` / `Cartomancer`）
+     * 要碰消耗品区，而 `Round` 不持有它。
+     *
+     * **同步立即造**，不入队：原作是 `trigger='before', delay=0` 的事件，
+     * 并先把 `G.GAME.consumeable_buffer` 加 1 占位。同步造之下那个 buffer 恒为 0——
+     * 与 `dollar_buffer` 同一条理由。跨 key 的 RNG 顺序不受影响（09 号票）。
+     */
+    private consumableHooks() {
+        return {
+            count: () => this.consumables.length,
+            slots: this.consumableSlots,
+            usageTarot: () => this.consumableUsage.total.tarot,
+            create: (set: 'Tarot' | 'Planet', keyAppend: string) => {
+                if (this.consumables.length >= this.consumableSlots) return;
+                const made = createConsumableCard(this.rng, set, this.poolContext(), keyAppend);
+                this.consumables.push(made);
+            },
+        };
+    }
+
     /** 喂给商店的池子上下文。**每次现建**——`jokers` 与 `grosMichelExtinct` 会变 */
     poolContext(): PoolContext {
         return {
@@ -184,7 +206,14 @@ export class Run {
                 castleSuit: this.castleSuit,
             },
             onRemoveFromDeck: (cards) => this.removeFromDeck(cards),
+            consumables: this.consumableHooks(),
         });
+        // `card.lua:2521` 的 `context.setting_blind`：**进盲注时问一遍每张小丑**。
+        // `Cartomancer` 在这时造一张塔罗（消费 `Tarotcar<ante>`）
+        for (const joker of [...this.jokers]) {
+            calculateJoker(joker, { setting_blind: true }, this.round.gameView());
+        }
+
         this.state = 'playing';
         return this.round;
     }
@@ -209,6 +238,10 @@ export class Run {
         // 把每次出牌记进 `round.handsPlayed` 了
         this.handsPlayed = round.handsPlayed;
 
+        // `Cloud 9` 的 `nine_tally` 是**重算**出来的，而这一关可能销毁过牌
+        // （碎掉的玻璃牌 / The Hanged Man），所以收益之前要刷一次
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+
         // `state_events.lua:99` 的小丑 `end_of_round` 遍历。
         // **在 `evaluate_round` 之前**——原文两者都在 `end_round` 里，
         // 小丑那一趟排在最前面（`:99`），手牌区那一趟在 `:192`，
@@ -232,6 +265,8 @@ export class Run {
             discardsUsed: round.discardsUsed,
             dollars: this.dollars,
             jokers: this.jokers,
+            // `Satellite` 数的是「用过几种」星球，不是「用过几张」
+            distinctPlanets: distinctPlanetsUsed(this.consumableUsage),
             // `To the Moon` 每张 +1。由 `runModifiers` 从小丑区重算
             interestAmount: runModifiers(this.jokers).interestAmount,
         });
@@ -359,7 +394,7 @@ export class Run {
         const joker = item.joker;
         this.jokers.push(joker);
         // 小丑区变了 → 派生字段要重算（Joker Stencil 的空格子数、Swashbuckler 的卖价和）
-        refreshDerivedAbilities(this.jokers, this.jokerSlots);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
         // `card.lua:1858` 的 `context.buying_card` 分支在原作里是空的，
         // 但调用点要留着——它是接 `Trading Card` 之类的落点
         for (const other of this.jokers) {
@@ -381,7 +416,7 @@ export class Run {
         calculateJoker(joker, { selling_self: true }, this.round?.gameView() ?? this.shopGameView());
         this.jokers.splice(index, 1);
         this.dollars += joker.sell_cost;
-        refreshDerivedAbilities(this.jokers, this.jokerSlots);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
 
         // `card.lua:4829`：小丑区与消耗品区里都没有它了就解除 used 标记
         releaseUsed(this.poolContext(), joker.key);
@@ -494,7 +529,7 @@ export class Run {
             },
             addJoker: (j) => {
                 this.jokers.push(j);
-                refreshDerivedAbilities(this.jokers, this.jokerSlots);
+                refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
             },
             createConsumable: (set, keyAppend) =>
                 createConsumableCard(this.rng, set, this.poolContext(), keyAppend),
@@ -530,6 +565,9 @@ export class Run {
             jokers: this.jokers,
             joker_slots: this.jokerSlots,
             consumeable_usage_tarot: this.consumableUsage.total.tarot,
+            consumableCount: this.consumables.length,
+            consumable_slots: this.consumableSlots,
+            createConsumable: (set, keyAppend) => this.consumableHooks().create(set, keyAppend),
             deckCount: this.fullDeck.length,
             startingDeckSize: this.fullDeck.length,
             playingCardCount: this.fullDeck.length,

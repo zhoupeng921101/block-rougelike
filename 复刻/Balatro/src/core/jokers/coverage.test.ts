@@ -21,19 +21,23 @@ import { describe, expect, it } from 'vitest';
 import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, isJokerImplemented, unimplementedJokers } from './index';
 
 /**
- * 还没实现的 39 张，按**卡在哪个系统**分组。
+ * 还没实现的 31 张，按**卡在哪个系统**分组。
  *
  * 这份分组是这个文件真正的价值：一眼能看出「补哪个系统能一次解开多少张」。
  * 数字是当前的实际张数，实现一张就从下面删掉一行。
  */
 const BLOCKED: Readonly<Record<string, readonly string[]>> = {
-    /** 消耗品：塔罗 / 星球 / 幽灵牌，以及消耗品槽位。**解开 12 张，最划算的下一步** */
-    消耗品: [
-        '8 Ball', 'Sixth Sense', 'Constellation', 'Superposition', 'Seance',
-        'Vagabond', 'Cloud 9', 'Turtle Bean', 'Hallucination', 'Satellite',
-        'Cartomancer', 'Astronomer', 'Perkeo',
-    ],
-    /** 强化牌（Stone / Steel / Glass / Gold / Lucky / Wild…）。解开 9 张 */
+    /**
+     * 幽灵牌与补充包（17 号票）。消耗品那一刀解开了 8 张，剩这 5 张——
+     * 它们要的不是「消耗品」而是**幽灵牌**（Sixth Sense / Seance）、
+     * **补充包**（Hallucination）、**版本**（Perkeo 要 Negative、
+     * Astronomer 要给补充包定价）。
+     */
+    幽灵与补充包: ['Sixth Sense', 'Seance', 'Hallucination', 'Astronomer', 'Perkeo'],
+    /**
+     * 强化牌那 8 种已经落地（16 号票第 5 步），这 9 张**现在可以做了**，
+     * 只是还没做。下一刀最划算的就是它。
+     */
     强化牌: [
         'Marble Joker', 'Steel Joker', 'Vampire', 'Midas Mask', 'Stone Joker',
         'Lucky Cat', 'Golden Ticket', 'Glass Joker', "Driver's License",
@@ -52,30 +56,28 @@ const BLOCKED: Readonly<Record<string, readonly string[]>> = {
 };
 
 describe('覆盖面', () => {
-    it('150 张里 111 张有行为', () => {
+    it('150 张里 119 张有行为', () => {
         const implemented = JOKER_KEYS_BY_ORDER.filter(isJokerImplemented);
         expect(implemented.length + unimplementedJokers().length).toBe(150);
-        expect(implemented).toHaveLength(111);
+        expect(implemented).toHaveLength(119);
     });
 
-    it('rarity 1 的 61 张**全部**有行为了', () => {
+    it('rarity 1 的 61 张里只剩 4 张没做', () => {
         const un = unimplementedJokers().filter((k) => JOKER_CENTERS[k].rarity === 1);
         expect(un.map((k) => JOKER_CENTERS[k].name)).toEqual([
             'Credit Card', // 负债上限 —— 钱要能扣到 -20
-            '8 Ball', // 生成塔罗牌
-            'Superposition', // 生成塔罗牌
             'Riff-raff', // 生成小丑
             'Hallucination', // 开补充包时生成塔罗牌
-            'Golden Ticket', // 黄金牌（强化牌）
+            'Golden Ticket', // 黄金牌（强化牌那一刀）
         ]);
     });
 
     /** 未实现的名单快照。**实现一张就来 `BLOCKED` 里删一行。** */
-    it('未实现的 39 张，与分组表逐条对得上', () => {
+    it('未实现的 31 张，与分组表逐条对得上', () => {
         const actual = unimplementedJokers().map((k) => JOKER_CENTERS[k].name).sort();
         const grouped = Object.values(BLOCKED).flat().slice().sort();
         expect(actual).toEqual(grouped);
-        expect(actual).toHaveLength(39);
+        expect(actual).toHaveLength(31);
     });
 
     it('分组表里没有重复，也没有拼错的名字', () => {
@@ -85,12 +87,12 @@ describe('覆盖面', () => {
         for (const name of all) expect(names.has(name), name).toBe(true);
     });
 
-    it('补消耗品是最划算的下一步——一次解开 13 张', () => {
+    it('下一刀是强化牌那 9 张——它们的前置已经落地了', () => {
         // 这条不是断言代码行为，是把「下一步做什么」的依据钉住：
-        // 哪个分组最大，下一个里程碑就先做它
+        // 哪个分组最大，下一刀就先做它
         const sizes = Object.entries(BLOCKED).map(([k, v]) => [k, v.length] as const);
         const biggest = sizes.reduce((a, b) => (b[1] > a[1] ? b : a));
-        expect(biggest[0]).toBe('消耗品');
-        expect(biggest[1]).toBe(13);
+        expect(biggest[0]).toBe('强化牌');
+        expect(biggest[1]).toBe(9);
     });
 });

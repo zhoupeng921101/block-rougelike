@@ -46,13 +46,35 @@ export type Payout = {
  */
 export function calculateDollarBonus(
     joker: Joker,
-    round: { discardsUsed: number; discardsLeft: number },
+    round: {
+        discardsUsed: number;
+        discardsLeft: number;
+        /** 整副牌里有几张 9。`Cloud 9` 读它（由 `refreshDerivedAbilities` 算好） */
+        nineTally?: number;
+        /** 用过**几种**星球。`Satellite` 读它 */
+        distinctPlanets?: number;
+    },
 ): number | null {
     if (joker.debuff) return null;
 
     switch (joker.ability.name) {
         case 'Golden Joker':
             return joker.ability.extra;
+
+        // `card.lua:1663`：整副牌里每张 9 给 $1。**一张都没有时返回 nil**，
+        // 不是返回 0——收益明细里那一行根本不出现
+        case 'Cloud 9': {
+            const nines = joker.ability.nine_tally ?? 0;
+            if (nines <= 0) return null;
+            return joker.ability.extra * nines;
+        }
+
+        // `card.lua:1669`：用过**几种**星球（不算重复）× $1。同样是 0 就不出行
+        case 'Satellite': {
+            const planets = round.distinctPlanets ?? 0;
+            if (planets === 0) return null;
+            return joker.ability.extra * planets;
+        }
 
         // `card.lua:1677`：**两个条件都要**——一次没用过 **且** 还剩弃牌
         case 'Delayed Gratification':
@@ -82,6 +104,8 @@ export type RoundResult = {
      * 上限也跟着变：`interest_amount * (interest_cap / 5)`。
      */
     interestAmount?: number;
+    /** 本局用过**几种**星球（不算重复）。`Satellite` 读它 */
+    distinctPlanets?: number;
 };
 
 /**

@@ -74,6 +74,8 @@ export type JokerAbility = {
     hands_played_at_create?: number;
     /** `To Do List` 每回合随机指定的牌型 */
     to_do_poker_hand?: HandName;
+    /** `Cloud 9`：整副牌里有几张 9。由 `refreshDerivedAbilities` **重算**，不增量 */
+    nine_tally?: number;
 };
 
 export type Joker = {
@@ -142,6 +144,18 @@ export type JokerContext = {
     /** 本局是否已经输了（`Mr. Bones` 读它）。不在本里程碑，但字段先留 */
     game_over?: boolean;
     /**
+     * `card.lua:2700` 的 `context.using_consumeable`：**刚用掉了一张消耗品**。
+     * `Constellation`（星球）与 `Fortune Teller`（塔罗）读它。
+     */
+    using_consumeable?: boolean;
+    /** 跟着 `using_consumeable` 一起来的那张牌 */
+    consumeable?: { set: 'Tarot' | 'Planet' };
+    /**
+     * `card.lua:2521` 的 `context.setting_blind`：**刚选定盲注**。
+     * `Cartomancer` 在这时造一张塔罗。
+     */
+    setting_blind?: boolean;
+    /**
      * `state_events.lua:996` 与 `card.lua:1370` 的 `remove_playing_cards`：
      * 有扑克牌被永久销毁（碎掉的玻璃牌 / The Hanged Man）。
      * `Hologram` / `Glass Joker` 这一组读它，**都还没实现**，调用点先留着
@@ -200,8 +214,22 @@ export type GameView = {
      * 光有 `context.other_card` 不够——原文直接读 `G.hand.cards`。
      */
     handCards: Card[];
-    /** `G.GAME.consumeable_usage_total.tarot`。`Fortune Teller` 读它，本里程碑恒 0 */
+    /** `G.GAME.consumeable_usage_total.tarot`。`Fortune Teller` 读它 */
     consumeable_usage_tarot: number;
+    /** `#G.consumeables.cards`。造塔罗的那几张（8 Ball / Vagabond …）要查空位 */
+    consumableCount: number;
+    /** `G.consumeables.config.card_limit` */
+    consumable_slots: number;
+    /**
+     * `create_card(set, G.consumeables, …, keyAppend)` + `emplace`。
+     * **消费 RNG**（池子抽取那一次），由 `Run` 接到真的池子上。
+     *
+     * 原作是入队一个 `trigger='before', delay=0` 的事件，并先把
+     * `G.GAME.consumeable_buffer` 加 1 占位、事件里再清零。
+     * 本复刻是**同步立即**造，所以那个 buffer 恒为 0——
+     * 与 `dollar_buffer` 同一条理由（见 map 的已知的坑）。
+     */
+    createConsumable(set: 'Tarot' | 'Planet', keyAppend: string): void;
     /**
      * `Smeared Joker` 在场——红桃认方块、黑桃认梅花。
      * 由 `modifiers.ts` 从小丑区算出来，不是每张小丑自己去 `find_joker`。

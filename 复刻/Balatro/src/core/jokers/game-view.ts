@@ -27,6 +27,11 @@ export function makeGameView(overrides: Partial<GameView> = {}): GameView {
         deckCount: 0,
         handCards: [],
         consumeable_usage_tarot: 0,
+        consumableCount: 0,
+        consumable_slots: 2,
+        createConsumable: () => {
+            throw new Error('这个 GameView 没有接造卡的口子，但有小丑要造塔罗——显式传进来');
+        },
         smeared: false,
         startingDeckSize: 52,
         playingCardCount: 52,

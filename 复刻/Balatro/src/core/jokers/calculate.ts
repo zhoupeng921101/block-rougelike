@@ -75,6 +75,21 @@ function faceCheck(card: Card, game: GameView | undefined): boolean {
 type Handler = (self: Joker, context: JokerContext, game: GameView) => JokerEffect | null;
 
 const INDIVIDUAL_PLAY: Record<string, Handler> = {
+    /**
+     * `card.lua:3109`。打出的牌是 8 就 1/4 造一张塔罗。
+     *
+     * **判定顺序是「先看空位、再看点数、最后掷点」**（原文三个条件是
+     * `if 空位 then if id == 8 and pseudorandom(...) then`）——
+     * 消耗品区满了**不掷点**，非 8 也**不掷点**。搞反了整条 seed 链就分叉。
+     */
+    '8 Ball': (self, context, game) => {
+        if (game.consumableCount >= game.consumable_slots) return null;
+        if (getId(context.other_card!) !== 8) return null;
+        if (game.pseudorandom('8ball') >= game.probabilities.normal / self.ability.extra) return null;
+        game.createConsumable('Tarot', '8ba');
+        return { message: 'plus_tarot', card: self };
+    },
+
     // `card.lua:3096`
     Photograph: (self, context) => {
         let firstFace: Card | null = null;
@@ -429,6 +444,30 @@ const BEFORE: Record<string, Handler> = {
  * 所以这张表里没有它。出牌后什么都不掉。
  */
 const AFTER: Record<string, Handler> = {
+    // `card.lua:3746`。出牌时身上 **≤ $4** 就造一张塔罗
+    Vagabond: (self, _context, game) => {
+        if (game.consumableCount >= game.consumable_slots) return null;
+        if (game.dollars > self.ability.extra) return null;
+        game.createConsumable('Tarot', 'vag');
+        return { message: 'plus_tarot', card: self };
+    },
+
+    /**
+     * `card.lua:3765`。计分牌里有 A **且**这手命中顺子就造一张塔罗。
+     *
+     * 两条都要：`aces >= 1 and next(context.poker_hands["Straight"])`。
+     * 注意读的是 `poker_hands` 而不是 `scoring_name`——
+     * **同花顺也算**（它同时命中 Straight 那一项）。
+     */
+    Superposition: (_self, context, game) => {
+        if (game.consumableCount >= game.consumable_slots) return null;
+        const aces = (context.scoring_hand ?? []).filter((c) => getId(c) === 14).length;
+        if (aces < 1) return null;
+        if (!(context.poker_hands?.Straight ?? []).length) return null;
+        game.createConsumable('Tarot', 'sup');
+        return { message: 'plus_tarot' };
+    },
+
     // `card.lua:3574`。掉到 0 就自毁。自毁本身由调用方处理，这里只回 message
     'Ice Cream': (self, context) => {
         if (context.blueprint) return null;
@@ -511,6 +550,21 @@ const DISCARD: Record<string, Handler> = {
 // ————————————————————————————————————————————————————————————————
 
 const END_OF_ROUND: Record<string, Handler> = {
+    /**
+     * `card.lua:2906`。每回合手牌上限的加成 **-1**，掉到 0 就自毁。
+     * 与 `Popcorn` 同一个形状：**先判会不会掉到 0、再减**。
+     *
+     * 加成本身由 `runModifiers` 从 `extra.h_size` 重算，不在这里加减。
+     */
+    'Turtle Bean': (self, context) => {
+        if (context.blueprint) return null;
+        if (self.ability.extra.h_size - self.ability.extra.h_mod <= 0) {
+            return { message: 'eaten', card: self, destroy: true };
+        }
+        self.ability.extra.h_size -= self.ability.extra.h_mod;
+        return { message: `-${self.ability.extra.h_mod}`, card: self };
+    },
+
     // `card.lua:2948`。**先判会不会掉到 0、再减**——顺序反了会多活一个回合
     Popcorn: (self, context) => {
         if (context.blueprint) return null;
@@ -571,6 +625,27 @@ const SELLING_CARD: Record<string, Handler> = {
         if (context.blueprint) return null;
         self.ability.x_mult += self.ability.extra;
         return { message: `X${self.ability.x_mult}`, card: self };
+    },
+};
+
+/** `card.lua:2700` 的 `context.using_consumeable`。**刚用掉一张消耗品** */
+const USING_CONSUMEABLE: Record<string, Handler> = {
+    // `card.lua:2730`。**只认星球**，塔罗不长
+    Constellation: (self, context) => {
+        if (context.blueprint) return null;
+        if (context.consumeable?.set !== 'Planet') return null;
+        self.ability.x_mult += self.ability.extra;
+        return { message: `X${self.ability.x_mult}`, card: self };
+    },
+};
+
+/** `card.lua:2521` 的 `context.setting_blind`。**刚选定盲注** */
+const SETTING_BLIND: Record<string, Handler> = {
+    // `card.lua:2548`。每关开始造一张塔罗
+    Cartomancer: (self, _context, game) => {
+        if (game.consumableCount >= game.consumable_slots) return null;
+        game.createConsumable('Tarot', 'car');
+        return { message: 'plus_tarot', card: self };
     },
 };
 
@@ -857,6 +932,14 @@ export function calculateJoker(
     // 显式拦掉：不拦的话这些调用会一路掉进 main 分支，在买卖时白算一遍出牌结算
     if (context.buying_card || context.selling_self || context.ending_shop) return null;
 
+    if (context.using_consumeable) {
+        return USING_CONSUMEABLE[name]?.(self, context, game) ?? null;
+    }
+
+    if (context.setting_blind) {
+        return SETTING_BLIND[name]?.(self, context, game) ?? null;
+    }
+
     if (context.discard) {
         return DISCARD[name]?.(self, context, game) ?? null;
     }
@@ -989,7 +1072,7 @@ function mainScoring(self: Joker, context: JokerContext, game: GameView): JokerE
 /**
  * 在 `calculate_joker` 里有专属分支的小丑名。
  *
- * **从上面那九张表算出来，不手写名单。** 手写的名单会漂：加了 handler 忘了更名单，
+ * **从上面那几张 handler 表算出来，不手写名单。** 手写的名单会漂：加了 handler 忘了更名单，
  * 那张小丑就会被当成「未实现」；反过来更糟——删了 handler 名单还留着，
  * 于是一张什么都不做的小丑被报成已实现。
  */
@@ -1012,6 +1095,8 @@ const NAMES_WITH_HANDLERS: ReadonlySet<string> = new Set([
     ...Object.keys(SELLING_CARD),
     ...Object.keys(REROLL_SHOP),
     ...Object.keys(PRE_DISCARD),
+    ...Object.keys(USING_CONSUMEABLE),
+    ...Object.keys(SETTING_BLIND),
     // `calculateJoker` 开头那条 copycat 分支，不走查表
     'Blueprint',
     'Brainstorm',
@@ -1038,6 +1123,10 @@ const IMPLEMENTED_ELSEWHERE: Readonly<Record<string, string>> = {
     // `card.lua:1657` 的 `calculate_dollar_bonus`
     'Golden Joker': 'economy.ts 的 calculateDollarBonus',
     'Delayed Gratification': 'economy.ts 的 calculateDollarBonus',
+    // 同上，只是数字来自别处：Cloud 9 数整副牌里的 9（derived.ts 重算），
+    // Satellite 数「用过几种星球」（consumables/use.ts 的 distinctPlanetsUsed）
+    'Cloud 9': 'economy.ts 的 calculateDollarBonus + derived.ts 的 nine_tally',
+    Satellite: 'economy.ts 的 calculateDollarBonus',
 
     // `modifiers.ts`：一进小丑区就改局面参数的那些。
     // 它们在原作里也没有 `calculate_joker` 分支——走 `add_to_deck` 与 `find_joker`

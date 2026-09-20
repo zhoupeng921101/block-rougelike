@@ -15,6 +15,7 @@
  * 那条不变量变得难以检查。
  */
 
+import { type Card, getId } from '../card';
 import { JOKER_CENTERS } from './centers.generated';
 import type { Joker } from './types';
 
@@ -24,11 +25,20 @@ import type { Joker } from './types';
  *
  * `jokerSlots` 是小丑区的格子数（`Joker Stencil` 要算空格子）。
  */
-export function refreshDerivedAbilities(jokers: Joker[], jokerSlots: number): void {
+export function refreshDerivedAbilities(
+    jokers: Joker[],
+    jokerSlots: number,
+    playingCards: Card[] = [],
+): void {
     for (const joker of jokers) {
         const a = joker.ability;
 
         switch (a.name) {
+            // `card.lua:4194`：整副牌里有几张 9。**读的是 `get_id`**，
+            // 所以石头牌不算（它的 id 是个假值）
+            case 'Cloud 9':
+                a.nine_tally = playingCards.filter((c) => getId(c) === 9).length;
+                break;
             // `card.lua:4206`：空格子数，**再把小丑区里每张 Joker Stencil 自己也算一格**。
             // 那第二个循环不是笔误——Stencil 占着的格子也被当成「空的」算进去，
             // 所以两张 Stencil 在 5 格空 3 格时各给 ×5（3 + 2），不是 ×3

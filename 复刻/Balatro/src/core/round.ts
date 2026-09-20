@@ -125,6 +125,8 @@ export type RoundOptions = {
     mailCard?: number;
     /** 本回合的其余随机项。由 `Run` 层每回合抽（`reset_*` 那四个） */
     special?: RoundSpecialCards;
+    /** 消耗品区的口子。由 `Run` 接上——结算里有小丑要造塔罗、要查空位 */
+    consumables?: ConsumableHooks;
     /**
      * 牌被永久销毁时（碎掉的玻璃牌）通知上层，好让 `Run.fullDeck` 也删掉。
      * **`Run` 跨回合持有同一批 `Card` 对象**，只从这一局的三个堆里删不够——
@@ -139,6 +141,27 @@ export type RoundOptions = {
  * 它们**每回合都重抽**（`state_events.lua:294`），各用一个独立的 RNG key，
  * 所以由 `Run` 层持有并传下来。
  */
+/**
+ * 结算过程中要碰消耗品区的那几个口子（`8 Ball` / `Vagabond` / `Superposition`）。
+ * `Round` 不持有消耗品区，所以由 `Run` 传进来。
+ */
+export type ConsumableHooks = {
+    count(): number;
+    slots: number;
+    usageTarot(): number;
+    create(set: 'Tarot' | 'Planet', keyAppend: string): void;
+};
+
+/** 没接消耗品区时的默认实现：**造卡会抛**，查空位恒满。 */
+export const NO_CONSUMABLES: ConsumableHooks = {
+    count: () => 0,
+    slots: 0,
+    usageTarot: () => 0,
+    create: () => {
+        throw new Error('这个 Round 没有接消耗品区，但有小丑要造塔罗');
+    },
+};
+
 export type RoundSpecialCards = {
     /** `The Idol`：点数 + 花色都要撞上 */
     idolCard?: { id: number; suit: Suit };
@@ -188,6 +211,7 @@ export class Round {
     readonly mods: RunModifiers;
     /** 本回合的几个随机项（`The Idol` / `Ancient Joker` / `Castle` 读） */
     private readonly special: RoundSpecialCards;
+    private readonly consumables: ConsumableHooks;
     private readonly onRemoveFromDeck?: (cards: Card[]) => void;
 
     constructor(seed: string, fullDeck: Card[], options: RoundOptions = {}) {
@@ -199,6 +223,7 @@ export class Round {
         // `Four Fingers` 与 `Shortcut` 是小丑给的牌型判定松紧，
         // 与调用方传进来的（测试用）取并集
         this.onRemoveFromDeck = options.onRemoveFromDeck;
+        this.consumables = options.consumables ?? NO_CONSUMABLES;
         const passedFlags = options.jokerFlags ?? NO_JOKERS;
         const jokerMods = runModifiers(options.jokers ?? []);
         this.jokerFlags = {
@@ -226,7 +251,7 @@ export class Round {
 
         // **派生字段先重算一遍**：`Joker Stencil` 的倍率与 `Swashbuckler` 的 mult
         // 是从小丑区推导的（原作每帧重算），不重算就会读到 config 里的初值
-        refreshDerivedAbilities(this.jokers, STARTING_PARAMS.joker_slots);
+        refreshDerivedAbilities(this.jokers, STARTING_PARAMS.joker_slots, fullDeck);
 
         // `misc_functions.lua:1855` 的基数，再加上小丑区给的修正。
         // 全部由 `runModifiers` 从小丑区**重算**而不是增量加减——
@@ -280,6 +305,16 @@ export class Round {
                 round.dollars = v;
             },
             dollar_buffer: 0,
+            get consumeable_usage_tarot() {
+                return round.consumables.usageTarot();
+            },
+            get consumableCount() {
+                return round.consumables.count();
+            },
+            get consumable_slots() {
+                return round.consumables.slots;
+            },
+            createConsumable: (set, keyAppend) => round.consumables.create(set, keyAppend),
             get hands_played() {
                 return round.handsPlayed;
             },
@@ -311,7 +346,6 @@ export class Round {
             get handCards() {
                 return round.hand;
             },
-            consumeable_usage_tarot: 0,
             smeared: this.mods.smeared,
             startingDeckSize: this.startingDeckSize,
             get playingCardCount() {

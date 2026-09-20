@@ -67,6 +67,12 @@ export function runModifiers(jokers: Joker[]): RunModifiers {
         m.discards += a.d_size;
 
         switch (a.name) {
+            // `card.lua:605`：手牌上限 + `extra.h_size`。**读的是 `extra` 不是 `h_size`**，
+            // 所以上面那条通用加法碰不到它。这个数每回合会缩一格（见 END_OF_ROUND）
+            case 'Turtle Bean':
+                m.handSize += a.extra.h_size;
+                break;
+
             // `card.lua:623`：手牌上限 +2、出牌次数 **-1**
             case 'Troubadour':
                 m.handSize += a.extra.h_size;

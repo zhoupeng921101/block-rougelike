@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { type Card, type Suit, type Value, makeCard, resetCardCounters } from '../card';
 import { type HandInfo, type HandName, evaluatePlay, initialHands } from '../scoring';
+import { calculateJoker } from './calculate';
 import { makeGameView } from './game-view';
 import { refreshDerivedAbilities } from './derived';
 import { makeJoker } from './instance';
@@ -30,6 +31,11 @@ function c(spec: string, x = 0): Card {
 }
 
 const hand = (...specs: string[]) => specs.map((s, i) => c(s, i * 2.05));
+
+/** `context.poker_hands` 的空壳。只有 `Superposition` 之类要查具体某一项 */
+const EMPTY_HANDS: Record<HandName, Card[][]> = Object.fromEntries(
+    Object.keys(initialHands()).map((name) => [name, []]),
+) as unknown as Record<HandName, Card[][]>;
 
 type Scene = {
     play: string[];
@@ -508,5 +514,221 @@ describe('Oops! All 6s 真的改掷点阈值', () => {
             jokers: ['j_business', 'j_oops'],
             roll: 0.9,
         }).dollars).toBe(4);
+    });
+});
+
+// ————————————————————————————————————————————————————————————————
+// 消耗品那一刀解开的 8 张（16 号票第 7 步）
+//
+// 期望值手算，算式写在用例名里。造塔罗的那几张**只断言「造了几张、
+// 用的是哪个 keyAppend」**——抽到具体哪张由池子与 seed 决定，
+// 断言那个等于把测试钉死在当前 seed 上。
+// ————————————————————————————————————————————————————————————————
+
+describe('8 Ball：打出 8 就 1/4 造一张塔罗', () => {
+    /** `card.lua:3109` 的三个条件是嵌套的：先查空位、再判点数、最后掷点 */
+    function ctx8(card: Card, roll: number, made: string[], count = 0) {
+        return makeGameView({
+            consumableCount: count,
+            consumable_slots: 2,
+            createConsumable: (set, keyAppend) => made.push(`${set}:${keyAppend}`),
+            pseudorandom: () => roll,
+            handCards: [card],
+        });
+    }
+
+    it('打出 8 且掷点中（0 < 1/4）→ 造一张塔罗，keyAppend 是 8ba', () => {
+        const made: string[] = [];
+        const card = c('S8');
+        const out = calculateJoker(
+            makeJoker('j_8_ball'),
+            { cardarea: 'play', individual: true, other_card: card },
+            ctx8(card, 0, made),
+        );
+        expect(made).toEqual(['Tarot:8ba']);
+        expect(out?.message).toBe('plus_tarot');
+    });
+
+    it('打出 8 但掷点不中（0.9 ≥ 1/4）→ 不造', () => {
+        const made: string[] = [];
+        const card = c('S8');
+        calculateJoker(
+            makeJoker('j_8_ball'),
+            { cardarea: 'play', individual: true, other_card: card },
+            ctx8(card, 0.9, made),
+        );
+        expect(made).toEqual([]);
+    });
+
+    /** **非 8 不掷点**：原文 `id == 8 and pseudorandom(...)` 是短路的 */
+    it('不是 8 就**一次点都不掷**', () => {
+        const keys: string[] = [];
+        const card = c('S7');
+        calculateJoker(
+            makeJoker('j_8_ball'),
+            { cardarea: 'play', individual: true, other_card: card },
+            makeGameView({
+                consumableCount: 0,
+                consumable_slots: 2,
+                createConsumable: () => {},
+                pseudorandom: (k) => { keys.push(k); return 0; },
+            }),
+        );
+        expect(keys).not.toContain('8ball');
+    });
+
+    /** **消耗品区满了也不掷点**：那个判定在最外层 */
+    it('消耗品区满了就不掷点', () => {
+        const keys: string[] = [];
+        const card = c('S8');
+        calculateJoker(
+            makeJoker('j_8_ball'),
+            { cardarea: 'play', individual: true, other_card: card },
+            makeGameView({
+                consumableCount: 2,
+                consumable_slots: 2,
+                createConsumable: () => {},
+                pseudorandom: (k) => { keys.push(k); return 0; },
+            }),
+        );
+        expect(keys).not.toContain('8ball');
+    });
+});
+
+describe('Vagabond：出牌时 ≤ $4 就造一张塔罗', () => {
+    const run = (dollars: number, made: string[]) =>
+        calculateJoker(
+            makeJoker('j_vagabond'),
+            { cardarea: 'jokers', after: true },
+            makeGameView({
+                dollars,
+                consumableCount: 0,
+                consumable_slots: 2,
+                createConsumable: (set, keyAppend) => made.push(`${set}:${keyAppend}`),
+            }),
+        );
+
+    it('$4 造（判的是 ≤ 不是 <）', () => {
+        const made: string[] = [];
+        run(4, made);
+        expect(made).toEqual(['Tarot:vag']);
+    });
+
+    it('$5 不造', () => {
+        const made: string[] = [];
+        run(5, made);
+        expect(made).toEqual([]);
+    });
+});
+
+describe('Superposition：A + 顺子就造一张塔罗', () => {
+    function run(scoring: Card[], straight: Card[][], made: string[]) {
+        return calculateJoker(
+            makeJoker('j_superposition'),
+            {
+                cardarea: 'jokers',
+                after: true,
+                scoring_hand: scoring,
+                poker_hands: { ...EMPTY_HANDS, Straight: straight },
+            },
+            makeGameView({
+                consumableCount: 0,
+                consumable_slots: 2,
+                createConsumable: (set, keyAppend) => made.push(`${set}:${keyAppend}`),
+            }),
+        );
+    }
+
+    it('有 A 且命中顺子 → 造，keyAppend 是 sup', () => {
+        const made: string[] = [];
+        const cards = [c('SA'), c('H2')];
+        run(cards, [cards], made);
+        expect(made).toEqual(['Tarot:sup']);
+    });
+
+    it('有 A 但没顺子 → 不造', () => {
+        const made: string[] = [];
+        run([c('SA')], [], made);
+        expect(made).toEqual([]);
+    });
+
+    it('有顺子但没 A → 不造', () => {
+        const made: string[] = [];
+        const cards = [c('S5'), c('H6')];
+        run(cards, [cards], made);
+        expect(made).toEqual([]);
+    });
+});
+
+describe('Constellation：每用一张**星球**涨 X0.1', () => {
+    it('用星球 → x_mult 1 + 0.1 = 1.1', () => {
+        const joker = makeJoker('j_constellation');
+        calculateJoker(joker, { using_consumeable: true, consumeable: { set: 'Planet' } }, makeGameView());
+        expect(joker.ability.x_mult).toBeCloseTo(1.1);
+    });
+
+    it('用三张星球 → 1 + 0.1×3 = 1.3', () => {
+        const joker = makeJoker('j_constellation');
+        for (let i = 0; i < 3; i++) {
+            calculateJoker(joker, { using_consumeable: true, consumeable: { set: 'Planet' } }, makeGameView());
+        }
+        expect(joker.ability.x_mult).toBeCloseTo(1.3);
+    });
+
+    it('用塔罗**不涨**', () => {
+        const joker = makeJoker('j_constellation');
+        calculateJoker(joker, { using_consumeable: true, consumeable: { set: 'Tarot' } }, makeGameView());
+        expect(joker.ability.x_mult).toBe(1);
+    });
+});
+
+describe('Cartomancer：进盲注时造一张塔罗', () => {
+    it('造一张，keyAppend 是 car', () => {
+        const made: string[] = [];
+        calculateJoker(
+            makeJoker('j_cartomancer'),
+            { setting_blind: true },
+            makeGameView({
+                consumableCount: 0,
+                consumable_slots: 2,
+                createConsumable: (set, keyAppend) => made.push(`${set}:${keyAppend}`),
+            }),
+        );
+        expect(made).toEqual(['Tarot:car']);
+    });
+
+    it('消耗品区满了就不造', () => {
+        const made: string[] = [];
+        calculateJoker(
+            makeJoker('j_cartomancer'),
+            { setting_blind: true },
+            makeGameView({
+                consumableCount: 2,
+                consumable_slots: 2,
+                createConsumable: (set, keyAppend) => made.push(`${set}:${keyAppend}`),
+            }),
+        );
+        expect(made).toEqual([]);
+    });
+});
+
+describe('Turtle Bean：手牌上限 +5，每回合 -1，到 0 自毁', () => {
+    it('开局给 +5 手牌上限', () => {
+        expect(runModifiers([makeJoker('j_turtle_bean')]).handSize).toBe(5);
+    });
+
+    it('一个回合之后变成 +4', () => {
+        const joker = makeJoker('j_turtle_bean');
+        calculateJoker(joker, { end_of_round: true }, makeGameView());
+        expect(runModifiers([joker]).handSize).toBe(4);
+    });
+
+    /** 与 `Popcorn` 同一个形状：**先判会不会掉到 0、再减** */
+    it('剩 +1 时那一回合就自毁，不是先减到 0 再多活一回合', () => {
+        const joker = makeJoker('j_turtle_bean');
+        joker.ability.extra.h_size = 1;
+        const out = calculateJoker(joker, { end_of_round: true }, makeGameView());
+        expect(out?.destroy).toBe(true);
+        expect(joker.ability.extra.h_size).toBe(1); // 没被减，直接毁
     });
 });
