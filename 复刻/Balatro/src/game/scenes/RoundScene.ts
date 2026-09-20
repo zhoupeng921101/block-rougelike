@@ -9,6 +9,7 @@ import { GameObjects, Scene } from 'phaser';
 
 import type { Card } from '../../core/card';
 import { makeStandardDeck, resetCardCounters } from '../../core/card';
+import { EventManager, GameEvent } from '../../core/event-queue';
 import { Round } from '../../core/round';
 import { evaluatePokerHand } from '../../core/poker-hands';
 import { CardSprite } from '../card-sprite';
@@ -27,10 +28,24 @@ const HAND_X_TILES = 1.2;
  */
 const CRT_STRENGTH = 70;
 
+/** 打出区的基线，tile。在手牌上方。 */
+const PLAY_Y_TILES = 3.2;
+/** 逐张计分之间的间隔，秒。原作在 state_events.lua:622 是 delay(0.2) 起步 */
+const SCORE_STEP_DELAY = 0.22;
+
 export class RoundScene extends Scene {
     private round!: Round;
     private sprites: CardSprite[] = [];
     private selected = new Set<Card>();
+
+    /** 事件队列。动画的节奏全靠它，语义直译自 engine/event.lua（09 号票）。
+     *  刻意不叫 `events`——那是 Phaser Scene 自己的字段。 */
+    private readonly queue = new EventManager();
+    /** 正在播放出牌动画时不接受输入 */
+    private animating = false;
+    /** 计分过程中的实时累加器，只用于显示 */
+    private liveChips = 0;
+    private liveMult = 0;
 
     private hud!: GameObjects.Text;
     private handPreview!: GameObjects.Text;
@@ -55,7 +70,7 @@ export class RoundScene extends Scene {
 
         // 音效。对应关系从原作查出：
         // cardSlide2 选/取消选牌（card.lua:4625）、chips2 计分（state_events.lua:1062）
-        for (const key of ['cardSlide2', 'chips2', 'card1', 'button', 'generic1']) {
+        for (const key of ['cardSlide2', 'chips1', 'chips2', 'card1', 'button', 'generic1']) {
             this.load.audio(key, `/assets/sounds/${key}.ogg`);
         }
     }
@@ -190,7 +205,7 @@ export class RoundScene extends Scene {
     }
 
     private toggle(card: Card): void {
-        if (this.round.phase !== 'selecting') return;
+        if (this.animating || this.round.phase !== 'selecting') return;
 
         if (this.selected.has(card)) this.selected.delete(card);
         else if (this.selected.size < 5) this.selected.add(card);
@@ -207,18 +222,92 @@ export class RoundScene extends Scene {
         return [...this.selected].sort((a, b) => a.T.x - b.T.x);
     }
 
+    /**
+     * 出牌。
+     *
+     * **逻辑先同步算完**（`round.play` 里没有任何动画），
+     * 再按它吐出的 `steps` 轨迹重放动画。
+     * 所以改动画不可能改分数——这是 09 号票那条
+     * 「第一个切片零处队列驱动的 RNG 消费」能成立的前提。
+     */
     private doPlay(): void {
-        if (this.round.phase !== 'selecting' || this.selected.size === 0) return;
+        if (this.animating || this.round.phase !== 'selecting' || this.selected.size === 0) return;
 
-        const out = this.round.play(this.selectedInOrder());
-        this.sound.play('chips2', { volume: 0.5 });
+        const played = this.selectedInOrder();
+        const out = this.round.play(played);
+
+        this.animating = true;
         this.selected.clear();
-        this.rebuildHand();
-        this.refresh(`${out.handName}  +${out.score}`);
+        this.liveChips = out.baseChips;
+        this.liveMult = out.baseMult;
+
+        // 1) 打出的牌飞到打出区
+        const sprites = this.sprites.filter((s) => played.includes(s.card));
+        this.queue.add(new GameEvent({
+            trigger: 'after',
+            delay: 0.25,
+            func: () => {
+                for (const sp of sprites) {
+                    sp.highlighted = false;
+                    sp.layout(HAND_X_TILES, PLAY_Y_TILES);
+                }
+                this.sound.play('cardSlide2', { volume: 0.4 });
+                this.refresh(`${out.handName}   ${out.baseChips} × ${out.baseMult}`);
+                return true;
+            },
+        }));
+
+        // 2) 逐张计分。原作 state_events.lua:628 的 percent 从 0.3 每张 +0.08，
+        //    用来递增音高——这里照搬。
+        out.steps.forEach((step, i) => {
+            this.queue.add(new GameEvent({
+                trigger: 'after',
+                delay: SCORE_STEP_DELAY,
+                func: () => {
+                    this.liveChips = step.handChips;
+                    this.liveMult = step.mult;
+                    const sp = this.sprites.find((x) => x.card === step.card);
+                    sp?.pop();
+                    this.sound.play('chips1', {
+                        volume: 0.45,
+                        rate: 0.9 + (0.3 + i * 0.08) * 0.5,
+                    });
+                    this.refresh(`${out.handName}   ${this.liveChips} × ${this.liveMult}`);
+                    return true;
+                },
+            }));
+        });
+
+        // 3) 最终乘法与入账
+        this.queue.add(new GameEvent({
+            trigger: 'after',
+            delay: 0.35,
+            func: () => {
+                this.sound.play('chips2', { volume: 0.6 });
+                this.refresh(`${out.handName}   +${out.score}`);
+                return true;
+            },
+        }));
+
+        // 4) 收拾残局：重建手牌、放开输入
+        this.queue.add(new GameEvent({
+            trigger: 'after',
+            delay: 0.45,
+            func: () => {
+                this.rebuildHand();
+                this.animating = false;
+                this.refresh(`${out.handName}   +${out.score}`);
+                return true;
+            },
+        }));
+    }
+
+    update(_time: number, delta: number): void {
+        this.queue.update(delta / 1000);
     }
 
     private doDiscard(): void {
-        if (this.round.phase !== 'selecting' || this.selected.size === 0) return;
+        if (this.animating || this.round.phase !== 'selecting' || this.selected.size === 0) return;
         if (this.round.discardsLeft < 1) return;
 
         this.round.discard(this.selectedInOrder());
@@ -251,8 +340,8 @@ export class RoundScene extends Scene {
         }
 
         const done = r.phase !== 'selecting';
-        this.playBtn.setAlpha(done ? 0.3 : 1);
-        this.discardBtn.setAlpha(done || r.discardsLeft < 1 ? 0.3 : 1);
+        this.playBtn.setAlpha(done || this.animating ? 0.3 : 1);
+        this.discardBtn.setAlpha(done || this.animating || r.discardsLeft < 1 ? 0.3 : 1);
 
         if (r.phase === 'won') this.message.setText('过关').setColor('#7ddf64');
         else if (r.phase === 'lost') this.message.setText('失败').setColor('#e5585f');

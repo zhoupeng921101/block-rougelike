@@ -59,6 +59,21 @@ export function getChipBonus(card: Card): number {
     return card.base.nominal;
 }
 
+/**
+ * 逐张计分的轨迹。
+ *
+ * 逻辑层**同步算完**，把过程记成一串步骤；表现层按这串步骤重放动画。
+ * 这样动画不参与正确性——改动画不可能改分数。
+ */
+export type ScoreStep = {
+    card: Card;
+    /** 这张牌加了多少筹码 */
+    chipMod: number;
+    /** 加完之后的累加器 */
+    handChips: number;
+    mult: number;
+};
+
 export type PlayResult = {
     handName: HandName;
     /** 第 4 步定下的计分牌集合，已按 `T.x` 排序 */
@@ -71,6 +86,8 @@ export type PlayResult = {
     mult: number;
     /** 第 14 步：`math.floor(hand_chips * mult)` */
     score: number;
+    /** 第 9 步的逐张轨迹，供表现层重放 */
+    steps: ScoreStep[];
 };
 
 /**
@@ -117,14 +134,17 @@ export function evaluatePlay(
     // —— 第 9 步：逐张计分牌结算（左 → 右）——
     // 原作在这里还会跑重复触发（红蜡封）、强化牌、版本、逐张型小丑，
     // 本切片都没有，只剩牌面筹码。
+    const steps: ScoreStep[] = [];
     for (const card of scoringHand) {
-        handChips += getChipBonus(card);
+        const chipMod = getChipBonus(card);
+        handChips += chipMod;
+        steps.push({ card, chipMod, handChips, mult });
     }
 
     // —— 第 14 步：全局唯一的一次乘法 ——
     const score = Math.floor(handChips * mult);
 
-    return { handName, scoringHand, baseChips, baseMult, handChips, mult, score };
+    return { handName, scoringHand, baseChips, baseMult, handChips, mult, score, steps };
 }
 
 /** `misc_functions.lua:922` 的 `get_blind_amount`，前 8 个 Ante 写死。 */

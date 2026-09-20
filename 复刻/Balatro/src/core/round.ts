@@ -20,6 +20,7 @@ import { type JokerFlags, NO_JOKERS } from './poker-hands';
 import {
     type HandInfo,
     type HandName,
+    type ScoreStep,
     blindRequirement,
     evaluatePlay,
     initialHands,
@@ -38,6 +39,16 @@ export type RoundPhase = 'selecting' | 'won' | 'lost';
 export type PlayOutcome = {
     handName: HandName;
     score: number;
+    /** 出牌前的累计分，表现层滚动动画的起点 */
+    chipsBefore: number;
+    /** 打出去的那几张，已按 T.x 排序 */
+    played: Card[];
+    /** 参与计分的那几张（可能少于打出的） */
+    scoringHand: Card[];
+    baseChips: number;
+    baseMult: number;
+    /** 逐张计分的轨迹 */
+    steps: ScoreStep[];
     /** 这一手之后的累计分 */
     chips: number;
     phase: RoundPhase;
@@ -120,6 +131,7 @@ export class Round {
 
         this.handsLeft--; // ease_hands_played(-1)
 
+        const chipsBefore = this.chips;
         const result = evaluatePlay(played, this.hands, this.jokers);
         this.chips += result.score;
 
@@ -130,6 +142,12 @@ export class Round {
         return {
             handName: result.handName,
             score: result.score,
+            chipsBefore,
+            played,
+            scoringHand: result.scoringHand,
+            baseChips: result.baseChips,
+            baseMult: result.baseMult,
+            steps: result.steps,
             chips: this.chips,
             phase: this.phase,
         };

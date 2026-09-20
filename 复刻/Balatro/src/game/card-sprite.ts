@@ -185,6 +185,17 @@ export class CardSprite {
         this.shader.setPosition(x, y);
     }
 
+    /** 计分时的弹一下。对应原作的 `juice_up`。 */
+    pop(): void {
+        for (const layer of [this.base, this.shader]) {
+            this.scene.tweens.add({
+                targets: layer,
+                scaleX: 1.18, scaleY: 1.18,
+                duration: 90, yoyo: true, ease: 'Quad.easeOut',
+            });
+        }
+    }
+
     destroy(): void {
         this.base.destroy();
         this.shader.destroy();
