@@ -29,6 +29,7 @@ import {
     makeBlindState,
 } from './blinds';
 import { type Card, type Suit, makeStandardDeck } from './card';
+import { getEndOfRoundDollars } from './enhancements';
 import {
     type Consumable,
     type ConsumableUsage,
@@ -170,6 +171,7 @@ export class Run {
                 ancientSuit: this.ancientSuit,
                 castleSuit: this.castleSuit,
             },
+            onRemoveFromDeck: (cards) => this.removeFromDeck(cards),
         });
         this.state = 'playing';
         return this.round;
@@ -195,6 +197,20 @@ export class Run {
         // 把每次出牌记进 `round.handsPlayed` 了
         this.handsPlayed = round.handsPlayed;
 
+        // `state_events.lua:99` 的小丑 `end_of_round` 遍历。
+        // **在 `evaluate_round` 之前**——原文两者都在 `end_round` 里，
+        // 小丑那一趟排在最前面（`:99`），手牌区那一趟在 `:192`，
+        // 而 `evaluate_round` 是回合结算界面另外调的（`:1156`）
+        this.runEndOfRoundJokers();
+
+        // `state_events.lua:192` 的手牌区遍历：**留在手里的黄金牌各给 $3**。
+        // 它排在 `evaluate_round` 之前，所以这笔钱**参与本回合的利息**——
+        // 挪到收益之后会少给利息
+        for (const card of round.hand) {
+            const gold = getEndOfRoundDollars(card);
+            if (gold > 0) this.dollars += gold;
+        }
+
         // `state_events.lua:1156`。**利息读的是入账前的余额**
         const payout = evaluateRound({
             won,
@@ -208,10 +224,6 @@ export class Run {
             interestAmount: runModifiers(this.jokers).interestAmount,
         });
         this.dollars += payout.total;
-
-        // `card.lua:2877` 的 `end_of_round` 分支。**在收益之后**——
-        // Egg 涨的是卖价、Popcorn 掉的是倍率，都不参与本回合收益
-        this.runEndOfRoundJokers();
 
         if (!won) {
             this.state = 'game-over';
@@ -474,6 +486,17 @@ export class Run {
 
         const [castle] = pseudorandomElement(valid, this.rng.pseudoseed(`cas${this.ante}`));
         if (castle) this.castleSuit = castle.base.suit;
+    }
+
+    /**
+     * 从整副牌里永久拿走几张。现在只有碎掉的玻璃牌走这条。
+     * **必须动 `fullDeck`**——它是跨回合共享的那一批对象，只删这一局的堆不够。
+     */
+    private removeFromDeck(cards: Card[]): void {
+        for (const card of cards) {
+            const i = this.fullDeck.indexOf(card);
+            if (i >= 0) this.fullDeck.splice(i, 1);
+        }
     }
 
     /** `misc_functions.lua:1855` 的 `joker_slots`，再加上小丑给的槽位。 */

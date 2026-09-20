@@ -125,6 +125,12 @@ export type RoundOptions = {
     mailCard?: number;
     /** 本回合的其余随机项。由 `Run` 层每回合抽（`reset_*` 那四个） */
     special?: RoundSpecialCards;
+    /**
+     * 牌被永久销毁时（碎掉的玻璃牌）通知上层，好让 `Run.fullDeck` 也删掉。
+     * **`Run` 跨回合持有同一批 `Card` 对象**，只从这一局的三个堆里删不够——
+     * 下一回合又会从 `fullDeck` 洗回来。
+     */
+    onRemoveFromDeck?(cards: Card[]): void;
 };
 
 /**
@@ -182,6 +188,7 @@ export class Round {
     readonly mods: RunModifiers;
     /** 本回合的几个随机项（`The Idol` / `Ancient Joker` / `Castle` 读） */
     private readonly special: RoundSpecialCards;
+    private readonly onRemoveFromDeck?: (cards: Card[]) => void;
 
     constructor(seed: string, fullDeck: Card[], options: RoundOptions = {}) {
         this.ante = options.ante ?? 1;
@@ -191,6 +198,7 @@ export class Round {
         this.hands = options.hands ?? initialHands();
         // `Four Fingers` 与 `Shortcut` 是小丑给的牌型判定松紧，
         // 与调用方传进来的（测试用）取并集
+        this.onRemoveFromDeck = options.onRemoveFromDeck;
         const passedFlags = options.jokerFlags ?? NO_JOKERS;
         const jokerMods = runModifiers(options.jokers ?? []);
         this.jokerFlags = {
@@ -383,6 +391,11 @@ export class Round {
         const result = evaluatePlay(played, this.hands, this.gameView(), this.jokerFlags, this.blindHooks);
         this.chips += result.score;
 
+        // 第 13 步销毁掉的牌（碎掉的玻璃牌）。**离开这一局的弃牌堆**，
+        // 而且要真的从整副牌里拿走——`Run` 跨回合持有同一批 `Card` 对象，
+        // 只从 `discardPile` 删会让它下一回合又被洗回来
+        if (result.destroyed.length > 0) this.removeFromDeck(result.destroyed);
+
         // `blind.lua:464` 的 `press_play`。**在结算之后、补牌之前**：
         // 原作是入队的，而队列里出牌结算的事件排在它前面
         if (this.blind) {
@@ -507,6 +520,20 @@ export class Round {
         for (const card of selected) {
             if (!this.hand.includes(card)) throw new Error(`${card.key} 不在手牌里`);
         }
+    }
+
+    /**
+     * 把牌从这一局的所有位置拿走，并通知 `Run` 从整副牌里删掉。
+     * 对应 `card.lua` 的 `Card:remove()` + `remove_from_deck`。
+     */
+    private removeFromDeck(cards: Card[]): void {
+        for (const card of cards) {
+            for (const pile of [this.hand, this.deck, this.discardPile]) {
+                const i = pile.indexOf(card);
+                if (i >= 0) pile.splice(i, 1);
+            }
+        }
+        this.onRemoveFromDeck?.(cards);
     }
 
     private moveOut(cards: Card[]): void {

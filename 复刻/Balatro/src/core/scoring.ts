@@ -25,6 +25,7 @@
  */
 
 import type { Card } from './card';
+import { ENHANCEMENT_CENTERS, isEnhancement, isStone } from './enhancements';
 import {
     type EvalResult,
     type GameView,
@@ -202,6 +203,11 @@ export type PlayResult = {
     dollars: number;
     /** 整手被盲注判为不合法——分数为 0 */
     debuffed: boolean;
+    /**
+     * 第 13 步销毁掉的计分牌（现在只有碎掉的玻璃牌）。
+     * **调用方负责把它们从牌组里拿走**——`evaluatePlay` 不持有牌组。
+     */
+    destroyed: Card[];
 };
 
 /**
@@ -235,10 +241,17 @@ export function evaluatePlay(
     game.hands_played++;
 
     // —— 第 4 步：确定计分牌集合 ——
-    // `state_events.lua:601-620`：Splash 让全部 5 张都计分；石头牌无条件追加
-    // （石头牌本里程碑没有，那个 `pures` 数组恒为空）。
+    // `state_events.lua:601-620`：Splash 让全部 5 张都计分；
+    // **石头牌无条件追加**——它凑不成任何牌型（`get_id` 返回一个假点数、
+    // `is_suit` 一律否），所以不可能出现在 `results.top` 里，
+    // 但它照样计分。原文管这批叫 `pures`
     const splash = findJoker(game.jokers, 'Splash').length > 0;
     const scoringHand = splash ? [...playedCards] : [...results.top[0]];
+    if (!splash) {
+        for (const card of playedCards) {
+            if (isStone(card) && !scoringHand.includes(card)) scoringHand.push(card);
+        }
+    }
 
     // 按屏幕上的 x 坐标排序 = 手牌里从左到右。
     // 「打出的第一张计分牌」指的是最左边那张，玩家可以靠调手牌顺序控制它——
@@ -250,7 +263,9 @@ export function evaluatePlay(
     if (blind.debuffHand?.(playedCards, handName, results.parts)) {
         return {
             handName, scoringHand, baseChips: 0, baseMult: 0, handChips: 0, mult: 0,
-            score: 0, steps, dollars: 0, debuffed: true,
+            // `state_events.lua:636` 的 else 分支整段跳过后面的一切，
+            // 销毁判定（含 `glass` 那次掷点）也在里面 —— 所以这里是空数组
+            score: 0, steps, dollars: 0, debuffed: true, destroyed: [],
         };
     }
 
@@ -414,6 +429,14 @@ export function evaluatePlay(
                     multMod += effect.h_mult;
                     changed = true;
                 }
+                // **钢铁牌的 ×1.5 走这里**：`eval_card` 把 `get_chip_h_x_mult`
+                // 的结果写进 `ret.x_mult`（不是 `h_x_mult`），而原文对
+                // `effects[ii].x_mult` 是不分来源统一应用的（`state_events.lua:877`）
+                if (effect.x_mult) {
+                    mult *= effect.x_mult;
+                    xMult *= effect.x_mult;
+                    changed = true;
+                }
                 if (e?.dollars) {
                     game.dollars += e.dollars;
                     changed = true;
@@ -488,6 +511,21 @@ export function evaluatePlay(
         }
     }
 
+    // —— 第 13 步：销毁判定 ——
+    // `state_events.lua:971`。**位置在小丑主遍历之后、那唯一一次乘法之前**，
+    // 所以碎掉的玻璃牌**本手照样出过力**。
+    //
+    // `pseudorandom('glass')` 的消费条件是「这张是玻璃牌且没被 debuff」——
+    // Lua 的 `and` 短路让前两条不成立时不掷点。**中不中都消耗**，
+    // 而且小丑那边的 `destroying_card` 判定**不会**让它跳过（原文两个 if 是并列的）。
+    // `destroying_card` 那一组小丑（DNA / Hologram 之类）还没实现，先只做玻璃牌
+    const destroyed: Card[] = [];
+    for (const card of scoringHand) {
+        if (!isEnhancement(card, 'Glass Card') || card.debuff) continue;
+        const odds = ENHANCEMENT_CENTERS.m_glass.config.extra as number;
+        if (game.pseudorandom('glass') < game.probabilities.normal / odds) destroyed.push(card);
+    }
+
     // —— 第 14 步：全局唯一的一次乘法 ——
     const score = Math.floor(handChips * mult);
 
@@ -495,6 +533,7 @@ export function evaluatePlay(
         handName, scoringHand, baseChips, baseMult, handChips, mult, score, steps,
         dollars: game.dollars + game.dollar_buffer - dollarsBefore,
         debuffed: false,
+        destroyed,
     };
 }
 
@@ -515,9 +554,13 @@ function applyCardEffect(
     let xMult = 1;
     let changed = false;
 
-    // 牌面本身的 chips / mult（`eval_card` 的 cardarea == play 分支）
+    // 牌面本身的效果（`eval_card` 的 cardarea == play 分支）。
+    // **顺序照 `state_events.lua:721`：chips → mult → p_dollars → extra → x_mult。**
+    // 牌面的 x_mult（玻璃牌 ×2）与小丑的 x_mult 一样排在最后
     if (effect.chips) { handChips += effect.chips; chipMod += effect.chips; changed = true; }
     if (effect.mult) { mult += effect.mult; multMod += effect.mult; changed = true; }
+    if (effect.p_dollars) { game.dollars += effect.p_dollars; changed = true; }
+    if (effect.x_mult) { mult *= effect.x_mult; xMult *= effect.x_mult; changed = true; }
 
     const e = effect.jokers;
     if (e) {

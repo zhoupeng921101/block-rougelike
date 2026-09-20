@@ -6,6 +6,8 @@
  * 改名之后对不上原文，校对成本反而更高。见 03 号票的直译裁定。
  */
 
+import { enhancedGetId, enhancedIsSuit, isStone } from './enhancements';
+
 export type Suit = 'Spades' | 'Hearts' | 'Clubs' | 'Diamonds';
 
 export type Value =
@@ -63,6 +65,16 @@ export type Card = {
      * （`card.lua:977`），所以它与强化牌给的 `bonus` 是两笔。
      */
     perma_bonus: number;
+    /**
+     * `card.config.center` 里的强化 key（`m_bonus` / `m_steel` …），
+     * `null` 表示 `c_base`（没强化）。
+     *
+     * 原作把它摊平进 `self.ability`（`bonus` / `mult` / `Xmult` / `h_x_mult` …），
+     * 这里存 key、读的时候查 center——因为**强化是可以被塔罗牌换掉的**
+     * （The Magician 把牌变成幸运牌），摊平之后换一次就得把七个字段全重置，
+     * 漏一个就留下前一种强化的残值。
+     */
+    enhancement: string | null;
     /** 目标变换的 x。**tile 单位，不是像素**——见 10 号票 */
     T: { x: number; y: number; w: number; h: number };
 };
@@ -123,13 +135,19 @@ export function makeCard(key: string, suit: Suit, value: Value): Card {
         forced_selection: false,
         facing: 'front',
         perma_bonus: 0,
+        enhancement: null,
         T: { x: 0, y: 0, w: 0, h: 0 },
     };
 }
 
-/** `card.lua:958`。石头牌那条分支本切片没有，留到实现强化牌时补。 */
+/**
+ * `card.lua:958` 的 `get_id`。
+ *
+ * **石头牌返回一个与任何真实点数都不相等的值**，所以它凑不成对子、顺子、
+ * 也不是人头牌。见 `enhancements.ts` 的 `enhancedGetId`。
+ */
 export function getId(card: Card): number {
-    return card.base.id;
+    return enhancedGetId(card) ?? card.base.id;
 }
 
 /**
@@ -142,7 +160,9 @@ export function getId(card: Card): number {
  * `get_highest` 靠它做确定性的 tie-break。
  */
 export function getNominal(card: Card, mod?: 'suit'): number {
-    const mult = mod === 'suit' ? 1000 : 1;
+    // `card.lua:954`：**石头牌把 mult 翻成 -1000**，于是它在按 nominal 排序时
+    // 永远垫底。`Raised Fist`（找手牌里最低点数的那张）吃这个差别
+    const mult = isStone(card) ? -1000 : mod === 'suit' ? 1000 : 1;
     const b = card.base;
 
     return (
@@ -154,8 +174,15 @@ export function getNominal(card: Card, mod?: 'suit'): number {
     );
 }
 
-/** `card.lua` 的 `Card:is_suit`。本切片没有万能牌与石头牌，只比花色。 */
+/**
+ * `card.lua:4072` 的 `Card:is_suit`。
+ *
+ * 强化会插队：**万能牌认所有花色、石头牌一个都不认**，
+ * 都排在 `base.suit` 的比较之前。`Smeared Joker` 是再外面一层，由调用方合并。
+ */
 export function isSuit(card: Card, suit: Suit): boolean {
+    const enhanced = enhancedIsSuit(card, suit);
+    if (enhanced !== null) return enhanced;
     return card.base.suit === suit;
 }
 

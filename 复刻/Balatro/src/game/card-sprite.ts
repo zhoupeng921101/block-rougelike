@@ -10,6 +10,7 @@
 import type { GameObjects, Scene } from 'phaser';
 
 import type { Card, Suit } from '../core/card';
+import { ENHANCEMENT_CENTERS, isStone } from '../core/enhancements';
 import { CARD_H, CARD_W, toPx } from './coords';
 import {
     CENTERS_ATLAS,
@@ -79,11 +80,17 @@ export class CardSprite {
         const tilt = () => this.hoverTilt;
         this.dimmed = card.debuff;
 
+        // **强化牌换的是底板那一格**，不是正面：`Enhancers.png` 里
+        // `c_base` 在 `{x=1,y=0}`，8 张强化各占一格（`game.lua:649-656`）
+        const basePos = card.enhancement
+            ? ENHANCEMENT_CENTERS[card.enhancement].pos
+            : BASE_POS;
+
         this.base = makeShaderQuad(scene, {
             name: `base_${card.key}_${card.unique_val}`,
             textureKey: 'centers',
             atlas: CENTERS_ATLAS,
-            pos: BASE_POS,
+            pos: basePos,
             cardTime, w, h, tilt,
         });
         this.base.setDepth(0);
@@ -96,6 +103,9 @@ export class CardSprite {
             cardTime, w, h, tilt,
         });
         this.shader.setDepth(1);
+        // **石头牌不画正面**（`card.lua:4426` 那一串 `ability.effect ~= 'Stone Card'`）——
+        // 它没有点数也没有花色，画出来就是在骗人
+
 
         this.back = makeShaderQuad(scene, {
             name: `back_${card.key}_${card.unique_val}`,
@@ -144,7 +154,9 @@ export class CardSprite {
         const faceDown = this.card.facing === 'back';
         this.back.setVisible(faceDown);
         this.base.setVisible(!faceDown);
-        this.shader.setVisible(!faceDown);
+        // **石头牌不画正面**（`card.lua:4426` 那一串 `ability.effect ~= 'Stone Card'`）——
+        // 它没有点数也没有花色，画出来就是在骗人
+        this.shader.setVisible(!faceDown && !isStone(this.card));
     }
 
     /** 被 debuff 的牌要看得出来。`Shader` 的 setAlpha 是 NOOP，所以缩一点当提示。 */

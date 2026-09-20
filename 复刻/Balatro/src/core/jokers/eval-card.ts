@@ -8,6 +8,14 @@
  */
 
 import type { Card } from '../card';
+import {
+    getChipBonus as enhancedChipBonus,
+    getChipHMult,
+    getChipHXMult,
+    getChipMult,
+    getChipXMult,
+    getPDollars,
+} from '../enhancements';
 import { calculateJoker } from './calculate';
 import type { GameView, Joker, JokerContext, JokerEffect } from './types';
 
@@ -29,16 +37,11 @@ export type EvalResult = {
 };
 
 /**
- * `card.lua:977` 的 `get_chip_bonus`：
- * `base.nominal + ability.bonus + perma_bonus`。
- *
- * `ability.bonus` 要强化牌（Bonus Card 之类）才非零，本里程碑没有；
- * `perma_bonus` 是 `Hiker` 攒上去的，**跟着牌走**，所以不能漏。
+ * `card.lua:977` 的 `get_chip_bonus`。实现在 `core/enhancements.ts`——
+ * 石头牌那一支要读强化 center，而 `enhancements.ts` 才是放这些分支的地方。
+ * 这里只转发，保住历史上的导出位置。
  */
-export function getChipBonus(card: Card): number {
-    if (card.debuff) return 0;
-    return card.base.nominal + card.perma_bonus;
-}
+export const getChipBonus = enhancedChipBonus;
 
 /**
  * 目标是小丑还是扑克牌。
@@ -76,11 +79,21 @@ export function evalCard(
         // `set_base` 匹配不到任何点数，`nominal` 停在 0，所以 `chips > 0` 不成立、
         // `ret.chips` 不会被写。这里用 isJoker 跳过，结果与原文一致。
         if (!isJoker(target)) {
+            // **四个 getter 的顺序就是原文的顺序**（`common_events.lua:596-613`），
+            // 而 `get_chip_mult` 与 `get_p_dollars` 在幸运牌上各消费一次 RNG
+            // （`lucky_mult` / `lucky_money`，两个独立 key，无条件掷）。
+            // 调换它们 = 同 seed 从这一手起分叉
             const chips = getChipBonus(target);
             if (chips > 0) ret.chips = chips;
 
-            // `get_chip_mult` / `get_chip_x_mult` / `get_p_dollars` 都要强化牌才非零，
-            // 本里程碑恒 0。留着这条注释是为了接强化牌时不用回头找位置。
+            const mult = getChipMult(target, game);
+            if (mult > 0) ret.mult = mult;
+
+            const xMult = getChipXMult(target);
+            if (xMult > 0) ret.x_mult = xMult;
+
+            const pDollars = getPDollars(target, game);
+            if (pDollars > 0) ret.p_dollars = pDollars;
         } else {
             const jokers = calculateJoker(target, context, game);
             if (jokers) ret.jokers = jokers;
@@ -88,8 +101,15 @@ export function evalCard(
     }
 
     if (context.cardarea === 'hand') {
-        // `get_chip_h_mult` / `get_chip_h_x_mult` 同上，要钢铁牌才非零
-        if (isJoker(target)) {
+        if (!isJoker(target)) {
+            const hMult = getChipHMult(target);
+            if (hMult > 0) ret.h_mult = hMult;
+
+            // **注意字段名**：`get_chip_h_x_mult` 的结果写进 `ret.x_mult`，
+            // 不是 `h_x_mult`（`common_events.lua:634`）。钢铁牌的 ×1.5 走这条
+            const hXMult = getChipHXMult(target);
+            if (hXMult > 0) ret.x_mult = hXMult;
+        } else {
             const jokers = calculateJoker(target, context, game);
             if (jokers) ret.jokers = jokers;
         }
