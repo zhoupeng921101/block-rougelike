@@ -33,6 +33,7 @@
  * 一个带 `_resample` 后缀的 key 重抽。把它们真删掉会让同 seed 立刻分叉。
  */
 
+import { type BoosterCenter, BOOSTER_CENTERS, SHOP_BOOSTER_MAX, getPack } from './boosters';
 import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET, makeConsumable } from './consumables';
 import type { Consumable, ConsumableSet, PlanetConfig } from './consumables';
 import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, findJoker, makeJoker } from './jokers';
@@ -72,6 +73,12 @@ export const JOKER_RARITY_POOLS: Record<number, string[]> = (() => {
     return pools;
 })();
 
+/**
+ * 商店里的一个补充包格子。`null` 表示这一格**已经买掉了**
+ * （原作把 `G.GAME.current_round.used_packs[i]` 置成 `'USED'`）。
+ */
+export type PackSlot = { key: string; center: BoosterCenter; cost: number } | null;
+
 /** 池子剔除要查的那几样状态。 */
 export type PoolContext = {
     ante: number;
@@ -104,6 +111,15 @@ export type PoolContext = {
      * （`common_events.lua:2044`）。
      */
     handsPlayed: Record<HandName, number>;
+    /**
+     * `G.GAME.first_shop_buffoon`。新档的第一个商店，第一个补充包格子恒是小丑包，
+     * 而且那一格**不消费 `shop_pack<ante>`**。
+     *
+     * **`Shop` 只读它，不写回**——写回要靠 `Run`（`poolContext()` 每次现建，
+     * 在这里改改不到 `Run` 身上）。`Run` 在开完商店之后无条件置真：
+     * 保底那一格只可能在第一个商店被用掉。
+     */
+    firstShopBuffoon: boolean;
 };
 
 /**
@@ -298,17 +314,30 @@ function drawFromPool(rng: PseudorandomState, pool: string[], poolKey: string): 
 /**
  * `create_card('Joker', area, …, keyAppend)`。
  *
- * **`inShop` 决定要不要消费 `etperpoll` 与 `edi`**：那一整段的条件是
- * `area == G.shop_jokers or area == G.pack_cards`（`common_events.lua:2181`），
- * 所以商店与补充包消费、`Judgement` 造到小丑区的那张不消费 `etperpoll`。
- * `edi` 那次（`poll_edition`）在 `if _type == 'Joker'` 里但在上面那个 if 外面，
- * **两条路都消费**。
+ * `edi` 那次（`poll_edition`）在 `if _type == 'Joker'` 里但在
+ * `area` 那个 if 外面，**三档都消费**。
  */
+/**
+ * 造小丑的地方。**三档决定 `etperpoll` 那次掷点的 key**：
+ *
+ * | 来源 | 永恒／易腐那次 | 出处 |
+ * |---|---|---|
+ * | `'shop'` | `etperpoll<ante>` | `area == G.shop_jokers` |
+ * | `'pack'` | `packetper<ante>` | `area == G.pack_cards` |
+ * | `'none'` | 不掷 | 别的区（`Judgement` 造到小丑区） |
+ *
+ * 原文是一行三元：`(area == G.pack_cards and 'packetper' or 'etperpoll')..ante`
+ * （`common_events.lua:2180`），外面再套一层
+ * `if (area == G.shop_jokers) or (area == G.pack_cards)`。
+ * 两个 key 搞混，商店与补充包的链会互相污染。
+ */
+export type JokerCardOrigin = 'shop' | 'pack' | 'none';
+
 export function createJokerCard(
     rng: PseudorandomState,
     context: PoolContext,
     keyAppend: string,
-    inShop: boolean,
+    origin: JokerCardOrigin,
 ): Joker {
     const [pool, poolKey] = getCurrentJokerPool(rng, context, keyAppend);
     const key = drawFromPool(rng, pool, poolKey);
@@ -317,11 +346,11 @@ export function createJokerCard(
     // `card.lua:350`：**任何一张牌被 `set_ability` 就标记 used**，包括商店里摆出来的
     context.usedJokers.add(key);
 
-    if (inShop) {
+    if (origin !== 'none') {
         // `common_events.lua:2181`：永恒／易腐掷点，**无条件消费**。
         // 判定被 `enable_eternals_in_shop`（默认 false）挡住，但掷点本身在 if 外面。
         // 租赁那次在 `and` 右边、默认关 → **短路，不消费**
-        rng.pseudorandom(`etperpoll${context.ante}`);
+        rng.pseudorandom(`${origin === 'pack' ? 'packetper' : 'etperpoll'}${context.ante}`);
     }
 
     // `common_events.lua:2192` 的 `poll_edition('edi'+append+ante)`。
@@ -352,7 +381,7 @@ export function createConsumableCard(
 }
 
 function createJokerForShop(rng: PseudorandomState, context: PoolContext): ShopItem {
-    const joker = createJokerCard(rng, context, 'sho', true);
+    const joker = createJokerCard(rng, context, 'sho', 'shop');
     return { kind: 'joker', joker, cost: joker.center.cost };
 }
 
@@ -385,6 +414,15 @@ function createConsumableForShop(
  */
 export class Shop {
     items: ShopItem[] = [];
+    /**
+     * 补充包那两格（`G.shop_booster` 的 `card_limit = 2`）。
+     *
+     * **与 `items` 分开存**，因为它们的生命周期不一样：
+     * `items` 会被重掷整批换掉，而补充包**不参与重掷**
+     * （`reroll_shop` 只清 `G.shop_jokers`）。买掉一格就置 `null`
+     * （原作是把 `used_packs[i]` 写成 `'USED'`）。
+     */
+    packs: PackSlot[] = [];
     /** `G.GAME.current_round.reroll_cost_increase` */
     rerollCostIncrease = 0;
     /** `G.GAME.current_round.free_rerolls`。`Chaos the Clown` 每张给 1 次 */
@@ -397,6 +435,33 @@ export class Shop {
         // `state_events.lua:332`：回合开始时按 Chaos the Clown 的张数给免费重掷
         this.freeRerolls = findJoker(context.jokers, 'Chaos the Clown').length;
         this.refill();
+        this.fillPacks();
+    }
+
+    /**
+     * `game.lua:3507`。**必须排在 `refill()` 之后**——
+     * 原文的顺序是小丑那两格 → 优惠券 → 补充包，
+     * 虽然三者的 key 互不相同（跨 key 打乱无影响，02/09 号票），
+     * 但 `used_jokers` 是共享的，顺序换了池子内容就跟着换。
+     */
+    private fillPacks(): void {
+        // **两格是分别抽的，而保底只管第一格**——所以循环里要自己记着
+        // 「保底用掉了没有」，不能每格都读同一个外部标志
+        let buffoonDone = this.context.firstShopBuffoon;
+        for (let i = 0; i < SHOP_BOOSTER_MAX; i++) {
+            const [key, consumed] = getPack(this.rng, { ...this.context, firstShopBuffoon: buffoonDone });
+            if (!consumed) buffoonDone = true;
+            const center = BOOSTER_CENTERS[key];
+            this.packs.push({ key, center, cost: center.cost });
+        }
+    }
+
+    /** 买掉第 `index` 个补充包格子。返回那一格，并把它置空 */
+    takePack(index: number): NonNullable<PackSlot> {
+        const slot = this.packs[index];
+        if (!slot) throw new Error(`商店没有第 ${index} 个补充包`);
+        this.packs[index] = null;
+        return slot;
     }
 
     /** `common_events.lua:2312` 的 `calculate_reroll_cost`。 */

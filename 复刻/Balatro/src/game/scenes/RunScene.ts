@@ -15,6 +15,8 @@ import { BLIND_CENTERS } from '../../core/blinds';
 import type { Card } from '../../core/card';
 import { makeStandardDeck, resetCardCounters } from '../../core/card';
 import { EventManager, GameEvent } from '../../core/event-queue';
+import { BOOSTER_CENTERS } from '../../core/boosters';
+import { isBoosterImplemented } from '../../core/booster-open';
 import { isConsumableImplemented } from '../../core/consumables';
 import { isJokerImplemented } from '../../core/jokers';
 import type { Consumable } from '../../core/consumables';
@@ -23,6 +25,7 @@ import { evaluatePokerHand } from '../../core/poker-hands';
 import type { Round } from '../../core/round';
 import { Run } from '../../core/run';
 import { CardSprite } from '../card-sprite';
+import { BoosterSprite } from '../booster-sprite';
 import { ConsumableSprite } from '../consumable-sprite';
 import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, toPx } from '../coords';
 import { JokerSprite } from '../joker-sprite';
@@ -44,6 +47,12 @@ const CONSUMABLE_X_TILES = JOKER_X_TILES + 5 * (CARD_W + 0.15) + 0.6;
 /** 商店那两格 */
 const SHOP_Y_TILES = 4.0;
 const SHOP_X_TILES = 6.5;
+/** 补充包那两格，画在商店格子下面一排 */
+const PACK_Y_TILES = SHOP_Y_TILES - 3.2;
+const PACK_X_TILES = SHOP_X_TILES;
+/** 开着的包：内容摊在屏幕中间 */
+const PACK_OPEN_Y_TILES = 1.6;
+const PACK_OPEN_X_TILES = 1.2;
 
 /**
  * `G.SETTINGS.GRAPHICS.crt`。`globals.lua:231` 是 `F_MOBILE and 30 or 70`；
@@ -60,6 +69,11 @@ export class RunScene extends Scene {
     private jokerSprites: JokerSprite[] = [];
     private shopSprites: JokerSprite[] = [];
     private consumableSprites: ConsumableSprite[] = [];
+    /** 商店那两个补充包格子 */
+    private packSprites: BoosterSprite[] = [];
+    /** 开着的包里那几张 */
+    private packCardSprites: Array<JokerSprite | ConsumableSprite> = [];
+    private skipBtn!: GameObjects.Text;
     /** 商店里那些消耗品格。与 `shopSprites` 分开存，两者的类型不一样 */
     private shopConsumableSprites: ConsumableSprite[] = [];
     /** 商店格子下面那行价格／「未实现」标记 */
@@ -112,6 +126,11 @@ export class RunScene extends Scene {
             frameWidth: 71,
             frameHeight: 95,
         });
+        // 补充包。原作把它画得比卡大一圈（×1.27），但图集格子是同一个尺寸
+        this.load.spritesheet('boosters', '/assets/textures/boosters.png', {
+            frameWidth: 71,
+            frameHeight: 95,
+        });
 
         // 音效。对应关系从原作查出：
         // cardSlide2 选/取消选牌（card.lua:4625）、chips2 计分（state_events.lua:1062）、
@@ -149,6 +168,7 @@ export class RunScene extends Scene {
         this.discardBtn = this.makeButton(toPx(4.4), toPx(10.2), '弃牌', '#b5462f', () => this.doDiscard());
         this.nextBtn = this.makeButton(toPx(7.6), toPx(10.2), '下一关', '#3c6ea5', () => this.doNext());
         this.rerollBtn = this.makeButton(toPx(12.0), toPx(10.2), '重掷', '#8a5fb0', () => this.doReroll());
+        this.skipBtn = this.makeButton(toPx(15.2), toPx(10.2), '跳过', '#6b7280', () => this.doSkipPack());
 
         this.startRound();
         this.setupCrt();
@@ -331,16 +351,118 @@ ${String(e instanceof Error ? e.message : e)}`)
     private clearShop(): void {
         for (const s of this.shopSprites) s.destroy();
         this.shopSprites = [];
+        for (const s of this.packSprites) s.destroy();
+        this.packSprites = [];
+        this.clearPackCards();
         for (const s of this.shopConsumableSprites) s.destroy();
         this.shopConsumableSprites = [];
         for (const t of this.shopLabels) t.destroy();
         this.shopLabels = [];
     }
 
+    private clearPackCards(): void {
+        for (const s of this.packCardSprites) s.destroy();
+        this.packCardSprites = [];
+    }
+
+    /**
+     * 开着的包：内容摊在屏幕上排，点一张就挑走它。
+     *
+     * **挑不走的也画出来**（小丑区满了之类），点一下给一句反馈——
+     * 与「点不动的塔罗」同一条：不画出来等于把限制伪装成「这张不存在」。
+     */
+    private rebuildPackCards(): void {
+        this.clearPackCards();
+        const pack = this.run.openPack;
+        if (!pack) return;
+
+        pack.cards.forEach((card, i) => {
+            const x = PACK_OPEN_X_TILES + i * (CARD_W + 0.5);
+            if (card.kind === 'joker') {
+                const sprite = new JokerSprite(this, card.joker, () => this.takeFromPack(i));
+                sprite.layout(x, PACK_OPEN_Y_TILES);
+                this.packCardSprites.push(sprite);
+            } else {
+                const sprite = new ConsumableSprite(this, card.consumable, () => this.takeFromPack(i));
+                sprite.layout(x, PACK_OPEN_Y_TILES);
+                this.packCardSprites.push(sprite);
+            }
+        });
+    }
+
+    private takeFromPack(index: number): void {
+        if (this.animating || !this.run.openPack) return;
+        if (!this.run.canTakeFromPack(index)) {
+            this.sound.play('cancel', { volume: 0.4 });
+            this.message.setText('放不下了——先卖一张').setColor('#e5885f');
+            this.time.delayedCall(1400, () => this.message.setText(''));
+            return;
+        }
+        this.run.takeFromPack(index);
+        this.sound.play('card1', { volume: 0.5 });
+        this.rebuildJokers();
+        this.rebuildConsumables();
+        this.rebuildPackCards();
+        this.refresh();
+    }
+
+    private doSkipPack(): void {
+        if (this.animating || !this.run.openPack) return;
+        this.run.skipPack();
+        this.sound.play('cardSlide2', { volume: 0.4 });
+        this.rebuildJokers();
+        this.rebuildPackCards();
+        this.refresh();
+    }
+
+    private openPack(index: number): void {
+        if (this.animating || this.run.state !== 'shop') return;
+        if (!this.run.canBuyPack(index)) {
+            this.sound.play('cancel', { volume: 0.4 });
+            const slot = this.run.shop?.packs[index];
+            this.message.setText(
+                slot && !isBoosterImplemented(slot.key, BOOSTER_CENTERS)
+                    ? `${slot.center.name} 还没有实现`
+                    : '买不起',
+            ).setColor('#e5885f');
+            this.time.delayedCall(1400, () => this.message.setText(''));
+            return;
+        }
+        this.run.buyAndOpenPack(index);
+        this.sound.play('coin1', { volume: 0.5 });
+        this.rebuildJokers();
+        this.rebuildConsumables();
+        this.rebuildShop();
+        this.rebuildPackCards();
+        this.refresh();
+    }
+
     private rebuildShop(): void {
         this.clearShop();
         const shop = this.run.shop;
         if (!shop) return;
+
+        // 补充包那两格。买掉的那一格是 null，不画——原作也是让它空着
+        shop.packs.forEach((slot, i) => {
+            if (!slot) return;
+            const x = PACK_X_TILES + i * (CARD_W * 1.27 + 0.6);
+            const sprite = new BoosterSprite(this, slot.center, () => this.openPack(i));
+            sprite.layout(x, PACK_Y_TILES);
+            this.packSprites.push(sprite);
+
+            const done = isBoosterImplemented(slot.key, BOOSTER_CENTERS);
+            this.shopLabels.push(
+                this.add.text(
+                    toPx(x),
+                    toPx(PACK_Y_TILES + CARD_H * 1.27 + 0.1),
+                    `$${slot.cost}${done ? '' : '  ⚠未实现'}`,
+                    {
+                        fontFamily: 'monospace', fontSize: 16,
+                        color: done ? '#ffd76e' : '#e5885f',
+                    },
+                ).setDepth(40),
+            );
+        });
 
         shop.items.forEach((item, i) => {
             const x = SHOP_X_TILES + i * (CARD_W + 1.4);
@@ -586,7 +708,9 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.hud.setText([
                 `商店 — Ante ${run.ante}   下一关：${blindName}`,
                 `$${run.dollars}    重掷 $${run.shop?.rerollCost ?? 0}    小丑 ${run.jokers.length}/${run.jokerSlots}    消耗品 ${run.consumables.length}/${run.consumableSlots}`,
-                '点商店的牌买入，点小丑区的牌卖出，点消耗品用掉它',
+                run.openPack
+                    ? `${run.openPack.center.name} —— 还能挑 ${run.openPack.choicesLeft} 张`
+                    : '点商店的牌买入，点小丑区的牌卖出，点消耗品用掉它',
             ].join('\n'));
         } else if (round) {
             this.hud.setText([
@@ -618,7 +742,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.playBtn.setAlpha(done || this.animating ? 0.3 : 1);
         this.discardBtn.setAlpha(done || this.animating || (round?.discardsLeft ?? 0) < 1 ? 0.3 : 1);
         this.nextBtn.setAlpha(this.animating || (!inShop && !done) ? 0.3 : 1);
-        this.rerollBtn.setAlpha(inShop && !this.animating ? 1 : 0.3);
+        this.rerollBtn.setAlpha(inShop && !this.animating && !this.run.openPack ? 1 : 0.3);
+        // 「跳过」只在开着包的时候能按
+        this.skipBtn.setAlpha(this.run.openPack && !this.animating ? 1 : 0.3);
 
         if (run.state === 'game-over') {
             this.message.setText('失败').setColor('#e5585f');

@@ -156,6 +156,16 @@ export type JokerContext = {
      */
     setting_blind?: boolean;
     /**
+     * `card.lua:2338` 的 `context.open_booster`：**刚打开一个补充包**。
+     * `Hallucination` 读它。**这一趟排在「造包里的牌」之前**（`card.lua:1799`）。
+     */
+    open_booster?: boolean;
+    /**
+     * `card.lua:2444` 的 `context.skipping_booster`：**跳过了补充包的剩余选择**。
+     * `Red Card` 靠它长倍率。**挑满自动关包不触发**，只有主动跳过才触发。
+     */
+    skipping_booster?: boolean;
+    /**
      * `state_events.lua:996` 与 `card.lua:1370` 的 `remove_playing_cards`：
      * 有扑克牌被永久销毁（碎掉的玻璃牌 / The Hanged Man）。
      * `Hologram` / `Glass Joker` 这一组读它，**都还没实现**，调用点先留着
@@ -235,6 +245,8 @@ export type GameView = {
      * 由 `modifiers.ts` 从小丑区算出来，不是每张小丑自己去 `find_joker`。
      */
     smeared: boolean;
+    /** `G.GAME.round_resets.ante`。带 ante 的 seed key（`halu<ante>`）要用 */
+    ante: number;
     /** `G.GAME.starting_deck_size`。`Erosion` 读它 */
     startingDeckSize: number;
     /** `#G.playing_cards`——整副牌现在剩几张。`Erosion` 读它 */

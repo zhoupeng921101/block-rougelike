@@ -639,6 +639,39 @@ const USING_CONSUMEABLE: Record<string, Handler> = {
     },
 };
 
+/**
+ * `card.lua:2338` 的 `context.open_booster`。**刚打开一个补充包**。
+ *
+ * 这一趟**排在「造包里的牌」之前**（`card.lua:1799` 是同步的，
+ * 而造牌那段只是入队）。`Hallucination` 造出来的塔罗会标进 `used_jokers`，
+ * 所以顺序反了包里那几张的池子内容就变了。
+ */
+const OPEN_BOOSTER: Record<string, Handler> = {
+    // `card.lua:2339`。1/2 造一张塔罗。**先查空位、再掷点**——
+    // 消耗品区满了那一次 `halu<ante>` 不消费
+    Hallucination: (self, _context, game) => {
+        if (game.consumableCount >= game.consumable_slots) return null;
+        if (game.pseudorandom(`halu${game.ante}`) >= game.probabilities.normal / self.ability.extra) {
+            return null;
+        }
+        game.createConsumable('Tarot', 'hal');
+        return { message: 'plus_tarot', card: self };
+    },
+};
+
+/**
+ * `card.lua:2444` 的 `context.skipping_booster`。**主动跳过补充包**。
+ * 挑满自动关包不走这里。
+ */
+const SKIPPING_BOOSTER: Record<string, Handler> = {
+    // `card.lua:2445`。每跳过一个包 +3 倍率（读 ability.mult 的那半边在 MAIN 里）
+    'Red Card': (self, context) => {
+        if (context.blueprint) return null;
+        self.ability.mult += self.ability.extra;
+        return { message: `+${self.ability.extra}`, card: self };
+    },
+};
+
 /** `card.lua:2521` 的 `context.setting_blind`。**刚选定盲注** */
 const SETTING_BLIND: Record<string, Handler> = {
     // `card.lua:2548`。每关开始造一张塔罗
@@ -940,6 +973,14 @@ export function calculateJoker(
         return SETTING_BLIND[name]?.(self, context, game) ?? null;
     }
 
+    if (context.open_booster) {
+        return OPEN_BOOSTER[name]?.(self, context, game) ?? null;
+    }
+
+    if (context.skipping_booster) {
+        return SKIPPING_BOOSTER[name]?.(self, context, game) ?? null;
+    }
+
     if (context.discard) {
         return DISCARD[name]?.(self, context, game) ?? null;
     }
@@ -1097,6 +1138,8 @@ const NAMES_WITH_HANDLERS: ReadonlySet<string> = new Set([
     ...Object.keys(PRE_DISCARD),
     ...Object.keys(USING_CONSUMEABLE),
     ...Object.keys(SETTING_BLIND),
+    ...Object.keys(OPEN_BOOSTER),
+    ...Object.keys(SKIPPING_BOOSTER),
     // `calculateJoker` 开头那条 copycat 分支，不走查表
     'Blueprint',
     'Brainstorm',

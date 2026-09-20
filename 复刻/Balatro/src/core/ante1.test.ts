@@ -13,13 +13,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { BLIND_CENTERS } from './blinds';
-import type { Card } from './card';
+import { type Card, makeStandardDeck } from './card';
+import { BOOSTER_CENTERS } from './boosters';
 import { isConsumableImplemented } from './consumables';
 import { makeJoker } from './jokers';
 import { evaluatePokerHand } from './poker-hands';
 import type { Round } from './round';
 import { Run } from './run';
-import { shopItemKey } from './shop';
+import { SHOP_JOKER_MAX, shopItemKey } from './shop';
 import type { HandInfo, HandName } from './scoring';
 
 /**
@@ -423,3 +424,73 @@ describe('跨层的状态传递', () => {
         expect(out.steps.some((s) => s.kind === 'joker')).toBe(false);
     });
 });
+
+/**
+ * 补充包的供给量——**16 号票那次「星球供不上」的量化对照**。
+ *
+ * 16 号票实测：商店两格整局只买得到 1–5 张星球（~28.6% 的格子是消耗品，
+ * 其中一半还是塔罗）。这里钉住「一个天体包顶多少个商店格子」，
+ * 这是机制事实，不依赖任何策略。
+ */
+describe('天体包的供给量', () => {
+    it('一个普通天体包一次给 3 张星球，Jumbo 给 5 张', () => {
+        const run = new Run('ALEEB', makeStandardDeck());
+        const round = run.startRound();
+        (round as unknown as { phase: string }).phase = 'won';
+        run.finishRound();
+        run.dollars = 200;
+
+        expect(BOOSTER_CENTERS.p_celestial_normal_1.extra).toBe(3);
+        expect(BOOSTER_CENTERS.p_celestial_jumbo_1.extra).toBe(5);
+
+        // 对照：一整个商店最多两格，而且只有 ~14% 的格子是星球
+        expect(SHOP_JOKER_MAX).toBe(2);
+    });
+
+    /**
+     * **这一条是 17 号票的验收**：接上补充包之后，整局用掉的星球张数
+     * 要比只有商店时多。贪心策略见 `shopAndLeave`——
+     * 它不挑牌，所以塔罗基本用不出来，量出来的就是星球那一条线。
+     */
+    it('带补充包跑完 Ante 1，星球供给比只有商店时多', () => {
+        const withPacks = runAnte1('MNBVCXZ', true);
+        const without = runAnte1('MNBVCXZ', false);
+        expect(withPacks).toBeGreaterThan(without);
+    });
+});
+
+/** 打完 Ante 1 的三关，返回整局用掉的星球张数 */
+function runAnte1(seed: string, buyPacks: boolean): number {
+    const run = new Run(seed, makeStandardDeck());
+    for (let i = 0; i < 3; i++) {
+        const round = run.startRound();
+        playRound(round);
+        if (round.phase !== 'won') break;
+        run.finishRound();
+
+        if (buyPacks) {
+            for (let p = 0; p < run.shop!.packs.length; p++) {
+                if (!run.canBuyPack(p)) continue;
+                run.buyAndOpenPack(p);
+                let guard = 0;
+                while (run.openPack && guard++ < 10) {
+                    const idx = run.openPack.cards.findIndex((_, j) => run.canTakeFromPack(j));
+                    if (idx < 0) break;
+                    run.takeFromPack(idx);
+                }
+                if (run.openPack) run.skipPack();
+                useAllConsumables(run);
+            }
+        }
+        shopAndLeave(run, true);
+        useAllConsumables(run);
+    }
+    return run.consumableUsage.total.planet;
+}
+
+/** 把用得掉的消耗品全用掉（不挑手牌，所以只有星球那一类用得了） */
+function useAllConsumables(run: Run): void {
+    for (let i = run.consumables.length - 1; i >= 0; i--) {
+        if (run.canUseConsumable(i, [])) run.useConsumable(i, []);
+    }
+}

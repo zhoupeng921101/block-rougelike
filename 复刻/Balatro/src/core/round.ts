@@ -347,6 +347,7 @@ export class Round {
                 return round.hand;
             },
             smeared: this.mods.smeared,
+            ante: this.ante,
             startingDeckSize: this.startingDeckSize,
             get playingCardCount() {
                 // `#G.playing_cards`——整副牌现在剩几张（牌堆 + 手牌 + 弃牌堆）

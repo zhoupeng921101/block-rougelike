@@ -28,6 +28,14 @@ import {
     getNewBoss,
     makeBlindState,
 } from './blinds';
+import { BOOSTER_CENTERS } from './boosters';
+import {
+    type OpenPack,
+    type PackCard,
+    isBoosterImplemented,
+    openBooster,
+    releasePack,
+} from './booster-open';
 import { type Card, type Suit, makeStandardDeck } from './card';
 import { getEndOfRoundDollars } from './enhancements';
 import {
@@ -83,6 +91,12 @@ export class Run {
     readonly consumableUsage: ConsumableUsage = makeConsumableUsage();
     /** `G.GAME.last_tarot_planet`。`The Fool` 复制它 */
     lastTarotPlanet?: string;
+    /**
+     * `G.GAME.first_shop_buffoon`。新档的第一个商店，第一个补充包格子恒是小丑包，
+     * 而且那一格**不消费 `shop_pack<ante>`**（`common_events.lua:1984` 提前 return）。
+     * 商店一开就用掉了，所以开完无条件置真。
+     */
+    firstShopBuffoon = false;
 
     ante = 1;
     dollars: number = STARTING_PARAMS.dollars;
@@ -108,6 +122,13 @@ export class Run {
     readonly usedJokers = new Set<string>();
     /** 当前商店。`null` 表示不在 `shop` */
     shop: Shop | null = null;
+    /**
+     * 正在开的补充包。`null` 表示没在开包。
+     *
+     * **开包期间商店还在**（原作是把商店滑出屏幕、不销毁），
+     * 所以 `state` 仍然是 `'shop'`；表现层靠这个字段决定画哪一层。
+     */
+    openPack: OpenPack | null = null;
 
     /** 本回合的 `mail_card` 点数。每回合结束时重抽 */
     mailCard?: number;
@@ -160,6 +181,7 @@ export class Run {
             handsPlayed: Object.fromEntries(
                 Object.entries(this.hands).map(([name, info]) => [name, info.played]),
             ) as Record<HandName, number>,
+            firstShopBuffoon: this.firstShopBuffoon,
         };
     }
 
@@ -335,12 +357,15 @@ export class Run {
         // 商店的所有 seed key 都带 ante（`cdt`/`rarity`/`Joker<r>sho`），
         // 在 `ante++` 之前开会用上一个 ante 的 key
         this.shop = new Shop(this.rng, this.poolContext());
+        // 保底那一格只可能在第一个商店被用掉，开完就置真
+        this.firstShopBuffoon = true;
         this.state = 'shop';
     }
 
     /** 离开商店，进下一个盲注。 */
     leaveShop(): void {
         if (this.state !== 'shop') throw new Error(`现在是 ${this.state}，不在商店里`);
+        if (this.openPack) throw new Error('还有补充包开着，先挑完或跳过');
         // `card.lua` 的 `context.ending_shop` 分支：本里程碑没有小丑用它
         //
         // **没卖出去的那几格要还回池子。** 原作是
@@ -401,6 +426,104 @@ export class Run {
             calculateJoker(other, { buying_card: true }, this.round?.gameView() ?? this.shopGameView());
         }
         return item;
+    }
+
+    /**
+     * 买下并**立刻打开**第 `index` 个补充包格子。`card.lua:1682` 的 `Card:open`。
+     *
+     * 原作里买包与开包是同一个动作（按钮叫 `ml_open_target`），没有「买了放着」。
+     *
+     * **两趟的顺序不能反**：`open_booster` 的小丑遍历是同步的、
+     * 造包里的牌那段只是入队，所以 `Hallucination` 造的塔罗**先**落地，
+     * 再造包里的牌。那张塔罗会标进 `used_jokers`，改包里那几张的池子内容。
+     */
+    buyAndOpenPack(index: number): OpenPack {
+        if (!this.shop) throw new Error('不在商店里');
+        if (this.openPack) throw new Error('已经有一个补充包开着了');
+        const slot = this.shop.packs[index];
+        if (!slot) throw new Error(`商店没有第 ${index} 个补充包`);
+        if (slot.cost > this.dollars) {
+            throw new Error(`买不起：要 $${slot.cost}，只有 $${this.dollars}`);
+        }
+        if (!isBoosterImplemented(slot.key, BOOSTER_CENTERS)) {
+            throw new Error(`${slot.center.name} 还没有实现（要版本／蜡封／幽灵牌）`);
+        }
+
+        this.shop.takePack(index);
+        this.dollars -= slot.cost;
+
+        // ① `card.lua:1799` 的 `open_booster` 遍历。**同步，排在造牌之前**
+        for (const joker of [...this.jokers]) {
+            calculateJoker(joker, { open_booster: true }, this.shopGameView());
+        }
+
+        // ② 造包里的 `extra` 张
+        this.openPack = openBooster(this.rng, slot.center, slot.key, this.poolContext());
+        return this.openPack;
+    }
+
+    /** 这一格买得了吗。表现层拿它决定按钮灰不灰 */
+    canBuyPack(index: number): boolean {
+        const slot = this.shop?.packs[index];
+        if (!slot) return false;
+        if (this.openPack) return false;
+        if (slot.cost > this.dollars) return false;
+        return isBoosterImplemented(slot.key, BOOSTER_CENTERS);
+    }
+
+    /**
+     * 从开着的包里挑走第 `index` 张。挑满 `choose` 张就自动关包。
+     *
+     * 挑走的那张**留着 `used_jokers` 标记**（它还活着），
+     * 没挑走的在关包时还回池子。
+     */
+    takeFromPack(index: number): PackCard {
+        const pack = this.openPack;
+        if (!pack) throw new Error('没有开着的补充包');
+        const card = pack.cards[index];
+        if (!card) throw new Error(`包里没有第 ${index} 张`);
+
+        if (card.kind === 'joker') {
+            if (this.jokersFull) throw new Error(`小丑区满了（${this.jokerSlots} 格）`);
+            this.jokers.push(card.joker);
+            refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+        } else {
+            if (this.consumablesFull) throw new Error(`消耗品区满了（${this.consumableSlots} 格）`);
+            this.consumables.push(card.consumable);
+        }
+
+        pack.cards.splice(index, 1);
+        pack.choicesLeft--;
+        if (pack.choicesLeft <= 0) this.closePack();
+        return card;
+    }
+
+    /** 这一张现在挑得了吗（`button_callbacks.lua:2225` 的 `can_select_card`） */
+    canTakeFromPack(index: number): boolean {
+        const card = this.openPack?.cards[index];
+        if (!card) return false;
+        return card.kind === 'joker' ? !this.jokersFull : !this.consumablesFull;
+    }
+
+    /**
+     * 跳过剩下的选择。`button_callbacks.lua:2668` 的 `skip_booster`。
+     *
+     * **跳过会触发小丑的 `skipping_booster` 分支**（`Red Card` 靠它长倍率），
+     * 而挑满自动关包**不触发**——两条路不一样。
+     */
+    skipPack(): void {
+        if (!this.openPack) throw new Error('没有开着的补充包');
+        for (const joker of [...this.jokers]) {
+            calculateJoker(joker, { skipping_booster: true }, this.shopGameView());
+        }
+        this.closePack();
+    }
+
+    /** 关掉开着的包：没挑走的那几张还回池子 */
+    private closePack(): void {
+        if (!this.openPack) return;
+        releasePack(this.openPack, this.poolContext());
+        this.openPack = null;
     }
 
     /**
@@ -545,7 +668,7 @@ export class Run {
             createConsumable: (set, keyAppend) =>
                 createConsumableCard(this.rng, set, this.poolContext(), keyAppend),
             createJoker: (keyAppend) =>
-                createJokerCard(this.rng, this.poolContext(), keyAppend, false),
+                createJokerCard(this.rng, this.poolContext(), keyAppend, 'none'),
             makeConsumable,
             lastTarotPlanet: this.lastTarotPlanet,
         };
@@ -583,6 +706,7 @@ export class Run {
             startingDeckSize: this.fullDeck.length,
             playingCardCount: this.fullDeck.length,
             smeared: runModifiers(this.jokers).smeared,
+            ante: this.ante,
             pseudorandom: (key, min, max) => this.rng.pseudorandom(key, min, max),
         });
     }

@@ -33,6 +33,7 @@ export function makeGameView(overrides: Partial<GameView> = {}): GameView {
             throw new Error('这个 GameView 没有接造卡的口子，但有小丑要造塔罗——显式传进来');
         },
         smeared: false,
+        ante: 1,
         startingDeckSize: 52,
         playingCardCount: 52,
         blindTriggered: false,

@@ -45,6 +45,7 @@ function ctx(overrides: Partial<PoolContext> = {}): PoolContext {
         handsPlayed: Object.fromEntries(
             Object.keys(initialHands()).map((name) => [name, 0]),
         ) as Record<HandName, number>,
+        firstShopBuffoon: true,
         ...overrides,
     };
 }

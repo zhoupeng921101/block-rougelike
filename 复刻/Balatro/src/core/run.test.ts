@@ -498,3 +498,170 @@ describe('回归：换牌面不推进全局自增计数器', () => {
         expect(probe2.unique_val).toBe(probe1.unique_val + 1);
     });
 });
+
+describe('补充包：商店第三、四格', () => {
+    function intoShop(seed: string): Run {
+        const run = new Run(seed, makeStandardDeck());
+        const round = run.startRound();
+        (round as unknown as { phase: string }).phase = 'won';
+        run.finishRound();
+        return run;
+    }
+
+    it('商店有两个补充包格子', () => {
+        const run = intoShop('ALEEB');
+        expect(run.shop!.packs).toHaveLength(2);
+    });
+
+    /** `common_events.lua:1984`。新档保底，而且那一格不掷点 */
+    it('新档第一个商店的第一格恒是小丑包', () => {
+        for (const seed of ['ALEEB', 'TUTORIAL', 'QQQ777']) {
+            const run = intoShop(seed);
+            expect(run.shop!.packs[0]!.key, seed).toBe('p_buffoon_normal_1');
+        }
+    });
+
+    it('第二个商店起两格都是抽的，不再保底', () => {
+        const run = intoShop('ALEEB');
+        run.leaveShop();
+        const round = run.startRound();
+        (round as unknown as { phase: string }).phase = 'won';
+        run.finishRound();
+        // 两格都可能是任何一种；只断言「不再保底」不好写，
+        // 改断言 firstShopBuffoon 已经置真（下一次 getPack 会正常掷点）
+        expect(run.firstShopBuffoon).toBe(true);
+    });
+
+    /** `reroll_shop` 只清 `G.shop_jokers`——补充包不跟着换 */
+    it('重掷不换补充包', () => {
+        const run = intoShop('ALEEB');
+        run.dollars = 50;
+        const before = run.shop!.packs.map((p) => p?.key);
+        run.rerollShop();
+        expect(run.shop!.packs.map((p) => p?.key)).toEqual(before);
+    });
+
+    it('买下来那一格就空了', () => {
+        const run = intoShop('ALEEB');
+        run.dollars = 50;
+        run.buyAndOpenPack(0);
+        expect(run.shop!.packs[0]).toBeNull();
+    });
+});
+
+describe('开包', () => {
+    function intoShopWithPack(seed = 'ALEEB'): Run {
+        const run = new Run(seed, makeStandardDeck());
+        const round = run.startRound();
+        (round as unknown as { phase: string }).phase = 'won';
+        run.finishRound();
+        run.dollars = 50;
+        return run;
+    }
+
+    it('买了就直接开，包里有牌', () => {
+        const run = intoShopWithPack();
+        const pack = run.buyAndOpenPack(0);
+        expect(run.openPack).toBe(pack);
+        expect(pack.cards.length).toBeGreaterThan(0);
+    });
+
+    it('扣钱', () => {
+        const run = intoShopWithPack();
+        const cost = run.shop!.packs[0]!.cost;
+        const before = run.dollars;
+        run.buyAndOpenPack(0);
+        expect(run.dollars).toBe(before - cost);
+    });
+
+    it('挑走一张小丑 → 进小丑区，包自动关（choose = 1）', () => {
+        const run = intoShopWithPack();
+        const pack = run.buyAndOpenPack(0); // 小丑包
+        expect(pack.cards[0].kind).toBe('joker');
+        run.takeFromPack(0);
+        expect(run.jokers).toHaveLength(1);
+        expect(run.openPack).toBeNull();
+    });
+
+    it('没挑走的那张还回池子（关包时解除 used）', () => {
+        const run = intoShopWithPack();
+        const pack = run.buyAndOpenPack(0);
+        const left = pack.cards[1];
+        const leftKey = left.kind === 'joker' ? left.joker.key : left.consumable.key;
+        run.takeFromPack(0);
+        expect(run.usedJokers.has(leftKey)).toBe(false);
+    });
+
+    it('挑走的那张留着 used 标记（它还活着）', () => {
+        const run = intoShopWithPack();
+        const pack = run.buyAndOpenPack(0);
+        const taken = pack.cards[0];
+        const key = taken.kind === 'joker' ? taken.joker.key : taken.consumable.key;
+        run.takeFromPack(0);
+        expect(run.usedJokers.has(key)).toBe(true);
+    });
+
+    /** `button_callbacks.lua:2668`：**跳过**才触发 `skipping_booster` */
+    it('跳过会让 Red Card 长倍率，挑满自动关包不会', () => {
+        const skip = intoShopWithPack();
+        const red = makeJoker('j_red_card');
+        skip.jokers.push(red);
+        skip.buyAndOpenPack(0);
+        skip.skipPack();
+        expect(red.ability.mult).toBe(red.ability.extra);
+
+        const take = intoShopWithPack();
+        const red2 = makeJoker('j_red_card');
+        take.jokers.push(red2);
+        take.buyAndOpenPack(0);
+        take.takeFromPack(0);
+        expect(red2.ability.mult).toBe(0);
+    });
+
+    it('跳过也把包里的牌还回池子', () => {
+        const run = intoShopWithPack();
+        const pack = run.buyAndOpenPack(0);
+        const keys = pack.cards.map((c) => (c.kind === 'joker' ? c.joker.key : c.consumable.key));
+        run.skipPack();
+        for (const key of keys) expect(run.usedJokers.has(key)).toBe(false);
+        expect(run.openPack).toBeNull();
+    });
+
+    it('包还开着就不许离开商店', () => {
+        const run = intoShopWithPack();
+        run.buyAndOpenPack(0);
+        expect(() => run.leaveShop()).toThrow(/补充包/);
+    });
+
+    it('小丑区满了就挑不走小丑', () => {
+        const run = intoShopWithPack();
+        for (const k of ['j_joker', 'j_jolly', 'j_sly', 'j_half', 'j_banner']) {
+            run.jokers.push(makeJoker(k));
+        }
+        run.buyAndOpenPack(0);
+        expect(run.canTakeFromPack(0)).toBe(false);
+        expect(() => run.takeFromPack(0)).toThrow(/满了/);
+    });
+
+    it('还没实现的包（标准／幽灵）买不了', () => {
+        const run = intoShopWithPack();
+        run.leaveShop();
+        // 扫几个商店找一个标准包或幽灵包
+        for (let i = 0; i < 20; i++) {
+            const round = run.startRound();
+            (round as unknown as { phase: string }).phase = 'won';
+            run.finishRound();
+            run.dollars = 50;
+            const idx = run.shop!.packs.findIndex(
+                (p) => p && (p.center.kind === 'Standard' || p.center.kind === 'Spectral'),
+            );
+            if (idx >= 0) {
+                expect(run.canBuyPack(idx)).toBe(false);
+                expect(() => run.buyAndOpenPack(idx)).toThrow(/还没有实现/);
+                return;
+            }
+            run.leaveShop();
+        }
+        throw new Error('20 个商店里一个标准包／幽灵包都没出现？');
+    });
+});
