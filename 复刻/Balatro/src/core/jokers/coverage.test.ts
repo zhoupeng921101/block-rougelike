@@ -12,7 +12,7 @@
  * - 实现了一张 → 这里会红，来删掉对应那行
  * - 手滑删掉一个 handler → 这里也会红
  *
- * 名单本身是从九张 handler 表**算出来的**（`isJokerImplemented`），不手写，
+ * 名单本身是从 handler 表**算出来的**（`isJokerImplemented`），不手写，
  * 所以它不会与代码漂移。
  */
 
@@ -20,17 +20,48 @@ import { describe, expect, it } from 'vitest';
 
 import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, isJokerImplemented, unimplementedJokers } from './index';
 
+/**
+ * 还没实现的 39 张，按**卡在哪个系统**分组。
+ *
+ * 这份分组是这个文件真正的价值：一眼能看出「补哪个系统能一次解开多少张」。
+ * 数字是当前的实际张数，实现一张就从下面删掉一行。
+ */
+const BLOCKED: Readonly<Record<string, readonly string[]>> = {
+    /** 消耗品：塔罗 / 星球 / 幽灵牌，以及消耗品槽位。**解开 12 张，最划算的下一步** */
+    消耗品: [
+        '8 Ball', 'Sixth Sense', 'Constellation', 'Superposition', 'Seance',
+        'Vagabond', 'Cloud 9', 'Turtle Bean', 'Hallucination', 'Satellite',
+        'Cartomancer', 'Astronomer', 'Perkeo',
+    ],
+    /** 强化牌（Stone / Steel / Glass / Gold / Lucky / Wild…）。解开 9 张 */
+    强化牌: [
+        'Marble Joker', 'Steel Joker', 'Vampire', 'Midas Mask', 'Stone Joker',
+        'Lucky Cat', 'Golden Ticket', 'Glass Joker', "Driver's License",
+    ],
+    /** 生成 / 摧毁小丑与扑克牌。解开 8 张 */
+    增删牌: [
+        'Ceremonial Dagger', 'DNA', 'Madness', 'Riff-raff', 'Invisible Joker',
+        'Caino', 'Yorick', 'Hologram',
+    ],
+    /** 负债（`Run.dollars` 现在不许负数）。解开 4 张 */
+    负债: ['Credit Card', 'Rocket', 'Gift Card', 'Diet Cola'],
+    /** 标签与跳过盲注。解开 3 张 */
+    标签: ['Throwback', 'Certificate', 'Trading Card'],
+    /** Boss 的 `disable()`。解开 2 张 */
+    关掉Boss: ['Luchador', 'Chicot'],
+};
+
 describe('覆盖面', () => {
-    it('150 张里 74 张有行为', () => {
+    it('150 张里 111 张有行为', () => {
         const implemented = JOKER_KEYS_BY_ORDER.filter(isJokerImplemented);
         expect(implemented.length + unimplementedJokers().length).toBe(150);
-        expect(implemented).toHaveLength(74);
+        expect(implemented).toHaveLength(111);
     });
 
-    it('rarity 1 的 61 张里只剩 6 张没实现，且都卡在还没做的系统上', () => {
+    it('rarity 1 的 61 张**全部**有行为了', () => {
         const un = unimplementedJokers().filter((k) => JOKER_CENTERS[k].rarity === 1);
         expect(un.map((k) => JOKER_CENTERS[k].name)).toEqual([
-            'Credit Card', // 负债上限 —— 钱能扣到 -20，`Run.dollars` 现在不许负数
+            'Credit Card', // 负债上限 —— 钱要能扣到 -20
             '8 Ball', // 生成塔罗牌
             'Superposition', // 生成塔罗牌
             'Riff-raff', // 生成小丑
@@ -39,43 +70,27 @@ describe('覆盖面', () => {
         ]);
     });
 
-    /**
-     * 未实现的名单快照。**实现一张就来删一行。**
-     *
-     * 每一行后面注明它卡在什么上，这样一眼能看出「补哪个系统能一次解开多少张」：
-     * 塔罗／星球（消耗品）、强化牌、版本、蜡封、标签与跳过盲注、补充包。
-     */
-    it('未实现的 76 张，逐条注明卡在哪', () => {
-        expect(unimplementedJokers().map((k) => JOKER_CENTERS[k].name)).toEqual([
-            // —— 卡在消耗品（塔罗 / 星球 / 幽灵牌）——
-            '8 Ball', 'Superposition', 'Hallucination', 'Sixth Sense', 'Constellation',
-            'Seance', 'Cloud 9', 'Vagabond', 'Cartomancer', 'Astronomer', 'Satellite',
-            'To the Moon', 'Turtle Bean', 'Diet Cola', 'Perkeo',
-            // —— 卡在强化牌 ——
-            'Golden Ticket', 'Marble Joker', 'Steel Joker', 'Stone Joker', 'Lucky Cat',
-            'Glass Joker', 'Midas Mask', 'Vampire', 'Driver\'s License', 'Caino',
-            // —— 卡在标签 / 跳过盲注 / 补充包 ——
-            'Throwback', 'Burglar', 'Certificate', 'Trading Card',
-            // —— 卡在负债（Run.dollars 不许负数）——
-            'Credit Card', 'Rocket', 'Gift Card', 'Bootstraps',
-            // —— 生成 / 摧毁小丑 ——
-            'Riff-raff', 'Ceremonial Dagger', 'Madness', 'Invisible Joker', 'Luchador',
-            'DNA', 'Yorick', 'Chicot',
-            // —— 纯逻辑，可以现在就做 ——
-            'Joker Stencil', 'Four Fingers', 'Fibonacci', 'Blackboard', 'Hiker',
-            'Card Sharp', 'Shortcut', 'Hologram', 'Erosion', 'Flash Card', 'Castle',
-            'Mr. Bones', 'Troubadour', 'Smeared Joker', 'Rough Gem', 'Bloodstone',
-            'Arrowhead', 'Onyx Agate', 'Flower Pot', 'Merry Andy', 'Oops! All 6s',
-            'The Idol', 'Seeing Double', 'Matador', 'Obelisk', 'Baseball Card',
-            'Ancient Joker', 'Campfire', 'Blueprint', 'Wee Joker', 'Hit the Road',
-            'Stuntman', 'Brainstorm', 'Burnt Joker', 'Triboulet',
-        ].sort((a, b) => keyOrder(a) - keyOrder(b)));
+    /** 未实现的名单快照。**实现一张就来 `BLOCKED` 里删一行。** */
+    it('未实现的 39 张，与分组表逐条对得上', () => {
+        const actual = unimplementedJokers().map((k) => JOKER_CENTERS[k].name).sort();
+        const grouped = Object.values(BLOCKED).flat().slice().sort();
+        expect(actual).toEqual(grouped);
+        expect(actual).toHaveLength(39);
+    });
+
+    it('分组表里没有重复，也没有拼错的名字', () => {
+        const all = Object.values(BLOCKED).flat();
+        expect(new Set(all).size).toBe(all.length);
+        const names = new Set(Object.values(JOKER_CENTERS).map((c) => c.name));
+        for (const name of all) expect(names.has(name), name).toBe(true);
+    });
+
+    it('补消耗品是最划算的下一步——一次解开 13 张', () => {
+        // 这条不是断言代码行为，是把「下一步做什么」的依据钉住：
+        // 哪个分组最大，下一个里程碑就先做它
+        const sizes = Object.entries(BLOCKED).map(([k, v]) => [k, v.length] as const);
+        const biggest = sizes.reduce((a, b) => (b[1] > a[1] ? b : a));
+        expect(biggest[0]).toBe('消耗品');
+        expect(biggest[1]).toBe(13);
     });
 });
-
-/** 快照按 `order` 排序，所以上面那张手写的分组表也要按 order 重排一遍。 */
-function keyOrder(name: string): number {
-    const entry = Object.values(JOKER_CENTERS).find((c) => c.name === name);
-    if (!entry) throw new Error(`没有这张小丑：${name}`);
-    return entry.order;
-}

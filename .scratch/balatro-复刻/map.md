@@ -107,10 +107,13 @@ Label: wayfinder:map
 > 实测贪心策略现在能打到 **Ante 2–4**，止步原因换成了「没有星球牌、牌型永远 1 级」，
 > 而需求是 300 → 800 → 2000 → 5000 的指数曲线。**下一个大件是消耗品（星球 + 塔罗）。**
 >
-> **商店在卖没有行为的小丑**：Campfire / Rocket / Ceremonial Dagger / Joker Stencil
-> 这些 rarity 2/3 的买了什么也不会发生。这是「有数值没行为」那条教训的同一个坑，
-> 只是这次不能用抛异常挡（商店按设计就从 150 张的全池生成）。要么补行为，要么在
-> UI 上标出来——**不能就这么放着**。
+> **小丑覆盖面 111 / 150**（原先 74）。剩下 39 张全部卡在还没做的系统上：
+> 消耗品 13 / 强化牌 9 / 增删牌 8 / 负债 4 / 标签 3 / 关掉 Boss 2
+> （分组见 `jokers/coverage.test.ts`）。商店与小丑区会给未实现的小丑标 `⚠未实现`。
+>
+> **下一个大件是消耗品（塔罗 + 星球 + 槽位 + 补充包）**：一次解开 13 张小丑，
+> 填上商店那 28.6% 的空格，而且没有星球牌就没法升牌型——
+> Ante 3 起（2000 → 5000 → 11000）纯靠 1 级牌型过不去。
 
 ## Not yet specified
 
@@ -201,6 +204,22 @@ Label: wayfinder:map
   所以 `stayFlipped` 必须在逻辑层、由抽牌流程调，挪进表现层 RNG 顺序就随渲染时机变了。
 - **`The Water` 的 `discards_sub` 砍的是「进场时实际剩多少」**，含小丑给的 `d_size`。
   写死 3 会在带 Drunkard 时留下 1 次弃牌，所以复刻件用哨兵 `ALL_DISCARDS`。
+- **主遍历（管线第 15 步）不给钱。** `state_events.lua:929-936` 只处理
+  `mult_mod` / `chip_mod` / `Xmult_mod` 三个。`Matador` 之类返回的 `dollars`
+  只是给提示文字用的，钱是它自己调 `ease_dollars` 加的——在管线里再加一遍就翻倍。
+- **小丑对小丑要直接调 `calculate_joker`，不能走 `eval_card`。**
+  `eval_card` 的 `other_joker` 分支（`common_events.lua:647`）转调的是
+  **`context.other_joker` 自己**，而 `state_events.lua:940` 要问的是 `v`
+  （提供效果的那张）。走错了主体与对象颠倒，`Baseball Card` 这类一个都不触发。
+- **Hiker 与 Wee Joker 的成长时机不同。** 两者都在逐张型里长，但
+  Hiker 长的是**牌**的 `perma_bonus`，而牌自己的筹码在同一轮里已经先算过，
+  所以本手用旧值；Wee Joker 长的是**自己**的 `extra.chips`，
+  要等第 15 步主遍历才被读，所以本手就吃到加成。
+- **`blueprint_compat` 不参与判定。** 它只喂 UI 的提示文字（`card.lua:4227`），
+  机制上蓝图会去复制「标着不兼容」的小丑。别顺手加 `if (!compat) return null`。
+- **蓝图递归的上限是 `#小丑区 + 1`**，不是 `#小丑区`——多的那 1 是给
+  「链到非蓝图那张」留的。
+- **`Oops! All 6s` 把 `probabilities` 里每一项 ×2，所以两张是 ×4**，不是 +100%。
 - **商店那两次掷点一个要算一个不要算。** `etperpoll<ante>`（永恒／易腐）那行
   `local ... = pseudorandom(...)` 在 `if` 外面，**无条件消费**；
   租赁那次在 `and` 右边、`enable_rentals_in_shop` 默认关，**短路不消费**。

@@ -27,9 +27,9 @@ import {
     pressPlay,
     stayFlipped,
 } from './blinds';
-import type { Card } from './card';
-import { calculateJoker } from './jokers';
-import type { GameView, Joker } from './jokers';
+import type { Card, Suit } from './card';
+import { calculateJoker, refreshDerivedAbilities, runModifiers } from './jokers';
+import type { GameView, Joker, RunModifiers } from './jokers';
 import { PseudorandomState, pseudoshuffle } from './rng';
 import { type JokerFlags, NO_JOKERS, evaluatePokerHand } from './poker-hands';
 import {
@@ -121,6 +121,23 @@ export type RoundOptions = {
     rng?: PseudorandomState;
     /** 本回合的 `mail_card` 点数（`Mail-In Rebate` 读它）。由 `Run` 层每回合抽 */
     mailCard?: number;
+    /** 本回合的其余随机项。由 `Run` 层每回合抽（`reset_*` 那四个） */
+    special?: RoundSpecialCards;
+};
+
+/**
+ * `common_events.lua:2320-2374` 的四个 `reset_*` 抽出来的结果。
+ *
+ * 它们**每回合都重抽**（`state_events.lua:294`），各用一个独立的 RNG key，
+ * 所以由 `Run` 层持有并传下来。
+ */
+export type RoundSpecialCards = {
+    /** `The Idol`：点数 + 花色都要撞上 */
+    idolCard?: { id: number; suit: Suit };
+    /** `Ancient Joker` */
+    ancientSuit?: Suit;
+    /** `Castle` */
+    castleSuit?: Suit;
 };
 
 export class Round {
@@ -147,6 +164,8 @@ export class Round {
     discardsUsed = 0;
     /** 这一手的牌型等级，`The Arm` 在 `debuff_hand` 里要读它 */
     private lastHandLevel = 1;
+    /** `G.GAME.starting_deck_size`。`Erosion` 读它 */
+    private readonly startingDeckSize: number;
     /**
      * 整局累计出牌数（`G.GAME.hands_played`）。**`evaluatePlay` 会写它**
      * （经 `gameView().hands_played` 的 setter），所以回合结束后 `Run` 要读回去，
@@ -157,6 +176,10 @@ export class Round {
     private readonly blindHooks: BlindHooks;
     private readonly jokerFlags: JokerFlags;
     private readonly mailCard?: number;
+    /** 小丑区给的局面修正。构造时从小丑区重算一次 */
+    readonly mods: RunModifiers;
+    /** 本回合的几个随机项（`The Idol` / `Ancient Joker` / `Castle` 读） */
+    private readonly special: RoundSpecialCards;
 
     constructor(seed: string, fullDeck: Card[], options: RoundOptions = {}) {
         this.ante = options.ante ?? 1;
@@ -164,7 +187,14 @@ export class Round {
         this.dollars = options.dollars ?? STARTING_PARAMS.dollars;
         this.handsPlayed = options.handsPlayed ?? 0;
         this.hands = options.hands ?? initialHands();
-        this.jokerFlags = options.jokerFlags ?? NO_JOKERS;
+        // `Four Fingers` 与 `Shortcut` 是小丑给的牌型判定松紧，
+        // 与调用方传进来的（测试用）取并集
+        const passedFlags = options.jokerFlags ?? NO_JOKERS;
+        const jokerMods = runModifiers(options.jokers ?? []);
+        this.jokerFlags = {
+            fourFingers: passedFlags.fourFingers || jokerMods.flags.fourFingers,
+            shortcut: passedFlags.shortcut || jokerMods.flags.shortcut,
+        };
         this.blind = options.blind ?? null;
         // `debuff_hand` 要读牌型等级与本局最常用牌型，还要能降级、能清空钱。
         // 那些都是 `Round` 的状态，所以由它提供而不是 `blinds.ts` 自己去拿
@@ -179,28 +209,36 @@ export class Round {
               }))
             : {};
         this.mailCard = options.mailCard;
+        this.special = options.special ?? {};
 
         this.rng = options.rng ?? new PseudorandomState(seed);
         this.requirement = getBlindAmount(this.ante) * (this.blind?.center.mult ?? 1);
 
-        // `misc_functions.lua:1855` 的基数，再加上小丑的 h_size / d_size，
-        // 再加上盲注的修正（`The Manacle` 是 -1）。
-        // Juggler（`h_size = 1`）与 Drunkard（`d_size = 1`）全靠这两行，
-        // 它们在 `calculate_joker` 里**没有任何代码**。
-        const hSize = this.jokers.reduce((n, j) => n + (j.debuff ? 0 : j.ability.h_size), 0);
-        const dSize = this.jokers.reduce((n, j) => n + (j.debuff ? 0 : j.ability.d_size), 0);
-        this.handLimit = STARTING_PARAMS.hand_size + hSize + (this.blind?.handSizeMod ?? 0);
+        // **派生字段先重算一遍**：`Joker Stencil` 的倍率与 `Swashbuckler` 的 mult
+        // 是从小丑区推导的（原作每帧重算），不重算就会读到 config 里的初值
+        refreshDerivedAbilities(this.jokers, STARTING_PARAMS.joker_slots);
+
+        // `misc_functions.lua:1855` 的基数，再加上小丑区给的修正。
+        // 全部由 `runModifiers` 从小丑区**重算**而不是增量加减——
+        // 小丑会被摧毁/被 debuff/被卖掉，加减一旦漏一处上限就永久跑偏
+        this.mods = runModifiers(this.jokers);
+        this.handLimit =
+            STARTING_PARAMS.hand_size + this.mods.handSize + (this.blind?.handSizeMod ?? 0);
 
         // `blind.lua:179-186` 的 `discards_sub` / `hands_sub`，**在进场时一次性扣掉**。
         // `The Water` 砍的是「进场时实际剩多少」（含 Drunkard 的 +1），
-        // 所以用哨兵 `ALL_DISCARDS` 表示归零而不是写死一个数
-        this.handsLeft = STARTING_PARAMS.hands - (this.blind?.handsSub ?? 0);
-        const discardsBase = STARTING_PARAMS.discards + dSize;
+        // 所以用哨兵 `ALL_DISCARDS` 表示归零而不是写死一个数。
+        // `Burglar` 走的是同一处（`card.lua:2525` 的 setting_blind）：
+        // **弃牌清零、出牌 +3**，顺序上它排在 Boss 的 sub 之后
+        this.handsLeft =
+            STARTING_PARAMS.hands - (this.blind?.handsSub ?? 0) + this.mods.hands + this.mods.burglarHands;
+        const discardsBase = STARTING_PARAMS.discards + this.mods.discards;
         this.discardsLeft =
-            this.blind?.discardsSub === ALL_DISCARDS
+            this.blind?.discardsSub === ALL_DISCARDS || this.mods.burglarHands > 0
                 ? 0
                 : discardsBase - (this.blind?.discardsSub ?? 0);
 
+        this.startingDeckSize = fullDeck.length;
         this.deck = [...fullDeck];
         // `blind.lua:624` 的 `debuff_card` 在**进盲注时**对整副牌跑一遍，
         // 不是每手重算。末尾那句 `set_debuff(false)` 是无条件的，所以这里直接赋值
@@ -249,8 +287,12 @@ export class Round {
                     return round.handsPlayedThisRound;
                 },
                 mail_card: this.mailCard,
+                idol_card: this.special.idolCard,
+                ancient_suit: this.special.ancientSuit,
+                castle_suit: this.special.castleSuit,
             },
-            probabilities: { normal: 1 },
+            // `Oops! All 6s` 每张把它 ×2。**不是常量**
+            probabilities: { normal: this.mods.probabilityNormal },
             jokers: this.jokers,
             joker_slots: STARTING_PARAMS.joker_slots,
             get deckCount() {
@@ -260,6 +302,21 @@ export class Round {
                 return round.hand;
             },
             consumeable_usage_tarot: 0,
+            smeared: this.mods.smeared,
+            startingDeckSize: this.startingDeckSize,
+            get playingCardCount() {
+                // `#G.playing_cards`——整副牌现在剩几张（牌堆 + 手牌 + 弃牌堆）
+                return round.deck.length + round.hand.length + round.discardPile.length;
+            },
+            get blindTriggered() {
+                return round.blind?.triggered ?? false;
+            },
+            get game_over() {
+                return round.phase === 'lost';
+            },
+            get blindProgress() {
+                return round.requirement > 0 ? round.chips / round.requirement : 0;
+            },
             pseudorandom: (key, min, max) => this.rng.pseudorandom(key, min, max),
         };
     }
@@ -386,7 +443,17 @@ export class Round {
         // 本里程碑没有小丑用它（`Burnt Joker` 是 rarity 3），但调用点先留着——
         // 它的位置在逐张循环**之前**，补上的时候别塞错地方。
         for (const joker of this.jokers) {
-            calculateJoker(joker, { pre_discard: true, full_hand: cards, hook }, this.gameView());
+            const effect = calculateJoker(
+                joker,
+                { pre_discard: true, full_hand: cards, hook, discardsUsed: this.discardsUsed - 1 },
+                this.gameView(),
+            );
+            // `Burnt Joker`：把刚弃掉那手的牌型升一级。
+            // **牌型要现判**——弃掉的这批不一定构成任何「打出过」的牌型
+            if (effect?.levelUpDiscarded) {
+                const name = evaluatePokerHand(cards, this.jokerFlags).topName;
+                if (name) levelUpHand(this.hands, name);
+            }
         }
 
         // `state_events.lua:421`：逐张问每张小丑。**直接调 `calculate_joker`、不带

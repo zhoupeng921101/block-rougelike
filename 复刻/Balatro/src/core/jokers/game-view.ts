@@ -27,6 +27,12 @@ export function makeGameView(overrides: Partial<GameView> = {}): GameView {
         deckCount: 0,
         handCards: [],
         consumeable_usage_tarot: 0,
+        smeared: false,
+        startingDeckSize: 52,
+        playingCardCount: 52,
+        blindTriggered: false,
+        game_over: false,
+        blindProgress: 0,
         pseudorandom: () => {
             throw new Error('这个 GameView 没有接 RNG，但有小丑要掷点——显式传 pseudorandom');
         },

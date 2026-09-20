@@ -28,10 +28,16 @@ export type EvalResult = {
     seals?: JokerEffect;
 };
 
-/** `card.lua:977` `get_chip_bonus`。石头牌本里程碑没有，只剩 nominal + bonus。 */
+/**
+ * `card.lua:977` 的 `get_chip_bonus`：
+ * `base.nominal + ability.bonus + perma_bonus`。
+ *
+ * `ability.bonus` 要强化牌（Bonus Card 之类）才非零，本里程碑没有；
+ * `perma_bonus` 是 `Hiker` 攒上去的，**跟着牌走**，所以不能漏。
+ */
 export function getChipBonus(card: Card): number {
     if (card.debuff) return 0;
-    return card.base.nominal;
+    return card.base.nominal + card.perma_bonus;
 }
 
 /**

@@ -30,6 +30,7 @@ import {
     type GameView,
     type Joker,
     type JokerEffect,
+    calculateJoker,
     evalCard,
     findJoker,
     getChipBonus,
@@ -425,7 +426,9 @@ export function evaluatePlay(
             if (e.mult_mod) { mult += e.mult_mod; multMod = e.mult_mod; }
             if (e.chip_mod) { handChips += e.chip_mod; chipMod = e.chip_mod; }
             if (e.Xmult_mod) { mult *= e.Xmult_mod; xMult = e.Xmult_mod; }
-            if (e.dollars) game.dollars += e.dollars;
+            // **主遍历不给钱**（`state_events.lua:929-936` 只处理那三个 mod）。
+            // `Matador` 之类返回的 `dollars` 只是给提示文字用的，钱是它自己
+            // 调 `ease_dollars` 加的——在这里再加一遍就会翻倍
             steps.push({
                 kind: 'joker', joker, chipMod, multMod, xMult, handChips, mult, message: e.message,
             });
@@ -511,10 +514,13 @@ function calculateOtherJoker(
     ctx: { full_hand: Card[]; scoring_hand: Card[]; scoring_name: HandName; poker_hands: Record<HandName, Card[][]> },
     game: GameView,
 ): JokerEffect | null {
-    // 原作这里**不带 cardarea**，直接调 `calculate_joker`，
-    // 所以它走的是 `elseif context.other_joker` 那条分支。
-    const result = evalCard(v, { ...ctx, cardarea: 'jokers', other_joker: target }, game);
-    return result.jokers ?? null;
+    // **直接调 `calculate_joker`，不走 `eval_card`、也不带 cardarea**。
+    //
+    // 这一点很容易搞错：`eval_card` 的 `other_joker` 分支（`common_events.lua:647`）
+    // 转调的是 **`context.other_joker` 自己**的 `calculate_joker`，
+    // 而这里要问的是 `v`（提供效果的那张）。走 `eval_card` 会把主体与对象搞反，
+    // 结果是 Baseball Card 这类「小丑影响小丑」的效果一个都不触发。
+    return calculateJoker(v, { ...ctx, other_joker: target }, game);
 }
 
 /** `misc_functions.lua:922` 的 `get_blind_amount`，前 8 个 Ante 写死。 */

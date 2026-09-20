@@ -12,7 +12,7 @@
  * 不能改成「每张小丑一个自己的 config 类型」，那样那三条泛化判定就没法写。
  */
 
-import type { Card } from '../card';
+import type { Card, Suit } from '../card';
 import type { HandName } from '../poker-hands';
 
 /** `P_CENTERS` 里的一行。由 `tools/gen-joker-centers.mjs` 生成，运行时只读。 */
@@ -69,6 +69,8 @@ export type JokerAbility = {
     order: number;
     /** `Loyalty Card` 在 main 分支里自己算的中间量，原作也挂在 ability 上 */
     loyalty_remaining?: number;
+    /** `Blueprint` / `Brainstorm` 指向的那张兼不兼容。由 `derived.ts` 重算 */
+    blueprint_compat?: 'compatible' | 'incompatible';
     hands_played_at_create?: number;
     /** `To Do List` 每回合随机指定的牌型 */
     to_do_poker_hand?: HandName;
@@ -133,6 +135,8 @@ export type JokerContext = {
     ending_shop?: boolean;
     /** `The Hook` 触发的额外弃牌。`Burnt Joker` 查 `not context.hook` */
     hook?: boolean;
+    /** 本回合已用掉的弃牌次数。`Burnt Joker` 判「是不是第一次弃牌」 */
+    discardsUsed?: number;
     /** 回合结算。`end_of_round` 与 `individual`/`repetition` 组合出三种子情形 */
     end_of_round?: boolean;
     /** 本局是否已经输了（`Mr. Bones` 读它）。不在本里程碑，但字段先留 */
@@ -170,6 +174,12 @@ export type GameView = {
          * `undefined` = 本回合没抽（小丑区里没有 Mail-In Rebate 时原作也不抽）。
          */
         mail_card?: number;
+        /** `G.GAME.current_round.idol_card`。`The Idol` 读它 */
+        idol_card?: { id: number; suit: Suit };
+        /** `G.GAME.current_round.ancient_card.suit`。`Ancient Joker` 读它 */
+        ancient_suit?: Suit;
+        /** `G.GAME.current_round.castle_card.suit`。`Castle` 读它 */
+        castle_suit?: Suit;
     };
     /** `G.GAME.probabilities.normal`，基线 1。优惠券能改，本里程碑恒 1 */
     probabilities: { normal: number };
@@ -184,6 +194,21 @@ export type GameView = {
     handCards: Card[];
     /** `G.GAME.consumeable_usage_total.tarot`。`Fortune Teller` 读它，本里程碑恒 0 */
     consumeable_usage_tarot: number;
+    /**
+     * `Smeared Joker` 在场——红桃认方块、黑桃认梅花。
+     * 由 `modifiers.ts` 从小丑区算出来，不是每张小丑自己去 `find_joker`。
+     */
+    smeared: boolean;
+    /** `G.GAME.starting_deck_size`。`Erosion` 读它 */
+    startingDeckSize: number;
+    /** `#G.playing_cards`——整副牌现在剩几张。`Erosion` 读它 */
+    playingCardCount: number;
+    /** `G.GAME.blind.triggered`——本手有没有触发 Boss 的 debuff。`Matador` 读它 */
+    blindTriggered: boolean;
+    /** 本局是不是已经判输（`Mr. Bones` 只在这时才问） */
+    game_over: boolean;
+    /** `G.GAME.chips / G.GAME.blind.chips`。`Mr. Bones` 要 ≥ 0.25 才救 */
+    blindProgress: number;
     /** `pseudorandom(key, min, max)`。Misprint / Business Card 这类在结算里消费 RNG */
     pseudorandom(key: string, min?: number, max?: number): number;
 };
@@ -221,6 +246,10 @@ export type JokerEffect = {
     destroy?: boolean;
     /** `Gros Michel` 灭绝——之后 `Cavendish` 才进池子 */
     grosMichelExtinct?: boolean;
+    /** `Mr. Bones` 把这一局从失败里救回来 */
+    saved?: boolean;
+    /** `Burnt Joker`：把刚弃掉那手的牌型升一级 */
+    levelUpDiscarded?: boolean;
     /** 效果来自哪张小丑，表现层用来 juice */
     card?: Joker;
     /** 纯提示，不影响数值。表现层用 */

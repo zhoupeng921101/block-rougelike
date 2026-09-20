@@ -5,7 +5,14 @@ export {
     isJokerImplemented,
     unimplementedJokers,
 } from './calculate';
+export { blueprintTarget, refreshDerivedAbilities } from './derived';
 export { makeGameView } from './game-view';
+export {
+    NO_MODIFIERS,
+    type RunModifiers,
+    runModifiers,
+    smearedMatches,
+} from './modifiers';
 export { type EvalResult, evalCard, findJoker, getChipBonus } from './eval-card';
 export { buyCost, makeAbility, makeJoker, sellCost } from './instance';
 export type {

@@ -55,6 +55,14 @@ export type Card = {
      * 所以它得由逻辑层的抽牌流程写，不能让表现层自己算。
      */
     facing: 'front' | 'back';
+    /**
+     * `card.ability.perma_bonus`。**跟着这张牌走的永久筹码加成**，
+     * 不是本手的临时值——`Hiker` 每次让计分牌 +5，效果留在牌上。
+     *
+     * `get_chip_bonus` 是 `base.nominal + ability.bonus + perma_bonus`
+     * （`card.lua:977`），所以它与强化牌给的 `bonus` 是两笔。
+     */
+    perma_bonus: number;
     /** 目标变换的 x。**tile 单位，不是像素**——见 10 号票 */
     T: { x: number; y: number; w: number; h: number };
 };
@@ -114,6 +122,7 @@ export function makeCard(key: string, suit: Suit, value: Value): Card {
         played_this_ante: false,
         forced_selection: false,
         facing: 'front',
+        perma_bonus: 0,
         T: { x: 0, y: 0, w: 0, h: 0 },
     };
 }

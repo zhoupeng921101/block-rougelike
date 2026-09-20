@@ -76,6 +76,12 @@ export type RoundResult = {
     /** 结算前的余额。利息读的是这个值，不是加完之后的 */
     dollars: number;
     jokers: Joker[];
+    /**
+     * `G.GAME.interest_amount`。基线 1，**每张 `To the Moon` +1**
+     * （`card.lua:613`）。所以利息不是「每 5 块 +1」的常量，
+     * 上限也跟着变：`interest_amount * (interest_cap / 5)`。
+     */
+    interestAmount?: number;
 };
 
 /**
@@ -112,8 +118,8 @@ export function evaluateRound(result: RoundResult): Payout {
 
     // `state_events.lua:1211`：**最后一行，且读的是结算前的余额**
     if (result.dollars >= 5) {
-        const interest =
-            INTEREST_AMOUNT * Math.min(Math.floor(result.dollars / 5), INTEREST_CAP / 5);
+        const amount = result.interestAmount ?? INTEREST_AMOUNT;
+        const interest = amount * Math.min(Math.floor(result.dollars / 5), INTEREST_CAP / 5);
         rows.push({ kind: 'interest', dollars: interest });
         total += interest;
     }

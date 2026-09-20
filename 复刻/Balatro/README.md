@@ -39,11 +39,13 @@ src/
 │   ├── fixtures/                对拍 fixture（12 条 Ante 1 Boss 外部真值）
 │   ├── atlas.ts                 图集网格推导（**不 import Phaser**，所以可单测）
 │   ├── event-queue.ts           事件队列（G.E_MANAGER）
-│   ├── jokers/                  ← 小丑系统
+│   ├── jokers/                  ← 小丑系统。150 张里 111 张有行为
 │   │   ├── centers.generated.ts     150 张的 center 定义（生成的，别手改）
 │   │   ├── instance.ts              set_ability / set_cost
-│   │   ├── calculate.ts             calculate_joker
+│   │   ├── calculate.ts             calculate_joker + 覆盖面登记
 │   │   ├── eval-card.ts             eval_card
+│   │   ├── modifiers.ts             一进小丑区就改局面参数的那些（手牌上限/概率/牌型松紧）
+│   │   ├── derived.ts               从小丑区重算的 ability 字段（Joker Stencil / Swashbuckler）
 │   │   └── game-view.ts             喂给小丑的 G.GAME 视图
 │   └── rng/                     RNG 核心
 │       ├── fmt13.ts                 Lua %.13f 的精确复刻（BigInt，round-half-to-even）
@@ -64,7 +66,7 @@ src/
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 304 个测试，必须全绿
+npm test            # 415 个测试，必须全绿
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
 ```
@@ -157,3 +159,28 @@ edisho<ante>                       版本掷点
 3. **塔罗／星球的格子照样生成。** 权重 20:4:4 意味着约 28.6% 的格子是消耗品；
    把它们改成小丑就改了商店分布。本里程碑没实现它们的效果，
    所以生成一个 `kind: 'unimplemented'` 的格子，买不了。
+
+## 小丑覆盖面：111 / 150
+
+剩下 39 张全部卡在还没做的系统上，分组见 `src/core/jokers/coverage.test.ts`：
+消耗品 13 张、强化牌 9 张、增删牌 8 张、负债 4 张、标签 3 张、关掉 Boss 2 张。
+**下一步做消耗品最划算**——一次解开 13 张，而且没有星球牌就没法升牌型，
+Ante 3 起（需求 2000 → 5000 → 11000）过不去。
+
+判断「实现了没有」的是 `isJokerImplemented`，它**从 handler 表算出来、不手写名单**。
+手写会漂：加了 handler 忘更名单会误报未实现，删了 handler 名单还留着更糟——
+那等于把一张什么也不做的小丑报成已实现。
+
+商店与小丑区都会给未实现的小丑标 `⚠未实现`。**别把这个标记去掉**：
+商店按设计从 150 张全池生成（池子大小影响 RNG，不能裁），
+不标就是把「买了什么也不发生」伪装成正常行为。
+
+## 三处「加减」换成了「重算」
+
+`runModifiers`（局面参数）、`refreshDerivedAbilities`（派生 ability）、
+`getCurrentJokerPool`（商店池）都是**每次从当前状态推导**，不做增量维护。
+
+原作是加减的（`add_to_deck` 加、`remove_from_deck` 减），但那要求两者严格配对，
+而小丑会被摧毁（Popcorn / Gros Michel / Madness）、被 debuff（Crimson Heart）、被卖掉。
+任一路径漏了 remove，手牌上限就永久跑偏，而那种 bug 只在特定组合下出现、极难复现。
+重算是 O(5)，代价可以忽略。

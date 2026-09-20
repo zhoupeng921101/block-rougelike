@@ -28,9 +28,9 @@ import {
     getNewBoss,
     makeBlindState,
 } from './blinds';
-import { type Card, makeStandardDeck } from './card';
+import { type Card, type Suit, makeStandardDeck } from './card';
 import { type Payout, evaluateRound } from './economy';
-import { calculateJoker, makeGameView } from './jokers';
+import { calculateJoker, makeGameView, refreshDerivedAbilities, runModifiers } from './jokers';
 import type { GameView, Joker } from './jokers';
 import { NO_JOKERS, type JokerFlags } from './poker-hands';
 import { PseudorandomState, pseudorandomElement } from './rng';
@@ -85,10 +85,10 @@ export class Run {
 
     /** 本回合的 `mail_card` 点数。每回合结束时重抽 */
     mailCard?: number;
-    /** `The Idol` / `Ancient Joker` / `Castle` 的每回合随机项。抽了但本里程碑没人读 */
-    idolCard?: { id: number; suit: string };
-    ancientSuit = 'Spades';
-    castleSuit = 'Spades';
+    /** `The Idol` / `Ancient Joker` / `Castle` 的每回合随机项 */
+    idolCard?: { id: number; suit: Suit };
+    ancientSuit: Suit = 'Spades';
+    castleSuit: Suit = 'Spades';
 
     constructor(seed: string, deck: Card[] = makeStandardDeck()) {
         this.seed = seed;
@@ -149,6 +149,11 @@ export class Run {
             jokerFlags,
             rng: this.rng,
             mailCard: this.mailCard,
+            special: {
+                idolCard: this.idolCard,
+                ancientSuit: this.ancientSuit,
+                castleSuit: this.castleSuit,
+            },
         });
         this.state = 'playing';
         return this.round;
@@ -183,6 +188,8 @@ export class Run {
             discardsUsed: round.discardsUsed,
             dollars: this.dollars,
             jokers: this.jokers,
+            // `To the Moon` 每张 +1。由 `runModifiers` 从小丑区重算
+            interestAmount: runModifiers(this.jokers).interestAmount,
         });
         this.dollars += payout.total;
 
@@ -282,6 +289,8 @@ export class Run {
         const joker = this.shop.take(index);
         this.dollars -= item.cost;
         this.jokers.push(joker);
+        // 小丑区变了 → 派生字段要重算（Joker Stencil 的空格子数、Swashbuckler 的卖价和）
+        refreshDerivedAbilities(this.jokers, this.jokerSlots);
         // `card.lua:1858` 的 `context.buying_card` 分支在原作里是空的，
         // 但调用点要留着——它是接 `Trading Card` 之类的落点
         for (const other of this.jokers) {
@@ -303,6 +312,7 @@ export class Run {
         calculateJoker(joker, { selling_self: true }, this.round?.gameView() ?? this.shopGameView());
         this.jokers.splice(index, 1);
         this.dollars += joker.sell_cost;
+        refreshDerivedAbilities(this.jokers, this.jokerSlots);
 
         // `card.lua:4826` 的 `remove_from_deck`：小丑区里没有同名的了就解除 used 标记
         if (!this.jokers.some((j) => j.ability.name === joker.ability.name)) {
@@ -341,6 +351,9 @@ export class Run {
             jokers: this.jokers,
             joker_slots: this.jokerSlots,
             deckCount: this.fullDeck.length,
+            startingDeckSize: this.fullDeck.length,
+            playingCardCount: this.fullDeck.length,
+            smeared: runModifiers(this.jokers).smeared,
             pseudorandom: (key, min, max) => this.rng.pseudorandom(key, min, max),
         });
     }
@@ -371,7 +384,7 @@ export class Run {
             (s) => s !== this.ancientSuit,
         );
         const [ancient] = pseudorandomElement(ancientSuits, this.rng.pseudoseed(`anc${this.ante}`));
-        if (ancient) this.ancientSuit = ancient;
+        if (ancient) this.ancientSuit = ancient as Suit;
 
         const [castle] = pseudorandomElement(valid, this.rng.pseudoseed(`cas${this.ante}`));
         if (castle) this.castleSuit = castle.base.suit;

@@ -33,7 +33,9 @@
  * 返回 `JokerEffect | null` 保证。破了它会在一次结算里把同一张小丑算两遍。
  */
 
-import { type Card, getId, isFace, isSuit } from '../card';
+import { type Card, type Suit, getId, isFace, isSuit } from '../card';
+import { blueprintTarget } from './derived';
+import { smearedMatches } from './modifiers';
 import type { HandName } from '../poker-hands';
 import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER } from './centers.generated';
 import type { GameView, Joker, JokerContext, JokerEffect } from './types';
@@ -45,7 +47,13 @@ function hasHand(context: JokerContext, type: HandName | ''): boolean {
     return !!parts && parts.length > 0;
 }
 
-/** 原作每处 `pseudorandom('x') < G.GAME.probabilities.normal/odds` 的那条判定。 */
+/**
+ * 原作每处 `pseudorandom('x') < G.GAME.probabilities.normal/odds` 的那条判定。
+ *
+ * `probabilities.normal` 基线是 1，**每张 `Oops! All 6s` 把它 ×2**
+ * （`card.lua:608` 对 `probabilities` 里每一项都 ×2）。所以它不是常量，
+ * 由 `modifiers.ts` 从小丑区算出来塞进 `GameView`。
+ */
 function rollOdds(game: GameView, key: string, odds: number): boolean {
     return game.pseudorandom(key) < game.probabilities.normal / odds;
 }
@@ -129,7 +137,89 @@ const INDIVIDUAL_PLAY: Record<string, Handler> = {
         const odd = id <= 10 && id >= 0 && id % 2 === 1;
         return odd || id === 14 ? { chips: self.ability.extra, card: self } : null;
     },
+
+    // `card.lua:3070`。给这张牌**永久** +5 筹码（`perma_bonus` 跟着牌走，不是本手）
+    Hiker: (self, context) => {
+        context.other_card!.perma_bonus += self.ability.extra;
+        return { message: 'upgrade', card: self };
+    },
+
+    // `card.lua:3087`。2 号牌让它自己的筹码永久长一档
+    'Wee Joker': (self, context) => {
+        if (getId(context.other_card!) !== 2) return null;
+        if (context.blueprint) return null;
+        self.ability.extra.chips += self.ability.extra.chip_mod;
+        return { message: 'upgrade', card: self };
+    },
+
+    // `card.lua:3129`。点数与花色**都要**撞上本回合的 idol 牌
+    'The Idol': (self, context, game) => {
+        const idol = game.current_round.idol_card;
+        if (!idol) return null;
+        if (getId(context.other_card!) !== idol.id) return null;
+        if (!matchesSuit(context.other_card!, idol.suit, game)) return null;
+        return { x_mult: self.ability.extra, card: self };
+    },
+
+    // `card.lua:3186`。斐波那契数列：A/2/3/5/8
+    Fibonacci: (self, context) => {
+        const id = getId(context.other_card!);
+        return id === 2 || id === 3 || id === 5 || id === 8 || id === 14
+            ? { mult: self.ability.extra, card: self }
+            : null;
+    },
+
+    // `card.lua:3229`。方块 → 钱
+    'Rough Gem': (self, context, game) =>
+        matchesSuit(context.other_card!, 'Diamonds', game)
+            ? { dollars: self.ability.extra, card: self }
+            : null,
+
+    // `card.lua:3236`。梅花 → mult
+    'Onyx Agate': (self, context, game) =>
+        matchesSuit(context.other_card!, 'Clubs', game)
+            ? { mult: self.ability.extra, card: self }
+            : null,
+
+    // `card.lua:3243`。黑桃 → 筹码
+    Arrowhead: (self, context, game) =>
+        matchesSuit(context.other_card!, 'Spades', game)
+            ? { chips: self.ability.extra, card: self }
+            : null,
+
+    // `card.lua:3250`。红桃 + 掷点 → x_mult。**掷点在花色判定之后**，
+    // 所以非红桃不消耗 RNG
+    Bloodstone: (self, context, game) => {
+        if (!matchesSuit(context.other_card!, 'Hearts', game)) return null;
+        if (!rollOdds(game, 'bloodstone', self.ability.extra.odds)) return null;
+        return { x_mult: self.ability.extra.Xmult, card: self };
+    },
+
+    // `card.lua:3258`。撞上本回合的 ancient 花色
+    'Ancient Joker': (self, context, game) =>
+        matchesSuit(context.other_card!, game.current_round.ancient_suit ?? 'Spades', game)
+            ? { x_mult: self.ability.extra, card: self }
+            : null,
+
+    // `card.lua:3265`。Q（12）或 K（13）
+    Triboulet: (self, context) => {
+        const id = getId(context.other_card!);
+        return id === 12 || id === 13 ? { x_mult: self.ability.extra, card: self } : null;
+    },
 };
+
+/**
+ * `card.lua:4067` 的 `Card:is_suit`，带上 `Smeared Joker`。
+ *
+ * **不要直接用 `isSuit`**：`Smeared Joker` 让红桃认方块、黑桃认梅花，
+ * 而那是「两者是否同为红色」而不是「花色相同」（见 `modifiers.ts` 的
+ * `smearedMatches`）。漏掉它，带 Smeared 时所有花色型小丑都少算一半。
+ */
+function matchesSuit(card: Card, wanted: Suit, game: GameView): boolean {
+    if (card.debuff) return false;
+    if (isSuit(card, wanted)) return true;
+    return game.smeared === true && smearedMatches(card.base.suit, wanted);
+}
 
 /**
  * `card.lua:3218`：`if self.ability.effect == 'Suit Mult' and other_card:is_suit(extra.suit)`。
@@ -137,9 +227,9 @@ const INDIVIDUAL_PLAY: Record<string, Handler> = {
  * 这一条**按 effect 而不是按名字**分发，一次覆盖
  * Greedy / Lusty / Wrathful / Gluttonous 四张。放在名字表之后，与原文同序。
  */
-function suitMult(self: Joker, context: JokerContext): JokerEffect | null {
+function suitMult(self: Joker, context: JokerContext, game: GameView): JokerEffect | null {
     if (self.ability.effect !== 'Suit Mult') return null;
-    if (!isSuit(context.other_card!, self.ability.extra.suit)) return null;
+    if (!matchesSuit(context.other_card!, self.ability.extra.suit, game)) return null;
     return { mult: self.ability.extra.s_mult, card: self };
 }
 
@@ -300,6 +390,28 @@ const BEFORE: Record<string, Handler> = {
         return null;
     },
 
+    // `card.lua:3547`。打的是**本局最常用之外**的牌型就长，否则打回 1。
+    // 判据是「有没有别的可见牌型打得不比这个少」——注意是 `>=` 而不是 `>`
+    Obelisk: (self, context, game) => {
+        if (context.blueprint) return null;
+        const playMoreThan = game.hands[context.scoring_name!].played;
+        let reset = true;
+        for (const [name, info] of Object.entries(game.hands)) {
+            if (name !== context.scoring_name && info.played >= playMoreThan && info.visible) {
+                reset = false;
+            }
+        }
+        if (reset) {
+            if (self.ability.x_mult > 1) {
+                self.ability.x_mult = 1;
+                return { card: self, message: 'reset' };
+            }
+            return null;
+        }
+        self.ability.x_mult += self.ability.extra;
+        return null;
+    },
+
     // `card.lua:3566`。无条件 +1，每次出牌都长
     'Green Joker': (self, context) => {
         if (context.blueprint) return null;
@@ -360,6 +472,26 @@ const DISCARD: Record<string, Handler> = {
         return { message: `-${self.ability.extra.discard_sub}`, card: self };
     },
 
+    // `card.lua:2837`。弃掉 J（11）就让 x_mult 长一档
+    'Hit the Road': (self, context) => {
+        if (context.blueprint) return null;
+        if (context.other_card!.debuff) return null;
+        if (getId(context.other_card!) !== 11) return null;
+        self.ability.x_mult += self.ability.extra;
+        return { message: `X${self.ability.x_mult}`, card: self };
+    },
+
+    // `card.lua:2818`。弃掉本回合 castle 花色的牌就让筹码长一档
+    Castle: (self, context, game) => {
+        if (context.blueprint) return null;
+        if (context.other_card!.debuff) return null;
+        if (!matchesSuit(context.other_card!, game.current_round.castle_suit ?? 'Spades', game)) {
+            return null;
+        }
+        self.ability.extra.chips += self.ability.extra.chip_mod;
+        return { message: 'upgrade', card: self };
+    },
+
     // `card.lua:2861`。整批里人头牌 ≥3 张就给 $5。
     // 注意原文 `return`（无值）在给钱之后——钱是在事件里加的，不走返回值
     'Faceless Joker': (self, context, game) => {
@@ -395,10 +527,72 @@ const END_OF_ROUND: Record<string, Handler> = {
         return { message: 'val_up', card: self };
     },
 
+    // `card.lua:3011`。每回合把 x_mult 打回 1
+    'Hit the Road': (self) => {
+        if (self.ability.x_mult <= 1) return null;
+        self.ability.x_mult = 1;
+        return { message: 'reset', card: self };
+    },
+
+    // `card.lua:3045`。分数达到需求的 25% 就免死一次，然后自毁。
+    // **只在 `game_over` 时才问**——平时回合结算不触发
+    'Mr. Bones': (self, _context, game) => {
+        if (!game.game_over) return null;
+        if (game.blindProgress < 0.25) return null;
+        return { message: 'saved', card: self, destroy: true, saved: true };
+    },
+
     // `card.lua:3022`。两张共用一条，只有 seed key 不同。
     // **掷点是无条件的**：不管中不中都消耗一次 RNG
     'Gros Michel': (self, _context, game) => grosMichel(self, game),
     Cavendish: (self, _context, game) => grosMichel(self, game),
+};
+
+/**
+ * `card.lua:3399` 的 `context.other_joker` 分支。
+ *
+ * 形状与别的分支不同：**内层遍历的是整个小丑区**，每张都拿
+ * `other_joker = 当前被结算的那张` 问一遍（`state_events.lua:939`）。
+ * 所以 `self` 是「提供效果的那张」、`context.other_joker` 是「被看的那张」。
+ */
+const OTHER_JOKER: Record<string, Handler> = {
+    // `card.lua:3400`。**每张 rarity 2 的小丑**给 ×1.5，且不算自己
+    'Baseball Card': (self, context) => {
+        if (context.other_joker!.center.rarity !== 2) return null;
+        if (self === context.other_joker) return null;
+        return { message: `X${self.ability.extra}`, Xmult_mod: self.ability.extra };
+    },
+};
+
+/** `card.lua:2758` 的 `context.selling_card`。 */
+const SELLING_CARD: Record<string, Handler> = {
+    // `card.lua:2759`。卖掉别的牌就让 x_mult 长一档
+    Campfire: (self, context) => {
+        if (context.blueprint) return null;
+        self.ability.x_mult += self.ability.extra;
+        return { message: `X${self.ability.x_mult}`, card: self };
+    },
+};
+
+/** `button_callbacks.lua:3010` 的 `context.reroll_shop`。 */
+const REROLL_SHOP: Record<string, Handler> = {
+    // 重掷一次就 +2 mult
+    'Flash Card': (self, context) => {
+        if (context.blueprint) return null;
+        self.ability.mult += self.ability.extra;
+        return { message: `+${self.ability.extra}`, card: self };
+    },
+};
+
+/** `card.lua:2745` 的 `context.pre_discard`。 */
+const PRE_DISCARD: Record<string, Handler> = {
+    // `card.lua:2752`。本回合**第一次**弃牌时把弃掉那手的牌型升一级。
+    // `not context.hook` —— The Hook 逼出来的那次弃牌不算
+    'Burnt Joker': (self, context) => {
+        if (context.hook) return null;
+        if ((context.discardsUsed ?? 0) > 0) return null;
+        return { message: 'upgrade', card: self, levelUpDiscarded: true };
+    },
 };
 
 function grosMichel(self: Joker, game: GameView): JokerEffect {
@@ -511,6 +705,93 @@ const MAIN: Record<string, Handler> = {
         return tarots > 0 ? { message: `+${tarots}`, mult_mod: tarots } : null;
     },
 
+    // `card.lua:3810`。计分牌里四种花色**齐全**才给
+    'Flower Pot': (self, context, game) => {
+        const suits: Suit[] = ['Hearts', 'Diamonds', 'Spades', 'Clubs'];
+        const covered = suits.every((suit) =>
+            (context.scoring_hand ?? []).some((card) => matchesSuit(card, suit, game)),
+        );
+        return covered ? { message: `X${self.ability.extra}`, Xmult_mod: self.ability.extra } : null;
+    },
+
+    // `card.lua:3842`。**至少一张梅花** + 至少一张非梅花。
+    // 注意原文的条件是 `(Hearts>0 or Diamonds>0 or Spades>0) and Clubs>0`——
+    // 梅花是必需的那一方，不能写成「任意两种花色」
+    'Seeing Double': (self, context, game) => {
+        const scoring = context.scoring_hand ?? [];
+        const clubs = scoring.some((c) => matchesSuit(c, 'Clubs', game));
+        const other = (['Hearts', 'Diamonds', 'Spades'] as Suit[]).some((suit) =>
+            scoring.some((c) => matchesSuit(c, suit, game)),
+        );
+        return clubs && other
+            ? { message: `X${self.ability.extra}`, Xmult_mod: self.ability.extra }
+            : null;
+    },
+
+    // `card.lua:3876` / `:3884`。两张自增型，读自己攒下来的 extra.chips
+    'Wee Joker': (self) => ({
+        message: `+${self.ability.extra.chips}`,
+        chip_mod: self.ability.extra.chips,
+    }),
+    Castle: (self) =>
+        self.ability.extra.chips > 0
+            ? { message: `+${self.ability.extra.chips}`, chip_mod: self.ability.extra.chips }
+            : null,
+
+    // `card.lua:3897`。起始牌组张数 - 现在的张数，每少一张 +4 mult
+    Erosion: (self, _context, game) => {
+        const missing = game.startingDeckSize - game.playingCardCount;
+        return missing > 0
+            ? { message: `+${self.ability.extra * missing}`, mult_mod: self.ability.extra * missing }
+            : null;
+    },
+
+    // `card.lua:3954`。**手里全是黑色花色**才给（手里没牌也算「全是」）
+    Blackboard: (self, _context, game) => {
+        const allBlack = game.handCards.every(
+            (card) => matchesSuit(card, 'Clubs', game) || matchesSuit(card, 'Spades', game),
+        );
+        return allBlack ? { message: `X${self.ability.extra}`, Xmult_mod: self.ability.extra } : null;
+    },
+
+    // `card.lua:3969`。**还有空格子**才给，倍率是 `derived.ts` 重算出来的
+    'Joker Stencil': (self, _context, game) =>
+        game.joker_slots - game.jokers.length > 0
+            ? { message: `X${self.ability.x_mult}`, Xmult_mod: self.ability.x_mult }
+            : null,
+
+    // `card.lua:3729`。`blind.triggered` —— Boss 的 debuff 本手触发过就给钱
+    Matador: (self, _context, game) => {
+        if (!game.blindTriggered) return null;
+        game.dollars += self.ability.extra;
+        return { message: `$${self.ability.extra}`, dollars: self.ability.extra };
+    },
+
+    // `card.lua:4043`。本回合**这个牌型**打过不止一次
+    'Card Sharp': (_self, context, game) =>
+        game.hands[context.scoring_name!].played_this_round > 1
+            ? {
+                  message: `X${_self.ability.extra.Xmult}`,
+                  Xmult_mod: _self.ability.extra.Xmult,
+              }
+            : null,
+
+    // `card.lua:4049`。每满 $5 给 +2 mult
+    Bootstraps: (self, _context, game) => {
+        const steps = Math.floor((game.dollars + game.dollar_buffer) / self.ability.extra.dollars);
+        if (steps < 1) return null;
+        return {
+            message: `+${self.ability.extra.mult * steps}`,
+            mult_mod: self.ability.extra.mult * steps,
+        };
+    },
+
+    // `card.lua:3757`。手里没牌时给筹码（-2 手牌上限在 `modifiers.ts`）
+    Stuntman: (self) => ({
+        message: `+${self.ability.extra.chip_mod}`,
+        chip_mod: self.ability.extra.chip_mod,
+    }),
+
     // `card.lua:4025` / `:4031`。两张纯倍率，不带条件
     'Gros Michel': (self) => ({
         message: `+${self.ability.extra.mult}`,
@@ -552,6 +833,12 @@ export function calculateJoker(
 
     const name = self.ability.name;
 
+    // `card.lua:2308`：蓝图与头脑风暴**在 context 分派之前**就拦下来，
+    // 所以它们对每一种 context 都生效——不是只在主遍历时复制
+    if (name === 'Blueprint' || name === 'Brainstorm') {
+        return copycat(self, context, game);
+    }
+
     // **这两条必须排在 `individual` / `repetition` 之前**：原文的 elseif 链里
     // `context.discard`（`card.lua:2760`）与 `context.end_of_round`（`:2877`）
     // 都在它们前面，而 `end_of_round` + `individual` 是个**真实存在的组合**
@@ -561,16 +848,14 @@ export function calculateJoker(
     // （`Luchador` / `Campfire` / `Flash Card` / `Burnt Joker` 全是 rarity 2+），
     // 但**必须显式拦掉**：不拦的话这些调用会一路掉进 main 分支，
     // 在买卖／重掷／弃牌时白算一遍出牌结算。补它们时把 return null 换成对应的查表。
-    if (
-        context.buying_card ||
-        context.selling_self ||
-        context.selling_card ||
-        context.reroll_shop ||
-        context.ending_shop ||
-        context.pre_discard
-    ) {
-        return null;
-    }
+    if (context.selling_card) return SELLING_CARD[name]?.(self, context, game) ?? null;
+    if (context.reroll_shop) return REROLL_SHOP[name]?.(self, context, game) ?? null;
+    if (context.pre_discard) return PRE_DISCARD[name]?.(self, context, game) ?? null;
+
+    // 原文 elseif 链里还有这几条，但**没有一张已实现的小丑用它们**
+    // （`Luchador` 要能 disable Boss、`Diet Cola` 要标签、`Invisible Joker` 要复制小丑）。
+    // 显式拦掉：不拦的话这些调用会一路掉进 main 分支，在买卖时白算一遍出牌结算
+    if (context.buying_card || context.selling_self || context.ending_shop) return null;
 
     if (context.discard) {
         return DISCARD[name]?.(self, context, game) ?? null;
@@ -587,7 +872,7 @@ export function calculateJoker(
         if (context.cardarea === 'play') {
             const hit = INDIVIDUAL_PLAY[name]?.(self, context, game);
             if (hit) return hit;
-            return suitMult(self, context);
+            return suitMult(self, context, game);
         }
         if (context.cardarea === 'hand') {
             return INDIVIDUAL_HAND[name]?.(self, context, game) ?? null;
@@ -602,9 +887,7 @@ export function calculateJoker(
     }
 
     if (context.other_joker) {
-        // `card.lua:3399`。本里程碑只有 Baseball Card 走这里，它是 rarity 3、不在范围。
-        // 分支留着——它是「小丑影响小丑」这条形状的唯一入口。
-        return null;
+        return OTHER_JOKER[name]?.(self, context, game) ?? null;
     }
 
     if (context.cardarea !== 'jokers') return null;
@@ -613,6 +896,56 @@ export function calculateJoker(
     if (context.after) return AFTER[name]?.(self, context, game) ?? null;
 
     return mainScoring(self, context, game);
+}
+
+/**
+ * `card.lua:2308` 的 `Blueprint` 与 `:2325` 的 `Brainstorm`。
+ *
+ * 两者只差「复制谁」：Blueprint 复制**右边那一张**、Brainstorm 复制**最左边那一张**。
+ * 其余完全相同，所以合成一个函数。
+ *
+ * ## 递归的终止条件
+ *
+ * 原文靠**改 context 本身**来计数：
+ *
+ * ```lua
+ * context.blueprint = (context.blueprint and (context.blueprint + 1)) or 1
+ * context.blueprint_card = context.blueprint_card or self
+ * if context.blueprint > #G.jokers.cards + 1 then return end
+ * ```
+ *
+ * 所以 `#小丑区 + 1` 层就停。为什么是这个数而不是 `#小丑区`：
+ * 一串首尾相接的蓝图最多能链 `#小丑区` 张，多的那 1 是给「链到非蓝图那张」留的。
+ *
+ * **这里不改传进来的 context，而是造一份新的**。原文改的是同一张 Lua 表，
+ * 但调用点（`evaluate_play` 的每个循环）每次都新建表字面量，所以改动不会泄漏到
+ * 下一张小丑。复刻件显式拷一份，语义相同而且不依赖「调用方每次都新建」这个约定。
+ *
+ * ## 一处刻意不抄的
+ *
+ * `blueprint_compat`（`card.lua:4227`）**没有参与判定**——它只喂 UI 的提示文字。
+ * 也就是说机制上蓝图会去复制「标着不兼容」的小丑，只是结果通常为空。
+ * 别顺手加一个 `if (!compat) return null`，那会改变行为。
+ */
+function copycat(self: Joker, context: JokerContext, game: GameView): JokerEffect | null {
+    const target = blueprintTarget(self, game.jokers);
+    if (!target || target === self) return null;
+
+    const depth = (context.blueprint ?? 0) + 1;
+    if (depth > game.jokers.length + 1) return null;
+
+    const inner: JokerContext = {
+        ...context,
+        blueprint: depth,
+        // 第一张蓝图才是「效果来源」，链上后面的都归它——表现层弹的是它
+        blueprint_card: context.blueprint_card ?? self,
+    };
+
+    const result = calculateJoker(target, inner, game);
+    if (!result) return null;
+
+    // `card.lua:2318`：把效果的归属改成蓝图自己
+    return { ...result, card: inner.blueprint_card ?? self };
 }
 
 /**
@@ -675,6 +1008,13 @@ const NAMES_WITH_HANDLERS: ReadonlySet<string> = new Set([
     ...Object.keys(DISCARD),
     ...Object.keys(END_OF_ROUND),
     ...Object.keys(MAIN),
+    ...Object.keys(OTHER_JOKER),
+    ...Object.keys(SELLING_CARD),
+    ...Object.keys(REROLL_SHOP),
+    ...Object.keys(PRE_DISCARD),
+    // `calculateJoker` 开头那条 copycat 分支，不走查表
+    'Blueprint',
+    'Brainstorm',
 ]);
 
 /**
@@ -698,6 +1038,17 @@ const IMPLEMENTED_ELSEWHERE: Readonly<Record<string, string>> = {
     // `card.lua:1657` 的 `calculate_dollar_bonus`
     'Golden Joker': 'economy.ts 的 calculateDollarBonus',
     'Delayed Gratification': 'economy.ts 的 calculateDollarBonus',
+
+    // `modifiers.ts`：一进小丑区就改局面参数的那些。
+    // 它们在原作里也没有 `calculate_joker` 分支——走 `add_to_deck` 与 `find_joker`
+    'Four Fingers': 'modifiers.ts 的 flags.fourFingers',
+    Shortcut: 'modifiers.ts 的 flags.shortcut',
+    'Smeared Joker': 'modifiers.ts 的 smeared',
+    'Oops! All 6s': 'modifiers.ts 的 probabilityNormal',
+    'To the Moon': 'modifiers.ts 的 interestAmount',
+    Troubadour: 'modifiers.ts 的 handSize / hands',
+    'Merry Andy': 'modifiers.ts 的 handSize / discards',
+    Burglar: 'modifiers.ts 的 burglarHands',
 };
 
 /**
