@@ -59,6 +59,10 @@ Label: wayfinder:map
   per-instance uniform 确认独立（40 个各异的 uniform，有截图）；`dissolve.fs` 移植成功。
   **性能不是风险**：40 张牌 p50 仅 0.2ms，且全屏背景几乎免费——上一张票
   「风险在 fill-rate」的判断被推翻，开销其实线性于对象数。工作量维持 9–16 人日但不确定性大降。
+- [素材与配置的接入方式](issues/06-素材与配置的接入方式.md) ——
+  **素材拷进 `public/assets/` 并入库**（只拷用得上的，第一个切片 288K；字体只带拉丁）；
+  **配置从 Lua 直译，不碰 `配置CSV/`**（那是派生的研究产物，且只覆盖 13% 的小丑行为）。
+  图集元数据纯可推导，不手写 atlas JSON。
 
 ## Not yet specified
 
@@ -93,6 +97,10 @@ Label: wayfinder:map
 - **`#pragma phaserTemplate` 不是给用户着色器分节用的**。`vertexSource` 整体替换模板，
   自定义着色器要写完整程序，遵守 `uProjectionMatrix` / `inPosition` / `inTexCoord` / `outTexCoord` 契约，
   并 `setUniform('uMainSampler', 0)` 绑纹理单元。
+- **`Shader` GameObject 不会自动应用 spritesheet 的帧**，`outTexCoord` 默认跨整张纹理。
+  必须显式调 `setTextureCoordinatesFromFrame(frame, texture)`，否则整张图集会被画进每个 quad。
+- **复刻件的配置源头是 `源码/` 里的 Lua，不是 `配置CSV/`**。后者是派生的研究产物，
+  且装不下行为（`_小丑总表.csv` 配置驱动仅 19/150）。
 - **Phaser 4 的 `outTexCoord.y` 方向与 LÖVE 相反**。影响 `dissolve_mask` 的 borders
   上下不对称逻辑——翻 uv 或翻 borders，二选一。
 - **性能数据来自 RTX 3060**，只说明桌面端够用，不能外推到移动端。

@@ -12,10 +12,17 @@
 
 import { AUTO, Game, GameObjects, Scale, Scene, type Types } from 'phaser';
 
+import { DECK_ATLAS } from '../src/core/atlas';
 import { DISSOLVE_FRAG, DISSOLVE_VERT } from './dissolve-shader';
 
-const CARD_W = 142;
-const CARD_H = 190;
+const CARD_W = DECK_ATLAS.frameWidth * 2;
+const CARD_H = DECK_ATLAS.frameHeight * 2;
+/** 8BitDeck.png 实测 923x380 = 13 列 x 71 、4 行 x 95 */
+const ATLAS_W = 923;
+const ATLAS_H = 380;
+const ATLAS_COLS = Math.floor(ATLAS_W / DECK_ATLAS.frameWidth);
+const ATLAS_ROWS = Math.floor(ATLAS_H / DECK_ATLAS.frameHeight);
+
 const params = new URLSearchParams(location.search);
 const CARD_COUNT = Number(params.get('cards') ?? 40);
 /** 是否额外铺一层全屏 shader——上一张票判断真正的风险在这的 fill-rate */
@@ -38,7 +45,11 @@ class SpikeScene extends Scene {
     }
 
     preload(): void {
-        this.load.image('card', '/spike-assets/c_base.png');
+        // 素材口径已裁定（06 号票）：拷进 public/assets/ 并入库
+        this.load.spritesheet('card', '/assets/textures/8BitDeck.png', {
+            frameWidth: DECK_ATLAS.frameWidth,
+            frameHeight: DECK_ATLAS.frameHeight,
+        });
     }
 
     create(): void {
@@ -95,6 +106,9 @@ class SpikeScene extends Scene {
             // 原作 sprite.lua:101：time = 123.33412*(card.ID/1.14212)%3000
             // 逐卡不同，正是 per-instance uniform 的真实需求
             const cardTime = (123.33412 * ((i + 1) / 1.14212)) % 3000;
+            // 从图集里取第 i 张牌
+            const gridX = i % ATLAS_COLS;
+            const gridY = Math.floor(i / ATLAS_COLS) % ATLAS_ROWS;
             const dissolve = 0; // 静态展示，不做溶解动画
 
             const shader = this.add.shader(
@@ -106,9 +120,16 @@ class SpikeScene extends Scene {
                         setUniform('uMainSampler', 0);
                         setUniform('dissolve', dissolve);
                         setUniform('time', cardTime);
-                        // 单帧贴图：frame 原点 (0,0)，尺寸就是整张图
-                        setUniform('texture_details', [0, 0, CARD_W, CARD_H]);
-                        setUniform('image_details', [CARD_W, CARD_H]);
+                        // Balatro 的图集约定（sprite.lua:103-104）：
+                        //   texture_details = (格子列, 格子行, 格宽px, 格高px)
+                        //   image_details   = (图集总宽px, 图集总高px)
+                        setUniform('texture_details', [
+                            gridX,
+                            gridY,
+                            DECK_ATLAS.frameWidth,
+                            DECK_ATLAS.frameHeight,
+                        ]);
+                        setUniform('image_details', [ATLAS_W, ATLAS_H]);
                         setUniform('shadow', false);
                         setUniform('burn_colour_1', [0, 0, 0, 0]);
                         setUniform('burn_colour_2', [0, 0, 0, 0]);
@@ -126,6 +147,10 @@ class SpikeScene extends Scene {
                 CARD_H,
                 ['card'],
             );
+
+            // **关键一步**：Shader GameObject 不会自动应用 spritesheet 的帧，
+            // 必须显式把纹理坐标设成该帧的子矩形，outTexCoord 才会落在帧内。
+            shader.setTextureCoordinatesFromFrame(String(gridY * ATLAS_COLS + gridX), 'card');
 
             this.cards.push(shader);
 
