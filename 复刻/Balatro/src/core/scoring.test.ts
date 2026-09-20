@@ -10,7 +10,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { type Suit, type Value, makeCard, resetCardCounters } from './card';
 import { makeGameView } from './jokers';
-import { blindRequirement, evaluatePlay, getBlindAmount, initialHands } from './scoring';
+import { blindRequirement, evaluatePlay, getBlindAmount, initialHands, levelUpHand } from './scoring';
 
 function c(spec: string, x: number) {
     const suitMap: Record<string, Suit> = { S: 'Spades', H: 'Hearts', C: 'Clubs', D: 'Diamonds' };
@@ -113,5 +113,68 @@ describe('盲注需求', () => {
         // 而一对 K 只有 60，四手打满也才 240，过不了
         const pair = evaluatePlay(hand('SK', 'HK', 'D9', 'C4', 'D3'), initialHands(), makeGameView());
         expect(pair.score * 4).toBeLessThan(blindRequirement(1, 'small'));
+    });
+});
+
+/**
+ * `level_up_hand` 的数值部分。期望值全部手算，算式写在用例名里。
+ *
+ * 这一组盯的是**重算 vs 增量**的差别：只要等级不撞下限两者给一样的结果，
+ * 所以只有降级的用例才能把错的实现照出来。
+ */
+describe('levelUpHand：mult = max(s_mult + l_mult×(lvl-1), 1)，chips = max(s_chips + l_chips×(lvl-1), 0)', () => {
+    it('Pair 升 1 级：chips 10 + 15×1 = 25，mult 2 + 1×1 = 3', () => {
+        const hands = initialHands();
+        levelUpHand(hands, 'Pair');
+        expect(hands.Pair).toMatchObject({ level: 2, chips: 25, mult: 3 });
+    });
+
+    it('Pair 一次升 3 级：chips 10 + 15×3 = 55，mult 2 + 1×3 = 5', () => {
+        const hands = initialHands();
+        levelUpHand(hands, 'Pair', 3);
+        expect(hands.Pair).toMatchObject({ level: 4, chips: 55, mult: 5 });
+    });
+
+    it('升 10 次 = 一次升 10 级：两条路径必须给同一个数（重算的前提）', () => {
+        const step = initialHands();
+        for (let i = 0; i < 10; i++) levelUpHand(step, 'Flush');
+        const once = initialHands();
+        levelUpHand(once, 'Flush', 10);
+        expect(step.Flush).toEqual(once.Flush);
+    });
+
+    it('等级下限是 0：1 级再降 2 级还是 0 级，不是 -1', () => {
+        const hands = initialHands();
+        levelUpHand(hands, 'Pair', -2);
+        expect(hands.Pair.level).toBe(0);
+    });
+
+    it('High Card 降到 0 级：mult = max(1 + 1×(0-1), 1) = max(0, 1) = 1，不是 0', () => {
+        // 这一条是增量实现唯一照得出来的地方：减法会给 0，那一手直接 0 分
+        const hands = initialHands();
+        levelUpHand(hands, 'High Card', -1);
+        expect(hands['High Card']).toMatchObject({ level: 0, mult: 1, chips: 0 });
+        // chips = max(5 + 10×(0-1), 0) = max(-5, 0) = 0
+    });
+
+    it('降到 0 再升回 1 级：回到开局值（撞过下限也不跑偏）', () => {
+        const hands = initialHands();
+        levelUpHand(hands, 'High Card', -1);
+        levelUpHand(hands, 'High Card', 1);
+        expect(hands['High Card']).toMatchObject({ level: 1, mult: 1, chips: 5 });
+    });
+
+    it('没有上限：Pair 升 100 级 = chips 10 + 15×100 = 1510', () => {
+        const hands = initialHands();
+        levelUpHand(hands, 'Pair', 100);
+        expect(hands.Pair).toMatchObject({ level: 101, chips: 1510, mult: 102 });
+    });
+});
+
+describe('initialHands 的 visible：九个常规牌型开局就可见', () => {
+    it('只有三个五张同点的开局不可见（game.lua:2212-2214）', () => {
+        const hands = initialHands();
+        const hidden = Object.entries(hands).filter(([, v]) => !v.visible).map(([k]) => k);
+        expect(hidden).toEqual(['Flush Five', 'Flush House', 'Five of a Kind']);
     });
 });

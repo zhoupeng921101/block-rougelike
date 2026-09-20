@@ -44,6 +44,13 @@ export { getChipBonus };
 export type HandInfo = {
     chips: number;
     mult: number;
+    /**
+     * 1 级时的筹码。**`level_up_hand` 每次都从它重算**，不是在 `chips` 上加减，
+     * 所以它必须存着。见 `levelUpHand`
+     */
+    s_chips: number;
+    /** 1 级时的倍率。同上 */
+    s_mult: number;
     /** 每升一级加的筹码 */
     l_chips: number;
     /** 每升一级加的倍率 */
@@ -51,43 +58,72 @@ export type HandInfo = {
     level: number;
     played: number;
     played_this_round: number;
-    /** 本局有没有打出过。`Obelisk` 与 `To Do List` 的可选池读它 */
+    /**
+     * 这个牌型**在牌型表里露没露过脸**。`Obelisk` 与 `To Do List` 的可选池读它。
+     *
+     * **不是「本局打出过」**——`game.lua:2212-2223` 里九个常规牌型开局就是 `true`，
+     * 只有 Flush Five / Flush House / Five of a Kind 三个五张同点的开局是 `false`，
+     * 打出来才翻成 `true`（`state_events.lua:599`）。
+     */
     visible: boolean;
 };
 
 export function initialHands(): Record<HandName, HandInfo> {
-    // 数值逐字抄自 game.lua:2212-2223
-    const h = (chips: number, mult: number, l_chips: number, l_mult: number): HandInfo => ({
-        chips, mult, l_chips, l_mult, level: 1, played: 0, played_this_round: 0, visible: false,
+    // 数值逐字抄自 game.lua:2212-2223。`visible` 那一列也是抄的，别改成全 false——
+    // 全 false 会让 To Do List 的可选池在开局是空的
+    const h = (
+        chips: number,
+        mult: number,
+        l_chips: number,
+        l_mult: number,
+        visible: boolean,
+    ): HandInfo => ({
+        chips, mult,
+        s_chips: chips, s_mult: mult,
+        l_chips, l_mult,
+        level: 1, played: 0, played_this_round: 0, visible,
     });
 
     return {
-        'Flush Five': h(160, 16, 50, 3),
-        'Flush House': h(140, 14, 40, 4),
-        'Five of a Kind': h(120, 12, 35, 3),
-        'Straight Flush': h(100, 8, 40, 4),
-        'Four of a Kind': h(60, 7, 30, 3),
-        'Full House': h(40, 4, 25, 2),
-        Flush: h(35, 4, 15, 2),
-        Straight: h(30, 4, 30, 3),
-        'Three of a Kind': h(30, 3, 20, 2),
-        'Two Pair': h(20, 2, 20, 1),
-        Pair: h(10, 2, 15, 1),
-        'High Card': h(5, 1, 10, 1),
+        'Flush Five': h(160, 16, 50, 3, false),
+        'Flush House': h(140, 14, 40, 4, false),
+        'Five of a Kind': h(120, 12, 35, 3, false),
+        'Straight Flush': h(100, 8, 40, 4, true),
+        'Four of a Kind': h(60, 7, 30, 3, true),
+        'Full House': h(40, 4, 25, 2, true),
+        Flush: h(35, 4, 15, 2, true),
+        Straight: h(30, 4, 30, 3, true),
+        'Three of a Kind': h(30, 3, 20, 2, true),
+        'Two Pair': h(20, 2, 20, 1, true),
+        Pair: h(10, 2, 15, 1, true),
+        'High Card': h(5, 1, 10, 1, true),
     };
 }
 
 /**
- * `misc_functions.lua:1104` 的 `level_up_hand`。
+ * `common_events.lua:467` 的 `level_up_hand`，数值部分：
  *
- * 这里只做数值部分：等级 +1、基础值各加一档。**不做下限保护**——
- * 原作允许等级降到 0（`level_up_hand` 传负数时），那时基础值可以变成负的。
+ * ```lua
+ * level = math.max(0, level + amount)
+ * mult  = math.max(s_mult  + l_mult *(level - 1), 1)
+ * chips = math.max(s_chips + l_chips*(level - 1), 0)
+ * ```
+ *
+ * **三件事容易写错**：
+ *
+ * 1. **倍率与筹码是从 1 级值重算的，不是在当前值上加减。**
+ *    只要等级不撞下限两者等价，一撞下限就永久跑偏。
+ * 2. **等级下限是 0**，不是无下限。`The Arm` 传的是 `-1`。
+ * 3. **倍率下限 1、筹码下限 0。** High Card 是 `s_mult = 1, l_mult = 1`，
+ *    0 级时原作给 `max(1-1, 1) = 1`；写成减法会给 0，那一手直接 0 分。
+ *
+ * **没有上限**，星球牌可以无限叠。
  */
 export function levelUpHand(hands: Record<HandName, HandInfo>, name: HandName, amount = 1): void {
     const info = hands[name];
-    info.level += amount;
-    info.mult += info.l_mult * amount;
-    info.chips += info.l_chips * amount;
+    info.level = Math.max(0, info.level + amount);
+    info.mult = Math.max(info.s_mult + info.l_mult * (info.level - 1), 1);
+    info.chips = Math.max(info.s_chips + info.l_chips * (info.level - 1), 0);
 }
 
 /**
