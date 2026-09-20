@@ -31,6 +31,11 @@ export type Card = {
     sort_id: number;
     /** `get_nominal` 公式末项 `0.000001*self.unique_val` 用到 */
     unique_val: number;
+    /**
+     * `card.lua:526` 的 `self.debuff`。Boss 盲注与 debuff 效果置位，
+     * 一被置位，`get_chip_bonus` / `is_face` 全部归零——它不是表现层的标记。
+     */
+    debuff: boolean;
     /** 目标变换的 x。**tile 单位，不是像素**——见 10 号票 */
     T: { x: number; y: number; w: number; h: number };
 };
@@ -86,6 +91,7 @@ export function makeCard(key: string, suit: Suit, value: Value): Card {
         },
         sort_id: nextSortId++,
         unique_val: nextUniqueVal++,
+        debuff: false,
         T: { x: 0, y: 0, w: 0, h: 0 },
     };
 }
@@ -142,4 +148,19 @@ export function makeStandardDeck(): Card[] {
         }
     }
     return deck;
+}
+
+/**
+ * `card.lua:965` 的 `Card:is_face`。
+ *
+ * 两条直译要点：
+ * - **被 debuff 的牌不算人头牌**（除了 Boss 盲注自己查的时候，`from_boss`）。
+ *   原文是 `if self.debuff and not from_boss then return end`——返回 nil 而不是 false。
+ * - `Pareidolia`（所有牌都算人头牌）是**小丑钩子**，原文用 `find_joker` 现查，
+ *   这里提成参数，调用方从小丑区算出来传进来。
+ */
+export function isFace(card: Card, pareidolia = false, fromBoss = false): boolean {
+    if (card.debuff && !fromBoss) return false;
+    const id = getId(card);
+    return id === 11 || id === 12 || id === 13 || pareidolia;
 }

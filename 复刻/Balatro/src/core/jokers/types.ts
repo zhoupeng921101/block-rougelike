@@ -1,0 +1,189 @@
+/**
+ * 小丑的数据模型与 context/effect 协议。
+ *
+ * 三个东西要分清：
+ * - **center**（`JokerCenter`）：`P_CENTERS` 里那一行，**不可变的定义**，150 张
+ * - **ability**（`JokerAbility`）：`card.lua:277` `set_ability` 从 center 摊平出来的**可变**运行时状态
+ * - **instance**（`Joker`）：一张具体的小丑，持有 ability
+ *
+ * 原作把 ability 摊平成 `mult` / `t_mult` / `x_mult` / `extra` 这一组固定字段，
+ * 而 `calculate_joker` 的前三条判定**直接读这些字段、不看名字**
+ * （`card.lua:3656-3673`）。所以摊平不是实现细节，是语义——
+ * 不能改成「每张小丑一个自己的 config 类型」，那样那三条泛化判定就没法写。
+ */
+
+import type { Card } from '../card';
+import type { HandName } from '../poker-hands';
+
+/** `P_CENTERS` 里的一行。由 `tools/gen-joker-centers.mjs` 生成，运行时只读。 */
+export type JokerCenter = {
+    order: number;
+    rarity: number;
+    cost: number;
+    name: string;
+    pos: { x: number; y: number };
+    soul_pos?: { x: number; y: number };
+    blueprint_compat: boolean;
+    unlocked: boolean;
+    /** Lua 的 `config`，字段随小丑而异，所以是 `any`——03 号票认了直译带进来的弱类型 */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    config: Record<string, any>;
+    effect?: string;
+};
+
+/**
+ * `card.lua:277-296` 的 `self.ability`。
+ *
+ * **默认值逐字抄原文**：`mult` 等取 0、`x_mult` 取 **1**（不是 0）。
+ * `x_mult` 的默认值是 1 这件事被三处判定依赖（`x_mult > 1` / `x_mult <= 1`），
+ * 写成 0 会让所有不带 Xmult 的小丑都触发倍率分支。
+ */
+export type JokerAbility = {
+    name: string;
+    effect?: string;
+    set: 'Joker';
+    mult: number;
+    h_mult: number;
+    h_x_mult: number;
+    h_dollars: number;
+    p_dollars: number;
+    t_mult: number;
+    t_chips: number;
+    x_mult: number;
+    h_size: number;
+    d_size: number;
+    /** `copy_table(center.config.extra)`——**必须是深拷贝**，好几张小丑会原地改它 */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    extra: any;
+    type: HandName | '';
+    order: number;
+    /** `Loyalty Card` 在 main 分支里自己算的中间量，原作也挂在 ability 上 */
+    loyalty_remaining?: number;
+    hands_played_at_create?: number;
+    /** `To Do List` 每回合随机指定的牌型 */
+    to_do_poker_hand?: HandName;
+};
+
+export type Joker = {
+    readonly key: string;
+    readonly center: JokerCenter;
+    ability: JokerAbility;
+    /** `card.lua:526` 的 `self.debuff`。被 debuff 的小丑 `calculate_joker` 直接返回 nil */
+    debuff: boolean;
+    /** 卖价。`card.lua:369` `set_cost` 算出来的 */
+    sell_cost: number;
+    /** 表现层排序用，单位是 tile（与 `Card.T` 同口径，见 10 号票） */
+    T: { x: number; y: number; w: number; h: number };
+};
+
+/**
+ * `calculate_joker(context)` 的入参。
+ *
+ * 原作是一张裸 Lua 表，字段按调用点随便加。这里列全**本里程碑用得到的**，
+ * 其余（`open_booster` / `using_consumeable` / `skip_blind` …）等接到那些系统时再加。
+ *
+ * `blueprint` / `blueprint_card` **现在就要留着**：17 处小丑行为靠
+ * `not context.blueprint` 来禁自我升级，缺了它们会在有蓝图之前就算错。
+ */
+export type JokerContext = {
+    /** 哪个区在结算。`'play'` = 打出的牌、`'hand'` = 留在手里的牌、`'jokers'` = 小丑区 */
+    cardarea?: 'play' | 'hand' | 'jokers';
+    full_hand?: Card[];
+    scoring_hand?: Card[];
+    scoring_name?: HandName;
+    poker_hands?: Record<HandName, Card[][]>;
+    /** 逐张型结算时指向当前那一张 */
+    other_card?: Card;
+    other_joker?: Joker;
+    individual?: boolean;
+    repetition?: boolean;
+    repetition_only?: boolean;
+    before?: boolean;
+    after?: boolean;
+    edition?: boolean;
+    /** 蓝图/头脑风暴的递归深度。**别删**，见上面 */
+    blueprint?: number;
+    blueprint_card?: Joker;
+    /** `Mime` 要靠它判断「这张手牌本来有没有效果」 */
+    card_effects?: JokerEffect[];
+    destroying_card?: Card;
+    /** 本回合状态的只读视图。原作直接读 `G.GAME`，这里显式传进来 */
+    game?: GameView;
+};
+
+/**
+ * 原作里那些 `G.GAME.xxx` 的读取点，收成一个显式的只读视图。
+ *
+ * 为什么不直接把 `Round` 传进来：`calculate_joker` 会被商店、回合结算、
+ * Boss 盲注三个地方调用，那些场景下 `Round` 不一定存在。
+ * 收成一个窄接口，调用方按需填。
+ */
+export type GameView = {
+    hands: Record<HandName, { played: number; played_this_round: number; visible: boolean }>;
+    dollars: number;
+    /**
+     * `G.GAME.dollar_buffer`。**本复刻里恒为 0**，只有 `Bull` 读它。
+     *
+     * 原作的 `ease_dollars` 是入队延迟的，所以同一次结算里后面的小丑读
+     * `G.GAME.dollars` 会读到旧值，buffer 用来补上「在路上的钱」。
+     * 这里的加钱是同步立即的，`dollars` 本身已经最新，buffer 必须留 0——
+     * 往里加会让 Bull 把同一笔钱算两遍。字段保留是为了让 Bull 那行与原文一字对得上。
+     */
+    dollar_buffer: number;
+    hands_played: number;
+    current_round: {
+        hands_left: number;
+        discards_left: number;
+        hands_played: number;
+    };
+    /** `G.GAME.probabilities.normal`，基线 1。优惠券能改，本里程碑恒 1 */
+    probabilities: { normal: number };
+    jokers: Joker[];
+    joker_slots: number;
+    /** 牌堆剩余张数。`Blue Joker` 读它 */
+    deckCount: number;
+    /**
+     * 手牌区的牌。`Raised Fist` 要扫一遍整个手牌区找最低点数的那张，
+     * 光有 `context.other_card` 不够——原文直接读 `G.hand.cards`。
+     */
+    handCards: Card[];
+    /** `G.GAME.consumeable_usage_total.tarot`。`Fortune Teller` 读它，本里程碑恒 0 */
+    consumeable_usage_tarot: number;
+    /** `pseudorandom(key, min, max)`。Misprint / Business Card 这类在结算里消费 RNG */
+    pseudorandom(key: string, min?: number, max?: number): number;
+};
+
+/**
+ * `calculate_joker` 的返回值，以及 `eval_card` 包装后的形状。
+ *
+ * **一次调用最多产出一个 effect**——原作靠 `return` 立刻返回来保证，
+ * 这里靠「函数返回单个对象」保证。这条是 15 号票裁定的唯一不变量，
+ * 破了它（比如让 handler 返回数组）就会在一次结算里把同一张小丑算两遍。
+ */
+export type JokerEffect = {
+    /** 加筹码（逐张型用 `chips`，主遍历用 `chip_mod`——原文两个字段名，别合并） */
+    chips?: number;
+    mult?: number;
+    x_mult?: number;
+    h_mult?: number;
+    dollars?: number;
+    p_dollars?: number;
+    chip_mod?: number;
+    mult_mod?: number;
+    Xmult_mod?: number;
+    /** 重复触发次数 */
+    repetitions?: number;
+    /** 升级当前牌型（`Space Joker`） */
+    level_up?: boolean;
+    /** 效果来自哪张小丑，表现层用来 juice */
+    card?: Joker;
+    /** 纯提示，不影响数值。表现层用 */
+    message?: string;
+    /** `extra` 那一组间接修正。原文把 swap/func 也塞这里 */
+    extra?: {
+        mult_mod?: number;
+        chip_mod?: number;
+        swap?: boolean;
+        message?: string;
+    };
+};

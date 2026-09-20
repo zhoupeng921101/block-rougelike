@@ -264,9 +264,12 @@ export class RoundScene extends Scene {
                 trigger: 'after',
                 delay: SCORE_STEP_DELAY,
                 func: () => {
-                    this.liveChips = step.handChips;
+                    // `held` 那一步只改倍率、不动筹码，所以 handChips 在它上面没有字段——
+                    // 保持当前值。`joker` 那一步没有扑克牌可以 pop。
+                    if (step.kind !== 'held') this.liveChips = step.handChips;
                     this.liveMult = step.mult;
-                    const sp = this.sprites.find((x) => x.card === step.card);
+                    const target = step.kind === 'joker' ? null : step.card;
+                    const sp = target ? this.sprites.find((x) => x.card === target) : undefined;
                     sp?.pop();
                     this.sound.play('chips1', {
                         volume: 0.45,

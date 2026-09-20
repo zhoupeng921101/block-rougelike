@@ -83,10 +83,16 @@ Label: wayfinder:map
   CRT.fs 移植成功，**开销约 +0.5ms**。剥掉 `bloom_fac` 与 `glitch_intensity` 两段死码
   （原作硬编码为 0），有效代码从 153 行降到约 60 行。
 
-> **地图已走完：14 张票全部关闭。** 通往 destination 的路已经清楚，
-> 剩下的是实现，不是决策。下一步是按
-> [第一个可玩里程碑的切片边界](issues/07-第一个可玩里程碑的切片边界.md) 动手写
-> 出牌计分管线。新的未知会在实现中冒出来，那时再开票。
+- [第二个里程碑的切片边界](issues/15-第二个里程碑的切片边界.md) ——
+  **纵切到「带小丑打过 Ante 1」**：小盲注 → 商店 → 大盲注 → 商店 → Boss 盲注。
+  小丑接**全部 61 张 rarity 1** + 形状需要的少量 rarity 2/3；Ante 1 的 Boss 池是 8 个，
+  八个 debuff 全要实现（它们是管线第 2/5/8 步的唯一内容）。
+  同时裁定 `calculate_joker` 的翻译形状：**context 分支照抄、分支内按名字查表**，
+  但 main 分支前四条（含三条泛化判定）必须按原序写死在查表之前。
+
+> **第一个里程碑已交付**（红牌组打小盲注，可玩，带动画/shader/音效）。
+> 第二个里程碑在做：**小丑进结算管线已落地**（172 个测试绿，其中 66 条小丑用例），
+> 经济层 / 商店 / Boss 盲注还没有。
 
 ## Not yet specified
 
@@ -129,6 +135,24 @@ Label: wayfinder:map
   并 `setUniform('uMainSampler', 0)` 绑纹理单元。
 - **「delay 可以压成 0」这条结论不能带过第一个里程碑。** 消耗品与补充包路径上有 5 处
   带 delay / `blockable=false` 的 RNG 消费，第二个里程碑就会进范围，那时虚拟时钟必须如实复刻。
+  **在 `Round` 内部它仍然成立**——那 5 处都不在一局盲注里面，等接商店时再核。
+- **`ease_dollars` 在原作里是入队延迟的，本复刻是同步立即的。** 后果：
+  `G.GAME.dollar_buffer` 这个字段在复刻件里**必须恒为 0**。它在原作里的唯一用途是
+  让同一次结算里后面的小丑（只有 `Bull`）看到「在路上的钱」；同步加钱之下
+  `dollars` 本身已经最新，再往 buffer 里加就是把同一笔算两遍。
+- **小丑区遍历的顺序会改分数。** `[Joker, Cavendish]` 是 `(2+4)×3 = 18`，
+  `[Cavendish, Joker]` 是 `2×3+4 = 10`。所以小丑区的数组顺序是逻辑状态，不是展示顺序。
+- **打出去的牌在结算时已经不在手牌区了。** 原作 `play_cards_from_highlighted` 先把牌
+  移到 `G.play`，再跑 `evaluate_play`，所以管线第 10 步（手牌区遍历）看不到它们。
+  `Raised Fist` / `Baron` / `Shoot the Moon` 全吃这个差别——`Round.play()` 里
+  `moveOut` 必须在 `evaluatePlay` **之前**。
+- **`calculate_joker` 里有 6 张小丑在结算中途消费 RNG**
+  （Misprint / Business Card / Reserved Parking / Space Joker / 8 Ball / Bloodstone）。
+  掷点的**位置**有语义：Business Card 是「先判人头牌、再掷」，所以非人头牌不消耗 RNG；
+  Reserved Parking 反过来是「先掷、再判 debuff」。搞反了整条 seed 链就分叉。
+- **小丑的 `base.nominal` 是 0。** `set_base(P_CARDS.empty)` 匹配不到任何点数，
+  所以 `get_chip_bonus` 对小丑返回 0、`ret.chips` 不会被写。重复触发那一问
+  （拿小丑问 `cardarea = G.play`）靠这条才成为空转，不是靠调用方少传字段。
 - **`T` 是目标变换，`VT` 是动画插值的那个。逻辑只读 `T`，绝不读 `VT`。**
   全仓九处按 `T.x` 排序（`align_cards` 六处 + `state_events` 三处），
   外加 `cardarea.lua:534` 的 pinned 特例（`-100*sort_id` 强制排前），直译时别简化掉。

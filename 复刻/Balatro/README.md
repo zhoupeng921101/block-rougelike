@@ -11,28 +11,53 @@
 
 ## 现在有什么
 
-骨架 + RNG 核心。**还没有任何 gameplay。**
+**第一个里程碑已交付**：红牌组打 Ante 1 的小盲注，8 张手牌 / 4 出牌 / 3 弃牌，
+300 分过关，带出牌动画、悬停倾斜、背景 shader、CRT 与音效。
+
+**第二个里程碑在做**（[15 号票](../../.scratch/balatro-复刻/issues/15-第二个里程碑的切片边界.md)
+「带小丑打过 Ante 1」）：小丑进结算管线**已落地**，经济层 / 商店 / Boss 盲注还没有。
 
 ```
 src/
-├── main.ts              入口
-├── game/
-│   ├── main.ts          Phaser 配置
-│   └── scenes/Boot.ts   占位场景
-└── core/rng/            ← 目前唯一有实质内容的部分
-    ├── fmt13.ts             Lua %.13f 的精确复刻（BigInt，round-half-to-even）
-    ├── luajit-random.ts     LuaJIT TW223 Tausworthe
-    ├── pseudorandom.ts      Balatro 的 pseudohash / pseudoseed / pseudorandom
-    └── rng.test.ts          16 条外部真值 + 8 条回归锚点
+├── main.ts
+├── core/                    ← 逻辑层。没有一行 Phaser，可以单测
+│   ├── card.ts                  扑克牌模型（set_base / is_face / get_nominal）
+│   ├── poker-hands.ts           牌型判定（evaluate_poker_hand）
+│   ├── scoring.ts               出牌结算管线（evaluate_play 的 3/4/6/9/10/11/14/15 步）
+│   ├── round.ts                 一局盲注的状态机
+│   ├── event-queue.ts           事件队列（G.E_MANAGER）
+│   ├── jokers/                  ← 小丑系统
+│   │   ├── centers.generated.ts     150 张的 center 定义（生成的，别手改）
+│   │   ├── instance.ts              set_ability / set_cost
+│   │   ├── calculate.ts             calculate_joker
+│   │   ├── eval-card.ts             eval_card
+│   │   └── game-view.ts             喂给小丑的 G.GAME 视图
+│   └── rng/                     RNG 核心
+│       ├── fmt13.ts                 Lua %.13f 的精确复刻（BigInt，round-half-to-even）
+│       ├── luajit-random.ts         LuaJIT TW223 Tausworthe
+│       ├── pseudorandom.ts          pseudohash / pseudoseed / pseudorandom
+│       └── pseudoshuffle.ts         洗牌
+├── game/                    ← 表现层。Phaser 4
+│   ├── coords.ts                tile ↔ 像素的**唯一**换算边界（见 10 号票）
+│   ├── card-sprite.ts           卡牌（Shader GameObject，不是 Sprite）
+│   ├── shaders/                 background / CRT / dissolve
+│   └── scenes/RoundScene.ts
+└── tools/gen-joker-centers.mjs  从 game.lua 抽 150 张小丑的 center
 ```
 
 ## 命令
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 24 个测试，必须全绿
+npm test            # 172 个测试，必须全绿
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
+```
+
+重新生成小丑 center（只在 `game.lua` 变了时候需要）：
+
+```bash
+node tools/gen-joker-centers.mjs
 ```
 
 **用 npm，不要用 pnpm。** pnpm 在本机装 `esbuild` 时稳定复现 `ERR_PNPM_EPERM`
@@ -55,6 +80,10 @@ npm run build       # 先 typecheck 再 vite build
 改动 `src/core/rng/` 下任何一个文件之前，先确认这 24 个测试是绿的；
 改完再跑一遍。它是后面每一步直译的底座。
 
+**小丑那 66 个测试是另一回事**：它们的期望值全是**手算**的，算式写在用例名里
+（洗牌与结算都没有外部真值，见 [04 号票](../../.scratch/balatro-复刻/issues/04-原版对拍基准能否导出.md)）。
+手算错了测试照样绿，所以加新小丑时**必须把算式写进用例名**，让下一个人能不跑代码就复核。
+
 其中 `randomseed(0.0)` 那条尤其硬：它比对的四个常量原样出现在
 `参考/产物/Balatro_1.0.1o/原生库/arm64-v8a/liblove.so` 里
 （字节偏移 1159408 / 1159416 / 1156768 / 1156776），
@@ -70,3 +99,20 @@ npm run build       # 先 typecheck 再 vite build
 - **本产物是移动版构建**（`PROD_mobile`）。CRT 强度 30 而非桌面的 70，卡牌 3D 倾斜恒关。
   外观基准还没裁定，见 [12 号票](../../.scratch/balatro-复刻/issues/12-外观基准是移动版还是桌面版.md)。
 - 模版自带的 `log.js` 会在每次 dev/build 时向 `gryzor.co` 上报项目名与 Phaser 版本，**已删除**。
+
+## 小丑系统的三条口径
+
+`calculate_joker` 在原作里是 1773 行（`card.lua:2294-4066`）。复刻时的形状裁定见
+[15 号票](../../.scratch/balatro-复刻/issues/15-第二个里程碑的切片边界.md)，三条要记住：
+
+1. **外层的 context 分支照抄，分支内按名字查表。** 外层分支
+   （`individual` / `repetition` / `other_joker` / `before` / `after` / main）
+   是真语义，互斥且有先后；分支内的名字判定命中即 `return`，查表与 if 链等价。
+2. **main 分支的前四条判定不进查表。** `Loyalty Card` 会 fall through，
+   后面三条是**泛化的**（读 `x_mult` / `t_mult` / `t_chips`，不看名字），
+   一次覆盖 10 张没有专属代码的小丑，而且排在所有名字判定之前——顺序有观测后果。
+3. **一次调用最多产出一个 effect。** 原文靠 `return` 保证，这里靠 handler
+   返回 `JokerEffect | null` 保证。破了它会在一次结算里把同一张小丑算两遍。
+
+还有一条容易写错的：**不要往 `dollar_buffer` 里加钱。** 那个字段在原作里存在的唯一理由
+是 `ease_dollars` 入队延迟，而本复刻的加钱是同步立即的——往里加会让 `Bull` 把同一笔算两遍。

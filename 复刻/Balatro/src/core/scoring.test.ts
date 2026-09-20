@@ -3,12 +3,13 @@
  *
  * 期望分数是照 `出牌结算管线.md` 的公式手算的：
  * `floor((牌型基础筹码 + Σ计分牌 nominal) × 牌型基础倍率)`。
- * 本切片没有小丑、强化牌与版本，所以这条公式就是全部。
+ * 不带小丑时这条公式就是全部——小丑的测试在 `jokers/calculate.test.ts`。
  */
 
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { type Suit, type Value, makeCard, resetCardCounters } from './card';
+import { makeGameView } from './jokers';
 import { blindRequirement, evaluatePlay, getBlindAmount, initialHands } from './scoring';
 
 function c(spec: string, x: number) {
@@ -42,7 +43,7 @@ describe('计分：floor((牌型筹码 + Σnominal) × 牌型倍率)', () => {
     ];
 
     it.each(cases)('%s = %d 分 —— %s', (name, expected, _formula, specs) => {
-        const r = evaluatePlay(hand(...specs), initialHands());
+        const r = evaluatePlay(hand(...specs), initialHands(), makeGameView());
         expect(r.handName).toBe(name);
         expect(r.score).toBe(expected);
     });
@@ -51,20 +52,20 @@ describe('计分：floor((牌型筹码 + Σnominal) × 牌型倍率)', () => {
 describe('第 4 步：计分牌集合', () => {
     it('默认只有构成牌型的那几张计分', () => {
         // 一对 K，另外三张不计分——这是 Pair 只得 60 分的原因
-        const r = evaluatePlay(hand('SK', 'HK', 'D9', 'C4', 'D3'), initialHands());
+        const r = evaluatePlay(hand('SK', 'HK', 'D9', 'C4', 'D3'), initialHands(), makeGameView());
         expect(r.scoringHand).toHaveLength(2);
         expect(r.scoringHand.every((x) => x.base.id === 13)).toBe(true);
     });
 
     it('顺子与同花是 5 张全计分', () => {
-        expect(evaluatePlay(hand('DJ', 'CT', 'C9', 'S8', 'H7'), initialHands()).scoringHand).toHaveLength(5);
-        expect(evaluatePlay(hand('HA', 'HK', 'HT', 'H5', 'H4'), initialHands()).scoringHand).toHaveLength(5);
+        expect(evaluatePlay(hand('DJ', 'CT', 'C9', 'S8', 'H7'), initialHands(), makeGameView()).scoringHand).toHaveLength(5);
+        expect(evaluatePlay(hand('HA', 'HK', 'HT', 'H5', 'H4'), initialHands(), makeGameView()).scoringHand).toHaveLength(5);
     });
 
     it('计分牌按 T.x 从左到右排序，不按传入顺序', () => {
         // 故意把 T.x 倒过来给
         const cards = [c('SK', 10), c('HK', 5), c('D9', 0), c('C4', 1), c('D3', 2)];
-        const r = evaluatePlay(cards, initialHands());
+        const r = evaluatePlay(cards, initialHands(), makeGameView());
         expect(r.scoringHand.map((x) => x.T.x)).toEqual([5, 10]); // HK 在 SK 左边
     });
 });
@@ -77,7 +78,7 @@ describe('第 7 步：读的是升级后的牌型值', () => {
         hands.Pair.mult += hands.Pair.l_mult;
         hands.Pair.level = 2;
 
-        const r = evaluatePlay(hand('SK', 'HK', 'D9', 'C4', 'D3'), hands);
+        const r = evaluatePlay(hand('SK', 'HK', 'D9', 'C4', 'D3'), hands, makeGameView());
         expect(r.baseChips).toBe(25);
         expect(r.baseMult).toBe(3);
         expect(r.score).toBe((25 + 20) * 3); // 135
@@ -85,8 +86,8 @@ describe('第 7 步：读的是升级后的牌型值', () => {
 
     it('出牌会累加 played 计数', () => {
         const hands = initialHands();
-        evaluatePlay(hand('SK', 'HK', 'D9', 'C4', 'D3'), hands);
-        evaluatePlay(hand('SQ', 'HQ', 'D9', 'C4', 'D3'), hands);
+        evaluatePlay(hand('SK', 'HK', 'D9', 'C4', 'D3'), hands, makeGameView());
+        evaluatePlay(hand('SQ', 'HQ', 'D9', 'C4', 'D3'), hands, makeGameView());
         expect(hands.Pair.played).toBe(2);
     });
 });
@@ -105,12 +106,12 @@ describe('盲注需求', () => {
 
     it('第一个里程碑：一手同花打不过小盲注，得靠多手累加', () => {
         // Flush 300 分 = 刚好 300，而小盲注要求 300 —— 一手就能过，但这是最好的情况
-        const flush = evaluatePlay(hand('HA', 'HK', 'HT', 'H5', 'H4'), initialHands());
+        const flush = evaluatePlay(hand('HA', 'HK', 'HT', 'H5', 'H4'), initialHands(), makeGameView());
         expect(flush.score).toBe(300);
         expect(flush.score >= blindRequirement(1, 'small')).toBe(true);
 
         // 而一对 K 只有 60，四手打满也才 240，过不了
-        const pair = evaluatePlay(hand('SK', 'HK', 'D9', 'C4', 'D3'), initialHands());
+        const pair = evaluatePlay(hand('SK', 'HK', 'D9', 'C4', 'D3'), initialHands(), makeGameView());
         expect(pair.score * 4).toBeLessThan(blindRequirement(1, 'small'));
     });
 });
