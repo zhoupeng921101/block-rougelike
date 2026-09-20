@@ -408,11 +408,31 @@ describe('消耗品区', () => {
      * 与 Boss 的 `assertImplemented` 同一条：静默等于把缺口伪装成正常行为。
      * 表现层靠 `canUseConsumable` 把按钮灰掉。
      */
-    it('还没实现的塔罗：canUseConsumable 是 false，硬用会抛', () => {
+    it('还没实现的 The Wheel of Fortune：canUseConsumable 是 false，硬用会抛', () => {
         const run = new Run('TUTORIAL');
-        run.consumables.push(makeConsumable('c_fool'));
+        run.consumables.push(makeConsumable('c_wheel_of_fortune'));
         expect(run.canUseConsumable(0)).toBe(false);
         expect(() => run.useConsumable(0)).toThrow(/还没有实现行为/);
+    });
+
+    /**
+     * **实现了 ≠ 现在能用。** `The Fool` 有 spec，但没有「上一张」时用不了。
+     */
+    it('The Fool 在没有「上一张」时用不了（can_use_consumeable 那一关）', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_fool'));
+        expect(run.lastTarotPlanet).toBeUndefined();
+        expect(run.canUseConsumable(0)).toBe(false);
+    });
+
+    it('用过一张星球之后，The Fool 就能复制它了', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_pluto'), makeConsumable('c_fool'));
+        run.useConsumable(0);
+        expect(run.lastTarotPlanet).toBe('c_pluto');
+        expect(run.canUseConsumable(0)).toBe(true);
+        run.useConsumable(0);
+        expect(run.consumables.map((c) => c.key)).toEqual(['c_pluto']);
     });
 
     it('星球是能用的', () => {

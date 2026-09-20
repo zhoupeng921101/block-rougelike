@@ -18,9 +18,13 @@
  * 所以不需要虚拟时钟。**接补充包（17 号票）时要重新核这一条。**
  */
 
-import { type HandInfo, type HandName, levelUpHand } from '../scoring';
+import { levelUpHand } from '../scoring';
 import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET } from './centers.generated';
+import { TAROT_SPECS } from './tarot';
 import type { Consumable, ConsumableSet, PlanetConfig } from './types';
+import type { ConsumableSpec, UseContext } from './use-context';
+
+export type { ConsumableSpec, UseContext };
 
 /**
  * `G.GAME.consumeable_usage` + `consumeable_usage_total`
@@ -63,13 +67,6 @@ export function distinctPlanetsUsed(usage: ConsumableUsage): number {
     return n;
 }
 
-/** 用一张消耗品要读写的东西。塔罗进来时会长（手牌、小丑区、钱） */
-export type UseContext = {
-    hands: Record<HandName, HandInfo>;
-};
-
-export type ConsumableHandler = (consumable: Consumable, ctx: UseContext) => void;
-
 /**
  * 12 张星球牌。`card.lua:1266` 的
  * `if self.ability.consumeable.hand_type then level_up_hand(...) end`——
@@ -77,28 +74,48 @@ export type ConsumableHandler = (consumable: Consumable, ctx: UseContext) => voi
  *
  * **这张表是循环建出来的，不是手抄 12 行**：手抄会漏、会和生成器漂开，
  * 而漏掉的那张会变成「买得到、用了什么也不发生」。
+ *
+ * `canUse` 留空 = 随时能用：`card.lua:1531` 的
+ * `if ... or self.ability.consumeable.hand_type ... then return true end`。
  */
-const PLANET_HANDLERS: Record<string, ConsumableHandler> = Object.fromEntries(
+const PLANET_SPECS: Record<string, ConsumableSpec> = Object.fromEntries(
     CONSUMABLE_KEYS_BY_SET.Planet.map((key) => [
         key,
-        ((consumable, ctx) => {
-            const config = consumable.center.config as PlanetConfig;
-            levelUpHand(ctx.hands, config.hand_type);
-        }) satisfies ConsumableHandler,
+        {
+            apply: (consumable, ctx) => {
+                const config = consumable.center.config as PlanetConfig;
+                levelUpHand(ctx.hands, config.hand_type);
+            },
+        } satisfies ConsumableSpec,
     ]),
 );
 
 /**
- * 有行为的消耗品。**塔罗那 22 张还没进来**（16 号票的第 6 步），
- * 所以现在是 12 / 34。
+ * 有行为的消耗品：12 张星球 + 21 张塔罗 = 33 / 34。
+ *
+ * 差的那一张是 `The Wheel of Fortune`——它给小丑加**版本**，
+ * 而版本系统整个不在范围。见 `tarot.ts` 的文件头。
  */
-export const CONSUMABLE_HANDLERS: Record<string, ConsumableHandler> = {
-    ...PLANET_HANDLERS,
+export const CONSUMABLE_SPECS: Record<string, ConsumableSpec> = {
+    ...PLANET_SPECS,
+    ...TAROT_SPECS,
 };
 
-/** 这张卡用了会不会真的发生点什么。**从 `CONSUMABLE_HANDLERS` 算，别手写名单。** */
+/** 这张卡用了会不会真的发生点什么。**从 `CONSUMABLE_SPECS` 算，别手写名单。** */
 export function isConsumableImplemented(key: string): boolean {
-    return key in CONSUMABLE_HANDLERS;
+    return key in CONSUMABLE_SPECS;
+}
+
+/**
+ * `card.lua:1523` 的 `can_use_consumeable`：**现在这个局面用得了吗**。
+ *
+ * 与「实现了没有」是两件事：没实现的一律不能用，实现了的还要看局面
+ * （选中的张数、消耗品区有没有空位、小丑区满没满）。
+ */
+export function canUseConsumable(consumable: Consumable, ctx: UseContext): boolean {
+    const spec = CONSUMABLE_SPECS[consumable.key];
+    if (!spec) return false;
+    return spec.canUse ? spec.canUse(consumable, ctx) : true;
 }
 
 /** 还没实现的那些，按 order 排。`⚠未实现` 标记与覆盖面测试读它 */
@@ -114,11 +131,11 @@ export function unimplementedConsumables(): string[] {
  * 调用方（`Run.useConsumable`）先查 `isConsumableImplemented` 再调。
  */
 export function applyConsumable(consumable: Consumable, ctx: UseContext): void {
-    const handler = CONSUMABLE_HANDLERS[consumable.key];
-    if (!handler) {
+    const spec = CONSUMABLE_SPECS[consumable.key];
+    if (!spec) {
         throw new Error(
             `${CONSUMABLE_CENTERS[consumable.key]?.name ?? consumable.key} 还没有实现行为`,
         );
     }
-    handler(consumable, ctx);
+    spec.apply(consumable, ctx);
 }

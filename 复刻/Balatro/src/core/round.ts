@@ -523,16 +523,24 @@ export class Round {
     }
 
     /**
-     * 把牌从这一局的所有位置拿走，并通知 `Run` 从整副牌里删掉。
-     * 对应 `card.lua` 的 `Card:remove()` + `remove_from_deck`。
+     * 把牌从这一局的手牌 / 牌堆 / 弃牌堆里拿走。**不通知 `Run`**——
+     * 调用方是 `Run` 自己（塔罗的 `The Hanged Man` 走这条）。
      */
-    private removeFromDeck(cards: Card[]): void {
+    removeCards(cards: Card[]): void {
         for (const card of cards) {
             for (const pile of [this.hand, this.deck, this.discardPile]) {
                 const i = pile.indexOf(card);
                 if (i >= 0) pile.splice(i, 1);
             }
         }
+    }
+
+    /**
+     * 把牌从这一局的所有位置拿走，并通知 `Run` 从整副牌里删掉。
+     * 对应 `card.lua` 的 `Card:remove()` + `remove_from_deck`。
+     */
+    private removeFromDeck(cards: Card[]): void {
+        this.removeCards(cards);
         this.onRemoveFromDeck?.(cards);
     }
 

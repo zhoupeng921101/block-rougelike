@@ -25,8 +25,8 @@ cd 复刻/Balatro && npm test && npm run build
 - [x] 2. `tools/gen-consumable-centers.mjs` 抽 34 张 center（commit 3d11b915）
 - [x] 3. 消耗品槽位 + `Run` 持有 + 商店真的卖消耗品（commit e88c85f5）
 - [x] 4. 星球牌 12 张（同上）——**但墙没破，见下**
-- [ ] 4.5 表现层：消耗品区画出来、能点着用（现在只有商店那一格的文字标记）
-- [ ] 5. 强化牌 8 种（`m_glass` / `m_lucky` 带 RNG）
+- [x] 4.5 表现层：消耗品区（commit 3ee982da）
+- [x] 5. 强化牌 8 种（commit 6b69b615）
 - [ ] 6. 塔罗牌 22 张
 - [ ] 7. 回填 13 张小丑，删 `coverage.test.ts` 对应行
 
@@ -53,8 +53,9 @@ cd 复刻/Balatro && npm test && npm run build
 
 ## 进度
 
-- 2026-09-20：开 16 号票裁定四件事；第 1–4 步落地，470 个测试绿，`npm run build` 通。
-  三个提交：2eb2cebe（levelUpHand）、3d11b915（生成器）、e88c85f5（槽位 + 星球 + 商店）。
+- 2026-09-20：开 16 号票裁定四件事；第 1–5 步落地，496 个测试绿，`npm run build` 通。
+  五个提交：2eb2cebe（levelUpHand）、3d11b915（生成器）、e88c85f5（槽位 + 星球 + 商店）、
+  3ee982da（表现层消耗品区）、6b69b615（8 种强化牌）。
 
 **这一轮逮到的两个真 bug**（都不是新写的，是原先就错的）：
 
@@ -63,6 +64,10 @@ cd 复刻/Balatro && npm test && npm run build
    原作 `card.lua:4829` 的 `Card:remove()` 有对称清除，重掷商店与离开商店都会走它。
    真实语义是「此刻被摆出来或被持有的 center」。池长度不变但内容窄了 →
    `_resample` 次数对不上 → 同 seed 从第二个商店起分叉。已修（`Shop.release()`）。
+
+**另外两张「有 handler 但效果落空」的小丑**（已开后台任务，不在本票范围）：
+`To Do List`（牌型从没被抽过）、`Mr. Bones`（`saved` 标志无人读取）。
+两张都被 `isJokerImplemented` 报成已实现——这正是 coverage 那套想挡的漏网形态。
 
 **实测结论（会改计划）**：星球牌**没有**把 Ante 3 的墙推倒。
 八个 seed 的贪心深度 2.875 → 3.0。商店两格里只有 ~28.6% 是消耗品、

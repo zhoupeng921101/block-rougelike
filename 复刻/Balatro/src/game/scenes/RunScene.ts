@@ -288,19 +288,44 @@ ${String(e instanceof Error ? e.message : e)}`)
         const index = this.run.consumables.indexOf(consumable);
         if (index < 0) return;
 
-        // **还没实现行为的塔罗点不动。** 逻辑层会抛，但等抛出来已经晚了——
-        // 玩家看到的是「点了一下什么也没发生」，那正是要避免的那种伪装
-        if (!this.run.canUseConsumable(index)) {
+        // **选中的手牌就是塔罗的目标**（原作的 `G.hand.highlighted`）。
+        // 按 `T.x` 排序交给逻辑层——`Death` 认的是「最右边那张」
+        const highlighted = this.selectedInOrder();
+
+        // **用不了的点不动。** 逻辑层会抛，但等抛出来已经晚了——
+        // 玩家看到的是「点了一下什么也没发生」，那正是要避免的那种伪装。
+        // 两种用不了：还没实现（The Wheel of Fortune），或这个局面不允许
+        // （选的张数不对 / 消耗品区没空位 / 小丑区满了）
+        if (!this.run.canUseConsumable(index, highlighted)) {
             this.sound.play('cancel', { volume: 0.4 });
-            this.message.setText(`${consumable.center.name} 还没有实现行为`).setColor('#e5885f');
-            this.time.delayedCall(1200, () => this.message.setText(''));
+            this.message.setText(this.whyCannotUse(consumable)).setColor('#e5885f');
+            this.time.delayedCall(1400, () => this.message.setText(''));
             return;
         }
 
-        this.run.useConsumable(index);
+        this.run.useConsumable(index, highlighted);
         this.sound.play('tarot1', { volume: 0.6 });
+        this.selected.clear();
+        // 塔罗会换点数 / 换花色 / 换强化 / 销毁手牌，**整个手牌区要重建**
+        this.rebuildHand();
+        this.rebuildJokers();
         this.rebuildConsumables();
         this.refresh();
+    }
+
+    /** 点不动的时候给一句人话。没实现与「局面不允许」要分开说 */
+    private whyCannotUse(consumable: Consumable): string {
+        if (!isConsumableImplemented(consumable.key)) {
+            return `${consumable.center.name} 还没有实现行为`;
+        }
+        const max = consumable.center.config.max_highlighted as number | undefined;
+        if (max !== undefined) {
+            const min = (consumable.center.config.min_highlighted as number | undefined) ?? 1;
+            return min === max
+                ? `${consumable.center.name} 要正好选 ${min} 张手牌`
+                : `${consumable.center.name} 要选 ${min}–${Math.min(5, max)} 张手牌`;
+        }
+        return `${consumable.center.name} 现在用不了`;
     }
 
     private clearShop(): void {

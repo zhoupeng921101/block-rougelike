@@ -284,33 +284,75 @@ export function createCardForShop(rng: PseudorandomState, context: PoolContext):
     throw new Error(`商店档位判定一个都没命中：polled = ${polled}`);
 }
 
-function createJokerForShop(rng: PseudorandomState, context: PoolContext): ShopItem {
-    const [pool, poolKey] = getCurrentJokerPool(rng, context, 'sho');
-
-    // `common_events.lua:2156`
+/** `common_events.lua:2156` 的抽取 + resample 循环。三处都走它 */
+function drawFromPool(rng: PseudorandomState, pool: string[], poolKey: string): string {
     let [key] = pseudorandomElement(pool, rng.pseudoseed(poolKey));
     let it = 1;
     while (key === UNAVAILABLE) {
         it++;
         [key] = pseudorandomElement(pool, rng.pseudoseed(`${poolKey}_resample${it}`));
     }
+    return String(key);
+}
 
-    const joker = makeJoker(String(key));
+/**
+ * `create_card('Joker', area, …, keyAppend)`。
+ *
+ * **`inShop` 决定要不要消费 `etperpoll` 与 `edi`**：那一整段的条件是
+ * `area == G.shop_jokers or area == G.pack_cards`（`common_events.lua:2181`），
+ * 所以商店与补充包消费、`Judgement` 造到小丑区的那张不消费 `etperpoll`。
+ * `edi` 那次（`poll_edition`）在 `if _type == 'Joker'` 里但在上面那个 if 外面，
+ * **两条路都消费**。
+ */
+export function createJokerCard(
+    rng: PseudorandomState,
+    context: PoolContext,
+    keyAppend: string,
+    inShop: boolean,
+): Joker {
+    const [pool, poolKey] = getCurrentJokerPool(rng, context, keyAppend);
+    const key = drawFromPool(rng, pool, poolKey);
+    const joker = makeJoker(key);
 
-    // `card.lua:350`：**任何一张牌被 `set_ability` 就标记 used**，
-    // 包括商店里摆出来的。所以同一局里同一张小丑不会出第二次
-    context.usedJokers.add(String(key));
+    // `card.lua:350`：**任何一张牌被 `set_ability` 就标记 used**，包括商店里摆出来的
+    context.usedJokers.add(key);
 
-    // `common_events.lua:2181`：永恒／易腐掷点，**无条件消费**。
-    // 判定被 `enable_eternals_in_shop`（默认 false）挡住，但掷点本身在 if 外面
-    rng.pseudorandom(`etperpoll${context.ante}`);
-
-    // 租赁那次掷点在 `and` 右边、默认关 → **短路，不消费**
+    if (inShop) {
+        // `common_events.lua:2181`：永恒／易腐掷点，**无条件消费**。
+        // 判定被 `enable_eternals_in_shop`（默认 false）挡住，但掷点本身在 if 外面。
+        // 租赁那次在 `and` 右边、默认关 → **短路，不消费**
+        rng.pseudorandom(`etperpoll${context.ante}`);
+    }
 
     // `common_events.lua:2192` 的 `poll_edition('edi'+append+ante)`。
-    // 版本不在本里程碑，但这次掷点要消费
-    rng.pseudorandom(`edisho${context.ante}`);
+    // 版本不在范围，但这次掷点要消费
+    rng.pseudorandom(`edi${keyAppend}${context.ante}`);
 
+    return joker;
+}
+
+/**
+ * `create_card('Tarot' | 'Planet', area, …, keyAppend)`。
+ *
+ * **比小丑那一支短得多**：`etperpoll` / `edi` 整段在 `if _type == 'Joker'` 里面，
+ * `front` 掷点只有 `Base` / `Enhanced` 才走，`soul_` 那一段要 `soulable`
+ * 而调用点全部传 nil。所以只消费池子抽取那一次（加 resample）。见 16 号票。
+ */
+export function createConsumableCard(
+    rng: PseudorandomState,
+    set: ConsumableSet,
+    context: PoolContext,
+    keyAppend: string,
+): Consumable {
+    const [pool, poolKey] = getCurrentConsumablePool(set, context, keyAppend);
+    const key = drawFromPool(rng, pool, poolKey);
+    // `card.lua:350` 对消耗品同样标记——那个循环按 name 匹配全体 P_CENTERS
+    context.usedJokers.add(key);
+    return makeConsumable(key);
+}
+
+function createJokerForShop(rng: PseudorandomState, context: PoolContext): ShopItem {
+    const joker = createJokerCard(rng, context, 'sho', true);
     return { kind: 'joker', joker, cost: joker.center.cost };
 }
 
@@ -330,19 +372,7 @@ function createConsumableForShop(
     set: ConsumableSet,
     context: PoolContext,
 ): ShopItem {
-    const [pool, poolKey] = getCurrentConsumablePool(set, context, 'sho');
-
-    let [key] = pseudorandomElement(pool, rng.pseudoseed(poolKey));
-    let it = 1;
-    while (key === UNAVAILABLE) {
-        it++;
-        [key] = pseudorandomElement(pool, rng.pseudoseed(`${poolKey}_resample${it}`));
-    }
-
-    const consumable = makeConsumable(String(key));
-    // `card.lua:350` 对消耗品同样标记——那个循环按 name 匹配全体 P_CENTERS
-    context.usedJokers.add(String(key));
-
+    const consumable = createConsumableCard(rng, set, context, 'sho');
     return { kind: 'consumable', consumable, cost: consumable.cost };
 }
 

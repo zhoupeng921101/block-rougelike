@@ -33,8 +33,11 @@ import { getEndOfRoundDollars } from './enhancements';
 import {
     type Consumable,
     type ConsumableUsage,
+    type UseContext,
     applyConsumable,
+    canUseConsumable,
     isConsumableImplemented,
+    makeConsumable,
     makeConsumableUsage,
     recordConsumableUsage,
 } from './consumables';
@@ -45,7 +48,14 @@ import { NO_JOKERS, type JokerFlags } from './poker-hands';
 import { PseudorandomState, pseudorandomElement } from './rng';
 import { Round, STARTING_PARAMS } from './round';
 import { type HandInfo, type HandName, initialHands } from './scoring';
-import { type PoolContext, type ShopItem, Shop, releaseUsed } from './shop';
+import {
+    type PoolContext,
+    type ShopItem,
+    Shop,
+    createConsumableCard,
+    createJokerCard,
+    releaseUsed,
+} from './shop';
 
 /** `game.lua:2186`：`blind_choices = {Small = 'bl_small', Big = 'bl_big'}`。 */
 const BLIND_ORDER: readonly BlindKind[] = ['small', 'big', 'boss'];
@@ -70,6 +80,8 @@ export class Run {
     readonly consumables: Consumable[] = [];
     /** `G.GAME.consumeable_usage`。`Fortune Teller` / `Satellite` 读它 */
     readonly consumableUsage: ConsumableUsage = makeConsumableUsage();
+    /** `G.GAME.last_tarot_planet`。`The Fool` 复制它 */
+    lastTarotPlanet?: string;
 
     ante = 1;
     dollars: number = STARTING_PARAMS.dollars;
@@ -406,21 +418,91 @@ export class Run {
      * 同一条理由。表现层要先查 `isConsumableImplemented` 把按钮灰掉，
      * 而不是让玩家点了之后什么也不发生。
      */
-    useConsumable(index: number): void {
+    useConsumable(index: number, highlighted: Card[] = []): void {
         const consumable = this.consumables[index];
         if (!consumable) throw new Error(`消耗品区没有第 ${index} 张`);
 
+        // `card.lua:1094`：**计数在效果之前**，而且是同步的
         recordConsumableUsage(this.consumableUsage, consumable);
-        applyConsumable(consumable, { hands: this.hands });
 
+        // **先离开消耗品区、再跑效果**：`The Emperor` 要往区里造两张，
+        // 而它自己那一格得先空出来（原作是 `remove_card` 在 `use_consumeable` 之后，
+        // 但 `G.consumeables.config.card_limit > #cards` 那个判定里
+        // 用掉的那张已经被 `G.GAME.consumeable_buffer` 抵掉了，等价）
         this.consumables.splice(index, 1);
+
+        const ctx = this.useContext(highlighted);
+        applyConsumable(consumable, ctx);
+
         releaseUsed(this.poolContext(), consumable.key);
+
+        // `misc_functions.lua:1227` 的双层嵌套 immediate：
+        // **在效果之后才写**，所以 `The Fool` 读到的是上一张、不是自己
+        this.lastTarotPlanet = consumable.key;
     }
 
-    /** 这张卡现在用得了吗。表现层拿它决定按钮灰不灰 */
-    canUseConsumable(index: number): boolean {
+    /**
+     * 这张卡现在用得了吗。表现层拿它决定按钮灰不灰。
+     *
+     * 两件事：**实现了没有**（`isConsumableImplemented`）与
+     * **这个局面允不允许**（`can_use_consumeable`）。两个都要过。
+     */
+    canUseConsumable(index: number, highlighted: Card[] = []): boolean {
         const consumable = this.consumables[index];
-        return !!consumable && isConsumableImplemented(consumable.key);
+        if (!consumable) return false;
+        if (!isConsumableImplemented(consumable.key)) return false;
+        // 查 `canUse` 时这张牌还在区里，而效果跑的时候它已经出去了 ——
+        // `The Emperor` / `The Fool` 判的是「有没有空位」，所以要按「它已经出去」来算
+        const ctx = this.useContext(highlighted, consumable);
+        return canUseConsumable(consumable, ctx);
+    }
+
+    /**
+     * 喂给消耗品的那张宽接口。`exclude` 是正在被用掉的那一张——
+     * 它在效果跑的时候已经离开消耗品区了。
+     */
+    private useContext(highlighted: Card[], exclude?: Consumable): UseContext {
+        const consumables = exclude
+            ? this.consumables.filter((c) => c !== exclude)
+            : this.consumables;
+
+        return {
+            hands: this.hands,
+            highlighted,
+            jokers: this.jokers,
+            consumables,
+            consumableSlots: this.consumableSlots,
+            jokerSlots: this.jokerSlots,
+            getDollars: () => this.dollars,
+            addDollars: (amount) => { this.dollars += amount; },
+            removeCards: (cards) => {
+                this.removeFromDeck(cards);
+                this.round?.removeCards(cards);
+                // `card.lua:1370`：销毁之后跑小丑的 `remove_playing_cards`。
+                // 那一组小丑还没实现，调用点先留着——位置在销毁之后
+                for (const joker of this.jokers) {
+                    calculateJoker(
+                        joker,
+                        { remove_playing_cards: true, removed: cards },
+                        this.round?.gameView() ?? this.shopGameView(),
+                    );
+                }
+            },
+            addConsumable: (c) => {
+                this.consumables.push(c);
+                this.usedJokers.add(c.key);
+            },
+            addJoker: (j) => {
+                this.jokers.push(j);
+                refreshDerivedAbilities(this.jokers, this.jokerSlots);
+            },
+            createConsumable: (set, keyAppend) =>
+                createConsumableCard(this.rng, set, this.poolContext(), keyAppend),
+            createJoker: (keyAppend) =>
+                createJokerCard(this.rng, this.poolContext(), keyAppend, false),
+            makeConsumable,
+            lastTarotPlanet: this.lastTarotPlanet,
+        };
     }
 
     /** 重掷商店。`button_callbacks.lua:2965`。 */

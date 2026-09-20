@@ -17,12 +17,13 @@ import {
     isConsumableImplemented,
     makeConsumable,
     makeConsumableUsage,
+    makeUseContext,
     recordConsumableUsage,
     unimplementedConsumables,
 } from './index';
 
 const use = (key: string, hands = initialHands()) => {
-    applyConsumable(makeConsumable(key), { hands });
+    applyConsumable(makeConsumable(key), makeUseContext({ hands }));
     return hands;
 };
 
@@ -100,24 +101,23 @@ describe('用量统计', () => {
     });
 });
 
-describe('覆盖面：34 张里 12 张有行为', () => {
-    it('12 张星球全部有 handler', () => {
+describe('覆盖面：34 张里 33 张有行为', () => {
+    it('12 张星球全部有 spec', () => {
         expect(CONSUMABLE_KEYS_BY_SET.Planet.every(isConsumableImplemented)).toBe(true);
     });
 
-    /** 未实现的名单快照。**实现一张塔罗就来这里删一行。** */
-    it('22 张塔罗一张都还没有——16 号票的第 6 步', () => {
+    /**
+     * 未实现的名单快照。**实现一张就来这里删一行。**
+     *
+     * 只剩 `The Wheel of Fortune`：它的效果是给小丑加**版本**，
+     * 而版本系统整个不在范围（见 `tarot.ts` 的文件头）。
+     */
+    it('只差 The Wheel of Fortune —— 它要版本系统', () => {
         const names = unimplementedConsumables().map((k) => CONSUMABLE_CENTERS[k].name);
-        expect(names).toEqual([
-            'The Fool', 'The Magician', 'The High Priestess', 'The Empress', 'The Emperor',
-            'The Hierophant', 'The Lovers', 'The Chariot', 'Justice', 'The Hermit',
-            'The Wheel of Fortune', 'Strength', 'The Hanged Man', 'Death', 'Temperance',
-            'The Devil', 'The Tower', 'The Star', 'The Moon', 'The Sun',
-            'Judgement', 'The World',
-        ]);
+        expect(names).toEqual(['The Wheel of Fortune']);
     });
 
     it('没实现的**抛**，不静默吞——与 Boss 的 assertImplemented 同一条', () => {
-        expect(() => use('c_fool')).toThrow(/还没有实现行为/);
+        expect(() => use('c_wheel_of_fortune')).toThrow(/还没有实现行为/);
     });
 });

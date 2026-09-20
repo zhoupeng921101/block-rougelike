@@ -141,6 +141,14 @@ export type JokerContext = {
     end_of_round?: boolean;
     /** 本局是否已经输了（`Mr. Bones` 读它）。不在本里程碑，但字段先留 */
     game_over?: boolean;
+    /**
+     * `state_events.lua:996` 与 `card.lua:1370` 的 `remove_playing_cards`：
+     * 有扑克牌被永久销毁（碎掉的玻璃牌 / The Hanged Man）。
+     * `Hologram` / `Glass Joker` 这一组读它，**都还没实现**，调用点先留着
+     */
+    remove_playing_cards?: boolean;
+    /** 跟着 `remove_playing_cards` 一起来的那批牌 */
+    removed?: Card[];
     /** 本回合状态的只读视图。原作直接读 `G.GAME`，这里显式传进来 */
     game?: GameView;
 };
