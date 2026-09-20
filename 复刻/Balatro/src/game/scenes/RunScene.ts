@@ -499,7 +499,7 @@ ${String(e instanceof Error ? e.message : e)}`)
                 this.add.text(
                     toPx(x),
                     toPx(PACK_Y_TILES + CARD_H * 1.27 + 0.1),
-                    `$${slot.cost}${done ? '' : '  ⚠未实现'}`,
+                    `$${shop.packCost(i)}${done ? '' : '  ⚠未实现'}`,
                     {
                         fontFamily: 'monospace', fontSize: 16,
                         color: done ? '#ffd76e' : '#e5885f',
@@ -525,7 +525,7 @@ ${String(e instanceof Error ? e.message : e)}`)
                     this.add.text(
                         toPx(x),
                         toPx(SHOP_Y_TILES + CARD_H + 0.1),
-                        `$${item.cost}${done ? '' : '  ⚠未实现'}`,
+                        `$${shop.itemCost(i)}${done ? '' : '  ⚠未实现'}`,
                         {
                             fontFamily: 'monospace', fontSize: 18,
                             color: done ? '#ffd76e' : '#e5885f',

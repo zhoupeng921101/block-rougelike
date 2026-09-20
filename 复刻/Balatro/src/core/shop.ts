@@ -78,7 +78,7 @@ export const JOKER_RARITY_POOLS: Record<number, string[]> = (() => {
  * 商店里的一个补充包格子。`null` 表示这一格**已经买掉了**
  * （原作把 `G.GAME.current_round.used_packs[i]` 置成 `'USED'`）。
  */
-export type PackSlot = { key: string; center: BoosterCenter; cost: number } | null;
+export type PackSlot = { key: string; center: BoosterCenter } | null;
 
 /** 池子剔除要查的那几样状态。 */
 export type PoolContext = {
@@ -418,7 +418,8 @@ function createConsumableForShop(
     context: PoolContext,
 ): ShopItem {
     const consumable = createConsumableCard(rng, set, context, 'sho');
-    return { kind: 'consumable', consumable, cost: shopCost(consumable.cost, set, context) };
+    // `cost` 是**建格子时的价**，实际付的价走 `Shop.itemCost`（现算，见那里）
+    return { kind: 'consumable', consumable, cost: consumable.cost };
 }
 
 /**
@@ -487,11 +488,31 @@ export class Shop {
         for (let i = 0; i < SHOP_BOOSTER_MAX; i++) {
             const [key, consumed] = getPack(this.rng, { ...this.context, firstShopBuffoon: buffoonDone });
             if (!consumed) buffoonDone = true;
-            const center = BOOSTER_CENTERS[key];
-            // `card.lua:380`：`Astronomer` 让天体包免费
-            const cost = shopCost(center.cost, center.kind === 'Celestial' ? 'Celestial' : 'other', this.context);
-            this.packs.push({ key, center, cost });
+            this.packs.push({ key, center: BOOSTER_CENTERS[key] });
         }
+    }
+
+    /**
+     * 第 `index` 格补充包**现在**要多少钱。
+     *
+     * **必须现算，不能在建格子的时候算死**：`Astronomer` 让星球牌与天体包免费
+     * （`card.lua:380`），而原作在它进小丑区时会把**所有卡重新定价一遍**
+     * （`card.lua:616` 的 `for k, v in pairs(G.I.CARD) do v:set_cost() end`）。
+     * 算死的话「先买 Astronomer 再买天体包」就还是收全价。
+     */
+    packCost(index: number): number {
+        const slot = this.packs[index];
+        if (!slot) return 0;
+        const kind = slot.center.kind === 'Celestial' ? 'Celestial' : 'other';
+        return shopCost(slot.center.cost, kind, this.context);
+    }
+
+    /** 第 `index` 格商品现在要多少钱。同样现算，理由见 `packCost` */
+    itemCost(index: number): number {
+        const item = this.items[index];
+        if (!item) return 0;
+        if (item.kind === 'joker') return item.joker.center.cost;
+        return shopCost(item.consumable.cost, item.consumable.center.set, this.context);
     }
 
     /** 买掉第 `index` 个补充包格子。返回那一格，并把它置空 */

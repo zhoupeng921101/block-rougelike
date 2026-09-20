@@ -313,7 +313,12 @@ export class Run {
             const planetHand = sealEndOfRoundPlanet(card, this.lastHandPlayed);
             if (planetHand && this.consumables.length < this.consumableSlots) {
                 const key = planetKeyFor(planetHand);
-                if (key) this.consumables.push(makeConsumable(key));
+                if (key) {
+                    this.consumables.push(makeConsumable(key));
+                    // `card.lua:350`：造出来那一刻就标 used，**别漏**——
+                    // 漏了这一张就不会退出星球池，下一个商店的 `_resample` 次数跟着偏
+                    this.usedJokers.add(key);
+                }
             }
         }
 
@@ -444,7 +449,9 @@ export class Run {
         if (!this.shop) throw new Error('不在商店里');
         const item = this.shop.items[index];
         if (!item) throw new Error(`商店没有第 ${index} 格`);
-        if (item.cost > this.dollars) throw new Error(`买不起：要 $${item.cost}，只有 $${this.dollars}`);
+        // **现算价**：`Astronomer` 让星球牌免费，而它可能是刚买的
+        const cost = this.shop.itemCost(index);
+        if (cost > this.dollars) throw new Error(`买不起：要 $${cost}，只有 $${this.dollars}`);
         if (item.kind === 'joker' && this.jokersFull) {
             throw new Error(`小丑区满了（${this.jokerSlots} 格）`);
         }
@@ -453,7 +460,7 @@ export class Run {
         }
 
         this.shop.take(index);
-        this.dollars -= item.cost;
+        this.dollars -= cost;
 
         if (item.kind === 'consumable') {
             this.consumables.push(item.consumable);
@@ -486,15 +493,17 @@ export class Run {
         if (this.openPack) throw new Error('已经有一个补充包开着了');
         const slot = this.shop.packs[index];
         if (!slot) throw new Error(`商店没有第 ${index} 个补充包`);
-        if (slot.cost > this.dollars) {
-            throw new Error(`买不起：要 $${slot.cost}，只有 $${this.dollars}`);
+        // **现算价**：`Astronomer` 可能是在这个商店里刚买的
+        const cost = this.shop.packCost(index);
+        if (cost > this.dollars) {
+            throw new Error(`买不起：要 $${cost}，只有 $${this.dollars}`);
         }
         if (!isBoosterImplemented(slot.key, BOOSTER_CENTERS)) {
-            throw new Error(`${slot.center.name} 还没有实现（要版本／蜡封／幽灵牌）`);
+            throw new Error(`${slot.center.name} 还没有实现`);
         }
 
         this.shop.takePack(index);
-        this.dollars -= slot.cost;
+        this.dollars -= cost;
 
         // ① `card.lua:1799` 的 `open_booster` 遍历。**同步，排在造牌之前**
         for (const joker of [...this.jokers]) {
@@ -509,9 +518,9 @@ export class Run {
     /** 这一格买得了吗。表现层拿它决定按钮灰不灰 */
     canBuyPack(index: number): boolean {
         const slot = this.shop?.packs[index];
-        if (!slot) return false;
+        if (!slot || !this.shop) return false;
         if (this.openPack) return false;
-        if (slot.cost > this.dollars) return false;
+        if (this.shop.packCost(index) > this.dollars) return false;
         return isBoosterImplemented(slot.key, BOOSTER_CENTERS);
     }
 

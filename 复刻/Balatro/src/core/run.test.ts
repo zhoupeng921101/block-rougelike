@@ -579,7 +579,7 @@ describe('开包', () => {
 
     it('扣钱', () => {
         const run = intoShopWithPack();
-        const cost = run.shop!.packs[0]!.cost;
+        const cost = run.shop!.packCost(0);
         const before = run.dollars;
         run.buyAndOpenPack(0);
         expect(run.dollars).toBe(before - cost);
@@ -692,5 +692,82 @@ describe('幽灵牌改手牌上限（跨回合持续）', () => {
         run.finishRound();
         run.leaveShop();
         expect(run.startRound().handLimit).toBe(7);
+    });
+});
+
+describe('回归：Astronomer 的价格要现算', () => {
+    function intoShop(seed: string): Run {
+        const run = new Run(seed, makeStandardDeck());
+        const round = run.startRound();
+        (round as unknown as { phase: string }).phase = 'won';
+        run.finishRound();
+        run.dollars = 100;
+        return run;
+    }
+
+    /**
+     * `card.lua:616`：`Astronomer` 进小丑区时原作会把**所有卡重新定价一遍**
+     * （`for k, v in pairs(G.I.CARD) do v:set_cost() end`）。
+     * 价格算死在建格子那一刻的话，「先买 Astronomer 再买天体包」还是收全价。
+     */
+    it('商店里买到 Astronomer 之后，天体包立刻变免费', () => {
+        for (let i = 0; i < 60; i++) {
+            const run = intoShop(`S${i}`);
+            const packIdx = run.shop!.packs.findIndex((p) => p?.center.kind === 'Celestial');
+            if (packIdx < 0) { run.leaveShop(); continue; }
+
+            expect(run.shop!.packCost(packIdx)).toBeGreaterThan(0);
+            run.jokers.push(makeJoker('j_astronomer'));
+            expect(run.shop!.packCost(packIdx)).toBe(0);
+            return;
+        }
+        throw new Error('60 个商店里一个天体包都没出现？');
+    });
+
+    it('星球牌那一格同理', () => {
+        for (let i = 0; i < 80; i++) {
+            const run = intoShop(`P${i}`);
+            const idx = run.shop!.items.findIndex(
+                (x) => x.kind === 'consumable' && x.consumable.center.set === 'Planet',
+            );
+            if (idx < 0) { run.leaveShop(); continue; }
+
+            expect(run.shop!.itemCost(idx)).toBe(3);
+            run.jokers.push(makeJoker('j_astronomer'));
+            expect(run.shop!.itemCost(idx)).toBe(0);
+            return;
+        }
+        throw new Error('80 个商店里一格星球牌都没出现？');
+    });
+
+    it('塔罗牌不免费（Astronomer 只管星球与天体包）', () => {
+        for (let i = 0; i < 80; i++) {
+            const run = intoShop(`T${i}`);
+            run.jokers.push(makeJoker('j_astronomer'));
+            const idx = run.shop!.items.findIndex(
+                (x) => x.kind === 'consumable' && x.consumable.center.set === 'Tarot',
+            );
+            if (idx < 0) { run.leaveShop(); continue; }
+            expect(run.shop!.itemCost(idx)).toBe(3);
+            return;
+        }
+        throw new Error('80 个商店里一格塔罗都没出现？');
+    });
+});
+
+describe('回归：Blue 蜡封造出来的星球要退出池子', () => {
+    it('造出来的那张进了 usedJokers', () => {
+        const run = new Run('TUTORIAL', makeStandardDeck());
+        const round = run.startRound();
+        const pair = [round.hand[0], round.hand[1]];
+        // 凑一手打出去，好让 lastHandPlayed 有值
+        round.play([pair[0]]);
+        round.hand[0].seal = 'Blue';
+        (round as unknown as { phase: string }).phase = 'won';
+        run.finishRound();
+
+        const made = run.consumables[0];
+        if (!made) throw new Error('Blue 蜡封没造出星球？');
+        expect(run.usedJokers.has(made.key)).toBe(true);
     });
 });
