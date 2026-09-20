@@ -17,11 +17,13 @@ import { makeStandardDeck, resetCardCounters } from '../../core/card';
 import { EventManager, GameEvent } from '../../core/event-queue';
 import { isConsumableImplemented } from '../../core/consumables';
 import { isJokerImplemented } from '../../core/jokers';
+import type { Consumable } from '../../core/consumables';
 import type { Joker } from '../../core/jokers';
 import { evaluatePokerHand } from '../../core/poker-hands';
 import type { Round } from '../../core/round';
 import { Run } from '../../core/run';
 import { CardSprite } from '../card-sprite';
+import { ConsumableSprite } from '../consumable-sprite';
 import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, toPx } from '../coords';
 import { JokerSprite } from '../joker-sprite';
 import { BACKGROUND_COLOURS, BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
@@ -36,6 +38,9 @@ const PLAY_Y_TILES = 4.0;
 /** 小丑区，画在最上面一排 */
 const JOKER_Y_TILES = 0.5;
 const JOKER_X_TILES = 9.0;
+/** 消耗品区，接在小丑区右边。5 格小丑 + 2 格消耗品 */
+const CONSUMABLE_Y_TILES = 0.5;
+const CONSUMABLE_X_TILES = JOKER_X_TILES + 5 * (CARD_W + 0.15) + 0.6;
 /** 商店那两格 */
 const SHOP_Y_TILES = 4.0;
 const SHOP_X_TILES = 6.5;
@@ -54,6 +59,9 @@ export class RunScene extends Scene {
     private sprites: CardSprite[] = [];
     private jokerSprites: JokerSprite[] = [];
     private shopSprites: JokerSprite[] = [];
+    private consumableSprites: ConsumableSprite[] = [];
+    /** 商店里那些消耗品格。与 `shopSprites` 分开存，两者的类型不一样 */
+    private shopConsumableSprites: ConsumableSprite[] = [];
     /** 商店格子下面那行价格／「未实现」标记 */
     private shopLabels: GameObjects.Text[] = [];
     private selected = new Set<Card>();
@@ -96,6 +104,11 @@ export class RunScene extends Scene {
         });
         // 小丑是单层，`Jokers.png` 里那一格就是完整卡面
         this.load.spritesheet('jokers', '/assets/textures/Jokers.png', {
+            frameWidth: 71,
+            frameHeight: 95,
+        });
+        // 消耗品同样是单层。**一张图集装三个 set**（塔罗 / 星球 / 幽灵）
+        this.load.spritesheet('tarots', '/assets/textures/Tarots.png', {
             frameWidth: 71,
             frameHeight: 95,
         });
@@ -160,6 +173,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.selected.clear();
         this.rebuildHand();
         this.rebuildJokers();
+        this.rebuildConsumables();
         this.clearShop();
         this.refresh();
     }
@@ -255,9 +269,45 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.refresh();
     }
 
+    /**
+     * 消耗品区。点一下 = **用掉它**；商店里按住卖不做（本票不开拖拽），
+     * 卖消耗品走「在商店里点」这条路，与卖小丑一致。
+     */
+    private rebuildConsumables(): void {
+        for (const s of this.consumableSprites) s.destroy();
+        this.consumableSprites = this.run.consumables.map(
+            (c) => new ConsumableSprite(this, c, (con) => this.onConsumableClick(con)),
+        );
+        this.consumableSprites.forEach((s, i) => {
+            s.layout(CONSUMABLE_X_TILES + i * (CARD_W + 0.15), CONSUMABLE_Y_TILES);
+        });
+    }
+
+    private onConsumableClick(consumable: Consumable): void {
+        if (this.animating) return;
+        const index = this.run.consumables.indexOf(consumable);
+        if (index < 0) return;
+
+        // **还没实现行为的塔罗点不动。** 逻辑层会抛，但等抛出来已经晚了——
+        // 玩家看到的是「点了一下什么也没发生」，那正是要避免的那种伪装
+        if (!this.run.canUseConsumable(index)) {
+            this.sound.play('cancel', { volume: 0.4 });
+            this.message.setText(`${consumable.center.name} 还没有实现行为`).setColor('#e5885f');
+            this.time.delayedCall(1200, () => this.message.setText(''));
+            return;
+        }
+
+        this.run.useConsumable(index);
+        this.sound.play('tarot1', { volume: 0.6 });
+        this.rebuildConsumables();
+        this.refresh();
+    }
+
     private clearShop(): void {
         for (const s of this.shopSprites) s.destroy();
         this.shopSprites = [];
+        for (const s of this.shopConsumableSprites) s.destroy();
+        this.shopConsumableSprites = [];
         for (const t of this.shopLabels) t.destroy();
         this.shopLabels = [];
     }
@@ -271,18 +321,23 @@ ${String(e instanceof Error ? e.message : e)}`)
             const x = SHOP_X_TILES + i * (CARD_W + 1.4);
 
             if (item.kind !== 'joker') {
-                // 消耗品格。**没实现行为的塔罗要标出来**，与小丑那一条同理：
-                // 商店按设计从全池生成，买了什么也不发生就是把缺口伪装成正常行为
                 const c = item.consumable;
+                const sprite = new ConsumableSprite(this, c, () => this.buy(i));
+                sprite.layout(x, SHOP_Y_TILES);
+                this.shopConsumableSprites.push(sprite);
+
+                // **没实现行为的塔罗要标出来**，与小丑那一条同理：
+                // 商店按设计从全池生成（池子内容影响 RNG，不能裁），
+                // 买了什么也不发生就是把缺口伪装成正常行为
                 const done = isConsumableImplemented(c.key);
                 this.shopLabels.push(
                     this.add.text(
                         toPx(x),
-                        toPx(SHOP_Y_TILES + 1.0),
-                        [c.center.name, `$${item.cost}`, done ? '' : '⚠未实现'].filter(Boolean),
+                        toPx(SHOP_Y_TILES + CARD_H + 0.1),
+                        `$${item.cost}${done ? '' : '  ⚠未实现'}`,
                         {
-                            fontFamily: 'monospace', fontSize: 16,
-                            color: done ? '#d8dde6' : '#8a8f98', align: 'center',
+                            fontFamily: 'monospace', fontSize: 18,
+                            color: done ? '#ffd76e' : '#e5885f',
                         },
                     ).setDepth(40),
                 );
@@ -313,15 +368,19 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     private buy(index: number): void {
         if (this.animating || this.run.state !== 'shop') return;
+        const item = this.run.shop?.items[index];
+        if (!item) return;
         try {
-            this.run.buyJoker(index);
+            if (item.kind === 'joker') this.run.buyJoker(index);
+            else this.run.buyConsumable(index);
         } catch {
-            // 买不起 / 小丑区满了 / 这格不是小丑。逻辑层抛，表现层只给个反馈
+            // 买不起 / 区满了。逻辑层抛，表现层只给个反馈
             this.sound.play('cancel', { volume: 0.4 });
             return;
         }
         this.sound.play('coin1', { volume: 0.5 });
         this.rebuildJokers();
+        this.rebuildConsumables();
         this.rebuildShop();
         this.refresh();
     }
@@ -501,8 +560,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (run.state === 'shop') {
             this.hud.setText([
                 `商店 — Ante ${run.ante}   下一关：${blindName}`,
-                `$${run.dollars}    重掷 $${run.shop?.rerollCost ?? 0}    小丑 ${run.jokers.length}/${run.jokerSlots}`,
-                '点商店的牌买入，点小丑区的牌卖出',
+                `$${run.dollars}    重掷 $${run.shop?.rerollCost ?? 0}    小丑 ${run.jokers.length}/${run.jokerSlots}    消耗品 ${run.consumables.length}/${run.consumableSlots}`,
+                '点商店的牌买入，点小丑区的牌卖出，点消耗品用掉它',
             ].join('\n'));
         } else if (round) {
             this.hud.setText([
@@ -518,8 +577,12 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (this.selected.size > 0 && round) {
             const preview = evaluatePokerHand(this.selectedInOrder());
             const info = preview.topName ? round.hands[preview.topName] : null;
+            // **等级要显示出来**：星球牌唯一的可见反馈就是这个数字变大，
+            // 不显示的话玩家看不出 $3 买了什么
             this.handPreview.setText(
-                preview.topName && info ? `${preview.topName}   ${info.chips} × ${info.mult}` : '',
+                preview.topName && info
+                    ? `${preview.topName} lv.${info.level}   ${info.chips} × ${info.mult}`
+                    : '',
             );
         } else {
             this.handPreview.setText('');

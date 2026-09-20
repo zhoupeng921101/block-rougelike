@@ -21,10 +21,11 @@ cd 复刻/Balatro && npm test && npm run build
 
 ## 七步落地顺序（16 号票裁定）
 
-- [ ] 1. `levelUpHand` 修正：`HandInfo` 补 `s_chips`/`s_mult`，改成重算 + 三个 clamp
-- [ ] 2. `tools/gen-consumable-centers.mjs` 抽 `c_` 的 center
-- [ ] 3. 消耗品槽位（`consumable_slots = 2`）+ `Run` 持有 + 商店真的卖消耗品（补 `Tarotsho`/`Planetsho` 掷点）
-- [ ] 4. 星球牌 12 张 ← **中途要停就停在这之后**（Ante 3 的墙在这里破）
+- [x] 1. `levelUpHand` 修正（commit 2eb2cebe）
+- [x] 2. `tools/gen-consumable-centers.mjs` 抽 34 张 center（commit 3d11b915）
+- [x] 3. 消耗品槽位 + `Run` 持有 + 商店真的卖消耗品（commit e88c85f5）
+- [x] 4. 星球牌 12 张（同上）——**但墙没破，见下**
+- [ ] 4.5 表现层：消耗品区画出来、能点着用（现在只有商店那一格的文字标记）
 - [ ] 5. 强化牌 8 种（`m_glass` / `m_lucky` 带 RNG）
 - [ ] 6. 塔罗牌 22 张
 - [ ] 7. 回填 13 张小丑，删 `coverage.test.ts` 对应行
@@ -52,7 +53,22 @@ cd 复刻/Balatro && npm test && npm run build
 
 ## 进度
 
-- 2026-09-20：读完交接与 map，开了 16 号票并裁定四件事。尚未动代码。
+- 2026-09-20：开 16 号票裁定四件事；第 1–4 步落地，470 个测试绿，`npm run build` 通。
+  三个提交：2eb2cebe（levelUpHand）、3d11b915（生成器）、e88c85f5（槽位 + 星球 + 商店）。
+
+**这一轮逮到的两个真 bug**（都不是新写的，是原先就错的）：
+
+1. `levelUpHand` 是增量加减且无 clamp，原作是从 1 级值重算 + 三个 clamp。
+2. **`used_jokers` 的语义一直是错的**：复刻件当「本局见过的，永久剔除」，
+   原作 `card.lua:4829` 的 `Card:remove()` 有对称清除，重掷商店与离开商店都会走它。
+   真实语义是「此刻被摆出来或被持有的 center」。池长度不变但内容窄了 →
+   `_resample` 次数对不上 → 同 seed 从第二个商店起分叉。已修（`Shop.release()`）。
+
+**实测结论（会改计划）**：星球牌**没有**把 Ante 3 的墙推倒。
+八个 seed 的贪心深度 2.875 → 3.0。商店两格里只有 ~28.6% 是消耗品、
+一半还是塔罗，整局买到 1–5 张，而且抽到哪个牌型不由人挑。
+**原作里星球的主要来源是天体补充包**（一包 3 张、Jumbo 5 张）。
+→ 17 号票（补充包）从「放最后」抬成关键路径。
 
 ## 阻塞
 
