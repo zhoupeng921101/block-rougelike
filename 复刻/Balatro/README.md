@@ -14,14 +14,22 @@
 **第一个里程碑已交付**：红牌组打 Ante 1 的小盲注，8 张手牌 / 4 出牌 / 3 弃牌，
 300 分过关，带出牌动画、悬停倾斜、背景 shader、CRT 与音效。
 
-**第二个里程碑的逻辑层已交付**（[15 号票](../../.scratch/balatro-复刻/issues/15-第二个里程碑的切片边界.md)
-「带小丑打过 Ante 1」）：小丑进结算管线、经济层、商店、盲注推进、Ante 1 的 8 个 Boss。
+**第二个里程碑已交付**（[15 号票](../../.scratch/balatro-复刻/issues/15-第二个里程碑的切片边界.md)
+「带小丑打过 Ante 1」）：小丑进结算管线、经济层、商店、盲注推进、28 个 Boss 全实现。
 `src/core/ante1.test.ts` 会真的打完小盲注 → 商店 → 大盲注 → 商店 → Boss → Ante 2，
 不 mock、不直接写 phase。表现层也接上了：小丑区、商店（买／卖／重掷）、回合收益明细。
 
+**消耗品已交付**（[16 号票](../../.scratch/balatro-复刻/issues/16-消耗品的切片边界.md)）：
+消耗品槽位（2 格）、12 张星球、22 张塔罗里的 21 张、8 种强化牌，商店真的卖消耗品。
+
+> **但 Ante 3 的墙没破。** 实测八个 seed 的贪心深度仍是 Ante 2–4：
+> 商店两格里只有 ~28.6% 是消耗品、其中一半是塔罗，整局买到 1–5 张星球。
+> **原作里星球的主要来源是天体补充包**（一包 3 张、Jumbo 5 张）——
+> 那是商店第三格，在 17 号票。
+
 > **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
 > 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
-> 逻辑层有 304 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
+> 逻辑层有 563 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
 
 ```
 src/
@@ -37,9 +45,17 @@ src/
 │   ├── economy.ts               回合收益与利息（evaluate_round）
 │   ├── shop.ts                  商店（get_current_pool / create_card_for_shop / 重掷）
 │   ├── fixtures/                对拍 fixture（12 条 Ante 1 Boss 外部真值）
+│   ├── enhancements.ts          8 种强化牌（照抄原作那七个 getter，不收成表）
+│   ├── enhancements.generated.ts 8 张 center（生成的，别手改）
+│   ├── consumables/             ← 消耗品。34 张里 33 张有行为
+│   │   ├── centers.generated.ts     塔罗 22 + 星球 12（生成的，别手改）
+│   │   ├── instance.ts              makeConsumable
+│   │   ├── use.ts                   用掉一张 + 用量统计 + 覆盖面登记
+│   │   ├── tarot.ts                 21 张塔罗的 spec
+│   │   └── use-context.ts           喂给消耗品的那张宽接口
 │   ├── atlas.ts                 图集网格推导（**不 import Phaser**，所以可单测）
 │   ├── event-queue.ts           事件队列（G.E_MANAGER）
-│   ├── jokers/                  ← 小丑系统。150 张里 111 张有行为
+│   ├── jokers/                  ← 小丑系统。150 张里 119 张有行为
 │   │   ├── centers.generated.ts     150 张的 center 定义（生成的，别手改）
 │   │   ├── instance.ts              set_ability / set_cost
 │   │   ├── calculate.ts             calculate_joker + 覆盖面登记
@@ -55,18 +71,19 @@ src/
 ├── game/                    ← 表现层。Phaser 4
 │   ├── coords.ts                tile ↔ 像素的**唯一**换算边界（见 10 号票）
 │   ├── shader-quad.ts           三种卡共用的 shader quad 工厂
-│   ├── card-sprite.ts           扑克牌（底板 + 正面两层）
+│   ├── card-sprite.ts           扑克牌（底板 + 正面两层，底板换强化）
 │   ├── joker-sprite.ts          小丑（单层，含四条尺寸特例）
+│   ├── consumable-sprite.ts     消耗品（单层，没有尺寸特例）
 │   ├── shaders/                 background / CRT / dissolve
 │   └── scenes/RunScene.ts       整局：手牌 / 小丑区 / 商店 / 收益明细
-└── tools/gen-joker-centers.mjs  从 game.lua 抽 150 张小丑的 center
+└── tools/                    四个生成器 + 共用的 Lua 表解析器
 ```
 
 ## 命令
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 415 个测试，必须全绿
+npm test            # 563 个测试，必须全绿
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
 ```
@@ -76,7 +93,11 @@ npm run build       # 先 typecheck 再 vite build
 ```bash
 node tools/gen-joker-centers.mjs
 node tools/gen-blind-centers.mjs
+node tools/gen-consumable-centers.mjs
+node tools/gen-enhancement-centers.mjs
 ```
+
+四个生成器共用 `tools/lua-table.mjs` 的 Lua 表解析器。
 
 **用 npm，不要用 pnpm。** pnpm 在本机装 `esbuild` 时稳定复现 `ERR_PNPM_EPERM`
 （硬链接 rename 被拒），换 npm 即可。
@@ -156,16 +177,38 @@ edisho<ante>                       版本掷点
    所以 `math.random(#pool)` 的取值域不变。真删掉会让同 seed 立刻分叉。
    有三件事会剔除：45 张 `start_locked` 的小丑（新档不解锁）、
    本局见过的小丑（`used_jokers`，Showman 例外）、`pool_flag`（Gros Michel / Cavendish）。
-3. **塔罗／星球的格子照样生成。** 权重 20:4:4 意味着约 28.6% 的格子是消耗品；
-   把它们改成小丑就改了商店分布。本里程碑没实现它们的效果，
-   所以生成一个 `kind: 'unimplemented'` 的格子，买不了。
+3. **塔罗／星球的格子只多一次池子抽取。** 权重 20:4:4 意味着约 28.6% 的格子是消耗品，
+   而它们的 RNG 账比小丑短得多：
 
-## 小丑覆盖面：111 / 150
+   ```
+   cdt<ante>                        同上，决定这格是什么
+   <Type>sho<ante>                  在塔罗／星球池里抽下标
+   <Type>sho<ante>_resample<n>      抽到 UNAVAILABLE 就重抽
+   ```
 
-剩下 39 张全部卡在还没做的系统上，分组见 `src/core/jokers/coverage.test.ts`：
-消耗品 13 张、强化牌 9 张、增删牌 8 张、负债 4 张、标签 3 张、关掉 Boss 2 张。
-**下一步做消耗品最划算**——一次解开 13 张，而且没有星球牌就没法升牌型，
-Ante 3 起（需求 2000 → 5000 → 11000）过不去。
+   `rarity` / `etperpoll` / `edi` 全在 `if _type == 'Joker'` 里面，
+   `front` 只有 Base/Enhanced 才掷；`soul_<Type><ante>` 要 `soulable`，
+   而 `create_card_for_shop` 传的第 6 个实参是 **nil**——
+   所以 **The Soul / Black Hole 出不了商店**。见
+   [16 号票](../../.scratch/balatro-复刻/issues/16-消耗品的切片边界.md)。
+
+4. **`used_jokers` 不是「整局见过的」，是「此刻被摆出来或被持有的」。**
+   重掷商店与离开商店都会把没卖掉的那几格**还回池子**
+   （`card.lua:4829` 的 `Card:remove()` 有一条对称的清除）。
+   写成永久剔除会让池子内容一次比一次窄，`_resample` 的次数跟着偏。
+
+## 覆盖面：小丑 119 / 150，消耗品 33 / 34
+
+剩下 31 张小丑卡在还没做的系统上，分组见 `src/core/jokers/coverage.test.ts`：
+**强化牌 9 张**（前置已落地，只是还没做）、增删牌 8 张、
+幽灵与补充包 5 张、负债 4 张、标签 3 张、关掉 Boss 2 张。
+
+消耗品差的那一张是 `The Wheel of Fortune`——它给小丑加**版本**，
+而版本系统整个不在范围。
+
+**有两张小丑「有 handler 但效果落空」**，且被 `isJokerImplemented` 报成已实现：
+`To Do List`（牌型从没被抽过）与 `Mr. Bones`（`saved` 标志无人读取）。
+**「有 handler」不等于「有效果」**——这是那套覆盖面机制挡不住的漏网形态。
 
 判断「实现了没有」的是 `isJokerImplemented`，它**从 handler 表算出来、不手写名单**。
 手写会漂：加了 handler 忘更名单会误报未实现，删了 handler 名单还留着更糟——

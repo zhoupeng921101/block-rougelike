@@ -90,6 +90,14 @@ Label: wayfinder:map
   同时裁定 `calculate_joker` 的翻译形状：**context 分支照抄、分支内按名字查表**，
   但 main 分支前四条（含三条泛化判定）必须按原序写死在查表之前。
 
+- [消耗品的切片边界](issues/16-消耗品的切片边界.md) ——
+  **槽位 + 星球 + 塔罗 + 强化牌。幽灵牌与补充包推到 17 号票**
+  （依据：`spectral_rate` 默认 0，商店永远不出幽灵牌，它只能从补充包与 The Soul 来，
+  而 The Soul 也进不了商店）。同时裁定另外三件：
+  商店的消耗品格**只多一次池子抽取**（`rarity`/`etperpoll`/`edi`/`front`/`soul_` 全不消费）；
+  09 号票那条「delay 可以压成 0」**在本切片内仍然成立**（5 处只命中 The Wheel of Fortune，
+  它三次掷点共用一个 key、严格 FIFO）；`level_up_hand` 是**重算 + 三个 clamp**，没有上限。
+
 > **第一个里程碑已交付**（红牌组打小盲注，可玩，带动画/shader/音效）。
 >
 > **第二个里程碑的逻辑层已交付**：小丑结算管线、经济层、`Run` 状态机、商店、
@@ -104,16 +112,25 @@ Label: wayfinder:map
 > 逐条对照 07 号票的验收表。
 >
 > **28 个 Boss 已全部实现**（原先只有 Ante 1 的 8 个，其余撞 `assertImplemented` 的墙）。
-> 实测贪心策略现在能打到 **Ante 2–4**，止步原因换成了「没有星球牌、牌型永远 1 级」，
-> 而需求是 300 → 800 → 2000 → 5000 的指数曲线。**下一个大件是消耗品（星球 + 塔罗）。**
+> 商店与小丑区会给未实现的小丑标 `⚠未实现`；消耗品区同理。
 >
-> **小丑覆盖面 111 / 150**（原先 74）。剩下 39 张全部卡在还没做的系统上：
-> 消耗品 13 / 强化牌 9 / 增删牌 8 / 负债 4 / 标签 3 / 关掉 Boss 2
-> （分组见 `jokers/coverage.test.ts`）。商店与小丑区会给未实现的小丑标 `⚠未实现`。
+> **消耗品已交付**（16 号票）：消耗品槽位（2 格）、12 张星球、
+> 22 张塔罗里的 21 张（差 `The Wheel of Fortune`，它要版本系统）、
+> 8 种强化牌，商店真的卖消耗品。563 个测试绿。
 >
-> **下一个大件是消耗品（塔罗 + 星球 + 槽位 + 补充包）**：一次解开 13 张小丑，
-> 填上商店那 28.6% 的空格，而且没有星球牌就没法升牌型——
-> Ante 3 起（2000 → 5000 → 11000）纯靠 1 级牌型过不去。
+> **小丑覆盖面 119 / 150**（原先 111）。剩下 31 张卡在：
+> 强化牌 9（**前置已落地，只是还没做**）/ 增删牌 8 / 幽灵与补充包 5 /
+> 负债 4 / 标签 3 / 关掉 Boss 2（分组见 `jokers/coverage.test.ts`）。
+> 消耗品覆盖面 **33 / 34**。
+>
+> **但 Ante 3 的墙没破。** 实测八个 seed 的贪心深度仍是 Ante 2–4：
+> 商店两格里只有 ~28.6% 是消耗品、其中一半是塔罗，整局买到 1–5 张星球，
+> 而且抽到哪个牌型不由人挑。**原作里星球的主要来源是天体补充包**
+> （一包 3 张、Jumbo 5 张）——这条实测把补充包从「放最后」抬成了关键路径。
+>
+> **下一个大件是补充包 + 幽灵牌（17 号票）**：破 Ante 3 的墙，
+> 同时解开 `Sixth Sense` / `Seance` / `Hallucination` / `Perkeo` / `Astronomer`。
+> 次一档是**强化牌那 9 张小丑**——它们的前置（8 种强化）已经落地，只是还没做。
 
 ## Not yet specified
 
@@ -154,9 +171,11 @@ Label: wayfinder:map
 - **`#pragma phaserTemplate` 不是给用户着色器分节用的**。`vertexSource` 整体替换模板，
   自定义着色器要写完整程序，遵守 `uProjectionMatrix` / `inPosition` / `inTexCoord` / `outTexCoord` 契约，
   并 `setUniform('uMainSampler', 0)` 绑纹理单元。
-- **「delay 可以压成 0」这条结论不能带过第一个里程碑。** 消耗品与补充包路径上有 5 处
-  带 delay / `blockable=false` 的 RNG 消费，第二个里程碑就会进范围，那时虚拟时钟必须如实复刻。
-  **在 `Round` 内部它仍然成立**——那 5 处都不在一局盲注里面，等接商店时再核。
+- **「delay 可以压成 0」在塔罗＋星球这一刀里仍然成立**（16 号票复核过）。
+  09 号票列的 5 处里只命中 `card.lua:1472` 的 The Wheel of Fortune，
+  而它那三次掷点共用 `wheel_of_fortune` 一个 key、在一次 `use_consumeable` 里严格 FIFO。
+  **但这条结论不要带过 17 号票**：`card.lua:1723`（开补充包）与
+  Familiar / Grim / Incantation（`card.lua:1312`）那几处到时候会进范围。
 - **`ease_dollars` 在原作里是入队延迟的，本复刻是同步立即的。** 后果：
   `G.GAME.dollar_buffer` 这个字段在复刻件里**必须恒为 0**。它在原作里的唯一用途是
   让同一次结算里后面的小丑（只有 `Bull`）看到「在路上的钱」；同步加钱之下
@@ -273,6 +292,67 @@ Label: wayfinder:map
   实机挂钩子那条路没废，只是没走——真要走的话它能一次性服务所有里程碑。
 - **UI 占全仓 28%**（`UI_definitions.lua` 6,607 行 + `button_callbacks.lua` 3,314 行），
   而按直译裁定这部分是**重写**不是直译。估工作量时别把它算进那 35,876 行里。
+
+- **`used_jokers` 的语义是「此刻被摆出来或被持有的」，不是「整局见过的」。**
+  `card.lua:350` 的 `set_ability` 标上，而 `card.lua:4829` 的 `Card:remove()`
+  有一条对称的清除（小丑区与消耗品区里都没有同名的了就抹掉）。
+  **重掷商店**（`button_callbacks.lua:2983` 的 `c:remove()`）与
+  **离开商店**（`UIBox:remove` → `CardArea:remove` → `remove_all(cards)`）都会走那条清除。
+  写成「见过就永久剔除」的后果不是「多剔几张」：池子长度不变（剔的位置是 UNAVAILABLE），
+  但**内容**窄了，于是 `_resample` 的次数对不上，同 seed 从第二个商店起分叉。
+  **它对消耗品同样生效**——那个标记循环按 `name` 匹配全体 `P_CENTERS`。
+- **`level_up_hand` 是从 1 级值重算的，不是增量加减**（`common_events.lua:467`）：
+  `level = max(0, level+amount)`、`mult = max(s_mult + l_mult*(level-1), 1)`、
+  `chips = max(s_chips + l_chips*(level-1), 0)`。**三个 clamp 都要，没有上限。**
+  只要等级不撞下限两者等价，一撞就永久跑偏：High Card 降到 0 级时原作给 mult = 1，
+  减法给 0 —— 那一手直接 0 分。
+- **`G.GAME.hands` 的 `visible` 开局不是全 false**：九个常规牌型是 `true`，
+  只有 Flush Five / Flush House / Five of a Kind 是 `false`（`game.lua:2212`）。
+  写成全 false 会让 `To Do List` 的可选池在开局是空的。
+- **商店的消耗品格只消费一次池子抽取**（`<Type>sho<ante>` + resample）。
+  `rarity` / `etperpoll` / `edi` 全在 `if _type == 'Joker'` 里面，
+  `front` 只有 Base/Enhanced 才掷；`soul_<Type><ante>` 要 `soulable`，
+  而 `create_card_for_shop` 传的第 6 个实参是 **nil**（`UI_definitions.lua:825`）——
+  所以 **The Soul / Black Hole 出不了商店**，它们还被 `get_current_pool` 无条件剔除。
+- **星球池有 `softlock`**：Planet X / Ceres / Eris 要对应牌型 `played > 0` 才进池
+  （`common_events.lua:2044`）。新档是 12 个位置、9 张可用。
+- **石头牌凑不成任何牌型，却无条件计分。** `get_id` 返回一个假点数、`is_suit` 一律否，
+  所以它进不了 `results.top`；但 `state_events.lua:605` 的 `pures` 会把它追加进计分集。
+  它加的是 `config.bonus`(50)**而不是自己的点数**（`get_chip_bonus` 对它不加 `base.nominal`）。
+- **幸运牌的两次掷点无条件发生**（`lucky_mult` 1/5 给倍率、`lucky_money` 1/15 给钱），
+  两个独立 key，中不中都消耗，顺序是 mult 在前（由 `chips → mult → dollars` 定死）。
+  挪进 `if` 里会让同 seed 从这一手起分叉。
+- **碎掉的玻璃牌本手照样出过力**：销毁判定（`state_events.lua:971`）排在
+  那唯一一次乘法之前。`glass` 掷点只对「计分集里、没被 debuff 的玻璃牌」发生（`and` 短路），
+  而且小丑那边的 `destroying_card` 判定**不会**让它跳过——原文两个 if 是并列的。
+- **钢铁牌的 ×1.5 写进 `ret.x_mult` 而不是 `h_x_mult`**（`common_events.lua:634`）。
+  手牌区的效果应用对 `x_mult` 是不分来源统一处理的。
+- **黄金牌的 $3 在 `evaluate_round` 之前入账**，所以它**参与本回合的利息**。
+  `end_round` 的顺序是：小丑 `end_of_round`（`state_events.lua:99`）→
+  手牌区 `get_end_of_round_effect`（`:192`）→ 回合结算界面调 `evaluate_round`（`:1156`）。
+- **`The Fool` 读的是「上一张」，不是自己。** `G.GAME.last_tarot_planet` 由
+  `set_consumeable_usage` 的**双层嵌套** immediate 事件设置，而 The Fool 自己的
+  创建事件先入队——FIFO 下 The Fool 先跑。所以复刻要「先 apply、再记 lastTarotPlanet」。
+  但**用量计数是同步的**（只有 `last_tarot_planet` 走那个嵌套事件）。
+- **`Death` 复制的是 `T.x` 最大的那张**，不是数组第一张。
+  **`Strength` 让 A 绕回 2**（`id == 14 and 2 or min(id+1, 14)`），不是停在 A。
+- **`8 Ball` 的三个条件是嵌套的**：先查消耗品区空位、再判点数是不是 8、最后才掷点。
+  区满了或者不是 8 都**不消费 `8ball`**。同一形状的还有 `Vagabond` / `Superposition` / `Cartomancer`。
+- **加了新的 context handler 表，要补进 `NAMES_WITH_HANDLERS`。**
+  漏了会让新实现的小丑被 `isJokerImplemented` 报成未实现——
+  那张「算出来的名单」只算它知道的表。
+- **实测：商店供不起星球。** 八个 seed 的贪心深度在接消耗品前后都是 Ante 2–4
+  （2.875 → 3.0）。商店两格里 ~28.6% 是消耗品、一半还是塔罗，整局买到 1–5 张，
+  而且抽到哪个牌型不由人挑。**原作里星球的主要来源是天体补充包**（一包 3 张、Jumbo 5 张）。
+- **`G.GAME.spectral_rate` 默认 0，商店永远不出幽灵牌。**
+  幽灵牌只能从幽灵补充包与 The Soul 来，所以「不做补充包」自动蕴含「不做幽灵牌」。
+- **`Card:set_base` 换点数换花色时不动 `sort_id` 与 `unique_val`**——
+  换的是同一张牌，不是新造一张。新造会让 `pseudoshuffle` 的规范序跟着变。
+- **有两张小丑「有 handler 但效果落空」**，且被 `isJokerImplemented` 报成已实现：
+  `To Do List`（`pickToDoHand` 全仓没有调用方，牌型从没被抽过）与
+  `Mr. Bones`（返回的 `saved` 标志没有读取方）。
+  这正是 coverage 那套想挡却挡不住的漏网形态——**「有 handler」不等于「有效果」**。
+  两张都已开后台任务，不在 16 号票范围。
 
 ## Out of scope
 
