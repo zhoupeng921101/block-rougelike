@@ -55,6 +55,19 @@ export const JOKER_ATLAS: AtlasSpec = {
     w: 710, h: 1520, frameW: 71, frameH: 95,
 };
 
+/**
+ * 消耗品（`game.lua:986` 的 `Tarot`）。710×570 = 10 列 × 6 行。
+ *
+ * **一张图集装三个 set**：塔罗在 0–2 行、星球在第 3 行附近、幽灵在 4–5 行。
+ * 所以 `pos` 只在这张图里唯一，不按 set 分区——`c_planet_x` 的 `pos` 是
+ * `{x=9,y=2}`，落在塔罗那几行的末尾。
+ */
+export const TAROT_ATLAS: AtlasSpec = {
+    key: 'tarots',
+    path: 'assets/textures/Tarots.png',
+    w: 710, h: 570, frameW: 71, frameH: 95,
+};
+
 export function columnsOf(atlas: AtlasSpec): number {
     return Math.floor(atlas.w / atlas.frameW);
 }

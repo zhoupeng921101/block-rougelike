@@ -62,7 +62,7 @@ export function sellCost(cost: number): number {
  * 本里程碑 `extra_cost = 0`、`discount_percent = 0`，化简后就是 `base_cost`
  * （`floor(cost + 0.5)` 对整数 cost 恒等于 cost）。留成函数是为了接优惠券时只改这里。
  */
-export function buyCost(center: JokerCenter): number {
+export function buyCost(center: { cost: number }): number {
     return Math.max(1, Math.floor(center.cost + 0.5));
 }
 

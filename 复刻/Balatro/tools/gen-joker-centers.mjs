@@ -15,6 +15,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { luaTableToJs } from './lua-table.mjs';
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(HERE, '../../../参考/产物/Balatro_1.0.1o/源码/game.lua');
 const OUT = resolve(HERE, '../src/core/jokers/centers.generated.ts');
@@ -24,39 +26,6 @@ const lua = readFileSync(SRC, 'utf8');
 // 150 行小丑定义，每行形如 `        j_joker=            {order = 1, ...},`
 const lines = lua.split(/\r?\n/).filter((l) => /^ {8}j_\w+\s*=\s*\{/.test(l));
 if (lines.length !== 150) throw new Error(`期望 150 张小丑，实际抽到 ${lines.length}`);
-
-/**
- * Lua 表字面量 → JS 对象。这些行全是简单字面量，没有函数、没有变量引用。
- *
- * 必须先把字符串扫出来再改键名——`"Driver's License"` 里那个撇号
- * 会被「单引号串 → 双引号串」那条规则当成字符串开头，整行从这里往后全错。
- */
-function luaTableToJs(src) {
-    // `localize('ph_x')` 只出现在盲注的 vars 里，小丑行没有；留一道保险
-    if (/localize\(/.test(src)) throw new Error(`遇到 localize() 调用，解析器不支持：${src}`);
-
-    const strings = [];
-    let code = '';
-    for (let i = 0; i < src.length; i++) {
-        const ch = src[i];
-        if (ch === '"' || ch === "'") {
-            let j = i + 1;
-            while (j < src.length && src[j] !== ch) j++;
-            strings.push(src.slice(i + 1, j));
-            code += `@@STR${strings.length - 1}@@`;
-            i = j;
-        } else {
-            code += ch;
-        }
-    }
-
-    // `key =` → `"key":`（Lua 的键都是合法标识符）
-    code = code.replace(/([{,]\s*)([A-Za-z_]\w*)\s*=/g, '$1"$2":');
-    // 字符串放回来，统一成 JSON 双引号
-    code = code.replace(/@@STR(\d+)@@/g, (_, n) => JSON.stringify(strings[Number(n)]));
-
-    return new Function(`return ${code}`)();
-}
 
 const centers = {};
 for (const line of lines) {

@@ -14,12 +14,14 @@ import {
     CENTERS_ATLAS,
     DECK_ATLAS,
     JOKER_ATLAS,
+    TAROT_ATLAS,
     columnsOf,
     frameIndex,
     inBounds,
     rowsOf,
 } from './atlas';
 import { makeStandardDeck } from './card';
+import { CONSUMABLE_CENTERS } from './consumables';
 import { JOKER_CENTERS } from './jokers';
 
 describe('网格尺寸', () => {
@@ -32,6 +34,11 @@ describe('网格尺寸', () => {
     it('Enhancers 497×475 = 7 列 × 5 行', () => {
         expect(columnsOf(CENTERS_ATLAS)).toBe(7);
         expect(rowsOf(CENTERS_ATLAS)).toBe(5);
+    });
+
+    it('Tarots 710×570 = 10 列 × 6 行，三个 set 共用这一张', () => {
+        expect(columnsOf(TAROT_ATLAS)).toBe(10);
+        expect(rowsOf(TAROT_ATLAS)).toBe(6);
     });
 
     it('Jokers 710×1520 = 10 列 × 16 行，够装 150 张', () => {
@@ -116,5 +123,29 @@ describe('150 张小丑的图集坐标', () => {
         for (const [key, center] of withSoul) {
             expect(inBounds(JOKER_ATLAS, center.soul_pos!), `${key} 的 soul_pos 越界`).toBe(true);
         }
+    });
+});
+
+describe('消耗品的图集坐标', () => {
+    it('34 张塔罗／星球的 pos 全部在 Tarots 的网格内', () => {
+        for (const [key, center] of Object.entries(CONSUMABLE_CENTERS)) {
+            expect(inBounds(TAROT_ATLAS, center.pos), `${key} 的 pos 越界`).toBe(true);
+        }
+    });
+
+    it('34 张两两不共格', () => {
+        const frames = Object.values(CONSUMABLE_CENTERS).map((c) => frameIndex(TAROT_ATLAS, c.pos));
+        expect(new Set(frames).size).toBe(34);
+    });
+
+    /**
+     * 三张 softlock 星球的 pos 落在**塔罗那几行**（y = 2），不在星球那一行（y = 3）。
+     * 看着像抽错了，实际原作就是这么排的——`c_planet_x` 是 `{x=9,y=2}`。
+     * 钉住它，免得下一个人「顺手修正」成 y = 3 而画出 Judgement 的脸。
+     */
+    it('Planet X / Ceres / Eris 的 pos 在 y = 2 那一行，不是 y = 3', () => {
+        expect(CONSUMABLE_CENTERS.c_planet_x.pos).toEqual({ x: 9, y: 2 });
+        expect(CONSUMABLE_CENTERS.c_ceres.pos).toEqual({ x: 8, y: 2 });
+        expect(CONSUMABLE_CENTERS.c_eris.pos).toEqual({ x: 3, y: 2 });
     });
 });

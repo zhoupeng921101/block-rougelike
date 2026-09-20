@@ -12,6 +12,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { luaTableToJs } from './lua-table.mjs';
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(HERE, '../../../参考/产物/Balatro_1.0.1o/源码/game.lua');
 const OUT = resolve(HERE, '../src/core/blinds.generated.ts');
@@ -21,26 +23,6 @@ const lines = lua.split(/\r?\n/).filter((l) => /^ {8}bl_\w+\s*=\s*\{/.test(l));
 // 30 = bl_small + bl_big + 28 个 Boss。「28 个 Boss 盲注」这个常说的数字
 // 指的是带 `boss` 字段的那些，不含前两个
 if (lines.length !== 30) throw new Error(`期望 30 条盲注定义，实际抽到 ${lines.length}`);
-
-function luaTableToJs(src) {
-    const strings = [];
-    let code = '';
-    for (let i = 0; i < src.length; i++) {
-        const ch = src[i];
-        if (ch === '"' || ch === "'") {
-            let j = i + 1;
-            while (j < src.length && src[j] !== ch) j++;
-            strings.push(src.slice(i + 1, j));
-            code += `@@STR${strings.length - 1}@@`;
-            i = j;
-        } else {
-            code += ch;
-        }
-    }
-    code = code.replace(/([{,]\s*)([A-Za-z_]\w*)\s*=/g, '$1"$2":');
-    code = code.replace(/@@STR(\d+)@@/g, (_, n) => JSON.stringify(strings[Number(n)]));
-    return new Function(`return ${code}`)();
-}
 
 const blinds = {};
 for (const line of lines) {
