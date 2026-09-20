@@ -14,10 +14,12 @@ import { describe, expect, it } from 'vitest';
 
 import { BLIND_CENTERS } from './blinds';
 import type { Card } from './card';
+import { isConsumableImplemented } from './consumables';
 import { makeJoker } from './jokers';
 import { evaluatePokerHand } from './poker-hands';
 import type { Round } from './round';
 import { Run } from './run';
+import { shopItemKey } from './shop';
 import type { HandInfo, HandName } from './scoring';
 
 /**
@@ -125,23 +127,41 @@ function playRound(round: Round): void {
     }
 }
 
-/** 在商店里能买就买、买不了就走。返回买到的小丑 key。 */
-function shopAndLeave(run: Run): string[] {
+/**
+ * 在商店里能买就买、买不了就走。返回买到的 key。
+ *
+ * **星球牌买了就立刻用掉**：消耗品区只有 2 格，攒着没有意义，
+ * 而升牌型是越早越好（后面每一手都吃到）。还没实现行为的塔罗不买——
+ * 买了占格子、用不了，`canUseConsumable` 会告诉我们。
+ */
+function shopAndLeave(run: Run, buyConsumables = false): string[] {
     if (run.state !== 'shop') throw new Error(`现在是 ${run.state}，不在商店`);
     const bought: string[] = [];
 
     for (let i = run.shop!.items.length - 1; i >= 0; i--) {
         const item = run.shop!.items[i];
-        if (item.kind !== 'joker') continue;
-        if (item.cost > run.dollars || run.jokersFull) continue;
-        bought.push(run.buyJoker(i).key);
+        if (item.cost > run.dollars) continue;
+
+        if (item.kind === 'joker') {
+            if (run.jokersFull) continue;
+            bought.push(run.buyJoker(i).key);
+            continue;
+        }
+
+        if (!buyConsumables || run.consumablesFull) continue;
+        if (!isConsumableImplemented(item.consumable.key)) continue;
+        bought.push(run.buyConsumable(i).key);
+        run.useConsumable(run.consumables.length - 1);
     }
     run.leaveShop();
     return bought;
 }
 
 /** 打一关 + 逛一次商店。返回这一关的记录。 */
-function clearOneBlind(run: Run): { kind: string; requirement: number; chips: number; bought: string[] } {
+function clearOneBlind(
+    run: Run,
+    buyConsumables = false,
+): { kind: string; requirement: number; chips: number; bought: string[] } {
     const kind = run.blindKind;
     const round = run.startRound();
     const requirement = round.requirement;
@@ -152,7 +172,7 @@ function clearOneBlind(run: Run): { kind: string; requirement: number; chips: nu
     }
     const chips = round.chips;
     run.finishRound();
-    return { kind, requirement, chips, bought: shopAndLeave(run) };
+    return { kind, requirement, chips, bought: shopAndLeave(run, buyConsumables) };
 }
 
 describe('打通 Ante 1', () => {
@@ -174,6 +194,36 @@ describe('打通 Ante 1', () => {
             const run = new Run(seed);
             for (let i = 0; i < 3; i++) clearOneBlind(run);
             expect(run.ante, seed).toBe(2);
+        }
+    });
+
+    /**
+     * 星球牌真的走通了整条路：商店抽出来 → 买 → 用 → 牌型升级 → 分数更高。
+     *
+     * **但它没有把 Ante 3 那道墙推倒。** 实测八个 seed 的贪心深度
+     * 从 2.875 只抬到 3.0：商店两格里只有 ~28.6% 是消耗品、其中一半是塔罗，
+     * 整局也就买到 1–5 张，而且抽到哪个牌型不由人挑
+     * （买到 Two Pair 的星球，策略打的却是同花）。
+     *
+     * **原作里星球的主要来源是天体补充包**（一包 3 张、Jumbo 5 张），
+     * 那是商店的第三格，在 17 号票。这条实测把它从「放最后」抬成了关键路径。
+     */
+    it('星球牌走通：买 → 用 → 牌型升级', () => {
+        const run = new Run('QQQ777');
+        let planets = 0;
+        for (let i = 0; i < 3; i++) {
+            const before = run.consumableUsage.total.planet;
+            clearOneBlind(run, true);
+            planets += run.consumableUsage.total.planet - before;
+        }
+        expect(planets, 'QQQ777 的 Ante 1 三个商店里应该买得到星球').toBeGreaterThan(0);
+
+        const leveled = Object.values(run.hands).filter((h) => h.level > 1);
+        expect(leveled).toHaveLength(planets);
+        // 升过级的牌型，chips 与 mult 都必须比 1 级高
+        for (const h of leveled) {
+            expect(h.chips).toBe(h.s_chips + h.l_chips * (h.level - 1));
+            expect(h.mult).toBe(h.s_mult + h.l_mult * (h.level - 1));
         }
     });
 
@@ -212,7 +262,7 @@ describe('打通 Ante 1', () => {
                 playRound(round);
                 out.push(`chips=${round.chips} hands=${round.handsLeft}`);
                 out.push(`payout=${run.finishRound().payout.total}`);
-                out.push(run.shop!.items.map((x) => (x.kind === 'joker' ? x.joker.key : x.type)).join(','));
+                out.push(run.shop!.items.map(shopItemKey).join(','));
                 out.push(`bought=${shopAndLeave(run).join('/')}`);
             }
             return out;

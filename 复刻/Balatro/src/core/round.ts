@@ -50,6 +50,8 @@ export const STARTING_PARAMS = {
     discards: 3,
     dollars: 4,
     joker_slots: 5,
+    /** `misc_functions.lua:1862`。消耗品区的格子数 */
+    consumable_slots: 2,
 } as const;
 
 export type RoundPhase = 'selecting' | 'won' | 'lost';

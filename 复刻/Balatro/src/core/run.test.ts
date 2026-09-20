@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 import { BLIND_CENTERS } from './blinds';
 import { makeStandardDeck } from './card';
+import { makeConsumable } from './consumables';
 import { makeJoker } from './jokers';
 import { Run } from './run';
 import { blindRequirement } from './scoring';
@@ -344,5 +345,79 @@ describe('牌组', () => {
     it('可以传自定义牌组', () => {
         const deck = makeStandardDeck().slice(0, 10);
         expect(new Run('TUTORIAL', deck).fullDeck).toHaveLength(10);
+    });
+});
+
+describe('消耗品区', () => {
+    /** `misc_functions.lua:1862` 的 `consumable_slots = 2` */
+    it('开局 2 个格子、空的', () => {
+        const run = new Run('TUTORIAL');
+        expect(run.consumableSlots).toBe(2);
+        expect(run.consumables).toHaveLength(0);
+        expect(run.consumablesFull).toBe(false);
+    });
+
+    it('满了再买就抛', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_pluto'), makeConsumable('c_mars'));
+        expect(run.consumablesFull).toBe(true);
+    });
+
+    it('用掉一张星球：牌型升级、卡离开消耗品区', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_jupiter'));
+        run.useConsumable(0);
+        // Flush: chips 35 + 15 = 50，mult 4 + 2 = 6
+        expect(run.hands.Flush).toMatchObject({ level: 2, chips: 50, mult: 6 });
+        expect(run.consumables).toHaveLength(0);
+    });
+
+    /**
+     * `card.lua:1094` 的 `set_consumeable_usage` 是 `use_consumeable` 的**第一句**，
+     * 排在所有效果之前。所以就算效果还没实现，计数也对得上——
+     * `Fortune Teller` / `Satellite` 读的是这份计数。
+     */
+    it('用量在效果之前记：Fortune Teller 读得到的那个数会涨', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_pluto'));
+        expect(run.consumableUsage.total.planet).toBe(0);
+        run.useConsumable(0);
+        expect(run.consumableUsage.total.planet).toBe(1);
+        expect(run.consumableUsage.total.all).toBe(1);
+    });
+
+    it('用掉之后那张卡还回池子（used 标记解除）', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_pluto'));
+        run.usedJokers.add('c_pluto');
+        run.useConsumable(0);
+        expect(run.usedJokers.has('c_pluto')).toBe(false);
+    });
+
+    it('卖一张：cost 3 → 卖价 max(1, floor(3/2)) = 1', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_pluto'));
+        const before = run.dollars;
+        expect(run.sellConsumable(0)).toBe(1);
+        expect(run.dollars).toBe(before + 1);
+        expect(run.consumables).toHaveLength(0);
+    });
+
+    /**
+     * 塔罗还没有行为。**这里必须抛，不能静默什么都不做**——
+     * 与 Boss 的 `assertImplemented` 同一条：静默等于把缺口伪装成正常行为。
+     * 表现层靠 `canUseConsumable` 把按钮灰掉。
+     */
+    it('还没实现的塔罗：canUseConsumable 是 false，硬用会抛', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_fool'));
+        expect(run.canUseConsumable(0)).toBe(false);
+        expect(() => run.useConsumable(0)).toThrow(/还没有实现行为/);
+    });
+
+    it('星球是能用的', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_pluto'));
+        expect(run.canUseConsumable(0)).toBe(true);
     });
 });

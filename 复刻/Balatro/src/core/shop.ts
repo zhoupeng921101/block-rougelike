@@ -33,8 +33,11 @@
  * 一个带 `_resample` 后缀的 key 重抽。把它们真删掉会让同 seed 立刻分叉。
  */
 
+import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET, makeConsumable } from './consumables';
+import type { Consumable, ConsumableSet, PlanetConfig } from './consumables';
 import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, findJoker, makeJoker } from './jokers';
 import type { Joker } from './jokers';
+import type { HandName } from './poker-hands';
 import type { PseudorandomState } from './rng';
 import { pseudorandomElement } from './rng';
 
@@ -72,13 +75,48 @@ export const JOKER_RARITY_POOLS: Record<number, string[]> = (() => {
 /** 池子剔除要查的那几样状态。 */
 export type PoolContext = {
     ante: number;
-    /** `G.GAME.used_jokers`——本局见过的小丑 key */
+    /**
+     * `G.GAME.used_jokers`。**不是「本局见过的」，是「此刻活着的」。**
+     *
+     * `card.lua:350` 的 `set_ability` 把 key 标上，而 `card.lua:4829` 的
+     * `Card:remove()` 有一条对称的清除：小丑区与消耗品区里都没有同名的了，
+     * 就把标记抹掉。而商店重掷（`button_callbacks.lua:2983` 的 `c:remove()`）
+     * 与离开商店（`UIBox:remove` → `CardArea:remove` → `remove_all(cards)`）
+     * **都会走那条清除**。所以它的实际语义是
+     * 「现在被摆出来或被持有的 center」，不是「整局见过的」。
+     *
+     * 写成「见过就永久剔除」会让池子内容从第二个商店起就和原版不一样，
+     * 而池长度不变（剔除位置换成 UNAVAILABLE），
+     * 于是 `_resample` 的**次数**对不上 —— 同 seed 从那里分叉。
+     *
+     * key 与 name 一一对应，所以这里按 key 存；原文按 name 匹配全体 center。
+     */
     usedJokers: Set<string>;
     /** `G.GAME.pool_flags` */
     grosMichelExtinct: boolean;
-    /** 小丑区。查 `Showman`（它让见过的小丑重新进池） */
+    /** 小丑区。查 `Showman`（它让见过的小丑重新进池），也是 `find_joker` 的搜索域之一 */
     jokers: Joker[];
+    /** 消耗品区。`find_joker` 同时搜它（`misc_functions.lua:914`） */
+    consumables: Consumable[];
+    /**
+     * 各牌型打出过几次。**星球的 `softlock` 读它**：
+     * Planet X / Ceres / Eris 要对应牌型 `played > 0` 才进池
+     * （`common_events.lua:2044`）。
+     */
+    handsPlayed: Record<HandName, number>;
 };
+
+/**
+ * `card.lua:4829` 的那条清除：小丑区与消耗品区里都没有它了，就解除 used 标记。
+ *
+ * 三处调用：卖掉、重掷商店、离开商店。**少一处都会让池子内容慢慢跑偏。**
+ */
+export function releaseUsed(context: PoolContext, key: string): void {
+    const held =
+        context.jokers.some((j) => j.key === key) ||
+        context.consumables.some((c) => c.key === key);
+    if (!held) context.usedJokers.delete(key);
+}
 
 /** 抽到这个就重抽。**必须占着池子里的位置**，见文件头。 */
 export const UNAVAILABLE = 'UNAVAILABLE';
@@ -132,16 +170,71 @@ export function getCurrentJokerPool(
     return [pool, `${poolKey}${context.ante}`];
 }
 
+/**
+ * 同一个 `get_current_pool`，走 `else` 那一支（`_type` 不是 `'Joker'`）。
+ *
+ * 与小丑那一支的三处不同：
+ *
+ * 1. **不掷 rarity。** 那次 `pseudorandom('rarity'..ante..append)` 在
+ *    `if _type == 'Joker'` 里面，塔罗／星球格不消费它。
+ * 2. **池 key 是 `<Type><append><ante>`**（`Tarotsho1`），没有 rarity 那一段。
+ * 3. **多一条 `softlock` 剔除**（`common_events.lua:2044`）：星球要对应牌型
+ *    `played > 0` 才进池。所以新档的星球池是 12 个位置、9 张可用。
+ *
+ * `Black Hole` 与 `The Soul` 在原文里有一条无条件剔除
+ * （`common_events.lua:2062`）——这里不用写，它们是幽灵牌，压根不在
+ * `CONSUMABLE_KEYS_BY_SET` 里（见 16 号票）。
+ *
+ * 空池的退化值按 set 分：塔罗 `c_strength`、星球 `c_pluto`
+ * （`common_events.lua:2079-2081`）。
+ */
+export function getCurrentConsumablePool(
+    set: ConsumableSet,
+    context: PoolContext,
+    keyAppend = '',
+): [string[], string] {
+    const poolKey = `${set}${keyAppend}${context.ante}`;
+    const showman = findJoker(context.jokers, 'Showman').length > 0;
+
+    const pool: string[] = [];
+    let poolSize = 0;
+    for (const key of CONSUMABLE_KEYS_BY_SET[set]) {
+        const center = CONSUMABLE_CENTERS[key];
+        let add = false;
+
+        // `common_events.lua:2026`。消耗品的 center 没有 `unlocked` 字段，
+        // 而条件是 `v.unlocked ~= false`——nil ~= false 为真，所以这一半恒成立
+        if (!(context.usedJokers.has(key) && !showman)) add = true;
+
+        // `common_events.lua:2043`：星球的 softlock
+        if (add && set === 'Planet') {
+            const config = center.config as PlanetConfig;
+            if (config.softlock && context.handsPlayed[config.hand_type] <= 0) add = false;
+        }
+
+        if (add) {
+            pool.push(key);
+            poolSize++;
+        } else {
+            pool.push(UNAVAILABLE);
+        }
+    }
+
+    // `common_events.lua:2079`
+    if (poolSize === 0) return [[set === 'Tarot' ? 'c_strength' : 'c_pluto'], poolKey];
+
+    return [pool, poolKey];
+}
+
 /** 商店里的一格。 */
 export type ShopItem =
     | { kind: 'joker'; joker: Joker; cost: number }
-    /**
-     * 塔罗／星球牌。**本里程碑不实现它们的效果**，但格子照样生成——
-     * 因为 `'cdt'+ante` 那次掷点是真的会掉到这两档上（20:4:4，合起来 28.6%），
-     * 把它们改成小丑就等于改了商店的分布，同 seed 立刻分叉。
-     * 这一格买不了，UI 上标成未实现。
-     */
-    | { kind: 'unimplemented'; type: 'Tarot' | 'Planet'; cost: number };
+    | { kind: 'consumable'; consumable: Consumable; cost: number };
+
+/** 这一格占着的 center key。释放 used 标记要用 */
+export function shopItemKey(item: ShopItem): string {
+    return item.kind === 'joker' ? item.joker.key : item.consumable.key;
+}
 
 /**
  * `UI_definitions.lua:791` 的 `create_card_for_shop`。
@@ -177,11 +270,7 @@ export function createCardForShop(rng: PseudorandomState, context: PoolContext):
         if (polled > check && polled <= check + bucket.val) {
             if (bucket.type === 'Joker') return createJokerForShop(rng, context);
             if (bucket.type === 'Tarot' || bucket.type === 'Planet') {
-                // 格子照生成，但**不消费塔罗／星球自己的池子 RNG**。
-                // `create_card('Tarot', …)` 抽的是 `pseudoseed('Tarotsho'+ante)`，
-                // 那是塔罗自己的 key；`PseudorandomState` 按 key 分开记状态，
-                // 所以少消费它不会让小丑那条链偏。接消耗品时换成真的 `createCard`。
-                return { kind: 'unimplemented', type: bucket.type, cost: 3 };
+                return createConsumableForShop(rng, bucket.type, context);
             }
             throw new Error(`权重为 0 的档位被命中了：${bucket.type}`);
         }
@@ -226,6 +315,38 @@ function createJokerForShop(rng: PseudorandomState, context: PoolContext): ShopI
 }
 
 /**
+ * `create_card` 的塔罗／星球分支。**比小丑那一支短得多**——
+ * `etperpoll` / `edi`（永恒、易腐、租赁、版本）整段在 `if _type == 'Joker'`
+ * 里面，消耗品格一次都不消费；`front` 掷点只有 `Base` / `Enhanced` 才走。
+ *
+ * `soulable` 那一段也不进：`create_card_for_shop` 传的第 6 个实参是 `nil`
+ * （`UI_definitions.lua:825`），所以 **The Soul / Black Hole 出不了商店**，
+ * `soul_<Type><ante>` 这次掷点在商店路径上不消费。见 16 号票。
+ *
+ * 于是一格消耗品只消费一次池子抽取（加上 resample）。
+ */
+function createConsumableForShop(
+    rng: PseudorandomState,
+    set: ConsumableSet,
+    context: PoolContext,
+): ShopItem {
+    const [pool, poolKey] = getCurrentConsumablePool(set, context, 'sho');
+
+    let [key] = pseudorandomElement(pool, rng.pseudoseed(poolKey));
+    let it = 1;
+    while (key === UNAVAILABLE) {
+        it++;
+        [key] = pseudorandomElement(pool, rng.pseudoseed(`${poolKey}_resample${it}`));
+    }
+
+    const consumable = makeConsumable(String(key));
+    // `card.lua:350` 对消耗品同样标记——那个循环按 name 匹配全体 P_CENTERS
+    context.usedJokers.add(String(key));
+
+    return { kind: 'consumable', consumable, cost: consumable.cost };
+}
+
+/**
  * 一次商店的状态。
  *
  * 重掷价格**跨重掷累进、每回合归零**：
@@ -241,7 +362,7 @@ export class Shop {
 
     constructor(
         private readonly rng: PseudorandomState,
-        private readonly context: PoolContext,
+        readonly context: PoolContext,
     ) {
         // `state_events.lua:332`：回合开始时按 Chaos the Clown 的张数给免费重掷
         this.freeRerolls = findJoker(context.jokers, 'Chaos the Clown').length;
@@ -270,16 +391,34 @@ export class Shop {
         const finalFree = this.freeRerolls > 0;
         this.freeRerolls = Math.max(this.freeRerolls - 1, 0);
         if (!finalFree) this.rerollCostIncrease++;
+        // `button_callbacks.lua:2983`：旧的那几张是 `c:remove()` 掉的，
+        // 而 `remove` 会解除 used 标记 —— 它们**回到池子里**。
+        // 只清 `items` 不放回去，池子内容会一次比一次窄，`_resample` 的次数跟着偏
+        this.release();
         this.items = [];
         this.refill();
     }
 
-    /** 买掉第 `index` 格。返回买到的小丑；调用方负责扣钱与放进小丑区。 */
-    take(index: number): Joker {
+    /**
+     * 把还摆在架子上的那几格还回池子。**重掷与离开商店都要调**。
+     *
+     * 离开商店时原作是 `UIBox:remove()` → `CardArea:remove()` →
+     * `remove_all(cards)` → 每张 `Card:remove()`，级联到那条 used 清除。
+     */
+    release(): void {
+        for (const item of this.items) releaseUsed(this.context, shopItemKey(item));
+    }
+
+    /**
+     * 拿走第 `index` 格。调用方负责扣钱与放进对应的区。
+     *
+     * **不解除 used 标记**——买下来之后那张牌还活着（在小丑区／消耗品区里），
+     * `find_joker` 找得到它，`card.lua:4832` 那条清除就不成立。
+     */
+    take(index: number): ShopItem {
         const item = this.items[index];
         if (!item) throw new Error(`商店没有第 ${index} 格`);
-        if (item.kind !== 'joker') throw new Error('这一格不是小丑（塔罗／星球本里程碑未实现）');
         this.items.splice(index, 1);
-        return item.joker;
+        return item;
     }
 }

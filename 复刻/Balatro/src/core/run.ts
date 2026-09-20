@@ -29,6 +29,14 @@ import {
     makeBlindState,
 } from './blinds';
 import { type Card, type Suit, makeStandardDeck } from './card';
+import {
+    type Consumable,
+    type ConsumableUsage,
+    applyConsumable,
+    isConsumableImplemented,
+    makeConsumableUsage,
+    recordConsumableUsage,
+} from './consumables';
 import { type Payout, evaluateRound } from './economy';
 import { calculateJoker, makeGameView, refreshDerivedAbilities, runModifiers } from './jokers';
 import type { GameView, Joker } from './jokers';
@@ -36,7 +44,7 @@ import { NO_JOKERS, type JokerFlags } from './poker-hands';
 import { PseudorandomState, pseudorandomElement } from './rng';
 import { Round, STARTING_PARAMS } from './round';
 import { type HandInfo, type HandName, initialHands } from './scoring';
-import { type PoolContext, Shop } from './shop';
+import { type PoolContext, type ShopItem, Shop, releaseUsed } from './shop';
 
 /** `game.lua:2186`：`blind_choices = {Small = 'bl_small', Big = 'bl_big'}`。 */
 const BLIND_ORDER: readonly BlindKind[] = ['small', 'big', 'boss'];
@@ -57,6 +65,10 @@ export class Run {
     readonly fullDeck: Card[];
     readonly hands: Record<HandName, HandInfo> = initialHands();
     readonly jokers: Joker[] = [];
+    /** `G.consumeables` 里的牌。**是逻辑状态**：它参与 `find_joker` 的搜索域 */
+    readonly consumables: Consumable[] = [];
+    /** `G.GAME.consumeable_usage`。`Fortune Teller` / `Satellite` 读它 */
+    readonly consumableUsage: ConsumableUsage = makeConsumableUsage();
 
     ante = 1;
     dollars: number = STARTING_PARAMS.dollars;
@@ -109,6 +121,10 @@ export class Run {
             usedJokers: this.usedJokers,
             grosMichelExtinct: this.grosMichelExtinct,
             jokers: this.jokers,
+            consumables: this.consumables,
+            handsPlayed: Object.fromEntries(
+                Object.entries(this.hands).map(([name, info]) => [name, info.played]),
+            ) as Record<HandName, number>,
         };
     }
 
@@ -267,6 +283,12 @@ export class Run {
     leaveShop(): void {
         if (this.state !== 'shop') throw new Error(`现在是 ${this.state}，不在商店里`);
         // `card.lua` 的 `context.ending_shop` 分支：本里程碑没有小丑用它
+        //
+        // **没卖出去的那几格要还回池子。** 原作是
+        // `UIBox:remove()` → `CardArea:remove()` → `remove_all(cards)`，
+        // 每张 `Card:remove()` 走 `card.lua:4829` 那条 used 清除。
+        // 不还回去，下一个商店的池子内容就比原版窄，`_resample` 次数跟着偏
+        this.shop?.release();
         this.shop = null;
         this.state = 'blind-select';
     }
@@ -275,19 +297,42 @@ export class Run {
      * 买商店第 `index` 格的小丑。
      *
      * 三道闸：钱够不够、小丑区满没满、那一格是不是小丑。
-     * 原作的 `can_buy` 还查消耗品槽位与 `Negative` 版本（买了不占格子），
-     * 两者都不在本里程碑。
+     * 原作的 `can_buy` 还查 `Negative` 版本（买了不占格子），版本不在范围。
      */
     buyJoker(index: number): Joker {
+        const bought = this.buy(index);
+        if (bought.kind !== 'joker') throw new Error('这一格是消耗品，用 buyConsumable');
+        return bought.joker;
+    }
+
+    /** 买消耗品。**买得到不等于用得了**——没实现行为的塔罗照样能买，见 `useConsumable` */
+    buyConsumable(index: number): Consumable {
+        const bought = this.buy(index);
+        if (bought.kind !== 'consumable') throw new Error('这一格是小丑，用 buyJoker');
+        return bought.consumable;
+    }
+
+    private buy(index: number): ShopItem {
         if (!this.shop) throw new Error('不在商店里');
         const item = this.shop.items[index];
         if (!item) throw new Error(`商店没有第 ${index} 格`);
-        if (item.kind !== 'joker') throw new Error('这一格是塔罗／星球，本里程碑未实现');
         if (item.cost > this.dollars) throw new Error(`买不起：要 $${item.cost}，只有 $${this.dollars}`);
-        if (this.jokersFull) throw new Error(`小丑区满了（${this.jokerSlots} 格）`);
+        if (item.kind === 'joker' && this.jokersFull) {
+            throw new Error(`小丑区满了（${this.jokerSlots} 格）`);
+        }
+        if (item.kind === 'consumable' && this.consumablesFull) {
+            throw new Error(`消耗品区满了（${this.consumableSlots} 格）`);
+        }
 
-        const joker = this.shop.take(index);
+        this.shop.take(index);
         this.dollars -= item.cost;
+
+        if (item.kind === 'consumable') {
+            this.consumables.push(item.consumable);
+            return item;
+        }
+
+        const joker = item.joker;
         this.jokers.push(joker);
         // 小丑区变了 → 派生字段要重算（Joker Stencil 的空格子数、Swashbuckler 的卖价和）
         refreshDerivedAbilities(this.jokers, this.jokerSlots);
@@ -296,7 +341,7 @@ export class Run {
         for (const other of this.jokers) {
             calculateJoker(other, { buying_card: true }, this.round?.gameView() ?? this.shopGameView());
         }
-        return joker;
+        return item;
     }
 
     /**
@@ -314,16 +359,56 @@ export class Run {
         this.dollars += joker.sell_cost;
         refreshDerivedAbilities(this.jokers, this.jokerSlots);
 
-        // `card.lua:4826` 的 `remove_from_deck`：小丑区里没有同名的了就解除 used 标记
-        if (!this.jokers.some((j) => j.ability.name === joker.ability.name)) {
-            this.usedJokers.delete(joker.key);
-        }
+        // `card.lua:4829`：小丑区与消耗品区里都没有它了就解除 used 标记
+        releaseUsed(this.poolContext(), joker.key);
 
         // `card.lua:2758` 的 `context.selling_card`：`Campfire` 靠它长个子
         for (const other of this.jokers) {
             calculateJoker(other, { selling_card: true }, this.round?.gameView() ?? this.shopGameView());
         }
         return joker.sell_cost;
+    }
+
+    /** 卖掉消耗品区第 `index` 张。与卖小丑同一条路，只是没有 `selling_self` 分支 */
+    sellConsumable(index: number): number {
+        const consumable = this.consumables[index];
+        if (!consumable) throw new Error(`消耗品区没有第 ${index} 张`);
+
+        this.consumables.splice(index, 1);
+        this.dollars += consumable.sell_cost;
+        releaseUsed(this.poolContext(), consumable.key);
+
+        for (const other of this.jokers) {
+            calculateJoker(other, { selling_card: true }, this.round?.gameView() ?? this.shopGameView());
+        }
+        return consumable.sell_cost;
+    }
+
+    /**
+     * 用掉消耗品区第 `index` 张。`card.lua:1092` 的 `Card:use_consumeable`。
+     *
+     * **用量在效果之前记**（`card.lua:1094` 的 `set_consumeable_usage` 是第一句），
+     * 所以哪怕这张卡的效果还没实现，`Fortune Teller` / `Satellite` 的计数也对得上。
+     *
+     * 没实现行为的塔罗**在这里抛**，不静默吞掉——与 Boss 的 `assertImplemented`
+     * 同一条理由。表现层要先查 `isConsumableImplemented` 把按钮灰掉，
+     * 而不是让玩家点了之后什么也不发生。
+     */
+    useConsumable(index: number): void {
+        const consumable = this.consumables[index];
+        if (!consumable) throw new Error(`消耗品区没有第 ${index} 张`);
+
+        recordConsumableUsage(this.consumableUsage, consumable);
+        applyConsumable(consumable, { hands: this.hands });
+
+        this.consumables.splice(index, 1);
+        releaseUsed(this.poolContext(), consumable.key);
+    }
+
+    /** 这张卡现在用得了吗。表现层拿它决定按钮灰不灰 */
+    canUseConsumable(index: number): boolean {
+        const consumable = this.consumables[index];
+        return !!consumable && isConsumableImplemented(consumable.key);
     }
 
     /** 重掷商店。`button_callbacks.lua:2965`。 */
@@ -350,6 +435,7 @@ export class Run {
             hands_played: this.handsPlayed,
             jokers: this.jokers,
             joker_slots: this.jokerSlots,
+            consumeable_usage_tarot: this.consumableUsage.total.tarot,
             deckCount: this.fullDeck.length,
             startingDeckSize: this.fullDeck.length,
             playingCardCount: this.fullDeck.length,
@@ -398,5 +484,14 @@ export class Run {
     /** 小丑区满了没有。买小丑之前要查 */
     get jokersFull(): boolean {
         return this.jokers.length >= this.jokerSlots;
+    }
+
+    /** `misc_functions.lua:1862` 的 `consumable_slots`。优惠券能加，本票恒 2 */
+    get consumableSlots(): number {
+        return STARTING_PARAMS.consumable_slots;
+    }
+
+    get consumablesFull(): boolean {
+        return this.consumables.length >= this.consumableSlots;
     }
 }

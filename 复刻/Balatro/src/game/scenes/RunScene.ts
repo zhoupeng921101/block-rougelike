@@ -15,6 +15,7 @@ import { BLIND_CENTERS } from '../../core/blinds';
 import type { Card } from '../../core/card';
 import { makeStandardDeck, resetCardCounters } from '../../core/card';
 import { EventManager, GameEvent } from '../../core/event-queue';
+import { isConsumableImplemented } from '../../core/consumables';
 import { isJokerImplemented } from '../../core/jokers';
 import type { Joker } from '../../core/jokers';
 import { evaluatePokerHand } from '../../core/poker-hands';
@@ -270,13 +271,20 @@ ${String(e instanceof Error ? e.message : e)}`)
             const x = SHOP_X_TILES + i * (CARD_W + 1.4);
 
             if (item.kind !== 'joker') {
-                // 塔罗／星球格：还没实现效果，但格子是真的（占了 28.6% 的商店），
-                // 所以画个占位而不是留空——留空会让人以为商店少了一格
+                // 消耗品格。**没实现行为的塔罗要标出来**，与小丑那一条同理：
+                // 商店按设计从全池生成，买了什么也不发生就是把缺口伪装成正常行为
+                const c = item.consumable;
+                const done = isConsumableImplemented(c.key);
                 this.shopLabels.push(
-                    this.add.text(toPx(x), toPx(SHOP_Y_TILES + 1.0), `${item.type}
-未实现`, {
-                        fontFamily: 'monospace', fontSize: 18, color: '#8a8f98', align: 'center',
-                    }).setDepth(40),
+                    this.add.text(
+                        toPx(x),
+                        toPx(SHOP_Y_TILES + 1.0),
+                        [c.center.name, `$${item.cost}`, done ? '' : '⚠未实现'].filter(Boolean),
+                        {
+                            fontFamily: 'monospace', fontSize: 16,
+                            color: done ? '#d8dde6' : '#8a8f98', align: 'center',
+                        },
+                    ).setDepth(40),
                 );
                 return;
             }

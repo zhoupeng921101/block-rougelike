@@ -15,6 +15,7 @@
 
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import { CONSUMABLE_KEYS_BY_SET } from './consumables';
 import { makeStandardDeck, resetCardCounters } from './card';
 import { JOKER_CENTERS, makeJoker } from './jokers';
 import { PseudorandomState } from './rng';
@@ -26,9 +27,13 @@ import {
     Shop,
     UNAVAILABLE,
     createCardForShop,
+    getCurrentConsumablePool,
     getCurrentJokerPool,
+    shopItemKey,
 } from './shop';
 import type { PoolContext } from './shop';
+import type { HandName } from './poker-hands';
+import { initialHands } from './scoring';
 
 function ctx(overrides: Partial<PoolContext> = {}): PoolContext {
     return {
@@ -36,11 +41,85 @@ function ctx(overrides: Partial<PoolContext> = {}): PoolContext {
         usedJokers: new Set(),
         grosMichelExtinct: false,
         jokers: [],
+        consumables: [],
+        handsPlayed: Object.fromEntries(
+            Object.keys(initialHands()).map((name) => [name, 0]),
+        ) as Record<HandName, number>,
         ...overrides,
     };
 }
 
 beforeEach(() => resetCardCounters());
+
+describe('消耗品池', () => {
+    it('塔罗池 22 个位置，新档全可用，key 是 Tarotsho<ante>', () => {
+        const [pool, key] = getCurrentConsumablePool('Tarot', ctx(), 'sho');
+        expect(pool).toHaveLength(22);
+        expect(pool.filter((k) => k === UNAVAILABLE)).toHaveLength(0);
+        expect(key).toBe('Tarotsho1');
+    });
+
+    /**
+     * **softlock**：Planet X / Ceres / Eris 要对应牌型 `played > 0` 才进池。
+     * 位置还在（换成 UNAVAILABLE），所以 `math.random(#pool)` 的取值域不变——
+     * 真删掉会让同 seed 立刻分叉。
+     */
+    it('星球池 12 个位置、新档只有 9 张可用（三张 softlock 占着 UNAVAILABLE）', () => {
+        const [pool, key] = getCurrentConsumablePool('Planet', ctx(), 'sho');
+        expect(pool).toHaveLength(12);
+        expect(pool.filter((k) => k === UNAVAILABLE)).toHaveLength(3);
+        expect(key).toBe('Planetsho1');
+    });
+
+    it('打出过 Five of a Kind 之后 Planet X 进池，池长度还是 12', () => {
+        const handsPlayed = ctx().handsPlayed;
+        handsPlayed['Five of a Kind'] = 1;
+        const [pool] = getCurrentConsumablePool('Planet', ctx({ handsPlayed }), 'sho');
+        expect(pool).toHaveLength(12);
+        expect(pool).toContain('c_planet_x');
+        expect(pool.filter((k) => k === UNAVAILABLE)).toHaveLength(2);
+    });
+
+    it('手上拿着的那张塔罗退出池子（used_jokers 对消耗品同样生效）', () => {
+        const [pool] = getCurrentConsumablePool('Tarot', ctx({ usedJokers: new Set(['c_fool']) }), 'sho');
+        expect(pool[0]).toBe(UNAVAILABLE);
+        expect(pool).toHaveLength(22);
+    });
+
+    it('Showman 让被标记的那张重新进池', () => {
+        const [pool] = getCurrentConsumablePool(
+            'Tarot',
+            ctx({ usedJokers: new Set(['c_fool']), jokers: [makeJoker('j_ring_master')] }),
+            'sho',
+        );
+        expect(pool[0]).toBe('c_fool');
+    });
+
+    it('整池空了退化成单元素池：塔罗 c_strength、星球 c_pluto', () => {
+        const allTarots = new Set(CONSUMABLE_KEYS_BY_SET.Tarot);
+        const [tarot] = getCurrentConsumablePool('Tarot', ctx({ usedJokers: allTarots }), 'sho');
+        expect(tarot).toEqual(['c_strength']);
+
+        const allPlanets = new Set(CONSUMABLE_KEYS_BY_SET.Planet);
+        const [planet] = getCurrentConsumablePool('Planet', ctx({ usedJokers: allPlanets }), 'sho');
+        expect(planet).toEqual(['c_pluto']);
+    });
+
+    /**
+     * 消耗品格的 RNG 账：**只有池子抽取那一次**（加 resample）。
+     * `rarity` / `etperpoll` / `edi` / `front` / `soul_` 全部不消费——
+     * 前三个在 `if _type == 'Joker'` 里面，`front` 只有 Base/Enhanced 才掷，
+     * `soul_` 那一段要 `soulable`，而 `create_card_for_shop` 传的是 nil。见 16 号票。
+     */
+    it('建池本身不消费 RNG（rarity 那次掷点是小丑专有的）', () => {
+        const rng = new PseudorandomState('ALEEB');
+        const before = rng.pseudorandom('probe');
+        getCurrentConsumablePool('Tarot', ctx(), 'sho');
+        getCurrentConsumablePool('Planet', ctx(), 'sho');
+        const after = new PseudorandomState('ALEEB');
+        expect(after.pseudorandom('probe')).toBe(before);
+    });
+});
 
 describe('稀有度池', () => {
     it('150 张按稀有度分成 61 / 64 / 20 / 5', () => {
@@ -186,13 +265,14 @@ describe('一格商店消费哪几个 key', () => {
         if (item.kind === 'joker') expect(context.usedJokers.has(item.joker.key)).toBe(true);
     });
 
-    it('塔罗／星球格子照生成，但标成未实现', () => {
+    it('塔罗／星球格子生成的是真的消耗品', () => {
         // 20:4:4 下有 ~28.6% 的格子是消耗品。扫一批 seed 找一个
         let found = false;
         for (let i = 0; i < 200 && !found; i++) {
             const item = createCardForShop(new PseudorandomState(`S${i}`), ctx());
-            if (item.kind === 'unimplemented') {
-                expect(['Tarot', 'Planet']).toContain(item.type);
+            if (item.kind === 'consumable') {
+                expect(['Tarot', 'Planet']).toContain(item.consumable.center.set);
+                expect(item.cost).toBe(3);
                 found = true;
             }
         }
@@ -228,9 +308,9 @@ describe('Shop', () => {
 
     it('重掷换一批新格子', () => {
         const shop = new Shop(new PseudorandomState('TUTORIAL'), ctx());
-        const before = shop.items.map((i) => (i.kind === 'joker' ? i.joker.key : i.type));
+        const before = shop.items.map(shopItemKey);
         shop.reroll();
-        const after = shop.items.map((i) => (i.kind === 'joker' ? i.joker.key : i.type));
+        const after = shop.items.map(shopItemKey);
         expect(after).not.toEqual(before);
         expect(shop.items).toHaveLength(SHOP_JOKER_MAX);
     });
@@ -259,12 +339,13 @@ describe('Shop', () => {
         expect(shop.items).toHaveLength(before - 1);
     });
 
-    it('买不了塔罗／星球格', () => {
+    it('消耗品格也能拿走', () => {
         for (let i = 0; i < 200; i++) {
             const shop = new Shop(new PseudorandomState(`S${i}`), ctx());
-            const idx = shop.items.findIndex((x) => x.kind === 'unimplemented');
+            const idx = shop.items.findIndex((x) => x.kind === 'consumable');
             if (idx >= 0) {
-                expect(() => shop.take(idx)).toThrow(/塔罗|星球/);
+                const taken = shop.take(idx);
+                expect(taken.kind).toBe('consumable');
                 return;
             }
         }
@@ -383,21 +464,58 @@ describe('Run 里的商店', () => {
         expect(run.dollars).toBe(1);
     });
 
-    it('同一局里同一张小丑不会在商店出现两次', () => {
-        const run = new Run('ALEEB', makeStandardDeck());
-        const round = run.startRound();
-        (round as unknown as { phase: string }).phase = 'won';
-        run.finishRound();
-
-        const seen = new Set<string>();
-        for (let i = 0; i < 12; i++) {
-            for (const item of run.shop!.items) {
-                if (item.kind !== 'joker') continue;
-                expect(seen.has(item.joker.key), `${item.joker.key} 出现了两次`).toBe(false);
-                seen.add(item.joker.key);
-            }
-            run.shop!.reroll();
+    /**
+     * `used_jokers` 的语义是「**此刻被摆出来或被持有的 center**」，
+     * 不是「整局见过的」。三组用例把这条边界钉住——
+     * 写成「见过就永久剔除」时第一条会过、后两条会红。
+     */
+    describe('used 标记：摆出来就标，收走就还', () => {
+        function intoShop(seed: string): Run {
+            const run = new Run(seed, makeStandardDeck());
+            const round = run.startRound();
+            (round as unknown as { phase: string }).phase = 'won';
+            run.finishRound();
+            return run;
         }
-        expect(seen.size).toBeGreaterThan(5);
+
+        it('同一个商店里两格不会是同一张', () => {
+            for (let i = 0; i < 40; i++) {
+                const run = intoShop(`S${i}`);
+                const keys = run.shop!.items.map(shopItemKey);
+                expect(new Set(keys).size, `seed S${i} 的两格重了`).toBe(keys.length);
+            }
+        });
+
+        it('重掷把旧的那几格还回池子（`c:remove()` 会解除标记）', () => {
+            const run = intoShop('ALEEB');
+            const before = run.shop!.items.map(shopItemKey);
+            run.rerollShop();
+            for (const key of before) {
+                expect(run.usedJokers.has(key), `${key} 重掷之后还占着 used`).toBe(false);
+            }
+        });
+
+        it('离开商店把没卖出去的那几格还回池子', () => {
+            const run = intoShop('ALEEB');
+            const left = run.shop!.items.map(shopItemKey);
+            run.leaveShop();
+            expect(run.usedJokers.size).toBe(0);
+            for (const key of left) expect(run.usedJokers.has(key)).toBe(false);
+        });
+
+        it('买下来的那张**留着**标记——它还活着，`find_joker` 找得到', () => {
+            for (let i = 0; i < 40; i++) {
+                const run = intoShop(`S${i}`);
+                run.dollars = 50;
+                const idx = run.shop!.items.findIndex((x) => x.kind === 'joker');
+                if (idx < 0) continue;
+                const key = shopItemKey(run.shop!.items[idx]);
+                run.buyJoker(idx);
+                run.leaveShop();
+                expect(run.usedJokers.has(key)).toBe(true);
+                return;
+            }
+            throw new Error('40 个 seed 里一格小丑都没有？');
+        });
     });
 });
