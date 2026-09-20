@@ -38,6 +38,7 @@ import {
 } from './booster-open';
 import { type Card, type Suit, makeStandardDeck } from './card';
 import { negativeCount } from './editions';
+import { sealEndOfRoundPlanet } from './seals';
 import { getEndOfRoundDollars } from './enhancements';
 import {
     type Consumable,
@@ -49,6 +50,7 @@ import {
     isConsumableImplemented,
     makeConsumable,
     makeConsumableUsage,
+    planetKeyFor,
     recordConsumableUsage,
 } from './consumables';
 import { type Payout, evaluateRound } from './economy';
@@ -92,6 +94,8 @@ export class Run {
     readonly consumableUsage: ConsumableUsage = makeConsumableUsage();
     /** `G.GAME.last_tarot_planet`。`The Fool` 复制它 */
     lastTarotPlanet?: string;
+    /** `G.GAME.last_hand_played`（`state_events.lua:597`）。Blue 蜡封读它 */
+    lastHandPlayed?: HandName;
     /**
      * `G.GAME.first_shop_buffoon`。新档的第一个商店，第一个补充包格子恒是小丑包，
      * 而且那一格**不消费 `shop_pack<ante>`**（`common_events.lua:1984` 提前 return）。
@@ -261,6 +265,9 @@ export class Run {
         // 把每次出牌记进 `round.handsPlayed` 了
         this.handsPlayed = round.handsPlayed;
 
+        // `state_events.lua:597` 的 `last_hand_played` 在 `Round` 上，收回来
+        this.lastHandPlayed = round.lastHandPlayed ?? this.lastHandPlayed;
+
         // `Cloud 9` 的 `nine_tally` 是**重算**出来的，而这一关可能销毁过牌
         // （碎掉的玻璃牌 / The Hanged Man），所以收益之前要刷一次
         refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
@@ -277,6 +284,14 @@ export class Run {
         for (const card of round.hand) {
             const gold = getEndOfRoundDollars(card);
             if (gold > 0) this.dollars += gold;
+
+            // `card.lua:1041`：**Blue 蜡封造「上一手打出的牌型」对应的那张星球**，
+            // 不是随机星球。没打过牌就不造
+            const planetHand = sealEndOfRoundPlanet(card, this.lastHandPlayed);
+            if (planetHand && this.consumables.length < this.consumableSlots) {
+                const key = planetKeyFor(planetHand);
+                if (key) this.consumables.push(makeConsumable(key));
+            }
         }
 
         // `state_events.lua:1156`。**利息读的是入账前的余额**
@@ -488,9 +503,14 @@ export class Run {
             if (this.jokersFull) throw new Error(`小丑区满了（${this.jokerSlots} 格）`);
             this.jokers.push(card.joker);
             refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
-        } else {
+        } else if (card.kind === 'consumable') {
             if (this.consumablesFull) throw new Error(`消耗品区满了（${this.consumableSlots} 格）`);
             this.consumables.push(card.consumable);
+        } else {
+            // 标准包的扑克牌：**进整副牌**，牌组变大一张。
+            // 不进当前这一局的牌堆——原作也是 `G.deck` 加，本局的 `Round` 已经洗过了
+            this.fullDeck.push(card.card);
+            refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
         }
 
         pack.cards.splice(index, 1);
@@ -503,7 +523,10 @@ export class Run {
     canTakeFromPack(index: number): boolean {
         const card = this.openPack?.cards[index];
         if (!card) return false;
-        return card.kind === 'joker' ? !this.jokersFull : !this.consumablesFull;
+        if (card.kind === 'joker') return !this.jokersFull;
+        if (card.kind === 'consumable') return !this.consumablesFull;
+        // 扑克牌进牌组，没有格子限制
+        return true;
     }
 
     /**

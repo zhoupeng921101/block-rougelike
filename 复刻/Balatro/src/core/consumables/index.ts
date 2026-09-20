@@ -1,5 +1,5 @@
 export { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET } from './centers.generated';
-export { makeConsumable } from './instance';
+export { makeConsumable, planetKeyFor } from './instance';
 export {
     type ConsumableUsage,
     CONSUMABLE_SPECS,

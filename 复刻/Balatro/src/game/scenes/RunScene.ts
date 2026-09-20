@@ -75,6 +75,18 @@ function editionTag(edition?: string): string {
     return label[edition] ?? '';
 }
 
+/**
+ * 蜡封的文字标记。**蜡封的贴图也没有移植**（原作是 `G.shared_seals`
+ * 那四张小图叠在卡面上），同理只用文字标出来——
+ * 一张 Red 蜡封的牌会多算一遍分，不标就看不出来。
+ */
+function sealTag(seal?: string): string {
+    const label: Record<string, string> = {
+        Red: ' ▣红', Blue: ' ▣蓝', Gold: ' ▣金', Purple: ' ▣紫',
+    };
+    return seal ? (label[seal] ?? '') : '';
+}
+
 /** 逐张计分之间的间隔，秒。原作在 state_events.lua:622 是 delay(0.2) 起步 */
 const SCORE_STEP_DELAY = 0.22;
 
@@ -87,7 +99,7 @@ export class RunScene extends Scene {
     /** 商店那两个补充包格子 */
     private packSprites: BoosterSprite[] = [];
     /** 开着的包里那几张 */
-    private packCardSprites: Array<JokerSprite | ConsumableSprite> = [];
+    private packCardSprites: Array<JokerSprite | ConsumableSprite | CardSprite> = [];
     private skipBtn!: GameObjects.Text;
     /** 商店里那些消耗品格。与 `shopSprites` 分开存，两者的类型不一样 */
     private shopConsumableSprites: ConsumableSprite[] = [];
@@ -397,10 +409,27 @@ ${String(e instanceof Error ? e.message : e)}`)
                 const sprite = new JokerSprite(this, card.joker, () => this.takeFromPack(i));
                 sprite.layout(x, PACK_OPEN_Y_TILES);
                 this.packCardSprites.push(sprite);
-            } else {
+            } else if (card.kind === 'consumable') {
                 const sprite = new ConsumableSprite(this, card.consumable, () => this.takeFromPack(i));
                 sprite.layout(x, PACK_OPEN_Y_TILES);
                 this.packCardSprites.push(sprite);
+            } else {
+                // 标准包的扑克牌。`CardSprite` 按 `T.x` 排版，所以先把它摆好
+                card.card.T.x = x - PACK_OPEN_X_TILES;
+                const sprite = new CardSprite(this, card.card, () => this.takeFromPack(i));
+                sprite.layout(PACK_OPEN_X_TILES, PACK_OPEN_Y_TILES);
+                this.packCardSprites.push(sprite);
+
+                // **版本与蜡封的贴图都没有移植**，只用文字标出来——
+                // 一张 Red 蜡封的牌会多算一遍分，不标就看不出来
+                const tags = `${editionTag(card.card.edition)}${sealTag(card.card.seal)}`.trim();
+                if (tags) {
+                    this.shopLabels.push(
+                        this.add.text(toPx(x), toPx(PACK_OPEN_Y_TILES + CARD_H + 0.1), tags, {
+                            fontFamily: 'monospace', fontSize: 15, color: '#9fd6ff',
+                        }).setDepth(40),
+                    );
+                }
             }
         });
     }

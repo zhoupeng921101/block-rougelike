@@ -26,6 +26,7 @@
 
 import type { Card } from './card';
 import { ENHANCEMENT_CENTERS, isEnhancement, isStone } from './enhancements';
+import { sealRepetitions } from './seals';
 import {
     type EvalResult,
     type GameView,
@@ -312,6 +313,11 @@ export function evaluatePlay(
 
         // `state_events.lua:689`：**重复次数在这里算一次，不在重复循环里重算**
         let reps = 1;
+
+        // `state_events.lua:690`：**牌自己的 Red 蜡封排在小丑的重复之前**。
+        // 两者都只是往 `reps` 上加，顺序不改结果——但原文如此，照抄
+        reps += sealRepetitions(card);
+
         for (const joker of game.jokers) {
             const eval_ = evalCard(joker, {
                 cardarea: 'play',

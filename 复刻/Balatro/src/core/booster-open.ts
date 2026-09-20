@@ -27,9 +27,12 @@
  */
 
 import { type BoosterCenter, type BoosterKind } from './boosters';
+import { type Card, P_CARDS, makeCard } from './card';
 import { type Consumable, type ConsumableSet } from './consumables';
+import { pollEdition } from './editions';
+import { ENHANCEMENT_KEYS_BY_ORDER } from './enhancements';
 import type { Joker } from './jokers';
-import type { PseudorandomState } from './rng';
+import { type PseudorandomState, pseudorandomElement } from './rng';
 import {
     type PoolContext,
     createConsumableCard,
@@ -37,10 +40,19 @@ import {
     releaseUsed,
 } from './shop';
 
-/** 包里的一张。标准包（扑克牌）与幽灵包在 17 号票的后半段 */
+/** 包里的一张。幽灵包在 17 号票的最后一步 */
 export type PackCard =
     | { kind: 'consumable'; consumable: Consumable }
-    | { kind: 'joker'; joker: Joker };
+    | { kind: 'joker'; joker: Joker }
+    /** 标准包造出来的扑克牌。挑走就进牌组 */
+    | { kind: 'card'; card: Card };
+
+/** 包里这一张占着的 center key。扑克牌没有 key（它不进 `used_jokers`） */
+export function packCardKey(card: PackCard): string | null {
+    if (card.kind === 'joker') return card.joker.key;
+    if (card.kind === 'consumable') return card.consumable.key;
+    return null;
+}
 
 /** 一个开着的补充包。`Run` 持有它，`null` 表示没在开包 */
 export type OpenPack = {
@@ -54,14 +66,14 @@ export type OpenPack = {
 /**
  * 这种包现在开得了吗。
  *
- * **标准包与幽灵包还没实现**：前者要版本与蜡封、后者要 18 张幽灵牌，
- * 都在 17 号票的后半段。商店会给它们标 `⚠未实现`，买不了——
- * 与没行为的小丑、没行为的塔罗同一条机制。
+ * **幽灵包还没实现**（要 18 张幽灵牌，17 号票的最后一步）。
+ * 商店会给它标 `⚠未实现`，买不了——与没行为的小丑、没行为的塔罗同一条机制。
  */
 const IMPLEMENTED_KINDS: ReadonlySet<BoosterKind> = new Set<BoosterKind>([
     'Arcana',
     'Celestial',
     'Buffoon',
+    'Standard',
 ]);
 
 export function isBoosterImplemented(key: string, centers: Record<string, BoosterCenter>): boolean {
@@ -80,9 +92,68 @@ const PACK_SPECS: Record<
     Celestial: { type: 'consumable', set: 'Planet', append: 'pl1' },
     // `card.lua:1775`：`create_card("Joker", …, true, true, nil, 'buf')`
     Buffoon: { type: 'joker', append: 'buf' },
+    // 标准包不走 `PACK_SPECS`——它造的是扑克牌，账完全不一样（见 `createPlayingCard`）
     Standard: null,
     Spectral: null,
 };
+
+/**
+ * `card.lua:1760` 的标准包造牌。**账与别的包完全不一样**，按顺序：
+ *
+ * ```
+ * stdset<ante>              > 0.6 → Enhanced，否则 Base
+ * Enhancedsta<ante>         只有 Enhanced 才抽（8 张强化，**池子不剔除**）
+ * frontsta<ante>            从 52 张 P_CARDS 里抽牌面
+ * standard_edition<ante>    poll_edition(mod = 2, no_neg = true)
+ * stdseal<ante>             > 0.8 才有蜡封
+ * stdsealtype<ante>         只有有蜡封时才掷
+ * ```
+ *
+ * 两处容易漏：
+ * - **`soulable` 传了真值但一次都不掷**：`_type` 是 `Base` / `Enhanced`，
+ *   两支 soul 判定都不匹配。
+ * - **Base 不抽池子**：`create_card` 里 `_type == 'Base'` 直接
+ *   `forced_key = 'c_base'`，跳过 `get_current_pool`。
+ */
+function createPlayingCard(
+    rng: PseudorandomState,
+    context: PoolContext,
+    keyAppend: string,
+): Card {
+    const ante = context.ante;
+
+    // `card.lua:1761`：**这一次排在 `create_card` 之前**（它是实参）
+    const enhanced = rng.pseudorandom(`stdset${ante}`) > 0.6;
+
+    let enhancement: string | null = null;
+    if (enhanced) {
+        // `get_current_pool('Enhanced', …)`：`_type == 'Enhanced'` 那一支
+        // **无条件 `add = true`**，8 张一张不剔
+        const poolKey = `Enhanced${keyAppend}${ante}`;
+        const [picked] = pseudorandomElement(ENHANCEMENT_KEYS_BY_ORDER, rng.pseudoseed(poolKey));
+        enhancement = String(picked);
+    }
+
+    // `common_events.lua:2166` 的 `front`。**`P_CARDS` 是以 key 为键的表**，
+    // 所以抽取按 key 的字节序排，不是牌组那个 2→A 的顺序
+    const [, frontKey] = pseudorandomElement(P_CARDS, rng.pseudoseed(`front${keyAppend}${ante}`));
+    const front = P_CARDS[String(frontKey)];
+    const card = makeCard(String(frontKey), front.suit, front.value);
+    card.enhancement = enhancement;
+
+    // `card.lua:1763`：**mod = 2、no_neg**（扑克牌拿不到 Negative）
+    const edition = pollEdition(rng, `standard_edition${ante}`, { mod: 2, noNeg: true });
+    if (edition) card.edition = edition;
+
+    // `card.lua:1766`：`seal_rate = 10`，判据 `> 1 - 0.02*10 = 0.8`。
+    // **不到门槛就不掷 `stdsealtype`**
+    if (rng.pseudorandom(`stdseal${ante}`) > 1 - 0.02 * 10) {
+        const t = rng.pseudorandom(`stdsealtype${ante}`);
+        card.seal = t > 0.75 ? 'Red' : t > 0.5 ? 'Blue' : t > 0.25 ? 'Gold' : 'Purple';
+    }
+
+    return card;
+}
 
 /**
  * 造包里的 `extra` 张牌。**不跑 `open_booster` 的小丑遍历**——
@@ -94,10 +165,23 @@ export function openBooster(
     key: string,
     context: PoolContext,
 ): OpenPack {
-    const spec = PACK_SPECS[center.kind];
-    if (!spec) throw new Error(`${center.name} 还没有实现（要版本／蜡封／幽灵牌）`);
+    if (!IMPLEMENTED_KINDS.has(center.kind)) {
+        throw new Error(`${center.name} 还没有实现（要幽灵牌）`);
+    }
 
     const cards: PackCard[] = [];
+
+    // 标准包造的是扑克牌，账与别的包完全不一样
+    if (center.kind === 'Standard') {
+        for (let i = 0; i < center.extra; i++) {
+            cards.push({ kind: 'card', card: createPlayingCard(rng, context, 'sta') });
+        }
+        return { key, center, cards, choicesLeft: center.choose };
+    }
+
+    const spec = PACK_SPECS[center.kind];
+    if (!spec) throw new Error(`${center.name} 的 PACK_SPECS 缺了一条`);
+
     for (let i = 0; i < center.extra; i++) {
         if (spec.type === 'consumable') {
             // `soulable` 的那次（幽灵包是两次）掷点排在池子抽取**之前**。
@@ -146,6 +230,9 @@ function rollSoulable(rng: PseudorandomState, set: ConsumableSet, ante: number):
  */
 export function releasePack(pack: OpenPack, context: PoolContext): void {
     for (const card of pack.cards) {
-        releaseUsed(context, card.kind === 'joker' ? card.joker.key : card.consumable.key);
+        // **扑克牌不进 `used_jokers`**：`get_current_pool('Enhanced')` 无条件
+        // `add = true`，标不标都不改池子，所以造的时候也没标
+        const key = packCardKey(card);
+        if (key) releaseUsed(context, key);
     }
 }

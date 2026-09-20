@@ -7,6 +7,7 @@
  */
 
 import type { Edition } from './editions';
+import type { Seal } from './seals';
 import { enhancedGetId, enhancedIsSuit, isStone } from './enhancements';
 
 export type Suit = 'Spades' | 'Hearts' | 'Clubs' | 'Diamonds';
@@ -81,6 +82,11 @@ export type Card = {
      * `undefined` 表示没有。扑克牌的版本只从标准包与 `Aura` 来。
      */
     edition?: Edition;
+    /**
+     * `card.seal`。Red / Blue / Gold / Purple，`undefined` 表示没有。
+     * 只从标准包与几张幽灵牌来。
+     */
+    seal?: Seal;
     /** 目标变换的 x。**tile 单位，不是像素**——见 10 号票 */
     T: { x: number; y: number; w: number; h: number };
 };
@@ -227,6 +233,25 @@ export function isSuit(card: Card, suit: Suit): boolean {
     if (enhanced !== null) return enhanced;
     return card.base.suit === suit;
 }
+
+/**
+ * `game.lua:302` 起的 `P_CARDS`，**以 key 为键的表**。
+ *
+ * 标准补充包造牌时要 `pseudorandom_element(G.P_CARDS, pseudoseed('front'..))`，
+ * 而 `pseudorandom_element` 对字符串键的表是**按 key 的字节序排**的
+ * （`misc_functions.lua:266`）。所以这里必须是一张表而不是数组——
+ * 排出来的序是 `C_2..C_9, C_A, C_J, C_K, C_Q, C_T, D_2, …`，
+ * **不是**牌组里那个「2 到 A」的顺序。
+ */
+export const P_CARDS: Record<string, { suit: Suit; value: Value }> = (() => {
+    const out: Record<string, { suit: Suit; value: Value }> = {};
+    for (const suit of ['Clubs', 'Diamonds', 'Hearts', 'Spades'] as Suit[]) {
+        for (const value of Object.keys(VALUE_TABLE) as Value[]) {
+            out[cardKey(suit, value)] = { suit, value };
+        }
+    }
+    return out;
+})();
 
 /** 一副标准 52 张，顺序照 `game.lua:302` 起的 `P_CARDS`（花色外层、点数内层）。 */
 export function makeStandardDeck(): Card[] {

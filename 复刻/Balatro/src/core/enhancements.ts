@@ -29,6 +29,7 @@
  */
 
 import type { Card, Suit } from './card';
+import { sealPDollars } from './seals';
 import { ENHANCEMENT_CENTERS } from './enhancements.generated';
 
 export { ENHANCEMENT_CENTERS, ENHANCEMENT_KEYS_BY_ORDER } from './enhancements.generated';
@@ -129,15 +130,20 @@ export function getChipHXMult(card: Card): number {
  */
 export function getPDollars(card: Card, ctx: ProbContext): number {
     if (card.debuff) return 0;
+
+    // `card.lua:1072`：**Gold 蜡封那一段排在最前面**，与强化牌的 p_dollars 叠加
+    let ret = sealPDollars(card);
+
     const center = centerOf(card);
     const p = center?.config.p_dollars ?? 0;
-    if (p <= 0) return 0;
+    if (p <= 0) return ret;
 
     if (center?.effect === 'Lucky Card') {
-        if (ctx.pseudorandom('lucky_money') < ctx.probabilities.normal / 15) return p;
-        return 0;
+        // 掷点**无条件发生**，中不中都消耗
+        if (ctx.pseudorandom('lucky_money') < ctx.probabilities.normal / 15) ret += p;
+        return ret;
     }
-    return p;
+    return ret + p;
 }
 
 /** `card.lua:1034` 的 `get_end_of_round_effect`。**黄金牌的 $3 走这里**，留在手里才算 */

@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 import { BLIND_CENTERS } from './blinds';
 import { makeCard, makeStandardDeck, resetCardCounters } from './card';
+import { packCardKey } from './booster-open';
 import { makeConsumable } from './consumables';
 import { makeJoker } from './jokers';
 import { Run } from './run';
@@ -597,7 +598,7 @@ describe('开包', () => {
         const run = intoShopWithPack();
         const pack = run.buyAndOpenPack(0);
         const left = pack.cards[1];
-        const leftKey = left.kind === 'joker' ? left.joker.key : left.consumable.key;
+        const leftKey = packCardKey(left)!;
         run.takeFromPack(0);
         expect(run.usedJokers.has(leftKey)).toBe(false);
     });
@@ -606,7 +607,7 @@ describe('开包', () => {
         const run = intoShopWithPack();
         const pack = run.buyAndOpenPack(0);
         const taken = pack.cards[0];
-        const key = taken.kind === 'joker' ? taken.joker.key : taken.consumable.key;
+        const key = packCardKey(taken)!;
         run.takeFromPack(0);
         expect(run.usedJokers.has(key)).toBe(true);
     });
@@ -631,7 +632,7 @@ describe('开包', () => {
     it('跳过也把包里的牌还回池子', () => {
         const run = intoShopWithPack();
         const pack = run.buyAndOpenPack(0);
-        const keys = pack.cards.map((c) => (c.kind === 'joker' ? c.joker.key : c.consumable.key));
+        const keys = pack.cards.map((c) => packCardKey(c)!);
         run.skipPack();
         for (const key of keys) expect(run.usedJokers.has(key)).toBe(false);
         expect(run.openPack).toBeNull();
@@ -653,18 +654,16 @@ describe('开包', () => {
         expect(() => run.takeFromPack(0)).toThrow(/满了/);
     });
 
-    it('还没实现的包（标准／幽灵）买不了', () => {
+    it('还没实现的幽灵包买不了', () => {
         const run = intoShopWithPack();
         run.leaveShop();
-        // 扫几个商店找一个标准包或幽灵包
-        for (let i = 0; i < 20; i++) {
+        // 扫几个商店找一个幽灵包（权重只有 0.97/22.42 ≈ 4.3%，要多扫几轮）
+        for (let i = 0; i < 60; i++) {
             const round = run.startRound();
             (round as unknown as { phase: string }).phase = 'won';
             run.finishRound();
             run.dollars = 50;
-            const idx = run.shop!.packs.findIndex(
-                (p) => p && (p.center.kind === 'Standard' || p.center.kind === 'Spectral'),
-            );
+            const idx = run.shop!.packs.findIndex((p) => p && p.center.kind === 'Spectral');
             if (idx >= 0) {
                 expect(run.canBuyPack(idx)).toBe(false);
                 expect(() => run.buyAndOpenPack(idx)).toThrow(/还没有实现/);
@@ -672,6 +671,6 @@ describe('开包', () => {
             }
             run.leaveShop();
         }
-        throw new Error('20 个商店里一个标准包／幽灵包都没出现？');
+        throw new Error('60 个商店里一个幽灵包都没出现？');
     });
 });

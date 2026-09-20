@@ -9,8 +9,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { BOOSTER_CENTERS } from './boosters';
-import { isBoosterImplemented, openBooster, releasePack } from './booster-open';
-import { resetCardCounters } from './card';
+import { isBoosterImplemented, openBooster, packCardKey, releasePack } from './booster-open';
+import { P_CARDS, resetCardCounters } from './card';
 import { PseudorandomState } from './rng';
 import { initialHands } from './scoring';
 import type { PoolContext } from './shop';
@@ -180,24 +180,95 @@ describe('小丑包：小丑，且 etperpoll 换成 packetper', () => {
     });
 });
 
-describe('还没实现的两种包', () => {
-    it('标准包与幽灵包 isBoosterImplemented 是 false', () => {
-        expect(isBoosterImplemented('p_standard_normal_1', BOOSTER_CENTERS)).toBe(false);
-        expect(isBoosterImplemented('p_spectral_normal_1', BOOSTER_CENTERS)).toBe(false);
+describe('标准包：扑克牌 + 强化 + 版本 + 蜡封', () => {
+    it('普通标准包给 3 张扑克牌', () => {
+        const pack = openBooster(
+            new PseudorandomState('ALEEB'),
+            BOOSTER_CENTERS.p_standard_normal_1,
+            'p_standard_normal_1',
+            ctx(),
+        );
+        expect(pack.cards).toHaveLength(3);
+        expect(pack.cards.every((c) => c.kind === 'card')).toBe(true);
     });
 
-    it('三种实现了的是 true', () => {
+    /**
+     * 标准包的账与别的包完全不一样，而且**不掷一次 soul_**：
+     * `_type` 是 `Base` / `Enhanced`，两支 soul 判定都不匹配。
+     */
+    it('账是 stdset → (Enhancedsta) → frontsta → standard_edition → stdseal，且不掷 soul_', () => {
+        const { rng, keys } = tracingRng('ALEEB');
+        openBooster(rng, BOOSTER_CENTERS.p_standard_normal_1, 'p_standard_normal_1', ctx());
+        expect(keys.filter((k) => k === 'stdset1')).toHaveLength(3);
+        expect(keys.filter((k) => k === 'frontsta1')).toHaveLength(3);
+        expect(keys.filter((k) => k === 'standard_edition1')).toHaveLength(3);
+        expect(keys.filter((k) => k === 'stdseal1')).toHaveLength(3);
+        expect(keys.filter((k) => k.startsWith('soul_'))).toHaveLength(0);
+    });
+
+    /** `stdseal` 不到 0.8 就**不掷 `stdsealtype`** */
+    it('没蜡封就不掷 stdsealtype', () => {
+        const { rng, keys } = tracingRng('ALEEB');
+        const pack = openBooster(rng, BOOSTER_CENTERS.p_standard_normal_1, 'p_standard_normal_1', ctx());
+        const sealed = pack.cards.filter((c) => c.kind === 'card' && c.card.seal).length;
+        expect(keys.filter((k) => k === 'stdsealtype1')).toHaveLength(sealed);
+    });
+
+    it('抽出来的牌面是 52 张里的一张', () => {
+        const pack = openBooster(
+            new PseudorandomState('QQQ777'),
+            BOOSTER_CENTERS.p_standard_jumbo_1,
+            'p_standard_jumbo_1',
+            ctx(),
+        );
+        for (const c of pack.cards) {
+            expect(c.kind === 'card' && c.card.key in P_CARDS).toBe(true);
+        }
+    });
+
+    /** 扑克牌**拿不到 Negative**（`no_neg = true`） */
+    it('扑克牌不会是 Negative', () => {
+        for (let i = 0; i < 60; i++) {
+            const pack = openBooster(
+                new PseudorandomState(`S${i}`),
+                BOOSTER_CENTERS.p_standard_mega_1,
+                'p_standard_mega_1',
+                ctx(),
+            );
+            for (const c of pack.cards) {
+                if (c.kind === 'card') expect(c.card.edition).not.toBe('negative');
+            }
+        }
+    });
+
+    /** 扑克牌不进 `used_jokers`：`Enhanced` 池子无条件 `add = true`，标不标都不改池子 */
+    it('标准包的牌不进 usedJokers', () => {
+        const context = ctx();
+        openBooster(
+            new PseudorandomState('ALEEB'),
+            BOOSTER_CENTERS.p_standard_normal_1,
+            'p_standard_normal_1',
+            context,
+        );
+        expect(context.usedJokers.size).toBe(0);
+    });
+});
+
+describe('还没实现的幽灵包', () => {
+    it('幽灵包 isBoosterImplemented 是 false，别的四种是 true', () => {
+        expect(isBoosterImplemented('p_spectral_normal_1', BOOSTER_CENTERS)).toBe(false);
         expect(isBoosterImplemented('p_arcana_normal_1', BOOSTER_CENTERS)).toBe(true);
         expect(isBoosterImplemented('p_celestial_normal_1', BOOSTER_CENTERS)).toBe(true);
         expect(isBoosterImplemented('p_buffoon_normal_1', BOOSTER_CENTERS)).toBe(true);
+        expect(isBoosterImplemented('p_standard_normal_1', BOOSTER_CENTERS)).toBe(true);
     });
 
     it('硬开会抛，不静默给一个空包', () => {
         expect(() =>
             openBooster(
                 new PseudorandomState('ALEEB'),
-                BOOSTER_CENTERS.p_standard_normal_1,
-                'p_standard_normal_1',
+                BOOSTER_CENTERS.p_spectral_normal_1,
+                'p_spectral_normal_1',
                 ctx(),
             ),
         ).toThrow(/还没有实现/);
@@ -214,7 +285,7 @@ describe('used_jokers：包里的牌摆出来就标，关包还回去', () => {
             context,
         );
         for (const c of pack.cards) {
-            const key = c.kind === 'joker' ? c.joker.key : c.consumable.key;
+            const key = packCardKey(c)!;
             expect(context.usedJokers.has(key)).toBe(true);
         }
     });
@@ -244,7 +315,7 @@ describe('used_jokers：包里的牌摆出来就标，关包还回去', () => {
             context,
         );
         const taken = pack.cards[0];
-        const key = taken.kind === 'joker' ? taken.joker.key : taken.consumable.key;
+        const key = packCardKey(taken)!;
         // 模拟「挑走」：从包里移出去、放进消耗品区
         pack.cards.splice(0, 1);
         context.consumables.push(taken.kind === 'consumable' ? taken.consumable : ({} as never));
@@ -261,7 +332,7 @@ describe('used_jokers：包里的牌摆出来就标，关包还回去', () => {
             'p_arcana_jumbo_1',
             context,
         );
-        const keys = pack.cards.map((c) => (c.kind === 'joker' ? c.joker.key : c.consumable.key));
+        const keys = pack.cards.map((c) => packCardKey(c)!);
         expect(new Set(keys).size).toBe(keys.length);
     });
 
@@ -273,7 +344,7 @@ describe('used_jokers：包里的牌摆出来就标，关包还回去', () => {
             'p_buffoon_jumbo_1',
             context,
         );
-        const keys = pack.cards.map((c) => (c.kind === 'joker' ? c.joker.key : c.consumable.key));
+        const keys = pack.cards.map((c) => packCardKey(c)!);
         expect(new Set(keys).size).toBe(keys.length);
     });
 });
@@ -293,8 +364,7 @@ describe('同 seed 同包', () => {
             'p_celestial_normal_1',
             ctx(),
         );
-        const keys = (p: typeof a) =>
-            p.cards.map((c) => (c.kind === 'joker' ? c.joker.key : c.consumable.key));
+        const keys = (p: typeof a) => p.cards.map((c) => packCardKey(c));
         expect(keys(a)).toEqual(keys(b));
     });
 });

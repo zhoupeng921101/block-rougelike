@@ -27,6 +27,7 @@ import {
     pressPlay,
     stayFlipped,
 } from './blinds';
+import { PURPLE_SEAL_APPEND, sealDiscardCreatesTarot } from './seals';
 import type { Card, Suit } from './card';
 import { calculateJoker, refreshDerivedAbilities, runModifiers } from './jokers';
 import type { GameView, Joker, RunModifiers } from './jokers';
@@ -195,6 +196,8 @@ export class Round {
     discardsUsed = 0;
     /** 这一手的牌型等级，`The Arm` 在 `debuff_hand` 里要读它 */
     private lastHandLevel = 1;
+    /** `G.GAME.last_hand_played`。Blue 蜡封在回合结束时按它造星球 */
+    lastHandPlayed?: HandName;
     /** `G.GAME.starting_deck_size`。`Erosion` 读它 */
     private readonly startingDeckSize: number;
     /**
@@ -424,6 +427,8 @@ export class Round {
 
         const chipsBefore = this.chips;
         const result = evaluatePlay(played, this.hands, this.gameView(), this.jokerFlags, this.blindHooks);
+        // `state_events.lua:597` 的 `G.GAME.last_hand_played`。Blue 蜡封读它
+        this.lastHandPlayed = result.handName;
         this.chips += result.score;
 
         // 第 13 步销毁掉的牌（碎掉的玻璃牌）。**离开这一局的弃牌堆**，
@@ -509,6 +514,16 @@ export class Round {
         // `state_events.lua:421`：逐张问每张小丑。**直接调 `calculate_joker`、不带
         // `cardarea`**——原文如此，`context.discard` 那条分支在 cardarea 判定之前。
         for (const card of cards) {
+            // `common_events.lua:587` 的 `calculate_seal`：**Purple 蜡封弃牌时造塔罗**。
+            // `eval_card` 对每张被弃的牌都会走一遍这一支
+            if (sealDiscardCreatesTarot(card)) {
+                if (this.consumables.count() < this.consumables.slots) {
+                    // key_append 是 **`'8ba'`**（`card.lua:2263`）——原文从
+                    // `8 Ball` 那段抄下来忘了改。照抄才对得上 seed
+                    this.consumables.create('Tarot', PURPLE_SEAL_APPEND);
+                }
+            }
+
             for (const joker of this.jokers) {
                 calculateJoker(
                     joker,

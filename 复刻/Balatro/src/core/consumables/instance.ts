@@ -9,8 +9,9 @@
  */
 
 import { buyCost, sellCost } from '../jokers';
-import { CONSUMABLE_CENTERS } from './centers.generated';
-import type { Consumable } from './types';
+import type { HandName } from '../poker-hands';
+import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET } from './centers.generated';
+import type { Consumable, PlanetConfig } from './types';
 
 export function makeConsumable(key: string): Consumable {
     const center = CONSUMABLE_CENTERS[key];
@@ -18,4 +19,17 @@ export function makeConsumable(key: string): Consumable {
 
     const cost = buyCost(center);
     return { key, center, cost, sell_cost: sellCost(cost) };
+}
+
+/**
+ * 按牌型找对应的那张星球。`card.lua:1050` 的
+ * `for k, v in pairs(P_CENTER_POOLS.Planet) do if v.config.hand_type == _hand then ... end`。
+ *
+ * `Blue` 蜡封与 `v_telescope` 优惠券都用它——**它不抽随机，是按牌型查表**。
+ */
+export function planetKeyFor(hand: HandName): string | null {
+    for (const key of CONSUMABLE_KEYS_BY_SET.Planet) {
+        if ((CONSUMABLE_CENTERS[key].config as PlanetConfig).hand_type === hand) return key;
+    }
+    return null;
 }
