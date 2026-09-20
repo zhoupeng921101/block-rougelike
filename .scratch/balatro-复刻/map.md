@@ -66,6 +66,10 @@ Label: wayfinder:map
 - [仓库三层结构的约定更新](issues/08-仓库三层结构的约定更新.md) —— `README.md` / `AGENTS.md` /
   `参考/README.md` 已加 `复刻/` 层，新写 `复刻/README.md`。
   两条新约定入册：**复刻不得对外部署**、**研究查 CSV 复刻读源码**。
+- [坐标驱动排序的解耦](issues/10-坐标驱动排序的解耦.md) —— **原样直译，TS 侧也维护 `T.x`**。
+  本票原先的担忧不成立：`T` 是目标变换、`VT` 才是动画插值的，逻辑从不读 `VT`；
+  没被拖的牌 `T.x` 每帧由下标重算，排序只是拖拽提交进数组的方式。
+  **硬约束：`T` 全程用 tile 单位，像素换算只允许出现在渲染/输入边界。**
 
 ## Not yet specified
 
@@ -100,6 +104,11 @@ Label: wayfinder:map
 - **`#pragma phaserTemplate` 不是给用户着色器分节用的**。`vertexSource` 整体替换模板，
   自定义着色器要写完整程序，遵守 `uProjectionMatrix` / `inPosition` / `inTexCoord` / `outTexCoord` 契约，
   并 `setUniform('uMainSampler', 0)` 绑纹理单元。
+- **`T` 是目标变换，`VT` 是动画插值的那个。逻辑只读 `T`，绝不读 `VT`。**
+  全仓九处按 `T.x` 排序（`align_cards` 六处 + `state_events` 三处），
+  外加 `cardarea.lua:534` 的 pinned 特例（`-100*sort_id` 强制排前），直译时别简化掉。
+- **`T.x` / `T.y` 的单位是 tile 不是像素**（`TILESIZE=20`、`CARD_W≈2.05` tile）。
+  `align_cards` 里那堆手调常数全是 tile 尺度的，用像素维护 `T` 会让它们一个都不能用。
 - **`Shader` GameObject 不会自动应用 spritesheet 的帧**，`outTexCoord` 默认跨整张纹理。
   必须显式调 `setTextureCoordinatesFromFrame(frame, texture)`，否则整张图集会被画进每个 quad。
 - **复刻件的配置源头是 `源码/` 里的 Lua，不是 `配置CSV/`**。后者是派生的研究产物，
