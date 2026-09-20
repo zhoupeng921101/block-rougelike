@@ -35,6 +35,7 @@
 
 import { type Card, getId, isFace, isSuit } from '../card';
 import type { HandName } from '../poker-hands';
+import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER } from './centers.generated';
 import type { GameView, Joker, JokerContext, JokerEffect } from './types';
 
 /** `next(context.poker_hands[type])` —— 那一档有没有命中。 */
@@ -646,4 +647,93 @@ function mainScoring(self: Joker, context: JokerContext, game: GameView): JokerE
     }
 
     return MAIN[a.name]?.(self, context, game) ?? null;
+}
+
+// ————————————————————————————————————————————————————————————————
+// 覆盖面
+// ————————————————————————————————————————————————————————————————
+
+/**
+ * 在 `calculate_joker` 里有专属分支的小丑名。
+ *
+ * **从上面那九张表算出来，不手写名单。** 手写的名单会漂：加了 handler 忘了更名单，
+ * 那张小丑就会被当成「未实现」；反过来更糟——删了 handler 名单还留着，
+ * 于是一张什么都不做的小丑被报成已实现。
+ */
+const NAMES_WITH_HANDLERS: ReadonlySet<string> = new Set([
+    // main 分支里**写在查表之前**的那些（见文件头：前四条不能进表）。
+    // `Loyalty Card` 会 fall through，所以它必须留在链上、不能塞进 MAIN；
+    // 这里手动补一条，否则它会被算成「未实现」。
+    // `Seeing Double` 不算——它只是被泛化判定**排除**，不是被实现
+    'Loyalty Card',
+    ...Object.keys(INDIVIDUAL_PLAY),
+    ...Object.keys(INDIVIDUAL_HAND),
+    ...Object.keys(REPETITION_PLAY),
+    ...Object.keys(REPETITION_HAND),
+    ...Object.keys(BEFORE),
+    ...Object.keys(AFTER),
+    ...Object.keys(DISCARD),
+    ...Object.keys(END_OF_ROUND),
+    ...Object.keys(MAIN),
+]);
+
+/**
+ * 行为**不在** `calculate_joker` 里的那些，逐条注明落在哪。
+ *
+ * 这几张在原作里也没有 `calculate_joker` 分支——它们靠别处的查询生效，
+ * 所以「表里没有」不等于「没实现」。
+ */
+const IMPLEMENTED_ELSEWHERE: Readonly<Record<string, string>> = {
+    // `state_events.lua:604` 的 `find_joker('Splash')`：让全部 5 张都计分
+    Splash: 'scoring.ts 的第 4 步',
+    // `ability.h_size` / `d_size`，在 `Round` 的构造里加进手牌上限与弃牌次数
+    Juggler: 'round.ts 的 hSize',
+    Drunkard: 'round.ts 的 dSize',
+    // `card.lua:968` 的 `find_joker("Pareidolia")`：所有牌都算人头牌
+    Pareidolia: 'calculate.ts 的 hasPareidolia',
+    // `common_events.lua:2026` 的 `find_joker("Showman")`：见过的小丑重新进池
+    Showman: 'shop.ts 的 getCurrentJokerPool',
+    // `state_events.lua:332`：每张给一次免费重掷
+    'Chaos the Clown': 'shop.ts 的 Shop.freeRerolls',
+    // `card.lua:1657` 的 `calculate_dollar_bonus`
+    'Golden Joker': 'economy.ts 的 calculateDollarBonus',
+    'Delayed Gratification': 'economy.ts 的 calculateDollarBonus',
+};
+
+/**
+ * 这张小丑的行为实现了吗。
+ *
+ * 三条通路，命中任一条就算实现：
+ * 1. 九张 handler 表里有它的名字
+ * 2. 它的 config 走 main 分支那三条**泛化判定**（`t_mult` / `t_chips` / `Xmult`）——
+ *    Jolly/Zany/Mad/Crazy/Droll 与 Sly/Wily/Clever/Devious/Crafty 这 10 张
+ *    在原作里也没有专属代码，全靠那三条
+ * 3. 在 `IMPLEMENTED_ELSEWHERE` 里，即行为落在别的模块
+ *
+ * **为什么需要这个函数**：商店按设计从 150 张的全池生成，所以玩家会买到
+ * 没有行为的小丑，而它「看起来完全正常、买了什么也不发生」。
+ * 这跟「有数值没 debuff 的 Boss」是同一个坑，只是这次不能用抛异常挡
+ * （那会让商店没法开），只能标出来。
+ */
+export function isJokerImplemented(key: string): boolean {
+    const center = JOKER_CENTERS[key];
+    if (!center) return false;
+    if (NAMES_WITH_HANDLERS.has(center.name)) return true;
+    if (center.name in IMPLEMENTED_ELSEWHERE) return true;
+
+    // main 分支的三条泛化判定
+    const c = center.config;
+    if ((c.t_mult ?? 0) > 0) return true;
+    if ((c.t_chips ?? 0) > 0) return true;
+    if ((c.Xmult ?? 1) > 1) return true;
+
+    // `effect === 'Suit Mult'` 走 individual/play 那条按 effect 分发的
+    if (center.effect === 'Suit Mult') return true;
+
+    return false;
+}
+
+/** 没有行为的小丑 key，按 `order` 排序。给测试与 UI 用。 */
+export function unimplementedJokers(): string[] {
+    return JOKER_KEYS_BY_ORDER.filter((key) => !isJokerImplemented(key));
 }

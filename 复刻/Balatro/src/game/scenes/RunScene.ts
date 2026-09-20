@@ -15,6 +15,7 @@ import { BLIND_CENTERS } from '../../core/blinds';
 import type { Card } from '../../core/card';
 import { makeStandardDeck, resetCardCounters } from '../../core/card';
 import { EventManager, GameEvent } from '../../core/event-queue';
+import { isJokerImplemented } from '../../core/jokers';
 import type { Joker } from '../../core/jokers';
 import { evaluatePokerHand } from '../../core/poker-hands';
 import type { Round } from '../../core/round';
@@ -52,6 +53,8 @@ export class RunScene extends Scene {
     private sprites: CardSprite[] = [];
     private jokerSprites: JokerSprite[] = [];
     private shopSprites: JokerSprite[] = [];
+    /** 商店格子下面那行价格／「未实现」标记 */
+    private shopLabels: GameObjects.Text[] = [];
     private selected = new Set<Card>();
 
     /** 事件队列。动画的节奏全靠它，语义直译自 engine/event.lua（09 号票）。
@@ -254,6 +257,8 @@ ${String(e instanceof Error ? e.message : e)}`)
     private clearShop(): void {
         for (const s of this.shopSprites) s.destroy();
         this.shopSprites = [];
+        for (const t of this.shopLabels) t.destroy();
+        this.shopLabels = [];
     }
 
     private rebuildShop(): void {
@@ -262,10 +267,39 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (!shop) return;
 
         shop.items.forEach((item, i) => {
-            if (item.kind !== 'joker') return; // 塔罗／星球格本里程碑没有卡面
+            const x = SHOP_X_TILES + i * (CARD_W + 1.4);
+
+            if (item.kind !== 'joker') {
+                // 塔罗／星球格：还没实现效果，但格子是真的（占了 28.6% 的商店），
+                // 所以画个占位而不是留空——留空会让人以为商店少了一格
+                this.shopLabels.push(
+                    this.add.text(toPx(x), toPx(SHOP_Y_TILES + 1.0), `${item.type}
+未实现`, {
+                        fontFamily: 'monospace', fontSize: 18, color: '#8a8f98', align: 'center',
+                    }).setDepth(40),
+                );
+                return;
+            }
+
             const sprite = new JokerSprite(this, item.joker, () => this.buy(i));
-            sprite.layout(SHOP_X_TILES + i * (CARD_W + 1.4), SHOP_Y_TILES);
+            sprite.layout(x, SHOP_Y_TILES);
             this.shopSprites.push(sprite);
+
+            // **没有行为的小丑要标出来。** 商店按设计从 150 张的全池生成
+            // （池子大小影响 RNG，不能裁），所以会摆出还没实现的小丑，
+            // 而它买了什么也不发生。不标就是把缺口伪装成正常行为
+            const done = isJokerImplemented(item.joker.key);
+            this.shopLabels.push(
+                this.add.text(
+                    toPx(x),
+                    toPx(SHOP_Y_TILES + CARD_H + 0.1),
+                    `$${item.cost}${done ? '' : '  ⚠未实现'}`,
+                    {
+                        fontFamily: 'monospace', fontSize: 18,
+                        color: done ? '#ffd76e' : '#e5885f',
+                    },
+                ).setDepth(40),
+            );
         });
     }
 
@@ -520,7 +554,9 @@ ${String(e instanceof Error ? e.message : e)}`)
                 if (a.t_chips > 0) parts.push(`+${a.t_chips}c/${a.type}`);
                 if (a.x_mult > 1) parts.push(`×${a.x_mult}`);
                 if (typeof a.extra?.chips === 'number') parts.push(`+${a.extra.chips}c`);
-                return `${a.name}${parts.length ? ` ${parts.join(' ')}` : ''} ($${j.sell_cost})`;
+                // 没有行为的小丑要标出来，理由同商店那一处
+                const warn = isJokerImplemented(j.key) ? '' : ' ⚠未实现';
+                return `${a.name}${parts.length ? ` ${parts.join(' ')}` : ''} ($${j.sell_cost})${warn}`;
             })
             .join('   ');
     }
