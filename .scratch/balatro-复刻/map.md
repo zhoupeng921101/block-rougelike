@@ -91,8 +91,9 @@ Label: wayfinder:map
   但 main 分支前四条（含三条泛化判定）必须按原序写死在查表之前。
 
 > **第一个里程碑已交付**（红牌组打小盲注，可玩，带动画/shader/音效）。
-> 第二个里程碑在做：**小丑进结算管线已落地**（172 个测试绿，其中 66 条小丑用例），
-> 经济层 / 商店 / Boss 盲注还没有。
+> 第二个里程碑在做：小丑进结算管线、经济层、`Run` 状态机、Ante 1 的 8 个 Boss
+> **都已落地**（249 个测试绿）。**下一步是商店**——没有商店就买不到小丑，
+> 「带小丑打过 Ante 1」这个里程碑的定义还没满足。
 
 ## Not yet specified
 
@@ -150,6 +151,29 @@ Label: wayfinder:map
   （Misprint / Business Card / Reserved Parking / Space Joker / 8 Ball / Bloodstone）。
   掷点的**位置**有语义：Business Card 是「先判人头牌、再掷」，所以非人头牌不消耗 RNG；
   Reserved Parking 反过来是「先掷、再判 debuff」。搞反了整条 seed 链就分叉。
+- **RNG 状态必须由 `Run` 持有，不能每回合新建。** `G.GAME.pseudorandom` 是整局共享的表，
+  每个 key 的第 n 次调用依赖前 n-1 次。每回合 `new PseudorandomState(seed)` 会让
+  `'hook'` / `'business'` / `'misprint'` 全部从头开始——而这种分叉**在单回合测试里看不出来**。
+- **`get_new_boss` 的池子顺序是 key 的字母序，不是 `order`。** `eligible_bosses` 是
+  以 key 为键的表，`pseudorandom_element` 对这种表按 key 排（`misc_functions.lua:266`）。
+  另外 `bosses_used` 的**最小使用次数过滤会改池子大小**，也就改 `math.random(#keys)` 的取值域，
+  省掉它第二个 Ante 起就分叉。**12 条外部真值现在打在生产代码上**（`blinds.test.ts`），
+  不再是测试里手写一遍。
+- **`evaluate_round` 的利息读的是「入账前」的余额。** 加钱顺序是
+  盲注 → 剩余出牌 → 小丑 → 利息，而利息读 `G.GAME.dollars`。
+  用加完之后的余额算，每关都多给钱。
+- **`The Hook` 的额外弃牌不扣弃牌次数。** `ease_discard(-1)` 与 `discards_used++`
+  都在 `if not hook` 里面（`state_events.lua:1213` 附近）。但它**照样触发小丑的
+  `discard` 分支**——被 Hook 弃掉的人头牌会给 Faceless Joker 算进去。
+- **`played_this_ante` 只在 Boss 打完之后清**（`state_events.lua:286`），不是每回合。
+  `The Pillar` 靠它。
+- **那四个 `reset_*`（idol / mail / anc / cas）每回合都跑**，不只是 Ante 结束
+  （`state_events.lua:294`）。它们各用一个独立 key，所以少跑不影响别的 key——
+  但接 `The Idol` / `Ancient Joker` / `Castle` 时那几个 key 的调用次数必须已经对齐，
+  所以现在就跑完。
+- **未实现 debuff 的 Boss 要抛，不能静默放过。** 那 20 个在 `BLIND_CENTERS` 里有
+  完整数值，一个「有需求但没 debuff」的 Boss 看起来完全正常、玩起来是白送一关——
+  等于把正确性缺口伪装成正常行为。`assertImplemented` 挡在 `Run.startRound`。
 - **小丑的 `base.nominal` 是 0。** `set_base(P_CARDS.empty)` 匹配不到任何点数，
   所以 `get_chip_bonus` 对小丑返回 0、`ret.chips` 不会被写。重复触发那一问
   （拿小丑问 `cardarea = G.play`）靠这条才成为空转，不是靠调用方少传字段。

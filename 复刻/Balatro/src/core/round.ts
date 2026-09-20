@@ -17,7 +17,9 @@
  * 这跟原作一样（`G.jokers.cards` 与 `G.GAME.dollars` 是全局的）。
  */
 
+import { type BlindState, blindHooks, debuffCard, pressPlay } from './blinds';
 import type { Card } from './card';
+import { calculateJoker } from './jokers';
 import type { GameView, Joker } from './jokers';
 import { PseudorandomState, pseudoshuffle } from './rng';
 import { type JokerFlags, NO_JOKERS } from './poker-hands';
@@ -26,8 +28,8 @@ import {
     type HandInfo,
     type HandName,
     type ScoreStep,
-    blindRequirement,
     evaluatePlay,
+    getBlindAmount,
     initialHands,
 } from './scoring';
 
@@ -81,7 +83,12 @@ export function alignHand(cards: Card[]): void {
 
 export type RoundOptions = {
     ante?: number;
-    blind?: 'small' | 'big' | 'boss';
+    /**
+     * 这一局打的是哪个盲注。**必须是 `BlindState` 而不是 `'small' | 'boss'`**——
+     * Boss 的 debuff、`-1` 手牌上限、出牌后的额外弃牌全挂在它身上，
+     * 而且 `triggered` 是会被写的，所以它是状态不是枚举。
+     */
+    blind?: BlindState;
     /** 小丑区。**`Round` 会原地改它们的 ability**（自增型小丑长个子） */
     jokers?: Joker[];
     /** 起手金钱。`Run` 层带过来 */
@@ -90,9 +97,15 @@ export type RoundOptions = {
     handsPlayed?: number;
     /** 牌型等级。跨回合持有，所以由 `Run` 层传进来 */
     hands?: Record<HandName, HandInfo>;
-    /** 盲注钩子。Boss 盲注落地时填 */
-    blindHooks?: BlindHooks;
     jokerFlags?: JokerFlags;
+    /**
+     * RNG 状态。**由 `Run` 层持有并跨回合传下来**——
+     * 每回合新建一个 `PseudorandomState` 会让每回合的同名 key 从头开始，
+     * 而原作的 `G.GAME.pseudorandom` 是整局共享的。
+     */
+    rng?: PseudorandomState;
+    /** 本回合的 `mail_card` 点数（`Mail-In Rebate` 读它）。由 `Run` 层每回合抽 */
+    mailCard?: number;
 };
 
 export class Round {
@@ -113,10 +126,20 @@ export class Round {
     readonly hands: Record<HandName, HandInfo>;
     readonly jokers: Joker[];
     readonly ante: number;
-    private handsPlayed: number;
+    readonly blind: BlindState | null;
+    readonly handLimit: number;
+    /** 用掉的弃牌次数。`Delayed Gratification` 判的是「一次都没用过」 */
+    discardsUsed = 0;
+    /**
+     * 整局累计出牌数（`G.GAME.hands_played`）。**`evaluatePlay` 会写它**
+     * （经 `gameView().hands_played` 的 setter），所以回合结束后 `Run` 要读回去，
+     * 不能自己再加一遍。`Loyalty Card` 读它。
+     */
+    handsPlayed: number;
     private readonly rng: PseudorandomState;
     private readonly blindHooks: BlindHooks;
     private readonly jokerFlags: JokerFlags;
+    private readonly mailCard?: number;
 
     constructor(seed: string, fullDeck: Card[], options: RoundOptions = {}) {
         this.ante = options.ante ?? 1;
@@ -124,32 +147,35 @@ export class Round {
         this.dollars = options.dollars ?? STARTING_PARAMS.dollars;
         this.handsPlayed = options.handsPlayed ?? 0;
         this.hands = options.hands ?? initialHands();
-        this.blindHooks = options.blindHooks ?? {};
         this.jokerFlags = options.jokerFlags ?? NO_JOKERS;
+        this.blind = options.blind ?? null;
+        this.blindHooks = this.blind ? blindHooks(this.blind) : {};
+        this.mailCard = options.mailCard;
 
-        this.rng = new PseudorandomState(seed);
-        this.requirement = blindRequirement(this.ante, options.blind ?? 'small');
+        this.rng = options.rng ?? new PseudorandomState(seed);
+        this.requirement = getBlindAmount(this.ante) * (this.blind?.center.mult ?? 1);
 
-        // `misc_functions.lua:1855` 的基数，再加上小丑的 h_size / d_size。
+        // `misc_functions.lua:1855` 的基数，再加上小丑的 h_size / d_size，
+        // 再加上盲注的修正（`The Manacle` 是 -1）。
         // Juggler（`h_size = 1`）与 Drunkard（`d_size = 1`）全靠这两行，
         // 它们在 `calculate_joker` 里**没有任何代码**。
         const hSize = this.jokers.reduce((n, j) => n + (j.debuff ? 0 : j.ability.h_size), 0);
         const dSize = this.jokers.reduce((n, j) => n + (j.debuff ? 0 : j.ability.d_size), 0);
-        this.handLimit = STARTING_PARAMS.hand_size + hSize;
+        this.handLimit = STARTING_PARAMS.hand_size + hSize + (this.blind?.handSizeMod ?? 0);
         this.handsLeft = STARTING_PARAMS.hands;
         this.discardsLeft = STARTING_PARAMS.discards + dSize;
 
         this.deck = [...fullDeck];
+        // `blind.lua:624` 的 `debuff_card` 在**进盲注时**对整副牌跑一遍，
+        // 不是每手重算。末尾那句 `set_debuff(false)` 是无条件的，所以这里直接赋值
         for (const card of this.deck) {
-            if (this.blindHooks.debuffCard) card.debuff = this.blindHooks.debuffCard(card);
+            card.debuff = this.blind ? debuffCard(this.blind, card) : false;
         }
 
         // `state_events.lua:365` 回合开始洗牌，key 是 'nr'..ante
         pseudoshuffle(this.deck, this.rng.pseudoseed(`nr${this.ante}`));
         this.drawToHandLimit();
     }
-
-    readonly handLimit: number;
 
     /**
      * 喂给 `calculate_joker` 的那张 `G.GAME` 视图。
@@ -186,6 +212,7 @@ export class Round {
                 get hands_played() {
                     return round.handsPlayedThisRound;
                 },
+                mail_card: this.mailCard,
             },
             probabilities: { normal: 1 },
             jokers: this.jokers,
@@ -227,6 +254,10 @@ export class Round {
         this.handsLeft--;
         this.handsPlayedThisRound++;
 
+        // `state_events.lua:502`。`The Pillar` 靠它认「本 Ante 打过的牌」，
+        // 而清除是在 **Boss 打完之后**（`state_events.lua:287`），不是每回合
+        for (const card of played) card.played_this_ante = true;
+
         // 打出去的牌离开手牌区。**要在结算之前**——手牌区遍历（第 10 步）
         // 只看留在手里的，`Raised Fist` 与 `Shoot the Moon` 吃这个差别
         this.moveOut(played);
@@ -234,6 +265,11 @@ export class Round {
         const chipsBefore = this.chips;
         const result = evaluatePlay(played, this.hands, this.gameView(), this.jokerFlags, this.blindHooks);
         this.chips += result.score;
+
+        // `blind.lua:464` 的 `press_play`——`The Hook` 在这里随机弃 2 张。
+        // **在结算之后、补牌之前**：原作是入队的，而队列里出牌结算的事件排在它前面
+        const hooked = this.blind ? pressPlay(this.blind, this.hand, this.rng) : [];
+        if (hooked.length > 0) this.discardCards(hooked, true);
 
         this.drawToHandLimit();
         this.settlePhase();
@@ -253,15 +289,55 @@ export class Round {
         };
     }
 
-    /** 弃牌。不计分、不结算，只消耗一次弃牌次数。 */
+    /**
+     * 弃牌。不计分，但**会触发小丑的 `discard` 分支**——
+     * Green Joker 掉倍率、Faceless Joker 给钱、Mail-In Rebate 给钱都在这里。
+     */
     discard(selected: Card[]): void {
         this.requireSelecting(selected);
         if (this.discardsLeft < 1) throw new Error('没有弃牌次数了');
 
         this.discardsLeft--;
-        this.moveOut([...selected].sort((a, b) => a.T.x - b.T.x));
+        this.discardsUsed++;
+        this.discardCards(selected);
         this.drawToHandLimit();
         this.settlePhase();
+    }
+
+    /**
+     * 真正把一批牌弃掉，并跑小丑的 `discard` 分支。
+     * 直译自 `state_events.lua:403` 的 `discard_cards_from_highlighted`。
+     *
+     * `The Hook` 的额外弃牌走的是同一条路（原作也是调这个函数，只是带 `hook = true`），
+     * 所以小丑照样触发——被 Hook 弃掉的人头牌**会**给 Faceless Joker 算进去。
+     * 但 `hook = true` 时**不扣弃牌次数**（`ease_discard(-1)` 与 `discards_used++`
+     * 都在 `if not hook` 里面），所以那两个由调用方 `discard()` 负责，不在这里。
+     */
+    private discardCards(selected: Card[], hook = false): void {
+        // `state_events.lua:413`：**先按 T.x 排序**。`The Hook` 随机抽出来的两张
+        // 也要过这一步，所以排序放在这里而不是 `discard()` 里
+        const cards = [...selected].sort((a, b) => a.T.x - b.T.x);
+
+        // `state_events.lua:415`：`pre_discard` 遍历，整批只问一次。
+        // 本里程碑没有小丑用它（`Burnt Joker` 是 rarity 3），但调用点先留着——
+        // 它的位置在逐张循环**之前**，补上的时候别塞错地方。
+        for (const joker of this.jokers) {
+            calculateJoker(joker, { pre_discard: true, full_hand: cards, hook }, this.gameView());
+        }
+
+        // `state_events.lua:421`：逐张问每张小丑。**直接调 `calculate_joker`、不带
+        // `cardarea`**——原文如此，`context.discard` 那条分支在 cardarea 判定之前。
+        for (const card of cards) {
+            for (const joker of this.jokers) {
+                calculateJoker(
+                    joker,
+                    { discard: true, other_card: card, full_hand: cards },
+                    this.gameView(),
+                );
+            }
+        }
+
+        this.moveOut(cards);
     }
 
     private requireSelecting(selected: Card[]): void {

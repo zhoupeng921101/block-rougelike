@@ -36,6 +36,11 @@ export type Card = {
      * 一被置位，`get_chip_bonus` / `is_face` 全部归零——它不是表现层的标记。
      */
     debuff: boolean;
+    /**
+     * `card.ability.played_this_ante`（`state_events.lua:502` 置位、`:287` 清）。
+     * `The Pillar` 靠它认「本 Ante 之前打出过的牌」。
+     */
+    played_this_ante: boolean;
     /** 目标变换的 x。**tile 单位，不是像素**——见 10 号票 */
     T: { x: number; y: number; w: number; h: number };
 };
@@ -92,6 +97,7 @@ export function makeCard(key: string, suit: Suit, value: Value): Card {
         sort_id: nextSortId++,
         unique_val: nextUniqueVal++,
         debuff: false,
+        played_this_ante: false,
         T: { x: 0, y: 0, w: 0, h: 0 },
     };
 }

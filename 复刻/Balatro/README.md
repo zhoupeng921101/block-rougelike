@@ -15,7 +15,8 @@
 300 分过关，带出牌动画、悬停倾斜、背景 shader、CRT 与音效。
 
 **第二个里程碑在做**（[15 号票](../../.scratch/balatro-复刻/issues/15-第二个里程碑的切片边界.md)
-「带小丑打过 Ante 1」）：小丑进结算管线**已落地**，经济层 / 商店 / Boss 盲注还没有。
+「带小丑打过 Ante 1」）：小丑进结算管线、经济层、盲注推进、Ante 1 的 8 个 Boss
+**已落地**；**商店还没有**（没有商店就买不到小丑，所以现在还不能真的「带小丑打」）。
 
 ```
 src/
@@ -25,6 +26,11 @@ src/
 │   ├── poker-hands.ts           牌型判定（evaluate_poker_hand）
 │   ├── scoring.ts               出牌结算管线（evaluate_play 的 3/4/6/9/10/11/14/15 步）
 │   ├── round.ts                 一局盲注的状态机
+│   ├── run.ts                   一整局：Ante 推进、盲注序、钱、小丑持有
+│   ├── blinds.ts                盲注与 Boss（get_new_boss / debuff_card / press_play）
+│   ├── blinds.generated.ts      30 条盲注定义（生成的，别手改）
+│   ├── economy.ts               回合收益与利息（evaluate_round）
+│   ├── fixtures/                对拍 fixture（12 条 Ante 1 Boss 外部真值）
 │   ├── event-queue.ts           事件队列（G.E_MANAGER）
 │   ├── jokers/                  ← 小丑系统
 │   │   ├── centers.generated.ts     150 张的 center 定义（生成的，别手改）
@@ -49,7 +55,7 @@ src/
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 172 个测试，必须全绿
+npm test            # 249 个测试，必须全绿
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
 ```
@@ -58,6 +64,7 @@ npm run build       # 先 typecheck 再 vite build
 
 ```bash
 node tools/gen-joker-centers.mjs
+node tools/gen-blind-centers.mjs
 ```
 
 **用 npm，不要用 pnpm。** pnpm 在本机装 `esbuild` 时稳定复现 `ERR_PNPM_EPERM`

@@ -329,6 +329,91 @@ const AFTER: Record<string, Handler> = {
 };
 
 // ————————————————————————————————————————————————————————————————
+// context.discard —— `card.lua:2760`。弃牌时逐张问一遍
+//
+// **调用形状与结算不一样**：弃牌那条路径（`state_events.lua:405`
+// `discard_cards_from_highlighted`）对**每一张被弃的牌**问一次每张小丑，
+// `context.other_card` 是那张牌、`context.full_hand` 是整批被弃的牌。
+// 好几张小丑靠 `other_card == full_hand[#full_hand]`（**最后一张**）
+// 来做「整批只触发一次」，所以那个判定不能简化成「第一次调用」。
+// ————————————————————————————————————————————————————————————————
+
+const DISCARD: Record<string, Handler> = {
+    // `card.lua:2828`。弃掉的牌点数撞上本回合的 mail_card 就给钱
+    'Mail-In Rebate': (self, context, game) => {
+        if (context.other_card!.debuff) return null;
+        if (game.current_round.mail_card === undefined) return null;
+        if (getId(context.other_card!) !== game.current_round.mail_card) return null;
+        game.dollars += self.ability.extra;
+        return { message: `$${self.ability.extra}`, dollars: self.ability.extra, card: self };
+    },
+
+    // `card.lua:2849`。**每弃一批扣 1**（靠「最后一张」判定），不是每张扣 1。
+    // `math.max(0, …)` 会把它压在 0，所以扣不成负数
+    'Green Joker': (self, context) => {
+        if (context.blueprint) return null;
+        if (context.other_card !== context.full_hand?.[context.full_hand.length - 1]) return null;
+        const prev = self.ability.mult;
+        self.ability.mult = Math.max(0, self.ability.mult - self.ability.extra.discard_sub);
+        if (self.ability.mult === prev) return null;
+        return { message: `-${self.ability.extra.discard_sub}`, card: self };
+    },
+
+    // `card.lua:2861`。整批里人头牌 ≥3 张就给 $5。
+    // 注意原文 `return`（无值）在给钱之后——钱是在事件里加的，不走返回值
+    'Faceless Joker': (self, context, game) => {
+        if (context.other_card !== context.full_hand?.[context.full_hand.length - 1]) return null;
+        const faces = (context.full_hand ?? []).filter((v) => isFace(v)).length;
+        if (faces < self.ability.extra.faces) return null;
+        game.dollars += self.ability.extra.dollars;
+        return { message: `$${self.ability.extra.dollars}`, card: self };
+    },
+};
+
+// ————————————————————————————————————————————————————————————————
+// context.end_of_round —— `card.lua:2877`。回合结算
+//
+// 这里有三张小丑会**销毁自己**。原作直接 `G.jokers:remove_card(self)` 入队，
+// 复刻件改成回一个 `destroy` 标志——理由见 `JokerEffect.destroy` 的注释。
+// ————————————————————————————————————————————————————————————————
+
+const END_OF_ROUND: Record<string, Handler> = {
+    // `card.lua:2948`。**先判会不会掉到 0、再减**——顺序反了会多活一个回合
+    Popcorn: (self, context) => {
+        if (context.blueprint) return null;
+        if (self.ability.mult - self.ability.extra <= 0) {
+            return { message: 'eaten', card: self, destroy: true };
+        }
+        self.ability.mult -= self.ability.extra;
+        return { message: `-${self.ability.extra}`, card: self };
+    },
+
+    // `card.lua:2988`。卖价 +3（原作走 `extra_value` 再 `set_cost`）
+    Egg: (self) => {
+        self.sell_cost += self.ability.extra;
+        return { message: 'val_up', card: self };
+    },
+
+    // `card.lua:3022`。两张共用一条，只有 seed key 不同。
+    // **掷点是无条件的**：不管中不中都消耗一次 RNG
+    'Gros Michel': (self, _context, game) => grosMichel(self, game),
+    Cavendish: (self, _context, game) => grosMichel(self, game),
+};
+
+function grosMichel(self: Joker, game: GameView): JokerEffect {
+    const key = self.ability.name === 'Cavendish' ? 'cavendish' : 'gros_michel';
+    if (game.pseudorandom(key) < game.probabilities.normal / self.ability.extra.odds) {
+        return {
+            message: 'extinct',
+            card: self,
+            destroy: true,
+            grosMichelExtinct: self.ability.name === 'Gros Michel',
+        };
+    }
+    return { message: 'safe', card: self };
+}
+
+// ————————————————————————————————————————————————————————————————
 // main 分支 —— `card.lua:3634`。管线第 15 步，小丑区主遍历
 // ————————————————————————————————————————————————————————————————
 
@@ -465,6 +550,27 @@ export function calculateJoker(
     if (self.debuff) return null;
 
     const name = self.ability.name;
+
+    // **这两条必须排在 `individual` / `repetition` 之前**：原文的 elseif 链里
+    // `context.discard`（`card.lua:2760`）与 `context.end_of_round`（`:2877`）
+    // 都在它们前面，而 `end_of_round` + `individual` 是个**真实存在的组合**
+    // （原文在 end_of_round 内部再分 individual / repetition 两个子情形）。
+    // 顺序反了，回合结算的逐张型调用会被误路由进出牌结算的那张表。
+    // `card.lua:2745`。本里程碑没有小丑用它，但**必须显式拦掉**——
+    // 不拦的话带 `cardarea: 'jokers'` 的 pre_discard 调用会掉进 main 分支，
+    // 在弃牌时白算一遍出牌结算
+    if (context.pre_discard) return null;
+
+    if (context.discard) {
+        return DISCARD[name]?.(self, context, game) ?? null;
+    }
+
+    if (context.end_of_round) {
+        // `card.lua:2878-2880`：`individual` 与 `repetition` 两个子分支在原文里是**空的**
+        // （回合结算没有逐张型、也没有重复触发），只有第三种情形有内容
+        if (context.individual || context.repetition) return null;
+        return END_OF_ROUND[name]?.(self, context, game) ?? null;
+    }
 
     if (context.individual) {
         if (context.cardarea === 'play') {

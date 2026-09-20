@@ -11,6 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 import { fmt13, formatFixedExact } from './fmt13';
 import { SEED_FIXED_REFERENCE, random, randomseed } from './luajit-random';
+import { ANTE_1_BOSSES, ANTE_1_BOSS_VECTORS } from '../fixtures/ante1-boss-vectors';
 import { PseudorandomState, pseudohash } from './pseudorandom';
 
 describe('第一层：TW223 本身（4/4）', () => {
@@ -36,21 +37,10 @@ describe('第一层：TW223 本身（4/4）', () => {
 
 describe('第二层：完整链路 → Ante 1 的 Boss Blind（12/12）', () => {
     /**
-     * Ante 1 的可选 boss：`boss.min <= 1` 且非 showdown，按 key 字母序。
-     * 出处 `源码/game.lua:266` 的 P_BLINDS 与 `源码/functions/common_events.lua:2387`
-     * 的 `get_new_boss`。
+     * 这一层只验 **RNG 算法本身**：手写一遍 `pseudorandom('boss', 1, 8)`。
+     * 「生产代码的接线也对」是另一件事，由 `blinds.test.ts` 用同一份 fixture 验
+     * （那边真的走 `getNewBoss`，能抓到池子顺序与池子大小的错）。
      */
-    const ANTE_1_BOSSES = [
-        'The Club',
-        'The Goad',
-        'The Head',
-        'The Hook',
-        'The Manacle',
-        'The Pillar',
-        'The Psychic',
-        'The Window',
-    ] as const;
-
     function ante1Boss(seed: string): string {
         const state = new PseudorandomState(seed);
         // get_new_boss 走 pseudorandom_element(eligible, pseudoseed('boss'))，
@@ -58,22 +48,7 @@ describe('第二层：完整链路 → Ante 1 的 Boss Blind（12/12）', () => 
         return ANTE_1_BOSSES[state.pseudorandom('boss', 1, 8) - 1];
     }
 
-    const vectors: ReadonlyArray<readonly [string, string]> = [
-        ['TUTORIAL', 'The Hook'], // balatrowiki The_Hook 的 Trivia
-        ['ALEEB', 'The Window'], // balatrohq seed-analyzer 的默认示例
-        ['7LB2WVPK', 'The Club'], // 以下 9 条为 Blueprint fixture（gameVersion 10106 = 1.0.1o）
-        ['3SZ71111', 'The Head'],
-        ['2K9H9HN', 'The Club'],
-        ['7ODNKXP', 'The Manacle'],
-        ['9ZXMM1M', 'The Hook'],
-        ['U8RJYV6M', 'The Club'],
-        ['V3PUR5L4', 'The Pillar'],
-        ['VNOMH111', 'The Hook'],
-        ['SF9SZOB1', 'The Head'],
-        ['JHZ7FPM', 'The Head'], // balatro4j BalatroTests.java
-    ];
-
-    it.each(vectors)('种子 %s → %s', (seed, expected) => {
+    it.each(ANTE_1_BOSS_VECTORS)('种子 %s → %s', (seed, expected) => {
         expect(ante1Boss(seed)).toBe(expected);
     });
 

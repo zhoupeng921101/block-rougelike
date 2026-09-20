@@ -107,6 +107,16 @@ export type JokerContext = {
     /** `Mime` 要靠它判断「这张手牌本来有没有效果」 */
     card_effects?: JokerEffect[];
     destroying_card?: Card;
+    /** 弃牌。逐张调用，`other_card` 是当前那张、`full_hand` 是整批 */
+    discard?: boolean;
+    /** 弃牌前的整批一次性遍历（`Burnt Joker` 用）。排在逐张循环之前 */
+    pre_discard?: boolean;
+    /** `The Hook` 触发的额外弃牌。`Burnt Joker` 查 `not context.hook` */
+    hook?: boolean;
+    /** 回合结算。`end_of_round` 与 `individual`/`repetition` 组合出三种子情形 */
+    end_of_round?: boolean;
+    /** 本局是否已经输了（`Mr. Bones` 读它）。不在本里程碑，但字段先留 */
+    game_over?: boolean;
     /** 本回合状态的只读视图。原作直接读 `G.GAME`，这里显式传进来 */
     game?: GameView;
 };
@@ -135,6 +145,11 @@ export type GameView = {
         hands_left: number;
         discards_left: number;
         hands_played: number;
+        /**
+         * `G.GAME.current_round.mail_card`。每回合抽一个点数，`Mail-In Rebate` 读它。
+         * `undefined` = 本回合没抽（小丑区里没有 Mail-In Rebate 时原作也不抽）。
+         */
+        mail_card?: number;
     };
     /** `G.GAME.probabilities.normal`，基线 1。优惠券能改，本里程碑恒 1 */
     probabilities: { normal: number };
@@ -175,6 +190,17 @@ export type JokerEffect = {
     repetitions?: number;
     /** 升级当前牌型（`Space Joker`） */
     level_up?: boolean;
+    /**
+     * 这张小丑要被移出小丑区（Popcorn 掉到 0、Gros Michel 掷中灭绝、Ice Cream 融化）。
+     *
+     * 原作是在 `calculate_joker` 里直接 `G.jokers:remove_card(self)` 入队的，
+     * 复刻件不这么做：`calculate_joker` 的契约是「返回一个 effect，不动小丑区」，
+     * 让它顺手删数组会让「遍历小丑区」这件事在遍历中途改数组长度。
+     * 改成回一个标志，由持有小丑区的那一层（`Run`）执行。
+     */
+    destroy?: boolean;
+    /** `Gros Michel` 灭绝——之后 `Cavendish` 才进池子 */
+    grosMichelExtinct?: boolean;
     /** 效果来自哪张小丑，表现层用来 juice */
     card?: Joker;
     /** 纯提示，不影响数值。表现层用 */
