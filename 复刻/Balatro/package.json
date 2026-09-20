@@ -1,0 +1,24 @@
+{
+  "name": "balatro-replica",
+  "description": "Balatro 1.0.1o 的 web 复刻件。只跑 localhost，不部署、不分发。",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --config vite/config.dev.mjs",
+    "build": "tsc --noEmit && vite build --config vite/config.prod.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "~5.7.2",
+    "vite": "^6.3.1",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "phaser": "4.2.1",
+    "terser": "^5.39.0"
+  }
+}
