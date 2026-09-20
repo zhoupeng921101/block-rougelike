@@ -63,6 +63,9 @@ Label: wayfinder:map
   **素材拷进 `public/assets/` 并入库**（只拷用得上的，第一个切片 288K；字体只带拉丁）；
   **配置从 Lua 直译，不碰 `配置CSV/`**（那是派生的研究产物，且只覆盖 13% 的小丑行为）。
   图集元数据纯可推导，不手写 atlas JSON。
+- [仓库三层结构的约定更新](issues/08-仓库三层结构的约定更新.md) —— `README.md` / `AGENTS.md` /
+  `参考/README.md` 已加 `复刻/` 层，新写 `复刻/README.md`。
+  两条新约定入册：**复刻不得对外部署**、**研究查 CSV 复刻读源码**。
 
 ## Not yet specified
 

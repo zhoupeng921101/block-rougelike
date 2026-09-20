@@ -274,7 +274,7 @@ else
   float mid_dist = length(vertex_position.xy - 0.5*love_ScreenSize.xy)/length(love_ScreenSize.xy);
   vec2 mouse_offset = (vertex_position.xy - mouse_screen_pos.xy)/screen_scale;
   ```
-  把**局部坐标**和**屏幕坐标**（`mouse_screen_pos` 是 `G.CONTROLLER.cursor_position * G.CANV_SCALE`，见 [sprite.lua:93-97](file:///E:/block-rougelike/参考/产物/Balatro_1.0.1o/源码/engine/sprite.lua)）混在一起相减。也就是说**原作这段数学本身就是"坐标空间不严谨"的经验式效果**。Phaser 的顶点属性 `inPosition` 是**世界坐标**（transform 已在 CPU 端烘进去），语义与 LÖVE 的 `VertexPosition` 不同。要复现原作手感，不能照搬公式，必须**在 Phaser 端人为构造出同样的"局部 quad 像素坐标"**喂给这段数学，否则倾斜效果的幅度和方向都会不对。这是 19 个 shader 里**唯一需要"重新推导"的部分**。
+  把**局部坐标**和**屏幕坐标**（`mouse_screen_pos` 是 `G.CONTROLLER.cursor_position * G.CANV_SCALE`，见 [sprite.lua:93-97](../../../../参考/产物/Balatro_1.0.1o/源码/engine/sprite.lua)）混在一起相减。也就是说**原作这段数学本身就是"坐标空间不严谨"的经验式效果**。Phaser 的顶点属性 `inPosition` 是**世界坐标**（transform 已在 CPU 端烘进去），语义与 LÖVE 的 `VertexPosition` 不同。要复现原作手感，不能照搬公式，必须**在 Phaser 端人为构造出同样的"局部 quad 像素坐标"**喂给这段数学，否则倾斜效果的幅度和方向都会不对。这是 19 个 shader 里**唯一需要"重新推导"的部分**。
 
 ### Gaps
 
