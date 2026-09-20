@@ -96,7 +96,12 @@ Label: wayfinder:map
 > Ante 1 的 8 个 Boss。295 个测试绿，其中 `core/ante1.test.ts` 会**真的打完**
 > 小盲注 → 商店 → 大盲注 → 商店 → Boss → Ante 2（不 mock、不直接写 phase，四个 seed 都通）。
 >
-> **下一步是把商店与小丑区接进 Phaser 表现层**——现在那两块只有逻辑，没有界面。
+> **第二个里程碑的表现层也接上了**：小丑区、商店（买／卖／重掷）、回合收益明细，
+> 场景从 `RoundScene` 改名 `RunScene`（它现在持有的是 `Run`）。304 个测试绿。
+>
+> **但表现层这一版没有人眼验收过**——本机的无头 Edge 截不到图，
+> 而「像素级外观」与「音效」两条轴只能人工验。**下一步是在浏览器里实际跑一遍**，
+> 逐条对照 07 号票的验收表。
 
 ## Not yet specified
 
@@ -186,6 +191,13 @@ Label: wayfinder:map
   真删掉会让同 seed 立刻分叉。三个剔除源：45 张 `start_locked`（新档不解锁）、
   `used_jokers`（**商店摆出来那一刻就算见过**，`card.lua:350` 在 `set_ability` 里标记）、
   `pool_flag`（Gros Michel 灭绝退池 / Cavendish 灭绝才进池）。
+- **`j_joker` 与 `j_wee` 共用同一个图集格**（两者 `pos` 都是 `{x=0,y=0}`，
+  `game.lua:371` 与 `:502`）。Wee Joker 的卡面就是普通 Joker 的脸，
+  只是 `set_ability` 把它缩到 0.7（`card.lua:250`）。150 张小丑只占 149 格，
+  别把这一处当成抽取错误。
+- **越界的图集 `pos` 不会报错**，只会安静地画出网格里另一张卡的图。
+  `core/atlas.ts` 刻意不 import Phaser，就是为了让「每张卡的 pos 都在网格内」
+  能进单测（`core/atlas.test.ts`）——这是表现层里唯一能自动验的部分。
 - **`not v.demo` 在完整版里不剔除任何小丑。** `game.lua:746` 有
   `if not G.FTP_LOCKED then v.demo = nil end`，而 `G.FTP_LOCKED` 在
   `globals.lua:162` 是注释掉的。150 张全部进稀有度池，一张不少。

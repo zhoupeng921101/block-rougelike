@@ -17,7 +17,11 @@
 **第二个里程碑的逻辑层已交付**（[15 号票](../../.scratch/balatro-复刻/issues/15-第二个里程碑的切片边界.md)
 「带小丑打过 Ante 1」）：小丑进结算管线、经济层、商店、盲注推进、Ante 1 的 8 个 Boss。
 `src/core/ante1.test.ts` 会真的打完小盲注 → 商店 → 大盲注 → 商店 → Boss → Ante 2，
-不 mock、不直接写 phase。**表现层还没接上**——商店与小丑区目前只有逻辑，没有 Phaser 界面。
+不 mock、不直接写 phase。表现层也接上了：小丑区、商店（买／卖／重掷）、回合收益明细。
+
+> **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
+> 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
+> 逻辑层有 304 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
 
 ```
 src/
@@ -33,6 +37,7 @@ src/
 │   ├── economy.ts               回合收益与利息（evaluate_round）
 │   ├── shop.ts                  商店（get_current_pool / create_card_for_shop / 重掷）
 │   ├── fixtures/                对拍 fixture（12 条 Ante 1 Boss 外部真值）
+│   ├── atlas.ts                 图集网格推导（**不 import Phaser**，所以可单测）
 │   ├── event-queue.ts           事件队列（G.E_MANAGER）
 │   ├── jokers/                  ← 小丑系统
 │   │   ├── centers.generated.ts     150 张的 center 定义（生成的，别手改）
@@ -47,9 +52,11 @@ src/
 │       └── pseudoshuffle.ts         洗牌
 ├── game/                    ← 表现层。Phaser 4
 │   ├── coords.ts                tile ↔ 像素的**唯一**换算边界（见 10 号票）
-│   ├── card-sprite.ts           卡牌（Shader GameObject，不是 Sprite）
+│   ├── shader-quad.ts           三种卡共用的 shader quad 工厂
+│   ├── card-sprite.ts           扑克牌（底板 + 正面两层）
+│   ├── joker-sprite.ts          小丑（单层，含四条尺寸特例）
 │   ├── shaders/                 background / CRT / dissolve
-│   └── scenes/RoundScene.ts
+│   └── scenes/RunScene.ts       整局：手牌 / 小丑区 / 商店 / 收益明细
 └── tools/gen-joker-centers.mjs  从 game.lua 抽 150 张小丑的 center
 ```
 
@@ -57,7 +64,7 @@ src/
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 295 个测试，必须全绿
+npm test            # 304 个测试，必须全绿
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
 ```

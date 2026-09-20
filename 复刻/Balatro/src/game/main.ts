@@ -1,7 +1,7 @@
 import { AUTO, Game, Scale, type Types } from 'phaser';
 
 import { CANVAS_H, CANVAS_W } from './coords';
-import { RoundScene } from './scenes/RoundScene';
+import { RunScene } from './scenes/RunScene';
 
 const config: Types.Core.GameConfig = {
     type: AUTO,
@@ -13,7 +13,7 @@ const config: Types.Core.GameConfig = {
         mode: Scale.FIT,
         autoCenter: Scale.CENTER_BOTH,
     },
-    scene: [RoundScene],
+    scene: [RunScene],
 };
 
 export default function StartGame(parent: string): Game {
