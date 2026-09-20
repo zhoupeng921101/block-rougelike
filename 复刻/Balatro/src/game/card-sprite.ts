@@ -30,6 +30,14 @@ const VALUE_COL: Record<string, number> = {
 /** `game.lua:368` 的 `c_base`，`pos = {x=1,y=0}` */
 const BASE_POS = { x: 1, y: 0 } as const;
 
+/**
+ * 牌背。`card.lua:213` 用的是 `centers` 图集（`Enhancers.png`）加上
+ * 当前牌组的 `pos`——红牌组 `b_red` 是 `{x=0,y=0}`（`game.lua:629`）。
+ *
+ * 所以牌背与底板在同一张图集里、只差一列，不需要额外的纹理。
+ */
+const BACK_POS = { x: 0, y: 0 } as const;
+
 export function atlasPos(card: Card): { x: number; y: number } {
     return { x: VALUE_COL[card.base.value], y: SUIT_ROW[card.base.suit] };
 }
@@ -47,6 +55,13 @@ export class CardSprite {
     /** 底板层，画在正面之下 */
     readonly base: GameObjects.Shader;
     readonly shader: GameObjects.Shader;
+    /**
+     * 牌背层。盖着的牌（`card.facing === 'back'`）只显示它。
+     *
+     * 四个 Boss 会盖牌（The Wheel / The House / The Mark / The Fish）。
+     * 盖牌**不改任何数值**——牌还能选、还照常计分，玩家只是看不见它是什么。
+     */
+    readonly back: GameObjects.Shader;
     /** 选中的牌抬起来。`G.HIGHLIGHT_H` 在原作里是 tile 量。 */
     highlighted = false;
     /** 被 debuff 的牌画得暗一点。逻辑层的 `card.debuff` 是真状态，不是显示标记 */
@@ -82,6 +97,19 @@ export class CardSprite {
         });
         this.shader.setDepth(1);
 
+        this.back = makeShaderQuad(scene, {
+            name: `back_${card.key}_${card.unique_val}`,
+            textureKey: 'centers',
+            atlas: CENTERS_ATLAS,
+            pos: BACK_POS,
+            cardTime, w, h, tilt,
+        });
+        this.back.setDepth(2);
+
+        // `Shader` 没有 Tint 组件、`setAlpha` 是 NOOP，所以「藏起来」只能靠
+        // `setVisible`——它来自 Visible 组件，是 Shader 混入的那 8 个之一
+        this.applyFacing();
+
         makeClickable(this.shader, w, h, {
             onClick: () => this.onClick(this.card),
             onOver: () => { this.hoverTilt = 1; },
@@ -101,6 +129,22 @@ export class CardSprite {
         const y = toPx(baseYTiles - liftTiles) + toPx(CARD_H) / 2;
         this.base.setPosition(x, y);
         this.shader.setPosition(x, y);
+        this.back.setPosition(x, y);
+        this.applyFacing();
+    }
+
+    /**
+     * 按 `card.facing` 决定显示正面还是背面。
+     *
+     * **每次 layout 都重算**：`facing` 是逻辑层在抽牌时写的
+     * （`Blind:stay_flipped`，其中 The Wheel 那条还消费 RNG），
+     * 而一张牌可能在 Boss 被 disable 之后翻回正面。
+     */
+    private applyFacing(): void {
+        const faceDown = this.card.facing === 'back';
+        this.back.setVisible(faceDown);
+        this.base.setVisible(!faceDown);
+        this.shader.setVisible(!faceDown);
     }
 
     /** 被 debuff 的牌要看得出来。`Shader` 的 setAlpha 是 NOOP，所以缩一点当提示。 */
@@ -110,7 +154,7 @@ export class CardSprite {
 
     /** 计分时的弹一下。对应原作的 `juice_up`。 */
     pop(): void {
-        for (const layer of [this.base, this.shader]) {
+        for (const layer of [this.base, this.shader, this.back]) {
             this.scene.tweens.add({
                 targets: layer,
                 scaleX: 1.18, scaleY: 1.18,
@@ -122,6 +166,7 @@ export class CardSprite {
     destroy(): void {
         this.base.destroy();
         this.shader.destroy();
+        this.back.destroy();
     }
 
     /** 让 `scene` 字段不被 noUnusedParameters 判死，同时留个取用口 */

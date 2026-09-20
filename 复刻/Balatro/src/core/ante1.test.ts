@@ -177,6 +177,31 @@ describe('打通 Ante 1', () => {
         }
     });
 
+    /**
+     * 28 个 Boss 全实现之后，Ante 2 起就不再撞「未实现的 Boss」这道墙了。
+     *
+     * **止步的原因换成了缺牌型升级**：没有星球牌，牌型永远停在 1 级，
+     * 而需求是 300 → 800 → 2000 → 5000 的指数曲线。实测贪心策略能到 Ante 2–4。
+     * 这条测试只钉住「Ante 2 的三关都进得去、不抛异常」——
+     * 打得过打不过取决于 seed 与策略，不该写进断言。
+     */
+    it('Ante 2 的三关都进得去（28 个 Boss 全实现之后不再撞墙）', () => {
+        const run = new Run('JHZ7FPM');
+        for (let i = 0; i < 3; i++) clearOneBlind(run);
+        expect(run.ante).toBe(2);
+
+        for (const expected of ['small', 'big', 'boss'] as const) {
+            expect(run.blindKind).toBe(expected);
+            const round = run.startRound(); // 不抛就算过
+            expect(round.requirement).toBeGreaterThan(0);
+            // 不管打不打得过，直接判过关往下走——这条测的是「进得去」
+            (round as unknown as { phase: string }).phase = 'won';
+            run.finishRound();
+            run.leaveShop();
+        }
+        expect(run.ante).toBe(3);
+    });
+
     it('同 seed 打出完全一样的一局', () => {
         function transcript(seed: string): string[] {
             const run = new Run(seed);

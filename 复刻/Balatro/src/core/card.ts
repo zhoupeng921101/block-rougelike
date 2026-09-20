@@ -41,6 +41,20 @@ export type Card = {
      * `The Pillar` 靠它认「本 Ante 之前打出过的牌」。
      */
     played_this_ante: boolean;
+    /**
+     * `card.ability.forced_selection`。`Cerulean Bell` 强制这张牌必须被选中，
+     * 取消不掉。清除在 `Blind:disable`（`blind.lua:382`）与回合结束时
+     * （`state_events.lua:299`）。
+     */
+    forced_selection: boolean;
+    /**
+     * `card.facing`。`'back'` = 盖着（`Blind:stay_flipped`）。
+     *
+     * **盖牌不改任何数值**：牌还在手里、还能选、还照常计分，玩家只是看不见它是什么。
+     * 所以它是信息隐藏，不是 debuff——但**判定消费 RNG**（The Wheel 的 1/7），
+     * 所以它得由逻辑层的抽牌流程写，不能让表现层自己算。
+     */
+    facing: 'front' | 'back';
     /** 目标变换的 x。**tile 单位，不是像素**——见 10 号票 */
     T: { x: number; y: number; w: number; h: number };
 };
@@ -98,6 +112,8 @@ export function makeCard(key: string, suit: Suit, value: Value): Card {
         unique_val: nextUniqueVal++,
         debuff: false,
         played_this_ante: false,
+        forced_selection: false,
+        facing: 'front',
         T: { x: 0, y: 0, w: 0, h: 0 },
     };
 }

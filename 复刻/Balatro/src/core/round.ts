@@ -17,12 +17,21 @@
  * 这跟原作一样（`G.jokers.cards` 与 `G.GAME.dollars` 是全局的）。
  */
 
-import { type BlindState, blindHooks, debuffCard, pressPlay } from './blinds';
+import {
+    ALL_DISCARDS,
+    type BlindState,
+    blindHooks,
+    debuffCard,
+    drawCount,
+    drawnToHand,
+    pressPlay,
+    stayFlipped,
+} from './blinds';
 import type { Card } from './card';
 import { calculateJoker } from './jokers';
 import type { GameView, Joker } from './jokers';
 import { PseudorandomState, pseudoshuffle } from './rng';
-import { type JokerFlags, NO_JOKERS } from './poker-hands';
+import { type JokerFlags, NO_JOKERS, evaluatePokerHand } from './poker-hands';
 import {
     type BlindHooks,
     type HandInfo,
@@ -31,6 +40,7 @@ import {
     evaluatePlay,
     getBlindAmount,
     initialHands,
+    levelUpHand,
 } from './scoring';
 
 /** `misc_functions.lua:1853` 的 `get_starting_params`，只取本切片用得上的。 */
@@ -135,6 +145,8 @@ export class Round {
     readonly handLimit: number;
     /** 用掉的弃牌次数。`Delayed Gratification` 判的是「一次都没用过」 */
     discardsUsed = 0;
+    /** 这一手的牌型等级，`The Arm` 在 `debuff_hand` 里要读它 */
+    private lastHandLevel = 1;
     /**
      * 整局累计出牌数（`G.GAME.hands_played`）。**`evaluatePlay` 会写它**
      * （经 `gameView().hands_played` 的 setter），所以回合结束后 `Run` 要读回去，
@@ -154,7 +166,18 @@ export class Round {
         this.hands = options.hands ?? initialHands();
         this.jokerFlags = options.jokerFlags ?? NO_JOKERS;
         this.blind = options.blind ?? null;
-        this.blindHooks = this.blind ? blindHooks(this.blind) : {};
+        // `debuff_hand` 要读牌型等级与本局最常用牌型，还要能降级、能清空钱。
+        // 那些都是 `Round` 的状态，所以由它提供而不是 `blinds.ts` 自己去拿
+        this.blindHooks = this.blind
+            ? blindHooks(this.blind, () => ({
+                  handLevel: this.lastHandLevel,
+                  mostPlayedHand: this.mostPlayedHand(),
+                  levelDown: (name) => levelUpHand(this.hands, name, -1),
+                  loseAllMoney: () => {
+                      this.dollars = 0;
+                  },
+              }))
+            : {};
         this.mailCard = options.mailCard;
 
         this.rng = options.rng ?? new PseudorandomState(seed);
@@ -167,8 +190,16 @@ export class Round {
         const hSize = this.jokers.reduce((n, j) => n + (j.debuff ? 0 : j.ability.h_size), 0);
         const dSize = this.jokers.reduce((n, j) => n + (j.debuff ? 0 : j.ability.d_size), 0);
         this.handLimit = STARTING_PARAMS.hand_size + hSize + (this.blind?.handSizeMod ?? 0);
-        this.handsLeft = STARTING_PARAMS.hands;
-        this.discardsLeft = STARTING_PARAMS.discards + dSize;
+
+        // `blind.lua:179-186` 的 `discards_sub` / `hands_sub`，**在进场时一次性扣掉**。
+        // `The Water` 砍的是「进场时实际剩多少」（含 Drunkard 的 +1），
+        // 所以用哨兵 `ALL_DISCARDS` 表示归零而不是写死一个数
+        this.handsLeft = STARTING_PARAMS.hands - (this.blind?.handsSub ?? 0);
+        const discardsBase = STARTING_PARAMS.discards + dSize;
+        this.discardsLeft =
+            this.blind?.discardsSub === ALL_DISCARDS
+                ? 0
+                : discardsBase - (this.blind?.discardsSub ?? 0);
 
         this.deck = [...fullDeck];
         // `blind.lua:624` 的 `debuff_card` 在**进盲注时**对整副牌跑一遍，
@@ -236,14 +267,30 @@ export class Round {
     /**
      * `state_events.lua:383`：
      * `hand_space = min(#deck.cards, hand.card_limit - #hand.cards)`
+     *
+     * 两处 Boss 介入：
+     * - `The Serpent` 把补牌数固定成 3（`state_events.lua:384`）
+     * - 四个盖牌 Boss 决定这一批里哪些牌盖着（`blind.lua:605` `stay_flipped`）。
+     *   **`The Wheel` 的 1/7 掷点在这里消费 RNG**，所以盖牌判定必须在逻辑层。
      */
     private drawToHandLimit(): void {
-        const space = Math.min(this.deck.length, this.handLimit - this.hand.length);
+        const round = { handsPlayed: this.handsPlayedThisRound, discardsUsed: this.discardsUsed };
+        const forced = this.blind ? drawCount(this.blind, round, this.deck.length) : null;
+        const space = forced ?? Math.min(this.deck.length, this.handLimit - this.hand.length);
+
         for (let i = 0; i < space; i++) {
             const card = this.deck.pop(); // deck 从末端取
-            if (card) this.hand.push(card);
+            if (!card) break;
+            if (this.blind) {
+                card.facing = stayFlipped(this.blind, card, round, this.rng) ? 'back' : 'front';
+            }
+            this.hand.push(card);
         }
         alignHand(this.hand);
+
+        // `blind.lua:572` 的 `drawn_to_hand`——**在整批抽完之后调一次**，不是逐张。
+        // 它会无条件清掉 `prepped`，`The Fish` 只盖一批就靠这个
+        if (this.blind) drawnToHand(this.blind, this.hand, this.jokers, this.rng);
     }
 
     /** 出牌。`selected` 是选中的牌，会按 `T.x` 排序后结算。 */
@@ -267,14 +314,23 @@ export class Round {
         // 只看留在手里的，`Raised Fist` 与 `Shoot the Moon` 吃这个差别
         this.moveOut(played);
 
+        // `The Arm` 要在 `debuff_hand` 里读「这手牌型现在几级」，而那是在
+        // `evaluatePlay` 内部调的，拿不到牌型名。所以先自己判一次牌型、存下等级。
+        // **判定是纯函数、不消费 RNG**，多判一次没有副作用
+        const preview = evaluatePokerHand(played, this.jokerFlags);
+        this.lastHandLevel = preview.topName ? this.hands[preview.topName].level : 1;
+
         const chipsBefore = this.chips;
         const result = evaluatePlay(played, this.hands, this.gameView(), this.jokerFlags, this.blindHooks);
         this.chips += result.score;
 
-        // `blind.lua:464` 的 `press_play`——`The Hook` 在这里随机弃 2 张。
-        // **在结算之后、补牌之前**：原作是入队的，而队列里出牌结算的事件排在它前面
-        const hooked = this.blind ? pressPlay(this.blind, this.hand, this.rng) : [];
-        if (hooked.length > 0) this.discardCards(hooked, true);
+        // `blind.lua:464` 的 `press_play`。**在结算之后、补牌之前**：
+        // 原作是入队的，而队列里出牌结算的事件排在它前面
+        if (this.blind) {
+            const pressed = pressPlay(this.blind, this.hand, played, this.rng);
+            if (pressed.dollarsLost > 0) this.dollars -= pressed.dollarsLost;
+            if (pressed.discard.length > 0) this.discardCards(pressed.discard, true);
+        }
 
         this.drawToHandLimit();
         this.settlePhase();
@@ -346,6 +402,33 @@ export class Round {
         }
 
         this.moveOut(cards);
+    }
+
+    /**
+     * `G.GAME.current_round.most_played_poker_hand`。`The Ox` 判它。
+     *
+     * 原作在 `set_hand_usage`（`misc_functions.lua`）里维护，取本局打得最多的那种。
+     * 并列时取**先达到该次数**的那个——`Record` 的插入序就是 `initialHands` 的声明序，
+     * 而那是从高牌型到低牌型，所以并列时偏向高牌型。原作靠 `>` 严格大于，同此。
+     */
+    private mostPlayedHand(): HandName {
+        let best: HandName = 'High Card';
+        let most = 0;
+        for (const [name, info] of Object.entries(this.hands) as Array<[HandName, HandInfo]>) {
+            if (info.played > most) {
+                most = info.played;
+                best = name;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * `Cerulean Bell` 强制选中的那张牌**不能取消选中**。
+     * 表现层在玩家点牌时查它。
+     */
+    isForced(card: Card): boolean {
+        return card.forced_selection;
     }
 
     private requireSelecting(selected: Card[]): void {

@@ -100,8 +100,17 @@ Label: wayfinder:map
 > 场景从 `RoundScene` 改名 `RunScene`（它现在持有的是 `Run`）。304 个测试绿。
 >
 > **但表现层这一版没有人眼验收过**——本机的无头 Edge 截不到图，
-> 而「像素级外观」与「音效」两条轴只能人工验。**下一步是在浏览器里实际跑一遍**，
+> 而「像素级外观」与「音效」两条轴只能人工验。**得在浏览器里实际跑一遍**，
 > 逐条对照 07 号票的验收表。
+>
+> **28 个 Boss 已全部实现**（原先只有 Ante 1 的 8 个，其余撞 `assertImplemented` 的墙）。
+> 实测贪心策略现在能打到 **Ante 2–4**，止步原因换成了「没有星球牌、牌型永远 1 级」，
+> 而需求是 300 → 800 → 2000 → 5000 的指数曲线。**下一个大件是消耗品（星球 + 塔罗）。**
+>
+> **商店在卖没有行为的小丑**：Campfire / Rocket / Ceremonial Dagger / Joker Stencil
+> 这些 rarity 2/3 的买了什么也不会发生。这是「有数值没行为」那条教训的同一个坑，
+> 只是这次不能用抛异常挡（商店按设计就从 150 张的全池生成）。要么补行为，要么在
+> UI 上标出来——**不能就这么放着**。
 
 ## Not yet specified
 
@@ -179,9 +188,19 @@ Label: wayfinder:map
   （`state_events.lua:294`）。它们各用一个独立 key，所以少跑不影响别的 key——
   但接 `The Idol` / `Ancient Joker` / `Castle` 时那几个 key 的调用次数必须已经对齐，
   所以现在就跑完。
-- **未实现 debuff 的 Boss 要抛，不能静默放过。** 那 20 个在 `BLIND_CENTERS` 里有
-  完整数值，一个「有需求但没 debuff」的 Boss 看起来完全正常、玩起来是白送一关——
-  等于把正确性缺口伪装成正常行为。`assertImplemented` 挡在 `Run.startRound`。
+- **未实现行为的 Boss 要抛，不能静默放过。** 一个「有需求但没 debuff」的 Boss
+  看起来完全正常、玩起来是白送一关——等于把正确性缺口伪装成正常行为。
+  `assertImplemented` 挡在 `Run.startRound`；28 个 Boss 现在全实现了，
+  但**那道闸要留着**（挑战模式带自己的 Boss）。
+- **`The Arm` 是唯一一个「`debuff_hand` 返回假但仍然生效」的 Boss。**
+  它把牌型降一级然后**让这手牌照常计分**（`blind.lua:551` 只设 `triggered`、不 return）。
+  `The Ox`（清空钱）同理。所以 `debuffHand` 的返回值只表示「这手算不算 0 分」，
+  不表示「Boss 有没有干活」。
+- **盖牌不是 debuff。** 四个 Boss 会盖牌（Wheel / House / Mark / Fish），
+  牌照样能选、照样计分，玩家只是看不见。**但 `The Wheel` 的 1/7 判定消费 RNG**，
+  所以 `stayFlipped` 必须在逻辑层、由抽牌流程调，挪进表现层 RNG 顺序就随渲染时机变了。
+- **`The Water` 的 `discards_sub` 砍的是「进场时实际剩多少」**，含小丑给的 `d_size`。
+  写死 3 会在带 Drunkard 时留下 1 次弃牌，所以复刻件用哨兵 `ALL_DISCARDS`。
 - **商店那两次掷点一个要算一个不要算。** `etperpoll<ante>`（永恒／易腐）那行
   `local ... = pseudorandom(...)` 在 `if` 外面，**无条件消费**；
   租赁那次在 `and` 右边、`enable_rentals_in_shop` 默认关，**短路不消费**。

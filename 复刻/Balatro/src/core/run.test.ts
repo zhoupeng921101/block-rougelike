@@ -234,12 +234,101 @@ describe('The Pillar 的 played_this_ante', () => {
     });
 });
 
-describe('未实现的 Boss', () => {
-    it('走到一个未实现 debuff 的 Boss 时抛，不静默当成无 debuff', () => {
+describe('28 个 Boss 全都进得去', () => {
+    it('每个 Boss 都能开局，不抛', () => {
+        for (const [key, center] of Object.entries(BLIND_CENTERS)) {
+            if (!center.boss) continue;
+            const run = new Run('TUTORIAL');
+            run.bossKey = key;
+            run.blindIndex = 2;
+            expect(() => run.startRound(), center.name).not.toThrow();
+        }
+    });
+
+    it('The Needle 只给 1 次出牌', () => {
         const run = new Run('TUTORIAL');
-        run.bossKey = 'bl_ox';
+        run.bossKey = 'bl_needle';
         run.blindIndex = 2;
-        expect(() => run.startRound()).toThrow(/The Ox/);
+        expect(run.startRound().handsLeft).toBe(1);
+    });
+
+    it('The Water 一次弃牌都不给', () => {
+        const run = new Run('TUTORIAL');
+        run.bossKey = 'bl_water';
+        run.blindIndex = 2;
+        expect(run.startRound().discardsLeft).toBe(0);
+    });
+
+    it('The Water 带 Drunkard（d_size +1）时**也是 0**，不是 1', () => {
+        // 原文的 `discards_sub` 砍的是「进场时实际剩多少」，写死 3 会在这里留一次
+        const run = new Run('TUTORIAL');
+        run.jokers.push(makeJoker('j_drunkard'));
+        run.bossKey = 'bl_water';
+        run.blindIndex = 2;
+        expect(run.startRound().discardsLeft).toBe(0);
+    });
+
+    it('The House 把第一批手牌全盖上', () => {
+        const run = new Run('TUTORIAL');
+        run.bossKey = 'bl_house';
+        run.blindIndex = 2;
+        const round = run.startRound();
+        expect(round.hand.every((c) => c.facing === 'back')).toBe(true);
+    });
+
+    it('The Mark 只盖人头牌', () => {
+        const run = new Run('TUTORIAL');
+        run.bossKey = 'bl_mark';
+        run.blindIndex = 2;
+        const round = run.startRound();
+        for (const card of round.hand) {
+            const isFaceCard = [11, 12, 13].includes(card.base.id);
+            expect(card.facing === 'back', card.key).toBe(isFaceCard);
+        }
+    });
+
+    it('The Serpent 出牌后只补 3 张', () => {
+        const run = new Run('TUTORIAL');
+        run.bossKey = 'bl_serpent';
+        run.blindIndex = 2;
+        const round = run.startRound();
+        expect(round.hand).toHaveLength(8);
+        round.play(round.hand.slice(0, 5));
+        // 出 5 张 → 手里剩 3 张 → 补 3 张（而不是补到 8）
+        expect(round.hand).toHaveLength(6);
+    });
+
+    it('The Tooth 每打一张扣 $1', () => {
+        const run = new Run('TUTORIAL');
+        run.dollars = 10;
+        run.bossKey = 'bl_tooth';
+        run.blindIndex = 2;
+        const round = run.startRound();
+        round.play(round.hand.slice(0, 3));
+        expect(round.dollars).toBe(7);
+    });
+
+    it('The Wall 的需求是 4 倍：Ante 1 → 1200', () => {
+        const run = new Run('TUTORIAL');
+        run.bossKey = 'bl_wall';
+        run.blindIndex = 2;
+        expect(run.startRound().requirement).toBe(1200);
+    });
+
+    it('The Arm 把打出的牌型降一级，但这手牌照常计分', () => {
+        const run = new Run('TUTORIAL');
+        run.bossKey = 'bl_arm';
+        run.blindIndex = 2;
+        const round = run.startRound();
+        // 先把 Pair 升到 3 级，好让 The Arm 有东西可降
+        round.hands.Pair.level = 3;
+        round.hands.Pair.chips = 40;
+        round.hands.Pair.mult = 4;
+
+        const before = round.hands.Pair.level;
+        const out = round.play(round.hand.slice(0, 5));
+        expect(round.hands.Pair.level).toBe(out.handName === 'Pair' ? before - 1 : before);
+        expect(out.debuffed).toBe(false); // 关键：照常计分
     });
 });
 

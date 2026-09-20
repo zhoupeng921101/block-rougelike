@@ -142,7 +142,17 @@ export class RunScene extends Scene {
     // ————————————————————————————————————————————————————————————————
 
     private startRound(): void {
-        this.run.startRound();
+        try {
+            this.run.startRound();
+        } catch (e) {
+            // `assertImplemented` 会在拿到没实现行为的 Boss 时抛。28 个 Boss 现在全实现了，
+            // 但这道闸还在（挑战模式带自己的 Boss），所以场景要能优雅落地而不是白屏
+            this.message.setText(`走不下去了：
+${String(e instanceof Error ? e.message : e)}`)
+                .setColor('#e5585f');
+            this.refresh();
+            return;
+        }
         this.selected.clear();
         this.rebuildHand();
         this.rebuildJokers();

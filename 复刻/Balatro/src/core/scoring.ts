@@ -98,7 +98,12 @@ export function levelUpHand(hands: Record<HandName, HandInfo>, name: HandName, a
  * - `debuffCard`：逐张 debuff（The Club「所有梅花失效」这类）
  */
 export type BlindHooks = {
-    debuffHand?(fullHand: Card[], handName: HandName): boolean;
+    /**
+     * `pokerHands` 是各牌型的命中情况（`evaluate_poker_hand` 的 `results`）。
+     * 只有 `debuff.hand` 那条（挑战模式的「某牌型直接不合法」）要用，
+     * 但签名里先带着——补挑战模式时不用回来改管线。
+     */
+    debuffHand?(fullHand: Card[], handName: HandName, pokerHands: Record<HandName, Card[][]>): boolean;
     modifyHand?(handName: HandName, mult: number, handChips: number): { mult: number; handChips: number };
     /** 在结算开始前给牌置 `debuff`。原作是进盲注时一次性置位，不是每手重算 */
     debuffCard?(card: Card): boolean;
@@ -205,7 +210,7 @@ export function evaluatePlay(
 
     // —— 第 2 步：盲注能不能判整手不合法 ——
     // `state_events.lua:636`：`if not G.GAME.blind:debuff_hand(...) then <正常结算> else <归零> end`
-    if (blind.debuffHand?.(playedCards, handName)) {
+    if (blind.debuffHand?.(playedCards, handName, results.parts)) {
         return {
             handName, scoringHand, baseChips: 0, baseMult: 0, handChips: 0, mult: 0,
             score: 0, steps, dollars: 0, debuffed: true,
