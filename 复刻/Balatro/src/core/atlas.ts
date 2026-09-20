@@ -68,6 +68,18 @@ export const TAROT_ATLAS: AtlasSpec = {
     w: 710, h: 570, frameW: 71, frameH: 95,
 };
 
+/**
+ * 补充包（`game.lua:988` 的 `Booster`）。284×855 = 4 列 × 9 行。
+ *
+ * 每一列是同一种包的一个变体（`p_arcana_normal_1..4` 占 y=0 那一行），
+ * Jumbo / Mega 在下一行。所以 32 个包占 4×9 = 36 格里的 32 格。
+ */
+export const BOOSTER_ATLAS: AtlasSpec = {
+    key: 'boosters',
+    path: 'assets/textures/boosters.png',
+    w: 284, h: 855, frameW: 71, frameH: 95,
+};
+
 export function columnsOf(atlas: AtlasSpec): number {
     return Math.floor(atlas.w / atlas.frameW);
 }

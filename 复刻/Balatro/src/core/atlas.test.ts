@@ -11,6 +11,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    BOOSTER_ATLAS,
     CENTERS_ATLAS,
     DECK_ATLAS,
     JOKER_ATLAS,
@@ -21,6 +22,7 @@ import {
     rowsOf,
 } from './atlas';
 import { makeStandardDeck } from './card';
+import { BOOSTER_CENTERS } from './boosters';
 import { CONSUMABLE_CENTERS } from './consumables';
 import { JOKER_CENTERS } from './jokers';
 
@@ -147,5 +149,23 @@ describe('消耗品的图集坐标', () => {
         expect(CONSUMABLE_CENTERS.c_planet_x.pos).toEqual({ x: 9, y: 2 });
         expect(CONSUMABLE_CENTERS.c_ceres.pos).toEqual({ x: 8, y: 2 });
         expect(CONSUMABLE_CENTERS.c_eris.pos).toEqual({ x: 3, y: 2 });
+    });
+});
+
+describe('补充包的图集坐标', () => {
+    it('boosters 284×855 = 4 列 × 9 行', () => {
+        expect(columnsOf(BOOSTER_ATLAS)).toBe(4);
+        expect(rowsOf(BOOSTER_ATLAS)).toBe(9);
+    });
+
+    it('32 个包的 pos 全部在网格内', () => {
+        for (const [key, center] of Object.entries(BOOSTER_CENTERS)) {
+            expect(inBounds(BOOSTER_ATLAS, center.pos), `${key} 的 pos 越界`).toBe(true);
+        }
+    });
+
+    it('32 个包两两不共格', () => {
+        const frames = Object.values(BOOSTER_CENTERS).map((c) => frameIndex(BOOSTER_ATLAS, c.pos));
+        expect(new Set(frames).size).toBe(32);
     });
 });
