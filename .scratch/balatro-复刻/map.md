@@ -97,6 +97,13 @@ Label: wayfinder:map
   商店的消耗品格**只多一次池子抽取**（`rarity`/`etperpoll`/`edi`/`front`/`soul_` 全不消费）；
   09 号票那条「delay 可以压成 0」**在本切片内仍然成立**（5 处只命中 The Wheel of Fortune，
   它三次掷点共用一个 key、严格 FIFO）；`level_up_hand` 是**重算 + 三个 clamp**，没有上限。
+- [补充包与幽灵牌的切片边界](issues/17-补充包与幽灵牌的切片边界.md) ——
+  **补充包五种 + 幽灵牌 18 张 + 版本 4 种 + 蜡封 4 种**。比 16 号票大，但切不小：
+  五种包各自拽着一个系统，而版本与幽灵牌互相拽（`Aura` / `Hex` / `Ectoplasm` 全是版本，
+  `Perkeo` 要 Negative，`The Wheel of Fortune` 要 `poll_edition`）。
+  同时裁定：**delay 仍可压成 0**（但理由换了，见已知的坑）、
+  **`soulable` 在包里传真值**（三种包掷点次数各不相同）、
+  **商店末尾多两次 `shop_pack<ante>`**（第一个商店只多一次）。
 
 > **第一个里程碑已交付**（红牌组打小盲注，可玩，带动画/shader/音效）。
 >
@@ -128,9 +135,19 @@ Label: wayfinder:map
 > 而且抽到哪个牌型不由人挑。**原作里星球的主要来源是天体补充包**
 > （一包 3 张、Jumbo 5 张）——这条实测把补充包从「放最后」抬成了关键路径。
 >
-> **下一个大件是补充包 + 幽灵牌（17 号票）**：破 Ante 3 的墙，
-> 同时解开 `Sixth Sense` / `Seance` / `Hallucination` / `Perkeo` / `Astronomer`。
-> 次一档是**强化牌那 9 张小丑**——它们的前置（8 种强化）已经落地，只是还没做。
+> **补充包已交付**（17 号票）：五种包 + 18 张幽灵牌 + 4 种版本 + 4 种蜡封。
+> 718 个测试绿。**小丑覆盖面 124 / 150，消耗品 52 / 52，补充包 5 / 5。**
+>
+> **墙又松了一格，还是没破。** 八个 seed 的贪心深度
+> 2.875（16 号票前）→ 3.0（消耗品）→ **3.375**（补充包），最深到 Ante 5。
+> 一个天体包一次给 3 张星球、Jumbo 5 张，供给确实上来了。
+> 剩下的差距里有多少是内容、有多少是策略**仍然说不清**——
+> 贪心不挑手牌，所以一半塔罗与全部「给选中的牌加蜡封」的幽灵牌都用不出来；
+> 买小丑也不挑好坏。
+>
+> **下一刀最划算的是强化牌那 9 张小丑**（`coverage.test.ts` 里最大的一组，
+> 前置全在）。但**在那之前值得先写一个会挑牌的策略**——
+> 不然「还差多少内容」这个问题永远测不出来。
 
 ## Not yet specified
 
@@ -368,6 +385,65 @@ Label: wayfinder:map
   `Mr. Bones`（返回的 `saved` 标志没有读取方）。
   这正是 coverage 那套想挡却挡不住的漏网形态——**「有 handler」不等于「有效果」**。
   两张都已开后台任务，不在 16 号票范围。
+
+- **`get_pack` 的第一次调用不掷点。** 新档的第一个商店，第一个补充包格子
+  恒是小丑包（`common_events.lua:1984` 提前 return），而且那一格**不消费
+  `shop_pack<ante>`**。所以第一个商店消费 1 次、以后每个商店 2 次。
+  那条路用的 `math.random(1, 2)` 走**全局流**（不是 pseudoseed），
+  而 `p_buffoon_normal_1/2` 除图集坐标完全一样，所以不可复现也不影响数值。
+- **补充包的权重和是 `22.420000000000005`，不是 `22.42`。**
+  原文按 order 序逐个累加双精度，0.25 / 0.3 / 0.07 / 0.6 / 0.15 在二进制里都不精确。
+  写成 22.42 会让贴着边界的那次掷点落进不同的桶。**要按同一个顺序累加**。
+- **补充包不参与重掷**：`reroll_shop` 只清 `G.shop_jokers`。
+  包的 key 存在 `G.GAME.current_round.used_packs`，买掉置 `'USED'`。
+- **`Card:open` 里造牌那段只是入队，`open_booster` 的小丑遍历是同步的。**
+  所以真实执行序是「`Hallucination` 先造塔罗、包里的牌后造」——
+  照着读代码会写反，因为造牌那段写在上面。这个顺序有观测后果：
+  Hallucination 造的那张会标 `used_jokers`，改包里那几张的池子内容。
+- **`soulable` 在商店路径传 nil、在补充包路径传真值。** 掷点次数按 `_type` 分：
+  Tarot 1 次、Planet 1 次、**Spectral 2 次**（The Soul 与 Black Hole 是
+  两个并列的 if，不是 if/elseif，而且第二次能盖掉第一次）、Joker 0 次。
+  **中了就 `forced_key`，那条路不抽池子**——所以一个奥秘包的账是
+  「3 次 soul + (3 − 抽到 The Soul 的张数) 次抽取」。
+- **小丑包用 `packetper<ante>`，商店用 `etperpoll<ante>`**
+  （`common_events.lua:2180` 那行三元）。两个 key 搞混，两条链会互相污染。
+  `edi<append><ante>` 那次**三条路都消费**。
+- **`The Soul` 的池 key 既不带 append 也不带 ante**：legendary 时
+  `_pool_key..(not _legendary and ante or '')` 取空串，所以是 `'Joker4'`。
+  但**rarity 那次点照掷**（`_rarity` 是 nil），只是结果被 `legendary and 4` 盖掉。
+  `Wraith` 反过来：传了 `_rarity = 0.99`，**不掷点**。
+- **小丑身上的版本效果分两段**（`state_events.lua:900` 起）：
+  `chip_mod`/`mult_mod` 在那张小丑自己的效果**之前**，
+  `x_mult_mod` 在**「小丑对小丑」之后**。所以 Polychrome 的 ×1.5 是最外层那一乘。
+  合并成一段会让 `Polychrome 的 Jolly Joker` 从 450 算成 330。
+  **扑克牌身上不分段**（`state_events.lua:780`）。
+- **`poll_edition` 的两支公式不一样**：`guaranteed` 把四档系数全部 ×25
+  **且不乘 `edition_rate`**，普通支只有后三档乘。合并会让保底那一支算错。
+- **四种蜡封挂在四个不同的钩子上**：Red 在 `context.repetition`（**排在小丑的
+  重复之前**）、Gold 在 `get_p_dollars`（**排在幸运牌那一段之前**，两者叠加）、
+  Purple 在 `context.discard`、Blue 在 `get_end_of_round_effect`（**只认留在手里的**）。
+  分开挂是有意的——合成一张表会掩盖「某个钩子压根没人调」这种错。
+- **Blue 蜡封造的不是随机星球**，是 `G.GAME.last_hand_played` 对应的那一张
+  （`card.lua:1050` 按 `hand_type` 查表）。
+- **Purple 蜡封造塔罗时用的 key_append 是 `'8ba'`**（`card.lua:2263`），
+  也就是 `8 Ball` 那张小丑的。看起来是抄下来忘了改，但它决定 seed key，**照抄才对**。
+- **标准包的账与别的包完全不一样**：`stdset<ante>` →（Enhanced 才有的
+  `Enhancedsta<ante>`）→ `frontsta<ante>` → `standard_edition<ante>`（mod 2、no_neg）
+  → `stdseal<ante>` →（有蜡封才有的 `stdsealtype<ante>`）。
+  两处容易漏：**`soulable` 传了真值但一次都不掷**（`_type` 是 Base/Enhanced，
+  两支都不匹配）、**Base 不抽池子**（`forced_key = 'c_base'` 直接跳过）。
+- **`front` 抽的是以 key 为键的 `P_CARDS` 表**，所以排出来是
+  `C_2..C_9, C_A, C_J, C_K, C_Q, C_T, D_2, …` 的字节序，**不是**牌组那个 2→A 的顺序。
+- **三张造牌幽灵牌的 RNG 账各不相同**：Familiar 与 Incantation
+  **用同一个 key 掷两次**（先点数、再花色），Grim 点数固定 A、**只掷花色**。
+  强化池是 8 张里**去掉石头牌**的 7 张。
+- **幽灵牌只进 `consumeable_usage_total.spectral` 与 `all`**，不进 `tarot_planet`
+  （`misc_functions.lua:1205`）。`Fortune Teller` 数的是塔罗，算进幽灵牌就多给倍率。
+- **`Astronomer` 的价格必须现算。** 原作在它进小丑区时把**所有卡重新定价一遍**
+  （`card.lua:616`），所以「先买 Astronomer 再买天体包」是免费的。
+  把价格烤进商品对象会让它只在「开商店之前就握着」时生效。
+- **销毁判定里小丑那一趟排在玻璃牌之前，而且两个 if 是并列的**
+  （`state_events.lua:977` / `:982`）——小丑毁掉了也**照样掷 `glass`**。
 
 ## Out of scope
 

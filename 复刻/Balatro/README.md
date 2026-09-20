@@ -20,16 +20,24 @@
 不 mock、不直接写 phase。表现层也接上了：小丑区、商店（买／卖／重掷）、回合收益明细。
 
 **消耗品已交付**（[16 号票](../../.scratch/balatro-复刻/issues/16-消耗品的切片边界.md)）：
-消耗品槽位（2 格）、12 张星球、22 张塔罗里的 21 张、8 种强化牌，商店真的卖消耗品。
+消耗品槽位（2 格）、12 张星球、22 张塔罗、8 种强化牌，商店真的卖消耗品。
 
-> **但 Ante 3 的墙没破。** 实测八个 seed 的贪心深度仍是 Ante 2–4：
-> 商店两格里只有 ~28.6% 是消耗品、其中一半是塔罗，整局买到 1–5 张星球。
-> **原作里星球的主要来源是天体补充包**（一包 3 张、Jumbo 5 张）——
-> 那是商店第三格，在 17 号票。
+**补充包已交付**（[17 号票](../../.scratch/balatro-复刻/issues/17-补充包与幽灵牌的切片边界.md)）：
+五种补充包（商店第三、四格）、18 张幽灵牌、4 种版本、4 种蜡封。
+
+> **Ante 3 的墙松了两格，还是没破。** 八个 seed 的贪心深度
+> 2.875（消耗品之前）→ 3.0（消耗品）→ **3.375**（补充包），最深到 Ante 5。
+>
+> 剩下的差距里有多少是内容、有多少是策略**说不清**：
+> 那个贪心**不挑手牌**，所以一半塔罗与全部「给选中的牌加蜡封」的幽灵牌
+> 都用不出来；买小丑也不挑好坏。**下一步该先写一个会挑牌的策略**，
+> 不然「还差多少内容」这个问题永远测不出来。
 
 > **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
 > 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
-> 逻辑层有 563 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
+> 逻辑层有 718 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
+> **版本与蜡封的贴图都没有移植**（原作每种版本一个 `.fs`、蜡封是四张叠图），
+> 这一版只用文字标出来（`✦多彩` / `▣红`）。
 
 ```
 src/
@@ -46,16 +54,20 @@ src/
 │   ├── shop.ts                  商店（get_current_pool / create_card_for_shop / 重掷）
 │   ├── fixtures/                对拍 fixture（12 条 Ante 1 Boss 外部真值）
 │   ├── enhancements.ts          8 种强化牌（照抄原作那七个 getter，不收成表）
-│   ├── enhancements.generated.ts 8 张 center（生成的，别手改）
-│   ├── consumables/             ← 消耗品。34 张里 33 张有行为
-│   │   ├── centers.generated.ts     塔罗 22 + 星球 12（生成的，别手改）
-│   │   ├── instance.ts              makeConsumable
+│   ├── editions.ts              4 种版本（poll_edition / get_edition）
+│   ├── seals.ts                 4 种蜡封（四个钩子，四个小函数）
+│   ├── boosters.ts              补充包的 center 与 get_pack
+│   ├── booster-open.ts          开包（Card:open），五种口味各一套 RNG 账
+│   ├── consumables/             ← 消耗品。52 / 52 全有行为
+│   │   ├── centers.generated.ts     塔罗 22 + 星球 12 + 幽灵 18（生成的）
+│   │   ├── instance.ts              makeConsumable / planetKeyFor
 │   │   ├── use.ts                   用掉一张 + 用量统计 + 覆盖面登记
-│   │   ├── tarot.ts                 21 张塔罗的 spec
+│   │   ├── tarot.ts                 22 张塔罗的 spec
+│   │   ├── spectral.ts              18 张幽灵牌的 spec
 │   │   └── use-context.ts           喂给消耗品的那张宽接口
 │   ├── atlas.ts                 图集网格推导（**不 import Phaser**，所以可单测）
 │   ├── event-queue.ts           事件队列（G.E_MANAGER）
-│   ├── jokers/                  ← 小丑系统。150 张里 119 张有行为
+│   ├── jokers/                  ← 小丑系统。150 张里 124 张有行为
 │   │   ├── centers.generated.ts     150 张的 center 定义（生成的，别手改）
 │   │   ├── instance.ts              set_ability / set_cost
 │   │   ├── calculate.ts             calculate_joker + 覆盖面登记
@@ -74,6 +86,7 @@ src/
 │   ├── card-sprite.ts           扑克牌（底板 + 正面两层，底板换强化）
 │   ├── joker-sprite.ts          小丑（单层，含四条尺寸特例）
 │   ├── consumable-sprite.ts     消耗品（单层，没有尺寸特例）
+│   ├── booster-sprite.ts        补充包（单层，画得比卡大 ×1.27）
 │   ├── shaders/                 background / CRT / dissolve
 │   └── scenes/RunScene.ts       整局：手牌 / 小丑区 / 商店 / 收益明细
 └── tools/                    四个生成器 + 共用的 Lua 表解析器
@@ -83,7 +96,7 @@ src/
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 563 个测试，必须全绿
+npm test            # 718 个测试，必须全绿
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
 ```
@@ -95,9 +108,10 @@ node tools/gen-joker-centers.mjs
 node tools/gen-blind-centers.mjs
 node tools/gen-consumable-centers.mjs
 node tools/gen-enhancement-centers.mjs
+node tools/gen-booster-centers.mjs
 ```
 
-四个生成器共用 `tools/lua-table.mjs` 的 Lua 表解析器。
+五个生成器共用 `tools/lua-table.mjs` 的 Lua 表解析器。
 
 **用 npm，不要用 pnpm。** pnpm 在本机装 `esbuild` 时稳定复现 `ERR_PNPM_EPERM`
 （硬链接 rename 被拒），换 npm 即可。
@@ -197,14 +211,11 @@ edisho<ante>                       版本掷点
    （`card.lua:4829` 的 `Card:remove()` 有一条对称的清除）。
    写成永久剔除会让池子内容一次比一次窄，`_resample` 的次数跟着偏。
 
-## 覆盖面：小丑 119 / 150，消耗品 33 / 34
+## 覆盖面：小丑 124 / 150，消耗品 52 / 52，补充包 5 / 5
 
-剩下 31 张小丑卡在还没做的系统上，分组见 `src/core/jokers/coverage.test.ts`：
-**强化牌 9 张**（前置已落地，只是还没做）、增删牌 8 张、
-幽灵与补充包 5 张、负债 4 张、标签 3 张、关掉 Boss 2 张。
-
-消耗品差的那一张是 `The Wheel of Fortune`——它给小丑加**版本**，
-而版本系统整个不在范围。
+剩下 26 张小丑卡在还没做的系统上，分组见 `src/core/jokers/coverage.test.ts`：
+**强化牌 9 张**（前置全落地了，只是还没做——**下一刀最划算的就是它**）、
+增删牌 8 张、负债 4 张、标签 3 张、关掉 Boss 2 张。
 
 **有两张小丑「有 handler 但效果落空」**，且被 `isJokerImplemented` 报成已实现：
 `To Do List`（牌型从没被抽过）与 `Mr. Bones`（`saved` 标志无人读取）。
