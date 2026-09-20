@@ -27,8 +27,9 @@ cd 复刻/Balatro && npm test && npm run build
 - [x] 4. 星球牌 12 张（同上）——**但墙没破，见下**
 - [x] 4.5 表现层：消耗品区（commit 3ee982da）
 - [x] 5. 强化牌 8 种（commit 6b69b615）
-- [ ] 6. 塔罗牌 22 张
-- [ ] 7. 回填 13 张小丑，删 `coverage.test.ts` 对应行
+- [x] 6. 塔罗牌 21 / 22（commit e3db7989，差 The Wheel of Fortune）
+- [x] 7. 回填 **8** 张小丑（commit 7051ba4e），不是 13 张——见下
+- [x] 收尾：`/code-review high` + 修三个洞（commit 0d1b3b52）
 
 ## 关键决策（压缩后最先丢，优先保留）
 
@@ -50,6 +51,13 @@ cd 复刻/Balatro && npm test && npm run build
 - **`level_up_hand` 现在的实现是错的**：原作是重算（`s_mult + l_mult*(level-1)`）
   且有三个 clamp（level ≥ 0、mult ≥ 1、chips ≥ 0），复刻是增量且无 clamp。
   今天打不出来只因为 `The Arm` 自带 `handLevel > 1` 守卫。**没有上限。**
+
+## 16 号票已交付（2026-09-20）
+
+570 个测试绿，`npm run build` 通。九个提交，从 `b2357617` 到 `0d1b3b52`。
+细节在 [16 号票](../.scratch/balatro-复刻/issues/16-消耗品的切片边界.md) 的「交付结果」一节。
+
+**下一个大件是 17 号票（补充包 + 幽灵牌）**——实测把它从「放最后」抬成了关键路径。
 
 ## 进度
 
