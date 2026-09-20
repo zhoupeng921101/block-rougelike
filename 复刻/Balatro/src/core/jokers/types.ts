@@ -13,6 +13,7 @@
  */
 
 import type { Card, Suit } from '../card';
+import type { Edition } from '../editions';
 import type { HandName } from '../poker-hands';
 
 /** `P_CENTERS` 里的一行。由 `tools/gen-joker-centers.mjs` 生成，运行时只读。 */
@@ -86,6 +87,12 @@ export type Joker = {
     debuff: boolean;
     /** 卖价。`card.lua:369` `set_cost` 算出来的 */
     sell_cost: number;
+    /**
+     * `card.edition`。商店与补充包里的小丑都会掷一次版本
+     * （`poll_edition('edi'+append+ante)`）。
+     * **Negative 不参与计分，它的效果是让小丑区多一格。**
+     */
+    edition?: Edition;
     /** 表现层排序用，单位是 tile（与 `Card.T` 同口径，见 10 号票） */
     T: { x: number; y: number; w: number; h: number };
 };

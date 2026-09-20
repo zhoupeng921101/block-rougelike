@@ -408,11 +408,21 @@ describe('消耗品区', () => {
      * 与 Boss 的 `assertImplemented` 同一条：静默等于把缺口伪装成正常行为。
      * 表现层靠 `canUseConsumable` 把按钮灰掉。
      */
-    it('还没实现的 The Wheel of Fortune：canUseConsumable 是 false，硬用会抛', () => {
+    /**
+     * **实现了 ≠ 现在能用。** The Wheel of Fortune 要「小丑区里有没版本的小丑」，
+     * 小丑区空着就用不了（`card.lua:1536` 的 `eligible_strength_jokers`）。
+     */
+    it('The Wheel of Fortune 在小丑区空着时用不了', () => {
         const run = new Run('TUTORIAL');
         run.consumables.push(makeConsumable('c_wheel_of_fortune'));
         expect(run.canUseConsumable(0)).toBe(false);
-        expect(() => run.useConsumable(0)).toThrow(/还没有实现行为/);
+    });
+
+    it('小丑区有一张没版本的小丑就能用了', () => {
+        const run = new Run('TUTORIAL');
+        run.jokers.push(makeJoker('j_banner'));
+        run.consumables.push(makeConsumable('c_wheel_of_fortune'));
+        expect(run.canUseConsumable(0)).toBe(true);
     });
 
     /**

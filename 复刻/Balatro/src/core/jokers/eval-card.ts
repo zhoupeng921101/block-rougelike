@@ -8,6 +8,7 @@
  */
 
 import type { Card } from '../card';
+import { type EditionEffect, getEdition } from '../editions';
 import {
     getChipBonus as enhancedChipBonus,
     getChipHMult,
@@ -34,6 +35,8 @@ export type EvalResult = {
     h_mult?: number;
     jokers?: JokerEffect;
     seals?: JokerEffect;
+    /** `card.lua:1016` 的 `get_edition`。**扑克牌身上的版本走这里** */
+    edition?: EditionEffect;
 };
 
 /**
@@ -94,6 +97,10 @@ export function evalCard(
 
             const pDollars = getPDollars(target, game);
             if (pDollars > 0) ret.p_dollars = pDollars;
+
+            // `common_events.lua:621`：牌面本身的版本。**排在最后**
+            const edition = getEdition(target);
+            if (edition) ret.edition = edition;
         } else {
             const jokers = calculateJoker(target, context, game);
             if (jokers) ret.jokers = jokers;
@@ -120,7 +127,12 @@ export function evalCard(
         // 所以 `context.edition` 恒返回空；`other_joker` 分支要转调**那一张**
         let jokers: JokerEffect | null = null;
         if (context.edition) {
-            jokers = null;
+            // `common_events.lua:648`：`context.edition` 时问的是 `get_edition`，
+            // 不是 `calculate_joker`。**小丑身上的版本走这一支**
+            const e = isJoker(target) ? getEdition(target) : null;
+            jokers = e
+                ? { chip_mod: e.chip_mod, mult_mod: e.mult_mod, Xmult_mod: e.x_mult_mod }
+                : null;
         } else if (context.other_joker) {
             jokers = calculateJoker(context.other_joker, context, game);
         } else if (isJoker(target)) {

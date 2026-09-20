@@ -34,6 +34,7 @@
  */
 
 import { type BoosterCenter, BOOSTER_CENTERS, SHOP_BOOSTER_MAX, getPack } from './boosters';
+import { pollEdition } from './editions';
 import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET, makeConsumable } from './consumables';
 import type { Consumable, ConsumableSet, PlanetConfig } from './consumables';
 import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, findJoker, makeJoker } from './jokers';
@@ -354,8 +355,9 @@ export function createJokerCard(
     }
 
     // `common_events.lua:2192` 的 `poll_edition('edi'+append+ante)`。
-    // 版本不在范围，但这次掷点要消费
-    rng.pseudorandom(`edi${keyAppend}${context.ante}`);
+    // **掷点与落地是同一次**——16 号票时只掷不用，现在把结果接上了
+    const edition = pollEdition(rng, `edi${keyAppend}${context.ante}`);
+    if (edition) joker.edition = edition;
 
     return joker;
 }

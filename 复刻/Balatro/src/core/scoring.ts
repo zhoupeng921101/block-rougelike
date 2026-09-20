@@ -474,6 +474,24 @@ export function evaluatePlay(
             poker_hands: results.parts,
         };
 
+        // —— 版本的**加法段**（`state_events.lua:901`）——
+        // 小丑身上的版本效果**分两段**：加法在这张小丑自己的效果之前，
+        // 乘法在「小丑对小丑」之后。合并成一段会让
+        // 「Polychrome 的 Baseball Card」算错
+        const editionEffects = evalCard(joker, { ...ctx, edition: true }, game).jokers;
+        if (editionEffects) {
+            let chipMod = 0;
+            let multMod = 0;
+            if (editionEffects.mult_mod) { mult += editionEffects.mult_mod; multMod = editionEffects.mult_mod; }
+            if (editionEffects.chip_mod) { handChips += editionEffects.chip_mod; chipMod = editionEffects.chip_mod; }
+            if (chipMod || multMod) {
+                steps.push({
+                    kind: 'joker', joker, chipMod, multMod, xMult: 1, handChips, mult,
+                    message: multMod ? `+${multMod}` : `+${chipMod}`,
+                });
+            }
+        }
+
         const effects = evalCard(joker, ctx, game);
 
         if (effects.jokers) {
@@ -507,6 +525,17 @@ export function evaluatePlay(
             steps.push({
                 kind: 'joker', joker: other, chipMod, multMod, xMult, handChips, mult,
                 message: effect.message,
+            });
+        }
+
+        // —— 版本的**乘法段**（`state_events.lua:955`）——
+        // **排在「小丑对小丑」之后**，所以 Polychrome 的 ×1.5 是最外层那一乘
+        if (editionEffects?.Xmult_mod) {
+            mult *= editionEffects.Xmult_mod;
+            steps.push({
+                kind: 'joker', joker, chipMod: 0, multMod: 0,
+                xMult: editionEffects.Xmult_mod, handChips, mult,
+                message: `X${editionEffects.Xmult_mod}`,
             });
         }
     }
@@ -586,6 +615,14 @@ function applyCardEffect(
     if (effect.chips) { handChips += effect.chips; chipMod += effect.chips; changed = true; }
     if (effect.mult) { mult += effect.mult; multMod += effect.mult; changed = true; }
     if (effect.p_dollars) { game.dollars += effect.p_dollars; changed = true; }
+    // `state_events.lua:780`：**牌面的版本不分段**，chip → mult → x_mult 一口气走完，
+    // 而且整段排在牌自己的 `x_mult`（玻璃牌）**之前**
+    if (effect.edition) {
+        const e = effect.edition;
+        if (e.chip_mod) { handChips += e.chip_mod; chipMod += e.chip_mod; changed = true; }
+        if (e.mult_mod) { mult += e.mult_mod; multMod += e.mult_mod; changed = true; }
+        if (e.x_mult_mod) { mult *= e.x_mult_mod; xMult *= e.x_mult_mod; changed = true; }
+    }
     if (effect.x_mult) { mult *= effect.x_mult; xMult *= effect.x_mult; changed = true; }
 
     const e = effect.jokers;

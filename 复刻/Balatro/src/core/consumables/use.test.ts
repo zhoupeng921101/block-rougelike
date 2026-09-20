@@ -101,23 +101,23 @@ describe('用量统计', () => {
     });
 });
 
-describe('覆盖面：34 张里 33 张有行为', () => {
+describe('覆盖面：34 张全部有行为', () => {
     it('12 张星球全部有 spec', () => {
         expect(CONSUMABLE_KEYS_BY_SET.Planet.every(isConsumableImplemented)).toBe(true);
     });
 
     /**
-     * 未实现的名单快照。**实现一张就来这里删一行。**
-     *
-     * 只剩 `The Wheel of Fortune`：它的效果是给小丑加**版本**，
-     * 而版本系统整个不在范围（见 `tarot.ts` 的文件头）。
+     * 未实现的名单快照。**17 号票接上版本系统之后，
+     * `The Wheel of Fortune` 补齐，34 张全有行为了。**
      */
-    it('只差 The Wheel of Fortune —— 它要版本系统', () => {
-        const names = unimplementedConsumables().map((k) => CONSUMABLE_CENTERS[k].name);
-        expect(names).toEqual(['The Wheel of Fortune']);
+    it('一张都不缺（The Wheel of Fortune 靠版本系统补上了）', () => {
+        expect(unimplementedConsumables()).toEqual([]);
     });
 
-    it('没实现的**抛**，不静默吞——与 Boss 的 assertImplemented 同一条', () => {
-        expect(() => use('c_wheel_of_fortune')).toThrow(/还没有实现行为/);
+    it('没有这张 key 的照样抛，不静默吞', () => {
+        expect(() => applyConsumable(
+            { key: 'c_not_a_card', center: CONSUMABLE_CENTERS.c_fool, cost: 3, sell_cost: 1 },
+            makeUseContext(),
+        )).toThrow(/还没有实现行为/);
     });
 });

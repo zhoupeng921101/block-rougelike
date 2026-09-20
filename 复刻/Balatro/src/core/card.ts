@@ -6,6 +6,7 @@
  * 改名之后对不上原文，校对成本反而更高。见 03 号票的直译裁定。
  */
 
+import type { Edition } from './editions';
 import { enhancedGetId, enhancedIsSuit, isStone } from './enhancements';
 
 export type Suit = 'Spades' | 'Hearts' | 'Clubs' | 'Diamonds';
@@ -75,6 +76,11 @@ export type Card = {
      * 漏一个就留下前一种强化的残值。
      */
     enhancement: string | null;
+    /**
+     * `card.edition`。Foil / Holographic / Polychrome / Negative，
+     * `undefined` 表示没有。扑克牌的版本只从标准包与 `Aura` 来。
+     */
+    edition?: Edition;
     /** 目标变换的 x。**tile 单位，不是像素**——见 10 号票 */
     T: { x: number; y: number; w: number; h: number };
 };

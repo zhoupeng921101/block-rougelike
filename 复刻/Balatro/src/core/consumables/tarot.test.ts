@@ -357,14 +357,107 @@ describe('星球牌随时能用（can_use 那条直接 return true）', () => {
     });
 });
 
-describe('The Wheel of Fortune 还没实现', () => {
-    it('canUse 是 false，因为它要版本系统', () => {
+describe('The Wheel of Fortune：1/4 给一张没版本的小丑加保底版本', () => {
+    /**
+     * **三次掷点共用同一个 key**，所以测试要按次序喂值，不能喂一个常数：
+     * 第 1 次过 1/4 的门（要小），第 3 次决定是哪个版本（要大）。
+     * 第 2 次是 `pseudorandom_element`，这里由 `pickRandom` 接管。
+     */
+    const sequence = (...values: number[]) => {
+        let i = 0;
+        return () => values[Math.min(i++, values.length - 1)];
+    };
+
+    it('小丑区空着就用不了（eligible_strength_jokers 是空的）', () => {
         expect(canUseConsumable(makeConsumable('c_wheel_of_fortune'), makeUseContext())).toBe(false);
     });
 
-    it('强行 apply 会抛，而且**不掷 wheel_of_fortune 那三次点**', () => {
-        expect(() => applyConsumable(makeConsumable('c_wheel_of_fortune'), makeUseContext()))
-            .toThrow(/还没有实现行为/);
+    it('有一张没版本的小丑就能用', () => {
+        const ctx = makeUseContext({ jokers: [makeJoker('j_banner')] });
+        expect(canUseConsumable(makeConsumable('c_wheel_of_fortune'), ctx)).toBe(true);
+    });
+
+    it('小丑全都有版本了也用不了', () => {
+        const joker = makeJoker('j_banner');
+        joker.edition = 'foil';
+        const ctx = makeUseContext({ jokers: [joker] });
+        expect(canUseConsumable(makeConsumable('c_wheel_of_fortune'), ctx)).toBe(false);
+    });
+
+    /**
+     * 三次掷点共用 `wheel_of_fortune` 一个 key。
+     * **没中的时候只消费第 1 次**——把 2、3 也无条件掷会让同 seed 分叉。
+     */
+    it('没中（0.9 ≥ 1/4）就只掷一次，小丑不加版本', () => {
+        const joker = makeJoker('j_banner');
+        const keys: string[] = [];
+        use('c_wheel_of_fortune', makeUseContext({
+            jokers: [joker],
+            pseudorandom: (k) => { keys.push(k); return 0.9; },
+            pickRandom: (list) => list[0],
+        }));
+        expect(keys).toEqual(['wheel_of_fortune']);
+        expect(joker.edition).toBeUndefined();
+    });
+
+    /**
+     * `poll_edition(..., no_neg = true, guaranteed = true)`：
+     * 四档门槛全部 ×25，且不出 Negative。0.5 这个点落在
+     * `1 - 0.02*25 = 0.5` 之上吗？`0.5 > 0.5` 为假，所以掉到 foil
+     * （`0.5 > 1 - 0.04*25 = 0` 为真）。
+     */
+    /**
+     * `guaranteed` 把四档门槛全部 ×25：
+     * negative > 0.925、polychrome > 0.85、holo > 0.5、foil > 0。
+     */
+    it('中了之后掷到 0.6 → holo（0.6 > 1 - 0.02×25 = 0.5）', () => {
+        const joker = makeJoker('j_banner');
+        use('c_wheel_of_fortune', makeUseContext({
+            jokers: [joker],
+            pseudorandom: sequence(0, 0.6),
+            pickRandom: (list) => list[0],
+        }));
+        expect(joker.edition).toBe('holo');
+    });
+
+    it('掷到 0.2 → foil（0.2 > 1 - 0.04×25 = 0，但不到 0.5）', () => {
+        const joker = makeJoker('j_banner');
+        use('c_wheel_of_fortune', makeUseContext({
+            jokers: [joker],
+            pseudorandom: sequence(0, 0.2),
+            pickRandom: (list) => list[0],
+        }));
+        expect(joker.edition).toBe('foil');
+    });
+
+    /** `no_neg = true`：0.99 过了 negative 那一档也不给，落到 polychrome */
+    it('掷到 0.99 → **不给 Negative**，落到 Polychrome', () => {
+        const joker = makeJoker('j_banner');
+        use('c_wheel_of_fortune', makeUseContext({
+            jokers: [joker],
+            pseudorandom: sequence(0, 0.99),
+            pickRandom: (list) => list[0],
+        }));
+        expect(joker.edition).toBe('polychrome');
+    });
+
+    it('`Oops! All 6s` 把 1/4 翻成 2/4：0.3 从不中变成中', () => {
+        const a = makeJoker('j_banner');
+        use('c_wheel_of_fortune', makeUseContext({
+            jokers: [a],
+            pseudorandom: () => 0.3,
+            pickRandom: (list) => list[0],
+        }));
+        expect(a.edition).toBeUndefined(); // 0.3 >= 1/4
+
+        const b = makeJoker('j_banner');
+        use('c_wheel_of_fortune', makeUseContext({
+            jokers: [b],
+            probabilities: { normal: 2 },
+            pseudorandom: () => 0.3,
+            pickRandom: (list) => list[0],
+        }));
+        expect(b.edition).toBeDefined(); // 0.3 < 2/4
     });
 });
 

@@ -60,6 +60,21 @@ const PACK_OPEN_X_TILES = 1.2;
  */
 const CRT_STRENGTH = 70;
 
+/**
+ * 版本的文字标记。
+ *
+ * **版本的 shader 没有移植**（原作每种版本一个 `.fs`，与 `dissolve` 并列），
+ * 所以这一版只用文字标出来——不标的话玩家分不出一张 Polychrome 的小丑
+ * 和普通小丑，而两者差 ×1.5。
+ */
+function editionTag(edition?: string): string {
+    if (!edition) return '';
+    const label: Record<string, string> = {
+        foil: ' ✦箔', holo: ' ✦全息', polychrome: ' ✦多彩', negative: ' ✦负片',
+    };
+    return label[edition] ?? '';
+}
+
 /** 逐张计分之间的间隔，秒。原作在 state_events.lua:622 是 delay(0.2) 起步 */
 const SCORE_STEP_DELAY = 0.22;
 
@@ -503,7 +518,7 @@ ${String(e instanceof Error ? e.message : e)}`)
                 this.add.text(
                     toPx(x),
                     toPx(SHOP_Y_TILES + CARD_H + 0.1),
-                    `$${item.cost}${done ? '' : '  ⚠未实现'}`,
+                    `$${item.cost}${editionTag(item.joker.edition)}${done ? '' : '  ⚠未实现'}`,
                     {
                         fontFamily: 'monospace', fontSize: 18,
                         color: done ? '#ffd76e' : '#e5885f',
@@ -778,7 +793,7 @@ ${String(e instanceof Error ? e.message : e)}`)
                 if (typeof a.extra?.chips === 'number') parts.push(`+${a.extra.chips}c`);
                 // 没有行为的小丑要标出来，理由同商店那一处
                 const warn = isJokerImplemented(j.key) ? '' : ' ⚠未实现';
-                return `${a.name}${parts.length ? ` ${parts.join(' ')}` : ''} ($${j.sell_cost})${warn}`;
+                return `${a.name}${editionTag(j.edition)}${parts.length ? ` ${parts.join(' ')}` : ''} ($${j.sell_cost})${warn}`;
             })
             .join('   ');
     }

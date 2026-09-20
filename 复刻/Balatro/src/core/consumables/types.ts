@@ -11,6 +11,7 @@
  * `Ectoplasm`，而它不在本票）。所以这里直接引用 center 的 config，不复制。
  */
 
+import type { Edition } from '../editions';
 import type { HandName } from '../poker-hands';
 
 /** 塔罗与星球两个 set。幽灵牌在 17 号票，那时加 `'Spectral'` */
@@ -35,6 +36,11 @@ export type ConsumableCenter = {
 export type Consumable = {
     key: string;
     center: ConsumableCenter;
+    /**
+     * `card.edition`。消耗品只可能拿到 Negative（`Perkeo` 造的那张），
+     * 而 Negative 的效果是**消耗品区多一格**，不参与计分。
+     */
+    edition?: Edition;
     /** `card.lua:370` 算出来的买入价 */
     cost: number;
     /** 卖价。`max(1, floor(cost/2))`，与小丑同一条 */

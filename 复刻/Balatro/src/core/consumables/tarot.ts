@@ -28,6 +28,8 @@
  */
 
 import { type Card, type Suit, type Value, cardKey, makeBase } from '../card';
+import { pollEdition } from '../editions';
+import type { Joker } from '../jokers';
 import type { Consumable } from './types';
 import type { ConsumableSpec, UseContext } from './use-context';
 
@@ -190,6 +192,34 @@ export const TAROT_SPECS: Record<string, ConsumableSpec> = {
     },
 
     /**
+     * `card.lua:1466`：**1/4 给一张没版本的小丑加一个保底版本**。
+     *
+     * 三次掷点共用 `wheel_of_fortune` 一个 key，顺序是：
+     * 1. 门口的 `pseudorandom('wheel_of_fortune') < normal/extra`（extra = 4）
+     * 2. 中了才有的 `pseudorandom_element(池子, pseudoseed('wheel_of_fortune'))`
+     * 3. `poll_edition('wheel_of_fortune', nil, true, true)`——
+     *    **guaranteed 且 no_neg**，所以必出 Polychrome / Holo / Foil 之一
+     *
+     * **没中的时候只消费第 1 次。** 把 2、3 也无条件掷会让同 seed 分叉。
+     *
+     * 可选池是 `card.lua:4213` 的 `eligible_strength_jokers`：
+     * 小丑区里**还没有版本**的那些。池子空了这张牌就用不了（`card.lua:1536`）。
+     */
+    c_wheel_of_fortune: {
+        apply: (c, ctx) => {
+            const pool = eligibleForEdition(ctx);
+            const odds = c.center.config.extra as number;
+            if (ctx.pseudorandom('wheel_of_fortune') >= ctx.probabilities.normal / odds) return;
+
+            const target = ctx.pickRandom(pool, 'wheel_of_fortune');
+            if (!target) return;
+            const edition = pollEdition(ctx, 'wheel_of_fortune', { noNeg: true, guaranteed: true });
+            if (edition) target.edition = edition;
+        },
+        canUse: (_c, ctx) => eligibleForEdition(ctx).length > 0,
+    },
+
+    /**
      * `card.lua:1374`：复制**上一张用过的塔罗／星球**。
      *
      * `forced_key` 有值，所以 `create_card` 不抽池子、**一次 RNG 都不消费**。
@@ -207,6 +237,15 @@ export const TAROT_SPECS: Record<string, ConsumableSpec> = {
             ctx.lastTarotPlanet !== 'c_fool',
     },
 };
+
+/**
+ * `card.lua:4213` 的 `eligible_strength_jokers`：小丑区里**还没有版本**的那些。
+ * 注意原文的条件是 `v.ability.set == 'Joker' and (not v.edition)`——
+ * 只看有没有版本，不看是不是被 debuff。
+ */
+function eligibleForEdition(ctx: UseContext): Joker[] {
+    return ctx.jokers.filter((j) => !j.edition);
+}
 
 function createInto(
     ctx: UseContext,

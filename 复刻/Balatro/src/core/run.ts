@@ -37,6 +37,7 @@ import {
     releasePack,
 } from './booster-open';
 import { type Card, type Suit, makeStandardDeck } from './card';
+import { negativeCount } from './editions';
 import { getEndOfRoundDollars } from './enhancements';
 import {
     type Consumable,
@@ -671,6 +672,9 @@ export class Run {
                 createJokerCard(this.rng, this.poolContext(), keyAppend, 'none'),
             makeConsumable,
             lastTarotPlanet: this.lastTarotPlanet,
+            probabilities: { normal: runModifiers(this.jokers).probabilityNormal },
+            pseudorandom: (key) => this.rng.pseudorandom(key),
+            pickRandom: (list, key) => pseudorandomElement(list, this.rng.pseudoseed(key))[0],
         };
     }
 
@@ -754,9 +758,15 @@ export class Run {
         }
     }
 
-    /** `misc_functions.lua:1855` 的 `joker_slots`，再加上小丑给的槽位。 */
+    /**
+     * `misc_functions.lua:1855` 的 `joker_slots`。
+     *
+     * **每张 Negative 小丑 +1 格**（`card.lua:412`）。原作是
+     * `set_edition` 里加减 `card_limit`，本复刻按「重算不增量」的口径
+     * 从小丑区数一遍——理由与 `runModifiers` 那三处一样（见 README）。
+     */
     get jokerSlots(): number {
-        return STARTING_PARAMS.joker_slots;
+        return STARTING_PARAMS.joker_slots + negativeCount(this.jokers);
     }
 
     /** 小丑区满了没有。买小丑之前要查 */
@@ -764,9 +774,12 @@ export class Run {
         return this.jokers.length >= this.jokerSlots;
     }
 
-    /** `misc_functions.lua:1862` 的 `consumable_slots`。优惠券能加，本票恒 2 */
+    /**
+     * `misc_functions.lua:1862` 的 `consumable_slots`。
+     * **每张 Negative 消耗品 +1 格**（`card.lua:410`）。
+     */
     get consumableSlots(): number {
-        return STARTING_PARAMS.consumable_slots;
+        return STARTING_PARAMS.consumable_slots + negativeCount(this.consumables);
     }
 
     get consumablesFull(): boolean {

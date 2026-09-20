@@ -44,6 +44,16 @@ export type UseContext = {
 
     /** `G.GAME.last_tarot_planet`。`The Fool` 读它，**读的是上一张、不是自己** */
     lastTarotPlanet?: string;
+
+    /** `G.GAME.probabilities.normal`。`The Wheel of Fortune` 的 1/4 要过它 */
+    probabilities: { normal: number };
+    /** 掷点。`The Wheel of Fortune` 消费 `wheel_of_fortune` 这个 key */
+    pseudorandom(key: string): number;
+    /**
+     * `pseudorandom_element(list, pseudoseed(key))`。
+     * `The Wheel of Fortune` 要从「没版本的小丑」里挑一张。
+     */
+    pickRandom<T>(list: T[], key: string): T | undefined;
 };
 
 export type ConsumableSpec = {
@@ -82,6 +92,13 @@ export function makeUseContext(overrides: Partial<UseContext> = {}): UseContext 
         createConsumable: noCreate,
         createJoker: noCreate,
         makeConsumable,
+        probabilities: { normal: 1 },
+        pseudorandom: () => {
+            throw new Error('这个 UseContext 没有接 RNG，但有塔罗要掷点——显式传进来');
+        },
+        pickRandom: () => {
+            throw new Error('这个 UseContext 没有接 RNG，但有塔罗要抽元素——显式传进来');
+        },
         ...overrides,
     };
 }
