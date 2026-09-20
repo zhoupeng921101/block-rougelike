@@ -13,6 +13,8 @@
 import type { Card } from './card';
 import { type HandName, type JokerFlags, NO_JOKERS, evaluatePokerHand } from './poker-hands';
 
+export type { HandName };
+
 /** `game.lua:2211-2224` 的 `G.GAME.hands`。本切片只用到 `chips` / `mult` / `level`。 */
 export type HandInfo = {
     chips: number;
