@@ -25,3 +25,6 @@ dist-ssr
 
 # 本地素材挂载点（原素材不入库，见 06 号票裁定前的临时约定）
 public/assets/
+
+# spike 用的原素材，不入库（素材口径待 06 号票裁定）
+public/spike-assets/

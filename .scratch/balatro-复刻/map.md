@@ -55,6 +55,10 @@ Label: wayfinder:map
 - [原版对拍基准能否导出](issues/04-原版对拍基准能否导出.md) —— **社区工具拿不到洗牌真值**
   （它们全是 seed-search 模型，不建模洗牌）。裁定走**结构性验证**：
   独立重推一遍 Fisher–Yates 逐位比对，不动实机。`pseudoshuffle` 已落地，全仓 32 个测试绿。
+- [Phaser 4 渲染路线 spike](issues/13-Phaser4渲染路线spike.md) —— **路线成立**，真机实测。
+  per-instance uniform 确认独立（40 个各异的 uniform，有截图）；`dissolve.fs` 移植成功。
+  **性能不是风险**：40 张牌 p50 仅 0.2ms，且全屏背景几乎免费——上一张票
+  「风险在 fill-rate」的判断被推翻，开销其实线性于对象数。工作量维持 9–16 人日但不确定性大降。
 
 ## Not yet specified
 
@@ -86,6 +90,12 @@ Label: wayfinder:map
 - **FMA 收缩**是 RNG 的残留风险。若整条链对不上，第一个试 FMA 版。
 - **Phaser 4 的 Filter 体系没有自定义 shader 入口**。24 个 filter 全是内置的，
   19 个 Balatro shader 一个都进不去，全部走 `Shader` GameObject。
+- **`#pragma phaserTemplate` 不是给用户着色器分节用的**。`vertexSource` 整体替换模板，
+  自定义着色器要写完整程序，遵守 `uProjectionMatrix` / `inPosition` / `inTexCoord` / `outTexCoord` 契约，
+  并 `setUniform('uMainSampler', 0)` 绑纹理单元。
+- **Phaser 4 的 `outTexCoord.y` 方向与 LÖVE 相反**。影响 `dissolve_mask` 的 borders
+  上下不对称逻辑——翻 uv 或翻 borders，二选一。
+- **性能数据来自 RTX 3060**，只说明桌面端够用，不能外推到移动端。
 - **`Shader` GameObject 的 `setAlpha` 是 NOOP**，alpha 必须走 shader uniform；
   它也不带 Animation / Tint / Input 组件，交互要自己挂 hit area。
 - **用 npm，不要用 pnpm**。pnpm 装 `esbuild` 时稳定复现 `ERR_PNPM_EPERM`。
