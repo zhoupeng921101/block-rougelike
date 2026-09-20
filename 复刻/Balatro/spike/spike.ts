@@ -13,8 +13,8 @@
 import { AUTO, Game, GameObjects, Scale, Scene, type Types } from 'phaser';
 
 import { DECK_ATLAS } from '../src/core/atlas';
-import { CRT_FRAG, CRT_VERT, crtUniforms } from './crt-shader';
-import { DISSOLVE_FRAG, DISSOLVE_VERT } from './dissolve-shader';
+import { CRT_FRAG, CRT_VERT, crtUniforms } from '../src/game/shaders/crt';
+import { DISSOLVE_FRAG, DISSOLVE_VERT } from '../src/game/shaders/dissolve';
 
 const CARD_W = DECK_ATLAS.frameWidth * 2;
 const CARD_H = DECK_ATLAS.frameHeight * 2;

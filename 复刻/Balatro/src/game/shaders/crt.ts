@@ -113,7 +113,7 @@ void main ()
  * `game.lua:3293-3301` 的 uniform 取值。
  *
  * `crt` 是 `G.SETTINGS.GRAPHICS.crt`：**移动版 30，桌面版 70**
- * （`globals.lua:231`）。按 [12 号票](../../../.scratch/balatro-复刻/issues/12-外观基准是移动版还是桌面版.md)
+ * （`globals.lua:231`）。按 [12 号票](../../../../.scratch/balatro-复刻/issues/12-外观基准是移动版还是桌面版.md)
  * 的裁定，复刻件取桌面值 70。
  */
 export function crtUniforms(crt: number, screenW: number, screenH: number, timeSeconds: number) {

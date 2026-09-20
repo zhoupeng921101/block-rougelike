@@ -1,18 +1,19 @@
 import { AUTO, Game, Scale, type Types } from 'phaser';
 
-import { Boot } from './scenes/Boot';
+import { CANVAS_H, CANVAS_W } from './coords';
+import { RoundScene } from './scenes/RoundScene';
 
 const config: Types.Core.GameConfig = {
     type: AUTO,
-    width: 1280,
-    height: 720,
+    width: CANVAS_W,
+    height: CANVAS_H,
     parent: 'game-container',
-    backgroundColor: '#20232b',
+    backgroundColor: '#2b3a2f',
     scale: {
         mode: Scale.FIT,
         autoCenter: Scale.CENTER_BOTH,
     },
-    scene: [Boot],
+    scene: [RoundScene],
 };
 
 export default function StartGame(parent: string): Game {
