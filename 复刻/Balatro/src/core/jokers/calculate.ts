@@ -556,10 +556,20 @@ export function calculateJoker(
     // 都在它们前面，而 `end_of_round` + `individual` 是个**真实存在的组合**
     // （原文在 end_of_round 内部再分 individual / repetition 两个子情形）。
     // 顺序反了，回合结算的逐张型调用会被误路由进出牌结算的那张表。
-    // `card.lua:2745`。本里程碑没有小丑用它，但**必须显式拦掉**——
-    // 不拦的话带 `cardarea: 'jokers'` 的 pre_discard 调用会掉进 main 分支，
-    // 在弃牌时白算一遍出牌结算
-    if (context.pre_discard) return null;
+    // 原文 elseif 链里排在 `discard` 之前的那些分支。本里程碑**没有一张小丑用它们**
+    // （`Luchador` / `Campfire` / `Flash Card` / `Burnt Joker` 全是 rarity 2+），
+    // 但**必须显式拦掉**：不拦的话这些调用会一路掉进 main 分支，
+    // 在买卖／重掷／弃牌时白算一遍出牌结算。补它们时把 return null 换成对应的查表。
+    if (
+        context.buying_card ||
+        context.selling_self ||
+        context.selling_card ||
+        context.reroll_shop ||
+        context.ending_shop ||
+        context.pre_discard
+    ) {
+        return null;
+    }
 
     if (context.discard) {
         return DISCARD[name]?.(self, context, game) ?? null;

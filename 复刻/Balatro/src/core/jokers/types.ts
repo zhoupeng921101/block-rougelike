@@ -24,11 +24,21 @@ export type JokerCenter = {
     pos: { x: number; y: number };
     soul_pos?: { x: number; y: number };
     blueprint_compat: boolean;
+    /**
+     * 局外解锁状态。**45 张 `start_locked` 的小丑是 `false`**，
+     * 而 `get_current_pool` 的剔除条件是 `v.unlocked ~= false or v.rarity == 4`——
+     * 所以它们**不在新档的商店池里**，这会改变池子大小、也就改变
+     * `math.random(#pool)` 的取值域。复刻件按「新档」口径走（没有局外进度系统）。
+     */
     unlocked: boolean;
     /** Lua 的 `config`，字段随小丑而异，所以是 `any`——03 号票认了直译带进来的弱类型 */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config: Record<string, any>;
     effect?: string;
+    /** 这个 pool_flag 置位时**退出**池子。只有 `Gros Michel`（`gros_michel_extinct`）用 */
+    no_pool_flag?: string;
+    /** 这个 pool_flag 置位时**才进**池子。只有 `Cavendish` 用 */
+    yes_pool_flag?: string;
 };
 
 /**
@@ -111,6 +121,16 @@ export type JokerContext = {
     discard?: boolean;
     /** 弃牌前的整批一次性遍历（`Burnt Joker` 用）。排在逐张循环之前 */
     pre_discard?: boolean;
+    /** 买了一张牌（原文这个分支是空的，留着当落点） */
+    buying_card?: boolean;
+    /** 卖掉自己（`Luchador` / `Diet Cola` / `Invisible Joker`）。**在移出小丑区之前调** */
+    selling_self?: boolean;
+    /** 卖掉别的牌（`Campfire`） */
+    selling_card?: boolean;
+    /** 重掷商店（`Flash Card`） */
+    reroll_shop?: boolean;
+    /** 离开商店（`Perkeo` / `Invisible Joker` 的计数） */
+    ending_shop?: boolean;
     /** `The Hook` 触发的额外弃牌。`Burnt Joker` 查 `not context.hook` */
     hook?: boolean;
     /** 回合结算。`end_of_round` 与 `individual`/`repetition` 组合出三种子情形 */

@@ -28,29 +28,31 @@ function loseRound(run: Run): void {
     (round as unknown as { phase: string }).phase = 'lost';
 }
 
+/** 打过一关并穿过商店，回到下一关的盲注选择。 */
+function clearRound(run: Run): void {
+    winRound(run);
+    run.finishRound();
+    run.leaveShop();
+}
+
 describe('盲注序', () => {
     it('一个 Ante 三关：小盲注 → 大盲注 → Boss', () => {
         const run = new Run('TUTORIAL');
         expect(run.blindKind).toBe('small');
         expect(run.blindKey).toBe('bl_small');
 
-        winRound(run);
-        run.finishRound();
+        clearRound(run);
         expect(run.blindKind).toBe('big');
         expect(run.blindKey).toBe('bl_big');
 
-        winRound(run);
-        run.finishRound();
+        clearRound(run);
         expect(run.blindKind).toBe('boss');
         expect(run.blindKey).toBe(run.bossKey);
     });
 
     it('打完 Boss 才进下一个 Ante', () => {
         const run = new Run('TUTORIAL');
-        for (let i = 0; i < 3; i++) {
-            winRound(run);
-            run.finishRound();
-        }
+        for (let i = 0; i < 3; i++) clearRound(run);
         expect(run.ante).toBe(2);
         expect(run.blindKind).toBe('small');
     });
@@ -60,11 +62,9 @@ describe('盲注序', () => {
         const boss = run.bossKey;
         expect(BLIND_CENTERS[boss].boss).toBeTruthy();
         // 打小盲注、大盲注都不该换 Boss
-        winRound(run);
-        run.finishRound();
+        clearRound(run);
         expect(run.bossKey).toBe(boss);
-        winRound(run);
-        run.finishRound();
+        clearRound(run);
         expect(run.bossKey).toBe(boss);
     });
 
@@ -78,9 +78,11 @@ describe('盲注序', () => {
         expect(run.startRound().requirement).toBe(blindRequirement(1, 'small'));
         (run.round as unknown as { phase: string }).phase = 'won';
         run.finishRound();
+        run.leaveShop();
         expect(run.startRound().requirement).toBe(blindRequirement(1, 'big'));
         (run.round as unknown as { phase: string }).phase = 'won';
         run.finishRound();
+        run.leaveShop();
         expect(run.startRound().requirement).toBe(600);
     });
 });
@@ -129,6 +131,7 @@ describe('RNG 跨回合连续', () => {
         const a = first.gameView().pseudorandom('misprint', 0, 23);
         (first as unknown as { phase: string }).phase = 'won';
         run.finishRound();
+        run.leaveShop();
 
         const second = run.startRound();
         const b = second.gameView().pseudorandom('misprint', 0, 23);
@@ -146,6 +149,7 @@ describe('RNG 跨回合连续', () => {
         const first = run.startRound().deck.map((c) => c.key).join();
         (run.round as unknown as { phase: string }).phase = 'won';
         run.finishRound();
+        run.leaveShop();
         const second = run.startRound().deck.map((c) => c.key).join();
         expect(second).not.toBe(first);
     });
@@ -161,6 +165,8 @@ describe('RNG 跨回合连续', () => {
             (rb as unknown as { phase: string }).phase = 'won';
             a.finishRound();
             b.finishRound();
+            a.leaveShop();
+            b.leaveShop();
         }
     });
 });
@@ -173,15 +179,11 @@ describe('跨回合的小丑状态', () => {
         expect(popcorn.ability.mult).toBe(20);
 
         // 20 → 16 → 12 → 8 → 4 → 被吃掉（第 5 次时 4-4 <= 0）
-        for (let i = 0; i < 4; i++) {
-            winRound(run);
-            run.finishRound();
-        }
+        for (let i = 0; i < 4; i++) clearRound(run);
         expect(popcorn.ability.mult).toBe(4);
         expect(run.jokers).toHaveLength(1);
 
-        winRound(run);
-        run.finishRound();
+        clearRound(run);
         expect(run.jokers).toHaveLength(0);
     });
 
@@ -190,16 +192,14 @@ describe('跨回合的小丑状态', () => {
         run.jokers.push(makeJoker('j_egg'));
         const egg = run.jokers[0];
         const before = egg.sell_cost;
-        winRound(run);
-        run.finishRound();
+        clearRound(run);
         expect(egg.sell_cost).toBe(before + 3);
     });
 
     it('Cavendish 每回合 1/1000 灭绝——正常情况下活着', () => {
         const run = new Run('TUTORIAL');
         run.jokers.push(makeJoker('j_cavendish'));
-        winRound(run);
-        run.finishRound();
+        clearRound(run);
         expect(run.jokers).toHaveLength(1);
     });
 
@@ -209,8 +209,7 @@ describe('跨回合的小丑状态', () => {
         // 1/6 概率，不保证一次就中。连打若干回合直到它死，或确认它还活着
         let rounds = 0;
         while (run.jokers.length > 0 && rounds < 60) {
-            winRound(run);
-            run.finishRound();
+            clearRound(run);
             rounds++;
         }
         expect(run.jokers).toHaveLength(0);
@@ -224,16 +223,13 @@ describe('The Pillar 的 played_this_ante', () => {
         const deck = run.fullDeck;
         deck[0].played_this_ante = true;
 
-        winRound(run);
-        run.finishRound();
+        clearRound(run);
         expect(deck[0].played_this_ante).toBe(true); // 小盲注打完不清
 
-        winRound(run);
-        run.finishRound();
+        clearRound(run);
         expect(deck[0].played_this_ante).toBe(true); // 大盲注打完也不清
 
-        winRound(run);
-        run.finishRound();
+        clearRound(run);
         expect(deck[0].played_this_ante).toBe(false); // Boss 打完才清
     });
 });

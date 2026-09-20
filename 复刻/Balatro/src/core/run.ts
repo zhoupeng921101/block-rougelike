@@ -30,12 +30,13 @@ import {
 } from './blinds';
 import { type Card, makeStandardDeck } from './card';
 import { type Payout, evaluateRound } from './economy';
-import { calculateJoker } from './jokers';
-import type { Joker } from './jokers';
+import { calculateJoker, makeGameView } from './jokers';
+import type { GameView, Joker } from './jokers';
 import { NO_JOKERS, type JokerFlags } from './poker-hands';
 import { PseudorandomState, pseudorandomElement } from './rng';
 import { Round, STARTING_PARAMS } from './round';
 import { type HandInfo, type HandName, initialHands } from './scoring';
+import { type PoolContext, Shop } from './shop';
 
 /** `game.lua:2186`：`blind_choices = {Small = 'bl_small', Big = 'bl_big'}`。 */
 const BLIND_ORDER: readonly BlindKind[] = ['small', 'big', 'boss'];
@@ -73,6 +74,14 @@ export class Run {
     bossKey: string;
     /** `G.GAME.pool_flags.gros_michel_extinct` */
     grosMichelExtinct = false;
+    /**
+     * `G.GAME.used_jokers`。本局**见过**的小丑 key——注意是见过，不是买过：
+     * `card.lua:350` 在 `set_ability` 里就标记，所以商店摆出来那一刻就算见过。
+     * 它会把那张小丑从池子里剔掉（换成 `UNAVAILABLE`），所以是 RNG 相关状态。
+     */
+    readonly usedJokers = new Set<string>();
+    /** 当前商店。`null` 表示不在 `shop` */
+    shop: Shop | null = null;
 
     /** 本回合的 `mail_card` 点数。每回合结束时重抽 */
     mailCard?: number;
@@ -91,6 +100,16 @@ export class Run {
 
         // `game.lua:2602`：开局也跑一遍那四个 reset
         this.resetSpecialCards();
+    }
+
+    /** 喂给商店的池子上下文。**每次现建**——`jokers` 与 `grosMichelExtinct` 会变 */
+    poolContext(): PoolContext {
+        return {
+            ante: this.ante,
+            usedJokers: this.usedJokers,
+            grosMichelExtinct: this.grosMichelExtinct,
+            jokers: this.jokers,
+        };
     }
 
     get blindKind(): BlindKind {
@@ -229,9 +248,101 @@ export class Run {
         // `state_events.lua:294`：**每回合都跑**这四个 reset，不只是 Ante 结束
         this.resetSpecialCards();
 
-        // 每回合结算完进商店。本里程碑商店还没落地，所以先直接回盲注选择——
-        // 接商店时把这里改成 `'shop'`，并在离开商店时调 `leaveShop()`
+        // `state_events.lua:1129`：回合结算完开商店。
+        // **商店在 `advanceBlind` 之后开**，所以它读的 ante 已经是新的那个——
+        // 商店的所有 seed key 都带 ante（`cdt`/`rarity`/`Joker<r>sho`），
+        // 在 `ante++` 之前开会用上一个 ante 的 key
+        this.shop = new Shop(this.rng, this.poolContext());
+        this.state = 'shop';
+    }
+
+    /** 离开商店，进下一个盲注。 */
+    leaveShop(): void {
+        if (this.state !== 'shop') throw new Error(`现在是 ${this.state}，不在商店里`);
+        // `card.lua` 的 `context.ending_shop` 分支：本里程碑没有小丑用它
+        this.shop = null;
         this.state = 'blind-select';
+    }
+
+    /**
+     * 买商店第 `index` 格的小丑。
+     *
+     * 三道闸：钱够不够、小丑区满没满、那一格是不是小丑。
+     * 原作的 `can_buy` 还查消耗品槽位与 `Negative` 版本（买了不占格子），
+     * 两者都不在本里程碑。
+     */
+    buyJoker(index: number): Joker {
+        if (!this.shop) throw new Error('不在商店里');
+        const item = this.shop.items[index];
+        if (!item) throw new Error(`商店没有第 ${index} 格`);
+        if (item.kind !== 'joker') throw new Error('这一格是塔罗／星球，本里程碑未实现');
+        if (item.cost > this.dollars) throw new Error(`买不起：要 $${item.cost}，只有 $${this.dollars}`);
+        if (this.jokersFull) throw new Error(`小丑区满了（${this.jokerSlots} 格）`);
+
+        const joker = this.shop.take(index);
+        this.dollars -= item.cost;
+        this.jokers.push(joker);
+        // `card.lua:1858` 的 `context.buying_card` 分支在原作里是空的，
+        // 但调用点要留着——它是接 `Trading Card` 之类的落点
+        for (const other of this.jokers) {
+            calculateJoker(other, { buying_card: true }, this.round?.gameView() ?? this.shopGameView());
+        }
+        return joker;
+    }
+
+    /**
+     * 卖掉小丑区第 `index` 张。`card.lua:1592` 的 `Card:sell_card`。
+     *
+     * **`selling_self` 在移出小丑区之前调**（`card.lua:1601`）——
+     * `Luchador` 要在还在场时关掉 Boss。
+     */
+    sellJoker(index: number): number {
+        const joker = this.jokers[index];
+        if (!joker) throw new Error(`小丑区没有第 ${index} 张`);
+
+        calculateJoker(joker, { selling_self: true }, this.round?.gameView() ?? this.shopGameView());
+        this.jokers.splice(index, 1);
+        this.dollars += joker.sell_cost;
+
+        // `card.lua:4826` 的 `remove_from_deck`：小丑区里没有同名的了就解除 used 标记
+        if (!this.jokers.some((j) => j.ability.name === joker.ability.name)) {
+            this.usedJokers.delete(joker.key);
+        }
+
+        // `card.lua:2758` 的 `context.selling_card`：`Campfire` 靠它长个子
+        for (const other of this.jokers) {
+            calculateJoker(other, { selling_card: true }, this.round?.gameView() ?? this.shopGameView());
+        }
+        return joker.sell_cost;
+    }
+
+    /** 重掷商店。`button_callbacks.lua:2965`。 */
+    rerollShop(): void {
+        if (!this.shop) throw new Error('不在商店里');
+        const cost = this.shop.rerollCost;
+        if (cost > this.dollars) throw new Error(`重掷不起：要 $${cost}，只有 $${this.dollars}`);
+        this.dollars -= cost;
+        this.shop.reroll();
+        // `button_callbacks.lua:3010` 的 `context.reroll_shop`：`Flash Card` 靠它长个子
+        for (const joker of this.jokers) {
+            calculateJoker(joker, { reroll_shop: true }, this.shopGameView());
+        }
+    }
+
+    /**
+     * 商店里没有 `Round`，但小丑还是要能读 `G.GAME`。
+     * 所以这里单独造一张视图——这正是 `GameView` 不由 `Round` 独占的原因。
+     */
+    private shopGameView(): GameView {
+        return makeGameView({
+            hands: this.hands,
+            dollars: this.dollars,
+            hands_played: this.handsPlayed,
+            jokers: this.jokers,
+            joker_slots: this.jokerSlots,
+            deckCount: this.fullDeck.length,
+            pseudorandom: (key, min, max) => this.rng.pseudorandom(key, min, max),
+        });
     }
 
     /**

@@ -14,9 +14,10 @@
 **第一个里程碑已交付**：红牌组打 Ante 1 的小盲注，8 张手牌 / 4 出牌 / 3 弃牌，
 300 分过关，带出牌动画、悬停倾斜、背景 shader、CRT 与音效。
 
-**第二个里程碑在做**（[15 号票](../../.scratch/balatro-复刻/issues/15-第二个里程碑的切片边界.md)
-「带小丑打过 Ante 1」）：小丑进结算管线、经济层、盲注推进、Ante 1 的 8 个 Boss
-**已落地**；**商店还没有**（没有商店就买不到小丑，所以现在还不能真的「带小丑打」）。
+**第二个里程碑的逻辑层已交付**（[15 号票](../../.scratch/balatro-复刻/issues/15-第二个里程碑的切片边界.md)
+「带小丑打过 Ante 1」）：小丑进结算管线、经济层、商店、盲注推进、Ante 1 的 8 个 Boss。
+`src/core/ante1.test.ts` 会真的打完小盲注 → 商店 → 大盲注 → 商店 → Boss → Ante 2，
+不 mock、不直接写 phase。**表现层还没接上**——商店与小丑区目前只有逻辑，没有 Phaser 界面。
 
 ```
 src/
@@ -30,6 +31,7 @@ src/
 │   ├── blinds.ts                盲注与 Boss（get_new_boss / debuff_card / press_play）
 │   ├── blinds.generated.ts      30 条盲注定义（生成的，别手改）
 │   ├── economy.ts               回合收益与利息（evaluate_round）
+│   ├── shop.ts                  商店（get_current_pool / create_card_for_shop / 重掷）
 │   ├── fixtures/                对拍 fixture（12 条 Ante 1 Boss 外部真值）
 │   ├── event-queue.ts           事件队列（G.E_MANAGER）
 │   ├── jokers/                  ← 小丑系统
@@ -55,7 +57,7 @@ src/
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 249 个测试，必须全绿
+npm test            # 295 个测试，必须全绿
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
 ```
@@ -123,3 +125,28 @@ node tools/gen-blind-centers.mjs
 
 还有一条容易写错的：**不要往 `dollar_buffer` 里加钱。** 那个字段在原作里存在的唯一理由
 是 `ease_dollars` 入队延迟，而本复刻的加钱是同步立即的——往里加会让 `Bull` 把同一笔算两遍。
+
+## 商店那几条最容易搞错的
+
+商店是第二个 RNG 消费点，比洗牌复杂得多。生成**一个格子**要按顺序消费：
+
+```
+cdt<ante>                          这格是小丑还是消耗品（20 : 4 : 4）
+rarity<ante>sho                    稀有度（>0.95 → 3，>0.7 → 2，否则 1）
+Joker<rarity>sho<ante>             在该稀有度池里抽下标
+Joker<rarity>sho<ante>_resample<n> 抽到 UNAVAILABLE 就重抽，编号从 2 起
+etperpoll<ante>                    永恒／易腐掷点 —— **无条件消费**
+edisho<ante>                       版本掷点
+```
+
+三条：
+
+1. **`etperpoll` 要消费，租赁掷点不能消费。** 前者那行 `local ... = pseudorandom(...)`
+   在 `if` 外面；后者在 `and` 右边、默认关、短路。这一对搞反，后面每一格都偏。
+2. **剔除不改池子长度。** 被剔的位置换成 `'UNAVAILABLE'` 而不是删掉，
+   所以 `math.random(#pool)` 的取值域不变。真删掉会让同 seed 立刻分叉。
+   有三件事会剔除：45 张 `start_locked` 的小丑（新档不解锁）、
+   本局见过的小丑（`used_jokers`，Showman 例外）、`pool_flag`（Gros Michel / Cavendish）。
+3. **塔罗／星球的格子照样生成。** 权重 20:4:4 意味着约 28.6% 的格子是消耗品；
+   把它们改成小丑就改了商店分布。本里程碑没实现它们的效果，
+   所以生成一个 `kind: 'unimplemented'` 的格子，买不了。

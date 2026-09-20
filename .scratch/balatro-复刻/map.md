@@ -91,9 +91,12 @@ Label: wayfinder:map
   但 main 分支前四条（含三条泛化判定）必须按原序写死在查表之前。
 
 > **第一个里程碑已交付**（红牌组打小盲注，可玩，带动画/shader/音效）。
-> 第二个里程碑在做：小丑进结算管线、经济层、`Run` 状态机、Ante 1 的 8 个 Boss
-> **都已落地**（249 个测试绿）。**下一步是商店**——没有商店就买不到小丑，
-> 「带小丑打过 Ante 1」这个里程碑的定义还没满足。
+>
+> **第二个里程碑的逻辑层已交付**：小丑结算管线、经济层、`Run` 状态机、商店、
+> Ante 1 的 8 个 Boss。295 个测试绿，其中 `core/ante1.test.ts` 会**真的打完**
+> 小盲注 → 商店 → 大盲注 → 商店 → Boss → Ante 2（不 mock、不直接写 phase，四个 seed 都通）。
+>
+> **下一步是把商店与小丑区接进 Phaser 表现层**——现在那两块只有逻辑，没有界面。
 
 ## Not yet specified
 
@@ -174,6 +177,26 @@ Label: wayfinder:map
 - **未实现 debuff 的 Boss 要抛，不能静默放过。** 那 20 个在 `BLIND_CENTERS` 里有
   完整数值，一个「有需求但没 debuff」的 Boss 看起来完全正常、玩起来是白送一关——
   等于把正确性缺口伪装成正常行为。`assertImplemented` 挡在 `Run.startRound`。
+- **商店那两次掷点一个要算一个不要算。** `etperpoll<ante>`（永恒／易腐）那行
+  `local ... = pseudorandom(...)` 在 `if` 外面，**无条件消费**；
+  租赁那次在 `and` 右边、`enable_rentals_in_shop` 默认关，**短路不消费**。
+  搞反这一对，后面每一格商店都偏。
+- **池子剔除不改池子长度。** 被剔的位置换成 `'UNAVAILABLE'` 而不是从数组删掉，
+  所以 `math.random(#pool)` 的取值域不变，抽到就换 `_resample<n>` 的 key 重抽。
+  真删掉会让同 seed 立刻分叉。三个剔除源：45 张 `start_locked`（新档不解锁）、
+  `used_jokers`（**商店摆出来那一刻就算见过**，`card.lua:350` 在 `set_ability` 里标记）、
+  `pool_flag`（Gros Michel 灭绝退池 / Cavendish 灭绝才进池）。
+- **`not v.demo` 在完整版里不剔除任何小丑。** `game.lua:746` 有
+  `if not G.FTP_LOCKED then v.demo = nil end`，而 `G.FTP_LOCKED` 在
+  `globals.lua:162` 是注释掉的。150 张全部进稀有度池，一张不少。
+  读 `game.lua:840` 那行时别被 `not v.demo` 骗了。
+- **商店在 `ante++` 之后开。** 商店的所有 key 都带 ante（`cdt` / `rarity` / `Joker<r>sho`），
+  在推进 ante 之前开商店会用上一个 ante 的 key。
+- **免费重掷用掉的那一次不涨价。** `reroll_shop` 里
+  `calculate_reroll_cost(final_free)` 传了 `skip_increment`。
+- **Ante 1 的 600 分打得通，但要会弃牌。** 基础牌组不追同花是过不了的：
+  一对只有 50–60 分，四手打满 240；同花 300 分一手就够小盲注。
+  `core/ante1.test.ts` 里那个策略就是这么写的，它同时是「引擎跑得通」的验收。
 - **小丑的 `base.nominal` 是 0。** `set_base(P_CARDS.empty)` 匹配不到任何点数，
   所以 `get_chip_bonus` 对小丑返回 0、`ret.chips` 不会被写。重复触发那一问
   （拿小丑问 `cardarea = G.play`）靠这条才成为空转，不是靠调用方少传字段。

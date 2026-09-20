@@ -55,12 +55,17 @@ export type PlayOutcome = {
     scoringHand: Card[];
     baseChips: number;
     baseMult: number;
+    /** 第 14 步乘法前的两个累加器。表现层的滚动动画终点，也是核对分数的钩子 */
+    handChips: number;
+    mult: number;
     /** 结算的逐步轨迹 */
     steps: ScoreStep[];
     /** 这一手之后的累计分 */
     chips: number;
     /** 这一手赚到的钱 */
     dollars: number;
+    /** 整手被盲注判为不合法（The Psychic 出不满 5 张）——分数为 0 */
+    debuffed: boolean;
     phase: RoundPhase;
 };
 
@@ -282,9 +287,12 @@ export class Round {
             scoringHand: result.scoringHand,
             baseChips: result.baseChips,
             baseMult: result.baseMult,
+            handChips: result.handChips,
+            mult: result.mult,
             steps: result.steps,
             chips: this.chips,
             dollars: result.dollars,
+            debuffed: result.debuffed,
             phase: this.phase,
         };
     }
