@@ -11,7 +11,7 @@
 import Phaser, { GameObjects, Scene } from 'phaser';
 
 import type { Card, Suit } from '../core/card';
-import { CARD_H, CARD_W, toPx } from './coords';
+import { CARD_H, CARD_MOUSE_DAMPING, CARD_W, PX_PER_TILE, toPx } from './coords';
 import { DISSOLVE_FRAG, DISSOLVE_VERT } from './shaders/dissolve';
 
 /** `8BitDeck.png` 实测 923×380，`game.lua:982` 给的格子是 71×95。 */
@@ -41,6 +41,15 @@ export function atlasPos(card: Card): { x: number; y: number } {
 }
 
 export class CardSprite {
+    /**
+     * 悬停倾斜的强度，对应原作的 `hover_tilt`（`card.lua:4351` 设为 1）。
+     *
+     * 12 号票裁定要实现它：在本产物里它是死代码
+     * （`touch_collide_tilt` 在 `Card` 上从不设置），
+     * 但它是 Balatro 最具辨识度的动作，这是全图唯一一处有意偏离产物的地方。
+     */
+    private hoverTilt = 0;
+
     /** 底板层，画在正面之下 */
     readonly base: GameObjects.Shader;
     readonly shader: GameObjects.Shader;
@@ -79,11 +88,7 @@ export class CardSprite {
                     setUniform('burn_colour_2', [0, 0, 0, 0]);
                     setUniform('uProbe', [0, 0, 0]);
                     setUniform('uProbePatch', 0);
-                    // 倾斜留给后续（12 号票裁定要实现，13 号票说系数得重标定）
-                    setUniform('mouse_screen_pos', [0, 0]);
-                    setUniform('hovering', 0);
-                    setUniform('screen_scale', 1);
-                    setUniform('uScreenSize', [scene.scale.width, scene.scale.height]);
+                    this.sendTiltUniforms(setUniform, scene);
                 },
             },
             0,
@@ -104,6 +109,29 @@ export class CardSprite {
         );
         this.shader.setDepth(1);
         this.shader.on('pointerdown', () => this.onClick(this.card));
+        this.shader.on('pointerover', () => { this.hoverTilt = 1; });
+        this.shader.on('pointerout', () => { this.hoverTilt = 0; });
+    }
+
+    /**
+     * 倾斜相关的三个 uniform。
+     *
+     * **不需要重标定系数**（13 号票原以为要）：
+     * 原作的 `screen_scale = TILESCALE*TILESIZE*mouse_damping*CANV_SCALE`，
+     * 而 `TILESCALE*TILESIZE*CANV_SCALE` 正是「每 tile 多少像素」，
+     * 所以 `mouse_offset = (顶点 - 鼠标) / 每tile像素 / mouse_damping`
+     * ——量纲是「tile ÷ 1.5」。只要两个量都用同一个世界坐标空间，
+     * `position()` 里那串手调常数原样成立。
+     */
+    private sendTiltUniforms(
+        setUniform: (n: string, v: unknown) => void,
+        scene: Scene,
+    ): void {
+        const p = scene.input.activePointer;
+        setUniform('mouse_screen_pos', [p.worldX, p.worldY]);
+        setUniform('hovering', this.hoverTilt);
+        setUniform('screen_scale', PX_PER_TILE * CARD_MOUSE_DAMPING);
+        setUniform('uScreenSize', [scene.scale.width, scene.scale.height]);
     }
 
     /** 底板与正面用的是同一个 shader，只是图集与帧不同。 */
@@ -134,10 +162,7 @@ export class CardSprite {
                     setUniform('burn_colour_2', [0, 0, 0, 0]);
                     setUniform('uProbe', [0, 0, 0]);
                     setUniform('uProbePatch', 0);
-                    setUniform('mouse_screen_pos', [0, 0]);
-                    setUniform('hovering', 0);
-                    setUniform('screen_scale', 1);
-                    setUniform('uScreenSize', [scene.scale.width, scene.scale.height]);
+                    this.sendTiltUniforms(setUniform, scene);
                 },
             },
             0, 0, w, h, [textureKey],

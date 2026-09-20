@@ -13,11 +13,19 @@ import { Round } from '../../core/round';
 import { evaluatePokerHand } from '../../core/poker-hands';
 import { CardSprite } from '../card-sprite';
 import { CANVAS_H, CANVAS_W, CARD_H, toPx } from '../coords';
+import { BACKGROUND_COLOURS, BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
+import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
 
 /** 手牌区基线，tile 单位。牌高 ≈2.75 tile，画布高 11.2 tile */
 const HAND_Y_TILES = 6.4;
 /** 手牌左边距，tile */
 const HAND_X_TILES = 1.2;
+
+/**
+ * `G.SETTINGS.GRAPHICS.crt`。`globals.lua:231` 是 `F_MOBILE and 30 or 70`；
+ * 12 号票裁定取桌面值。
+ */
+const CRT_STRENGTH = 70;
 
 export class RoundScene extends Scene {
     private round!: Round;
@@ -44,6 +52,12 @@ export class RoundScene extends Scene {
             frameWidth: 71,
             frameHeight: 95,
         });
+
+        // 音效。对应关系从原作查出：
+        // cardSlide2 选/取消选牌（card.lua:4625）、chips2 计分（state_events.lua:1062）
+        for (const key of ['cardSlide2', 'chips2', 'card1', 'button', 'generic1']) {
+            this.load.audio(key, `/assets/sounds/${key}.ogg`);
+        }
     }
 
     create(): void {
@@ -51,6 +65,8 @@ export class RoundScene extends Scene {
 
         resetCardCounters();
         this.round = new Round(seed, makeStandardDeck());
+
+        this.setupBackground();
 
         this.hud = this.add.text(toPx(1.2), toPx(0.6), '', {
             fontFamily: 'monospace', fontSize: 22, color: '#e8e8e8', lineSpacing: 6,
@@ -67,6 +83,78 @@ export class RoundScene extends Scene {
 
         this.rebuildHand();
         this.refresh();
+        this.setupCrt();
+    }
+
+    /**
+     * 背景的动态 shader。必须最先 add——它得画在所有东西之下。
+     *
+     * 它不只是好看：CRT 的亮度校正是按这张明亮背景调的，
+     * 纯色底会让 CRT 把白卡推成死白（14 号票记过这条）。
+     */
+    private setupBackground(): void {
+        const { width, height } = this.scale;
+        const bg = this.add.shader(
+            {
+                name: 'background',
+                fragmentSource: BACKGROUND_FRAG,
+                vertexSource: BACKGROUND_VERT,
+                setupUniforms: (setUniform: (n: string, v: unknown) => void) => {
+                    const t = this.time.now / 1000;
+                    setUniform('time', t);
+                    setUniform('spin_time', t);
+                    setUniform('colour_1', BACKGROUND_COLOURS.colour_1);
+                    setUniform('colour_2', BACKGROUND_COLOURS.colour_2);
+                    setUniform('colour_3', BACKGROUND_COLOURS.colour_3);
+                    setUniform('contrast', BACKGROUND_COLOURS.contrast);
+                    // G.ARGS.spin.amount，game.lua:2494 起手是 0
+                    setUniform('spin_amount', 0);
+                    setUniform('uScreenSize', [width, height]);
+                },
+            },
+            width / 2, height / 2, width, height,
+            [],
+        );
+        bg.setDepth(-1000);
+    }
+
+    /**
+     * CRT 全屏后处理。链路由 14 号票验过：
+     * `setForceComposite` → `captureFrame` 到具名纹理 → 全屏 Shader 采样它。
+     * 必须在所有内容都 add 完之后调用——`captureFrame` 捕获的是它在显示列表里
+     * 之前的东西。
+     */
+    private setupCrt(): void {
+        this.cameras.main.setForceComposite(true);
+
+        // **depth 很关键。** captureFrame 捕获的是显示列表里排在它之前的东西，
+        // 而 Phaser 按 depth 排序——默认 depth 0 会与卡牌底板同级，
+        // 于是正面层（depth 1）排在它之后、不被捕获，CRT 下卡牌就只剩白底。
+        // 放在所有游戏内容之上、CRT 之下。
+        this.add.captureFrame('scene').setDepth(500);
+
+        const { width, height } = this.scale;
+        const crt = this.add.shader(
+            {
+                name: 'crt',
+                fragmentSource: CRT_FRAG,
+                vertexSource: CRT_VERT,
+                setupUniforms: (setUniform: (n: string, v: unknown) => void) => {
+                    const u = crtUniforms(CRT_STRENGTH, width, height, this.time.now / 1000);
+                    setUniform('uMainSampler', 0);
+                    setUniform('distortion_fac', u.distortion_fac);
+                    setUniform('scale_fac', u.scale_fac);
+                    setUniform('feather_fac', u.feather_fac);
+                    setUniform('crt_intensity', u.crt_intensity);
+                    setUniform('scanlines', u.scanlines);
+                    setUniform('time', u.time);
+                    setUniform('uScreenSize', u.uScreenSize);
+                },
+            },
+            width / 2, height / 2, width, height,
+            ['scene'],
+        );
+        crt.setDepth(1000);
     }
 
     private makeButton(
@@ -106,6 +194,9 @@ export class RoundScene extends Scene {
 
         if (this.selected.has(card)) this.selected.delete(card);
         else if (this.selected.size < 5) this.selected.add(card);
+        else return; // 满 5 张，什么也不做，也不出声
+
+        this.sound.play('cardSlide2', { volume: 0.3 });
 
         this.layout();
         this.refresh();
@@ -120,6 +211,7 @@ export class RoundScene extends Scene {
         if (this.round.phase !== 'selecting' || this.selected.size === 0) return;
 
         const out = this.round.play(this.selectedInOrder());
+        this.sound.play('chips2', { volume: 0.5 });
         this.selected.clear();
         this.rebuildHand();
         this.refresh(`${out.handName}  +${out.score}`);
@@ -130,6 +222,7 @@ export class RoundScene extends Scene {
         if (this.round.discardsLeft < 1) return;
 
         this.round.discard(this.selectedInOrder());
+        this.sound.play('card1', { volume: 0.4 });
         this.selected.clear();
         this.rebuildHand();
         this.refresh('弃牌');

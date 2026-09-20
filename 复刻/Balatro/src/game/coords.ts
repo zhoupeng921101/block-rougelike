@@ -34,6 +34,17 @@ export function toTiles(px: number): number {
     return px / (TILESCALE * TILESIZE);
 }
 
+/**
+ * 每 tile 多少像素。倾斜 shader 的 `screen_scale` 要用到——
+ * 原作是 `G.TILESCALE*G.TILESIZE*mouse_damping*G.CANV_SCALE`（`sprite.lua:98`），
+ * 其中 `TILESCALE*TILESIZE*CANV_SCALE` 正是这个量，
+ * 所以 `mouse_offset` 的量纲是「tile ÷ mouse_damping」。
+ */
+export const PX_PER_TILE = TILESCALE * TILESIZE;
+
+/** `card.lua:346` 的 `self.mouse_damping`，卡牌专用。 */
+export const CARD_MOUSE_DAMPING = 1.5;
+
 /** 整个游戏区域的像素尺寸。 */
 export const CANVAS_W = toPx(TILE_W);
 export const CANVAS_H = toPx(TILE_H);
