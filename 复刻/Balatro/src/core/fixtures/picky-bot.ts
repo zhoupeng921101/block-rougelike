@@ -26,7 +26,8 @@
  *
  * - **估分不算小丑**：挑哪一手只看牌型与强化。算小丑得把整条管线跑 218 遍，
  *   还会改 ability、消费 RNG
- * - **不重掷、不跳盲注、不卖小丑换钱**
+ * - **默认不存利息、不重掷**：参数有（`Economy`），但实测都不划算，见那一节
+ * - **不跳盲注、不卖小丑换钱**
  * - **与原作的一处差异它绕不开**：复刻件开奥秘包不会发手牌，
  *   包里的塔罗是**拿进消耗品区**而不是当场用。所以格子满了就挑不了——
  *   原作里没有这个限制。这是 Run 层的偏差，不是 bot 的
@@ -562,6 +563,56 @@ function openPack(run: Run, index: number): void {
 const BUY_GAIN = 0.1;
 const SWAP_GAIN = 0.15;
 
+// ————————————————————————————————————————————————————————————————
+// 存利息
+// ————————————————————————————————————————————————————————————————
+
+/**
+ * 利息是回合结束时**每 $5 给 $1、封顶 $5**（`economy.ts`，身上 $25 就吃满）。
+ * 所以花钱有个隐性成本：一笔开销让身上跌过一个 5 的倍数，之后每回合少 $1。
+ *
+ * bot 的做法是划一条**存钱线**：花完之后身上不能低于它。
+ * 例外只有一种——小丑涨得足够多（`breakReserveGain`），因为小丑是唯一的乘法来源，
+ * 早一关拿到它可能就是过不过得了下一个 Boss 的差别。线以上的余钱可以拿去重掷。
+ *
+ * ## 默认**不存**，因为实测不划算
+ *
+ * 60 个 seed 试了 15 种组合（存 5 / 10 / 15 / 25、前期存 / 后期才存、
+ * 放不放行天体包、配不配重掷），**没有一种比不存好**，前期就存的明显更差
+ * （全程存 $25：3.867 → 2.900）。利息确实发了——全程存 $25 时每回合多拿约 $2.5——
+ * 但多出来的钱变不成战力：
+ * - 回本太慢：少花 $25 要 5 回合满利息才补回来，而这个 bot 平均只活十来个回合
+ * - 花不出去：重掷只换货架两格，刷到的小丑多半过不了估值线
+ *
+ * 卡住它的是出牌（每关一手同花之后只剩对子）与只看眼前的估值，不是钱。
+ * 参数留着，是为了等那两处改好之后重新量——那时钱可能就变得有用了。
+ * 对比见 `depth.slow.test.ts`。
+ */
+export type Economy = {
+    /** 第几个 Ante 时存钱线是多少。返回 0 = 不存 */
+    reserve(ante: number): number;
+    /** 小丑能让参考分涨这么多，就允许动存款 */
+    breakReserveGain: number;
+    /** 天体包不受存钱线约束（星球的主要来源） */
+    exemptCelestial: boolean;
+    /** 每个商店最多重掷几次。只用存钱线以上的余钱 */
+    maxRerolls: number;
+};
+
+const DEFAULT_ECONOMY: Economy = {
+    reserve: () => 0,
+    breakReserveGain: Infinity,
+    exemptCelestial: false,
+    maxRerolls: 0,
+};
+
+let policy: Economy = DEFAULT_ECONOMY;
+
+/** 现在能花多少：身上的钱减去存钱线 */
+function spendable(run: Run): number {
+    return run.dollars - policy.reserve(run.ante);
+}
+
 function shop(run: Run): void {
     if (run.state !== 'shop') throw new Error(`现在是 ${run.state}，不在商店`);
     tidyConsumablesInShop(run);
@@ -574,20 +625,34 @@ function shop(run: Run): void {
     const packOrder = run.shop!.packs
         .map((p, i) => ({ i, celestial: p?.center.kind === 'Celestial' }))
         .sort((a, b) => Number(b.celestial) - Number(a.celestial));
-    for (const { i } of packOrder) {
-        if (run.canBuyPack(i)) openPack(run, i);
+    for (const { i, celestial } of packOrder) {
+        if (!run.canBuyPack(i)) continue;
+        const exempt = celestial && policy.exemptCelestial;
+        if (exempt || spendable(run) >= run.shop!.packCost(i)) openPack(run, i);
     }
 
-    for (let i = run.shop!.items.length - 1; i >= 0; i--) {
-        const item = run.shop!.items[i];
-        if (item.kind !== 'consumable' || item.cost > run.dollars) continue;
-        if (run.consumablesFull || !wantConsumable(run, item.consumable)) continue;
-        run.buyConsumable(i);
-        tidyConsumablesInShop(run);
+    buyConsumables(run);
+
+    // 存钱线以上的余钱拿去重掷，刷小丑。**重掷只换货架，不换包**
+    for (let r = 0; r < policy.maxRerolls; r++) {
+        if (spendable(run) < run.shop!.rerollCost) break;
+        run.rerollShop();
+        buyJokers(run);
+        buyConsumables(run);
     }
 
     run.leaveShop();
     tidyConsumablesInShop(run);
+}
+
+function buyConsumables(run: Run): void {
+    for (let i = run.shop!.items.length - 1; i >= 0; i--) {
+        const item = run.shop!.items[i];
+        if (item.kind !== 'consumable' || item.cost > spendable(run)) continue;
+        if (run.consumablesFull || !wantConsumable(run, item.consumable)) continue;
+        run.buyConsumable(i);
+        tidyConsumablesInShop(run);
+    }
 }
 
 function buyJokers(run: Run): void {
@@ -601,6 +666,8 @@ function buyJokers(run: Run): void {
 
         const gain = jokerGain(run, item.joker);
         if (gain < (full ? SWAP_GAIN : BUY_GAIN)) continue;
+        // 要动存款的，只有涨得够多的才值——少吃的利息是每回合都在亏的
+        if (item.cost > spendable(run) + refund && gain < policy.breakReserveGain) continue;
         if (full) run.sellJoker(w);
         run.buyJoker(i);
     }
@@ -611,6 +678,7 @@ function buyJokers(run: Run): void {
  */
 export function pickyRun(run: Run, options: PickyOptions = {}): GreedyRun {
     banned = options.bannedJokers ?? NONE;
+    policy = { ...DEFAULT_ECONOMY, ...options.economy };
     try {
         let guard = 0;
         while (guard++ < 60) {
@@ -622,6 +690,7 @@ export function pickyRun(run: Run, options: PickyOptions = {}): GreedyRun {
         }
     } finally {
         banned = NONE;
+        policy = DEFAULT_ECONOMY;
     }
     return {
         ante: run.ante,
@@ -638,6 +707,8 @@ export type PickyOptions = {
      * 深度差就是这批小丑的贡献。比回退代码去量干净——回退会连带改掉 RNG 以外的东西。
      */
     bannedJokers?: ReadonlySet<string>;
+    /** 存利息的参数。不给就用 `DEFAULT_ECONOMY` */
+    economy?: Partial<Economy>;
 };
 
 const NONE: ReadonlySet<string> = new Set();

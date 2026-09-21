@@ -75,4 +75,28 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
         const held = picky.filter((r) => r.jokers.some((n) => NINE.has(n))).length;
         expect(held).toBe(1);
     });
+
+    /**
+     * **存利息对挑牌 bot 不划算**——这两条是 15 种组合里的代表，理由见 `picky-bot.ts` 的 `Economy`。
+     *
+     * - 全程存 $25（除非小丑能涨 50%）：明显更差，一半局死在 Ante 2 以前
+     * - 后期（Ante 3 起）才存 $25、放行天体包、余钱重掷：最像人的打法，也没赢
+     *
+     * 等出牌与估值改好之后重跑这两条——钱那时可能就变得有用了。
+     */
+    it('存利息：全程存 $25 掉到 2.900，后期才存 + 重掷 3.633，都不比不存（3.867）好', () => {
+        const flat25 = SEEDS.map((s) =>
+            pickyRun(fresh(s), { economy: { reserve: () => 25, breakReserveGain: 0.5 } }));
+        const late25 = SEEDS.map((s) =>
+            pickyRun(fresh(s), {
+                economy: {
+                    reserve: (ante) => (ante >= 3 ? 25 : 0),
+                    breakReserveGain: 0.3,
+                    exemptCelestial: true,
+                    maxRerolls: 10,
+                },
+            }));
+        expect(mean(flat25)).toBe(2.9);
+        expect(mean(late25)).toBe(3.633);
+    });
 });
