@@ -58,6 +58,9 @@ export function makeGameView(overrides: Partial<GameView> = {}): GameView {
         createCertificateCard: () => {
             throw new Error('这个 GameView 没有接手牌，但 Certificate 要造一张——显式传进来');
         },
+        addTag: () => {
+            throw new Error('这个 GameView 没有接标签，但 Diet Cola 要造一个——显式传进来');
+        },
         smeared: false,
         ante: 1,
         startingDeckSize: 52,

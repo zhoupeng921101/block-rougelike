@@ -29,6 +29,8 @@ export function refreshDerivedAbilities(
     jokers: Joker[],
     jokerSlots: number,
     playingCards: Card[] = [],
+    /** `G.GAME.skips`：本局跳过了几个盲注。Throwback 读它 */
+    skips = 0,
 ): void {
     for (const joker of jokers) {
         const a = joker.ability;
@@ -36,6 +38,10 @@ export function refreshDerivedAbilities(
         switch (a.name) {
             // `card.lua:4194`：整副牌里有几张 9。**读的是 `get_id`**，
             // 所以石头牌不算（它的 id 是个假值）
+            // `card.lua:4179`：跳过一个盲注 +0.25，**重算**不增量
+            case 'Throwback':
+                a.x_mult = 1 + skips * a.extra;
+                break;
             case 'Cloud 9':
                 a.nine_tally = playingCards.filter((c) => getId(c) === 9).length;
                 break;

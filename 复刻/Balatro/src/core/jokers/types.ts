@@ -207,6 +207,8 @@ export type JokerContext = {
      * Certificate 在这时塞一张带蜡封的牌
      */
     first_hand_drawn?: boolean;
+    /** `button_callbacks.lua:2879` 的 `context.skip_blind`：**刚跳过一个盲注**（Throwback 报数） */
+    skip_blind?: boolean;
     /**
      * `misc_functions.lua:1604` 的 `playing_card_joker_effects`：**有扑克牌加进了牌组**。
      * `Hologram` 按 `#cards` 长倍率。
@@ -359,6 +361,8 @@ export type GameView = {
     disableBoss(): void;
     /** Certificate：往手里塞一张随机牌面、随机蜡封的牌（`cert_fr` / `certsl`），见 `round.ts` */
     createCertificateCard(): void;
+    /** `add_tag(Tag(key))`：Diet Cola 卖掉时造一个 Double Tag */
+    addTag(key: string): void;
     /**
      * `Smeared Joker` 在场——红桃认方块、黑桃认梅花。
      * 由 `modifiers.ts` 从小丑区算出来，不是每张小丑自己去 `find_joker`。

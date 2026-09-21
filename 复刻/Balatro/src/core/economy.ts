@@ -25,11 +25,13 @@ export const INTEREST_AMOUNT = 1;
 
 /** 收益的一行。表现层逐行滚出来，所以要保留行的身份而不只是总额。 */
 export type PayoutRow = {
-    kind: 'blind' | 'hands' | 'discards' | 'joker' | 'interest';
+    kind: 'blind' | 'hands' | 'discards' | 'joker' | 'tag' | 'interest';
     dollars: number;
     /** `hands` / `discards` 行显示的「×N」 */
     count?: number;
     joker?: Joker;
+    /** `tag` 行是哪个标签 */
+    tag?: string;
 };
 
 export type Payout = {
@@ -109,6 +111,8 @@ export type RoundResult = {
     interestAmount?: number;
     /** 本局用过**几种**星球（不算重复）。`Satellite` 读它 */
     distinctPlanets?: number;
+    /** 这一关兑现的 `eval` 标签（Investment），按手上的顺序 */
+    tagDollars?: Array<{ key: string; dollars: number }>;
 };
 
 /**
@@ -141,6 +145,12 @@ export function evaluateRound(result: RoundResult): Payout {
         if (bonus === null) continue;
         rows.push({ kind: 'joker', dollars: bonus, joker });
         total += bonus;
+    }
+
+    // `state_events.lua:1204`：`eval` 标签（Investment），排在小丑之后、利息之前
+    for (const t of result.tagDollars ?? []) {
+        rows.push({ kind: 'tag', dollars: t.dollars, tag: t.key });
+        total += t.dollars;
     }
 
     // `state_events.lua:1211`：**最后一行，且读的是结算前的余额**

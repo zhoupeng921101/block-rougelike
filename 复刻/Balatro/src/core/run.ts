@@ -59,8 +59,10 @@ import type { GameView, Joker } from './jokers';
 import { NO_JOKERS, type JokerFlags } from './poker-hands';
 import { PseudorandomState, pseudorandomElement, pseudoshuffle } from './rng';
 import { type JokerAreaHooks, Round, STARTING_PARAMS } from './round';
-import { type HandInfo, type HandName, initialHands } from './scoring';
+import { type BlindType, type Tag, type TagTiming, isTagImplemented, makeTag, nextTagKey } from './tags';
+import { type HandInfo, type HandName, initialHands, levelUpHand } from './scoring';
 import {
+    type ShopTagHooks,
     type PoolContext,
     type ShopItem,
     Shop,
@@ -144,6 +146,24 @@ export class Run {
 
     /** 本回合的 `mail_card` 点数。每回合结束时重抽 */
     mailCard?: number;
+
+    /** `G.GAME.tags`：手上还没触发的标签，按拿到的先后排 */
+    tags: Tag[] = [];
+    /** `G.GAME.skips`：本局跳过了几个盲注。Throwback 与 Skip Tag 读它 */
+    skips = 0;
+    /**
+     * `G.GAME.round_resets.blind_tags`：这个 Ante 的小盲注、大盲注**跳过时给哪个标签**。
+     * 开局抽一次，每打完一个 Boss 再抽下一个 Ante 的（`button_callbacks.lua:3062`）
+     */
+    blindTags: { Small: string; Big: string } = { Small: '', Big: '' };
+    /** `G.GAME.unused_discards`：过关时剩下的弃牌累计。Garbage Tag 读它 */
+    unusedDiscards = 0;
+    /**
+     * `G.GAME.orbital_choices[ante][type]`：Orbital Tag 升级哪个牌型。
+     * **每个 Ante 的盲注选择界面第一次构建时对 Small / Big / Boss 各掷一次**，
+     * 不管标签是不是 Orbital（掷点在界面代码里，`UI_definitions.lua:1622`）
+     */
+    private orbitalChoices = new Map<number, Record<BlindType, HandName>>();
     /** `The Idol` / `Ancient Joker` / `Castle` 的每回合随机项 */
     idolCard?: { id: number; suit: Suit };
     ancientSuit: Suit = 'Spades';
@@ -157,8 +177,242 @@ export class Run {
         // `game.lua:2394`：开局就抽定 Ante 1 的 Boss
         this.bossKey = getNewBoss(this.ante, this.rng, this.bossesUsed);
 
+        // `game.lua:2396`：开局抽定 Ante 1 的两个跳过标签
+        this.rollBlindTags();
+
         // `game.lua:2602`：开局也跑一遍那四个 reset
         this.resetSpecialCards();
+
+        this.enterBlindSelect();
+    }
+
+    // ————————————————————————————————————————————————————————————————
+    // 标签与跳过盲注（18 号票）
+    // ————————————————————————————————————————————————————————————————
+
+    /** `get_next_tag_key` × 2：小盲注一个、大盲注一个，**先小后大** */
+    private rollBlindTags(): void {
+        this.blindTags = { Small: nextTagKey(this.rng, this.ante), Big: nextTagKey(this.rng, this.ante) };
+    }
+
+    /**
+     * 进盲注选择界面。`game.lua:3640` 起：界面第一次构建时掷 `orbital`，
+     * 然后跑一遍 `immediate`、再跑 `new_blind_choice`（**第一个生效的就停**）。
+     */
+    private enterBlindSelect(): void {
+        this.state = 'blind-select';
+        if (!this.orbitalChoices.has(this.ante)) {
+            // `pairs(G.GAME.hands)` 里 `visible` 的那些。**顺序是 LuaJIT 的哈希序**，
+            // 复刻件按牌型声明序——掷点次数对，结果映射没法不跑实机核实（见 18 号票）
+            const visible = (Object.keys(this.hands) as HandName[]).filter((h) => this.hands[h].visible);
+            const roll = () => pseudorandomElement(visible, this.rng.pseudoseed('orbital'))[0]!;
+            this.orbitalChoices.set(this.ante, { Small: roll(), Big: roll(), Boss: roll() });
+        }
+        this.applyTags('immediate');
+        this.applyNewBlindChoice();
+    }
+
+    /** 商店问标签的三个时机（`ShopTagHooks`）。生效的标签当场移走 */
+    private shopTagHooks(): ShopTagHooks {
+        const take = (key: string): boolean => {
+            const tag = this.tags.find((t) => !t.triggered && t.key === key);
+            if (!tag) return false;
+            tag.triggered = true;
+            this.tags = this.tags.filter((t) => !t.triggered);
+            return true;
+        };
+        return {
+            // `tag.lua:394`：D6 每个商店只生效一张（`shop_d6ed`）
+            shopStart: () => take('tag_d_six'),
+            // `tag.lua:376`：`create_card('Joker', …, 0.9, …, 'uta')`——rarity 固定 0.9 → 罕见，
+            // 走商店那条（`etperpoll` 照掷），版本照掷
+            storeJokerCreate: () =>
+                take('tag_uncommon')
+                    ? createJokerCard(this.rng, this.poolContext(), 'uta', 'shop', { rarity: 0.9 })
+                    : null,
+            // `tag.lua:448`：`shop_free` 每个商店只生效一张
+            shopFinalPass: () => take('tag_coupon'),
+        };
+    }
+
+    /** `eval` 标签：打完 Boss 的 Investment Tag 各给 $25。触发即移走 */
+    private takeEvalTags(): Array<{ key: string; dollars: number }> {
+        if (this.blindKind !== 'boss') return [];
+        const rows: Array<{ key: string; dollars: number }> = [];
+        for (const tag of this.tags) {
+            if (tag.key !== 'tag_investment') continue;
+            rows.push({ key: tag.key, dollars: tag.center.config.dollars });
+            tag.triggered = true;
+        }
+        this.tags = this.tags.filter((t) => !t.triggered);
+        return rows;
+    }
+
+    /** `round_start_bonus`：Juggle Tag 这一回合 +3 手牌上限。触发即移走 */
+    private takeRoundStartBonus(): number {
+        let bonus = 0;
+        for (const tag of this.tags) {
+            if (tag.key !== 'tag_juggle') continue;
+            bonus += tag.center.config.h_size;
+            tag.triggered = true;
+        }
+        this.tags = this.tags.filter((t) => !t.triggered);
+        return bonus;
+    }
+
+    /** 这一格现在能跳过吗。**Boss 不能跳** */
+    get canSkipBlind(): boolean {
+        return this.state === 'blind-select' && !this.openPack && this.blindKind !== 'boss';
+    }
+
+    /**
+     * `button_callbacks.lua:2850` 的 `skip_blind`：跳过当前的小 / 大盲注，拿走它的标签。
+     *
+     * 顺序照原文：
+     * 1. `skips + 1`、`add_tag`（已有的 Double 在这时复制它）、盲注序推进——**不进商店**
+     * 2. 小丑的 `skip_blind`（Throwback）
+     * 3. 所有 `immediate` 标签，再 `new_blind_choice`（第一个生效的就停）
+     *
+     * 跳过的那一关**不跑每回合的 reset**（`reset_idol_card` 那四个在 `end_round` 里）。
+     */
+    skipBlind(): Tag {
+        if (!this.canSkipBlind) throw new Error(`现在不能跳过（${this.state} / ${this.blindKind}）`);
+        const type: BlindType = this.blindKind === 'small' ? 'Small' : 'Big';
+        this.skips++;
+        const key = this.blindTags[type];
+        const tag = makeTag(key, key === 'tag_orbital' ? this.orbitalChoices.get(this.ante)?.[type] : undefined);
+        this.addTag(tag);
+        this.blindIndex++;
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
+
+        for (const joker of [...this.jokers]) {
+            calculateJoker(joker, { skip_blind: true }, this.shopGameView());
+        }
+        this.applyTags('immediate');
+        this.applyNewBlindChoice();
+        return tag;
+    }
+
+    /**
+     * `UI_definitions.lua:1356` 的 `add_tag`：**先让手上的标签看一眼新来的**（`tag_add`），再入列。
+     *
+     * 只有 Double Tag 响应：复制一份新来的（不复制 Double 自己）。
+     * 原文的复制是入队的，落地时触发过的 Double 已经 `triggered`，所以复制品不会再被复制——
+     * 复刻件先把新标签入列、再移走触发过的 Double、再逐个加复制品，结果相同。
+     */
+    addTag(tag: Tag): void {
+        const copies: Tag[] = [];
+        for (const t of this.tags) {
+            if (t.triggered || t.key !== 'tag_double' || tag.key === 'tag_double') continue;
+            t.triggered = true;
+            // `tag.lua:326`：复制 Orbital 时连同它选中的牌型一起抄（`G.orbital_hand`）
+            copies.push(makeTag(tag.key, tag.orbitalHand));
+        }
+        this.tags.push(tag);
+        this.tags = this.tags.filter((t) => !t.triggered);
+        for (const copy of copies) this.addTag(copy);
+    }
+
+    /** 跑一遍某种时机的标签。生效的标签当场移走（原文在 `yep` 的事件里 `remove()`） */
+    private applyTags(type: TagTiming): void {
+        for (const tag of [...this.tags]) {
+            if (tag.triggered || tag.center.config.type !== type) continue;
+            if (this.applyTag(tag)) tag.triggered = true;
+        }
+        this.tags = this.tags.filter((t) => !t.triggered);
+    }
+
+    /** `new_blind_choice`：**第一个生效的就停**。包关掉、Boss 重掷之后原文会再跑一次 */
+    private applyNewBlindChoice(): void {
+        for (const tag of [...this.tags]) {
+            if (tag.triggered || tag.center.config.type !== 'new_blind_choice') continue;
+            if (this.applyTag(tag)) {
+                tag.triggered = true;
+                this.tags = this.tags.filter((t) => !t.triggered);
+                return;
+            }
+        }
+    }
+
+    /**
+     * `tag.lua:128` 的 `apply_to_run`。返回「生效了没有」。
+     *
+     * 商店那几种（`store_joker_create` / `shop_start` / `shop_final_pass`）在 `Shop` 里；
+     * `eval` 在 `finishRound`、`round_start_bonus` 在 `startRound`、`tag_add` 在 `addTag`。
+     */
+    private applyTag(tag: Tag): boolean {
+        const cfg = tag.center.config;
+        switch (tag.key) {
+            // ———— immediate ————
+            case 'tag_top_up':
+                // `tag.lua:141`：造 2 张**普通**小丑（`_rarity = 0`），**每张都查空位**
+                for (let i = 0; i < cfg.spawn_jokers; i++) {
+                    if (this.jokers.length < this.jokerSlots) {
+                        this.jokers.push(createJokerCard(this.rng, this.poolContext(), 'top', 'none', { rarity: 0 }));
+                    }
+                }
+                refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
+                return true;
+            case 'tag_skip':
+                // `tag.lua:162`：**读的是加完这次之后的** skips
+                this.dollars += this.skips * cfg.skip_bonus;
+                return true;
+            case 'tag_garbage':
+                this.dollars += this.unusedDiscards * cfg.dollars_per_discard;
+                return true;
+            case 'tag_handy':
+                this.dollars += this.handsPlayed * cfg.dollars_per_hand;
+                return true;
+            case 'tag_economy':
+                // `tag.lua:196`：翻倍，封顶 $40，**负债时给 0**
+                this.dollars += Math.min(cfg.max, Math.max(0, this.dollars));
+                return true;
+            case 'tag_orbital':
+                if (tag.orbitalHand) levelUpHand(this.hands, tag.orbitalHand, cfg.levels);
+                return true;
+
+            // ———— new_blind_choice ————
+            case 'tag_boss':
+                // `button_callbacks.lua:2910` 的 `reroll_boss`，从标签来的不花 $10
+                this.bossKey = getNewBoss(this.ante, this.rng, this.bossesUsed);
+                return true;
+            case 'tag_charm':
+                return this.openFreePack('p_arcana_mega_1');
+            case 'tag_meteor':
+                return this.openFreePack('p_celestial_mega_1');
+            case 'tag_ethereal':
+                return this.openFreePack('p_spectral_normal_1');
+            case 'tag_standard':
+                return this.openFreePack('p_standard_mega_1');
+            case 'tag_buffoon':
+                return this.openFreePack('p_buffoon_mega_1');
+
+            // Voucher Tag：优惠券系统不在，拿得到、什么也不发生（UI 标 ⚠未实现）
+            case 'tag_voucher':
+                return false;
+            default:
+                if (!isTagImplemented(tag.key)) {
+                    // Rare / Negative / Foil / Holo / Polychrome：新档 + 指定 seed 下抽不到
+                    throw new Error(`${tag.center.name} 在「新档 + 指定 seed」口径下不该出现`);
+                }
+                return false;
+        }
+    }
+
+    /**
+     * 标签开的包（`tag.lua:217` 起）：**免费**，走普通的 `Card:open`，账与商店的包相同。
+     *
+     * Charm / Meteor 原文是 `'p_arcana_mega_'..math.random(1, 2)`——全局流，两张只差美术，
+     * 复刻件固定取 1。已经有包开着就先不开（原文由状态机保证不会重叠）。
+     */
+    private openFreePack(key: string): boolean {
+        if (this.openPack) return false;
+        const center = BOOSTER_CENTERS[key];
+        for (const joker of [...this.jokers]) {
+            calculateJoker(joker, { open_booster: true }, this.shopGameView());
+        }
+        this.openPack = openBooster(this.rng, center, key, this.poolContext());
+        return true;
     }
 
     /**
@@ -214,7 +468,7 @@ export class Run {
             releaseUsed(this.poolContext(), joker.key);
         }
         this.jokerBuffer = 0;
-        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
     }
 
     /** `G.GAME.joker_buffer`。只在 `setting_blind` 那一趟里非零 */
@@ -232,9 +486,10 @@ export class Run {
             queueJoker: (keyAppend, rarity) => { this.pendingJokers.push({ keyAppend, rarity }); },
             sliceJoker: (target) => { target.getting_sliced = true; },
             duplicateJoker: (self, key) => this.duplicateJoker(self, key),
+            addTag: (key) => this.addTag(makeTag(key)),
             addPlayingCard: (card) => {
                 this.fullDeck.push(card);
-                refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+                refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
             },
         };
     }
@@ -265,7 +520,7 @@ export class Run {
         this.jokers.push(copy);
         this.usedJokers.add(copy.key);
         this.onJokerAdded(copy);
-        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
     }
 
     /**
@@ -316,7 +571,7 @@ export class Run {
         card.enhancement = enhancement;
         this.fullDeck.push(card);
         // 整副牌变了，`Steel/Stone Joker` 与 `Driver's License` 的 tally 要跟着重算
-        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
         this.playingCardsAdded([card]);
     }
 
@@ -395,10 +650,13 @@ export class Run {
             onRemoveFromDeck: (cards) => this.removeFromDeck(cards),
             onCreatePlayingCard: (enhancement, key) => this.createPlayingCard(enhancement, key),
             consumables: this.consumableHooks(),
-            handSizeDelta: this.handSizeDelta,
+            // `tag.lua:337` 的 Juggle Tag（`round_start_bonus`）：**只加这一回合**
+            // （`temp_handsize` 在回合结束时减回去，`state_events.lua:291`）
+            handSizeDelta: this.handSizeDelta + this.takeRoundStartBonus(),
             jokerSlots: this.jokerSlots,
             jokerArea: this.jokerAreaHooks(),
             onSettingBlind: (round) => this.settingBlind(round),
+            skips: this.skips,
         });
 
         this.state = 'playing';
@@ -418,6 +676,8 @@ export class Run {
         if (round.phase === 'selecting') throw new Error('这一局还没打完');
 
         const won = round.phase === 'won';
+        // `state_events.lua:142`：过关时把剩下的弃牌攒起来（Garbage Tag）
+        if (won) this.unusedDiscards += round.discardsLeft;
 
         // `Round` 在结算里已经把小丑赚的钱写进它自己那份 dollars 了，先收回来
         this.dollars = round.dollars;
@@ -430,7 +690,7 @@ export class Run {
 
         // `Cloud 9` 的 `nine_tally` 是**重算**出来的，而这一关可能销毁过牌
         // （碎掉的玻璃牌 / The Hanged Man），所以收益之前要刷一次
-        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
 
         // `state_events.lua:99` 的小丑 `end_of_round` 遍历。
         // **在 `evaluate_round` 之前**——原文两者都在 `end_round` 里，
@@ -472,6 +732,8 @@ export class Run {
             distinctPlanets: distinctPlanetsUsed(this.consumableUsage),
             // `To the Moon` 每张 +1。由 `runModifiers` 从小丑区重算
             interestAmount: runModifiers(this.jokers).interestAmount,
+            // `state_events.lua:1204`：`eval` 标签。Investment 只在**打完 Boss** 时兑现
+            tagDollars: won ? this.takeEvalTags() : [],
         });
         this.dollars += payout.total;
 
@@ -527,6 +789,8 @@ export class Run {
             this.blindIndex = 0;
             // `common_events.lua:2382`：进新 Ante 时抽新 Boss
             this.bossKey = getNewBoss(this.ante, this.rng, this.bossesUsed);
+            // `button_callbacks.lua:3062`：兑现收益时抽下一个 Ante 的两个跳过标签
+            this.rollBlindTags();
         } else {
             this.blindIndex++;
         }
@@ -538,7 +802,7 @@ export class Run {
         // **商店在 `advanceBlind` 之后开**，所以它读的 ante 已经是新的那个——
         // 商店的所有 seed key 都带 ante（`cdt`/`rarity`/`Joker<r>sho`），
         // 在 `ante++` 之前开会用上一个 ante 的 key
-        this.shop = new Shop(this.rng, this.poolContext());
+        this.shop = new Shop(this.rng, this.poolContext(), this.shopTagHooks());
         // 保底那一格只可能在第一个商店被用掉，开完就置真
         this.firstShopBuffoon = true;
         this.state = 'shop';
@@ -561,7 +825,7 @@ export class Run {
         // 不还回去，下一个商店的池子内容就比原版窄，`_resample` 次数跟着偏
         this.shop?.release();
         this.shop = null;
-        this.state = 'blind-select';
+        this.enterBlindSelect();
     }
 
     /**
@@ -608,7 +872,7 @@ export class Run {
         const joker = item.joker;
         this.jokers.push(joker);
         // 小丑区变了 → 派生字段要重算（Joker Stencil 的空格子数、Swashbuckler 的卖价和）
-        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
         // `card.lua:1858` 的 `context.buying_card` 分支在原作里是空的，
         // 但调用点要留着——它是接 `Trading Card` 之类的落点
         for (const other of this.jokers) {
@@ -677,7 +941,7 @@ export class Run {
         if (card.kind === 'joker') {
             if (this.jokersFull) throw new Error(`小丑区满了（${this.jokerSlots} 格）`);
             this.jokers.push(card.joker);
-            refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+            refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
         } else if (card.kind === 'consumable') {
             if (this.consumablesFull) throw new Error(`消耗品区满了（${this.consumableSlots} 格）`);
             this.consumables.push(card.consumable);
@@ -685,7 +949,7 @@ export class Run {
             // 标准包的扑克牌：**进整副牌**，牌组变大一张。
             // 不进当前这一局的牌堆——原作也是 `G.deck` 加，本局的 `Round` 已经洗过了
             this.fullDeck.push(card.card);
-            refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+            refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
             // `button_callbacks.lua:2338`
             this.playingCardsAdded([card.card]);
         }
@@ -725,6 +989,8 @@ export class Run {
         if (!this.openPack) return;
         releasePack(this.openPack, this.poolContext());
         this.openPack = null;
+        // `button_callbacks.lua:2728`：标签开的包关掉之后，**再轮一次** `new_blind_choice`
+        if (this.state === 'blind-select') this.applyNewBlindChoice();
     }
 
     /**
@@ -740,7 +1006,7 @@ export class Run {
         calculateJoker(joker, { selling_self: true }, this.round?.gameView() ?? this.shopGameView());
         this.jokers.splice(index, 1);
         this.dollars += joker.sell_cost;
-        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
 
         // `card.lua:4829`：小丑区与消耗品区里都没有它了就解除 used 标记
         releaseUsed(this.poolContext(), joker.key);
@@ -888,13 +1154,13 @@ export class Run {
                 this.jokers.push(j);
                 this.usedJokers.add(j.key);
                 this.onJokerAdded(j);
-                refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+                refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
             },
             removeJoker: (j) => {
                 const i = this.jokers.indexOf(j);
                 if (i >= 0) this.jokers.splice(i, 1);
                 releaseUsed(this.poolContext(), j.key);
-                refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+                refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
             },
             addPlayingCard: (card) => {
                 // `create_playing_card`：进整副牌**与当前这一局的手牌**
@@ -985,6 +1251,7 @@ export class Run {
             duplicateJoker: (self, key) => this.duplicateJoker(self, key),
             // 商店里没有正在打的盲注：卖掉 Luchador 什么也不发生（原文判 `G.GAME.blind` 是不是 Boss）
             disableBoss: () => {},
+            addTag: (key) => this.addTag(makeTag(key)),
             deckCount: this.fullDeck.length,
             startingDeckSize: this.fullDeck.length,
             playingCardCount: this.fullDeck.length,

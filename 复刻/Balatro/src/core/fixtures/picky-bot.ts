@@ -625,7 +625,7 @@ function sandboxScore(
 ): number {
     const team = jokers.map((j) => structuredClone(j));
     const hands = structuredClone(run.hands);
-    refreshDerivedAbilities(team, run.jokerSlots, run.fullDeck);
+    refreshDerivedAbilities(team, run.jokerSlots, run.fullDeck, run.skips);
     const mods = runModifiers(team);
     const view = makeGameView({
         hands,
@@ -660,7 +660,7 @@ function sandboxScore(
             // 小丑、牌型等级、牌都**不重新克隆**——成长型小丑长出来的、
             // Hiker 加在牌上的筹码、Vampire 吸掉的强化，都要带进下一手
             total += evaluatePlay(play, hands, view, mods.flags).score;
-            refreshDerivedAbilities(team, run.jokerSlots, run.fullDeck);
+            refreshDerivedAbilities(team, run.jokerSlots, run.fullDeck, run.skips);
         }
         return total / times;
     } catch {

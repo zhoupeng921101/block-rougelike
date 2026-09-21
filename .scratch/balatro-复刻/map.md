@@ -104,6 +104,11 @@ Label: wayfinder:map
   同时裁定：**delay 仍可压成 0**（但理由换了，见已知的坑）、
   **`soulable` 在包里传真值**（三种包掷点次数各不相同）、
   **商店末尾多两次 `shop_pack<ante>`**（第一个商店只多一次）。
+- [标签与跳过盲注的切片边界](issues/18-标签与跳过盲注的切片边界.md) ——
+  **24 个标签全部进池、跳过盲注整条流程照抄**。关键发现：`discover_card` 第一句是
+  `if G.GAME.seeded then return end`，指定 seed 的对局里**什么都不会被发现**，
+  所以 Rare 与四个版本标签（`requires` 已发现）**永远抽不到**，只占位。Voucher Tag 拿得到、
+  效果不做（优惠券系统不在）。`orbital` 每个 Ante 在盲注选择界面对三格各掷一次，不管标签是什么。
 
 > **第一个里程碑已交付**（红牌组打小盲注，可玩，带动画/shader/音效）。
 >
@@ -295,6 +300,16 @@ Label: wayfinder:map
 >   Troubadour + The Needle 原先得到 0 次出牌，进场即输
 >
 > **墙：第一批让挑牌 bot 受益的内容**，虽然很小：240 seed 放开 4.000、禁掉 3.992，2 局更深、0 局更浅。
+>
+> **标签与跳过盲注已交付（18 号票前 3 步），小丑 150 / 150。** 830 个测试绿。
+> 24 个标签的数据由生成器出；池子、`Tag<ante>` 抽取与重抽、开局与打完 Boss 各抽两个；
+> 跳过盲注（skips、`add_tag`、小丑的 `skip_blind`、`immediate`、`new_blind_choice`）；
+> 18 个可达标签的效果全部接上（立即生效 6、开包 5 + Boss、Double、Juggle、Investment、
+> 商店里的 Uncommon / D6 / Coupon）。表现层加了盲注选择这一屏（原先离开商店直接开打）、
+> 「跳过盲注」按钮与标签栏——**没有人眼验过**。
+>
+> 两个 bot 都不跳过，所以**墙一格没动**（快照全部不变——标签用独立的随机流）。
+> **下一刀：18 号票第 4 步，挑牌 bot 学会跳过。** 这是标签系统唯一会动墙的地方。
 > 墙那边，估值的短板已经很清楚——**它只认计分管线里的成长**。要让 bot 用上这类小丑，
 > 沙盒得在连打之间模拟进盲注 / 弃牌 / 加牌，而 Madness 还会毁队友，模拟不当会高估。
 
@@ -644,6 +659,13 @@ Label: wayfinder:map
   然后整副牌与小丑区重跑 debuff，**够分就当场过关**。
 - **弃牌计数（`discards_used` / `discards_left`）在逐张弃牌循环之后才变**（`state_events.lua:451`），
   与出牌计数同一类坑。
+
+- **Orbital Tag 的候选牌型顺序没核实**：原文 `pairs(G.GAME.hands)` 是 LuaJIT 哈希序，
+  复刻件按牌型声明序。掷点次数对（每个 Ante 三次），「掷出的数对应哪个牌型」要跑实机才知道。
+  **To Do List 同一个坑**，而且复刻件造它时根本没掷 `to_do`——`makeJoker` 留了 `pickToDoHand`
+  口子，`Run` 从来没传。
+- **标签开的包**：Charm / Meteor 原文是 `'p_..._mega_'..math.random(1, 2)`（全局流），两张只差美术，
+  复刻件固定取 1。包在盲注选择界面打开，关掉之后**再轮一次** `new_blind_choice`（下一个开包标签接着开）。
 
 ## Out of scope
 

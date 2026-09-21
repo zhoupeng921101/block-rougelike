@@ -1037,6 +1037,12 @@ const FIRST_HAND_DRAWN: Record<string, Handler> = {
 
 /** `card.lua:2357` 的 `context.selling_self`：**卖掉自己，在移出小丑区之前** */
 const SELLING_SELF: Record<string, Handler> = {
+    // `card.lua:2364`。卖掉就造一个 Double Tag（下一个拿到的标签翻倍）。蓝图碰不到 selling_self
+    'Diet Cola': (self, _context, game) => {
+        game.addTag('tag_double');
+        return { message: 'double_tag', card: self };
+    },
+
     /**
      * `card.lua:2358`。**卖掉它就关掉当前的 Boss**。原文判 `G.GAME.blind and not disabled
      * and get_type() == 'Boss'`——不在 Boss 盲注里卖（商店里）什么也不发生。
@@ -1393,6 +1399,14 @@ export function calculateJoker(
 
     if (context.first_hand_drawn) return FIRST_HAND_DRAWN[name]?.(self, context, game) ?? null;
 
+    // `card.lua:2431`：Throwback 只报一下数（倍率本身是 `derived.ts` 从 skips 重算的）
+    if (context.skip_blind) {
+        if (name === 'Throwback' && !context.blueprint) {
+            return { message: `X${self.ability.x_mult}`, card: self };
+        }
+        return null;
+    }
+
     // `card.lua:2459`：`playing_card_added and not self.getting_sliced`
     if (context.playing_card_added) {
         if (self.getting_sliced) return null;
@@ -1603,6 +1617,8 @@ const NAMES_WITH_HANDLERS: ReadonlySet<string> = new Set([
  * 所以「表里没有」不等于「没实现」。
  */
 const IMPLEMENTED_ELSEWHERE: Readonly<Record<string, string>> = {
+    // `card.lua:4179`：倍率从 `G.GAME.skips` 重算，走 main 分支的泛化 `x_mult > 1`
+    Throwback: 'derived.ts 的 skips',
     // `state_events.lua:604` 的 `find_joker('Splash')`：让全部 5 张都计分
     Splash: 'scoring.ts 的第 4 步',
     // `ability.h_size` / `d_size`，在 `Round` 的构造里加进手牌上限与弃牌次数

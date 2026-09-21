@@ -78,9 +78,14 @@ Caino / Yorick / Hologram。**小丑覆盖面 141 / 150**，剩 9：负债 4 / �
 **小丑覆盖面 148 / 150**，剩下的 Throwback / Diet Cola 都要标签系统。顺带修了弃牌计数的时机，
 以及 The Needle 与 Troubadour 同场时出牌次数变成 0 的 bug。
 
+**标签与跳过盲注已交付**（[18 号票](../../.scratch/balatro-复刻/issues/18-标签与跳过盲注的切片边界.md)），
+**小丑 150 / 150**。24 个标签全部进池；指定 seed 的对局里原作不会「发现」任何东西，
+所以 Rare 与四个版本标签抽不到；Voucher Tag 拿得到但不生效（优惠券不在）。其余 18 个效果全做了。
+界面加了盲注选择这一屏：能看到跳过这一格给什么标签，按「跳过盲注」拿走它。
+
 > **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
 > 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
-> 逻辑层有 808 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
+> 逻辑层有 830 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
 > **版本与蜡封的贴图都没有移植**（原作每种版本一个 `.fs`、蜡封是四张叠图），
 > 这一版只用文字标出来（`✦多彩` / `▣红`）。
 
@@ -103,6 +108,8 @@ src/
 │   ├── seals.ts                 4 种蜡封（四个钩子，四个小函数）
 │   ├── boosters.ts              补充包的 center 与 get_pack
 │   ├── booster-open.ts          开包（Card:open），五种口味各一套 RNG 账
+│   ├── tags.ts                  标签的池子与抽取（效果在 run.ts / shop.ts 的触发点上）
+│   ├── tags.generated.ts        24 个标签（生成的，别手改）
 │   ├── consumables/             ← 消耗品。52 / 52 全有行为
 │   │   ├── centers.generated.ts     塔罗 22 + 星球 12 + 幽灵 18（生成的）
 │   │   ├── instance.ts              makeConsumable / planetKeyFor
@@ -112,7 +119,7 @@ src/
 │   │   └── use-context.ts           喂给消耗品的那张宽接口
 │   ├── atlas.ts                 图集网格推导（**不 import Phaser**，所以可单测）
 │   ├── event-queue.ts           事件队列（G.E_MANAGER）
-│   ├── jokers/                  ← 小丑系统。150 张里 148 张有行为
+│   ├── jokers/                  ← 小丑系统。150 张全有行为
 │   │   ├── centers.generated.ts     150 张的 center 定义（生成的，别手改）
 │   │   ├── instance.ts              set_ability / set_cost
 │   │   ├── calculate.ts             calculate_joker + 覆盖面登记
@@ -141,7 +148,7 @@ src/
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 808 个测试，必须全绿
+npm test            # 830 个测试，必须全绿
 npm run test:slow   # 60 个 seed 量墙（约 30 秒，改了内容或 bot 之后跑）
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
@@ -155,6 +162,7 @@ node tools/gen-blind-centers.mjs
 node tools/gen-consumable-centers.mjs
 node tools/gen-enhancement-centers.mjs
 node tools/gen-booster-centers.mjs
+node tools/gen-tag-centers.mjs
 ```
 
 五个生成器共用 `tools/lua-table.mjs` 的 Lua 表解析器。

@@ -258,8 +258,24 @@ export function getCurrentConsumablePool(
 
 /** 商店里的一格。 */
 export type ShopItem =
-    | { kind: 'joker'; joker: Joker; cost: number }
-    | { kind: 'consumable'; consumable: Consumable; cost: number };
+    | { kind: 'joker'; joker: Joker; cost: number; couponed?: boolean }
+    | { kind: 'consumable'; consumable: Consumable; cost: number; couponed?: boolean };
+
+/**
+ * 商店要问标签的那三个时机（`game.lua:3455` 起），由 `Run` 接上。
+ * 每个都返回「有没有标签在这时生效」，生效的标签由 `Run` 移走。
+ */
+export type ShopTagHooks = {
+    /** `shop_start`：D6 Tag → 这个商店的重掷从 $0 起 */
+    shopStart(): boolean;
+    /**
+     * `store_joker_create`：造货架的**每一格之前**问一次。Uncommon Tag 在这里给一张
+     * 免费的罕见小丑，**那一格就不再掷 `cdt`**（`UI_definitions.lua:805` 提前 return）
+     */
+    storeJokerCreate(): Joker | null;
+    /** `shop_final_pass`：Coupon Tag → 开张时货架与补充包全部免费 */
+    shopFinalPass(): boolean;
+};
 
 /** 这一格占着的 center key。释放 used 标记要用 */
 export function shopItemKey(item: ShopItem): string {
@@ -468,15 +484,27 @@ export class Shop {
     rerollCostIncrease = 0;
     /** `G.GAME.current_round.free_rerolls`。`Chaos the Clown` 每张给 1 次 */
     freeRerolls: number;
+    /** `G.GAME.round_resets.temp_reroll_cost`。D6 Tag 把它设成 0：重掷从 $0 起涨 */
+    private tempRerollCost: number | null = null;
+    /** Coupon Tag：开张时的补充包免费（`couponed`）。重掷换不到补充包，所以一直有效 */
+    private packsCouponed = false;
 
     constructor(
         private readonly rng: PseudorandomState,
         readonly context: PoolContext,
+        private readonly tags?: ShopTagHooks,
     ) {
         // `state_events.lua:332`：回合开始时按 Chaos the Clown 的张数给免费重掷
         this.freeRerolls = findJoker(context.jokers, 'Chaos the Clown').length;
+        // `game.lua:3455`：`shop_start` **排在造货架之前**
+        if (tags?.shopStart()) this.tempRerollCost = 0;
         this.refill();
         this.fillPacks();
+        // `game.lua:3528`：`shop_final_pass` 在最后。**只管开张时这一批**，之后重掷出来的照常收钱
+        if (tags?.shopFinalPass()) {
+            for (const item of this.items) item.couponed = true;
+            this.packsCouponed = true;
+        }
     }
 
     /**
@@ -507,6 +535,7 @@ export class Shop {
     packCost(index: number): number {
         const slot = this.packs[index];
         if (!slot) return 0;
+        if (this.packsCouponed) return 0;
         const kind = slot.center.kind === 'Celestial' ? 'Celestial' : 'other';
         return shopCost(slot.center.cost, kind, this.context);
     }
@@ -515,6 +544,8 @@ export class Shop {
     itemCost(index: number): number {
         const item = this.items[index];
         if (!item) return 0;
+        // `card.lua:383`：`couponed` 的货架上的卡买价 0（卖价不受影响）
+        if (item.couponed) return 0;
         // **含版本加价**（`setCost` 算好的），不是 center 上的基础价
         if (item.kind === 'joker') return item.joker.cost;
         return shopCost(item.consumable.cost, item.consumable.center.set, this.context);
@@ -531,11 +562,17 @@ export class Shop {
     /** `common_events.lua:2312` 的 `calculate_reroll_cost`。 */
     get rerollCost(): number {
         if (this.freeRerolls > 0) return 0;
-        return BASE_REROLL_COST + this.rerollCostIncrease;
+        return (this.tempRerollCost ?? BASE_REROLL_COST) + this.rerollCostIncrease;
     }
 
     private refill(): void {
         while (this.items.length < SHOP_JOKER_MAX) {
+            const forced = this.tags?.storeJokerCreate() ?? null;
+            if (forced) {
+                // Uncommon Tag 给的那张：`couponed` → 买价 0
+                this.items.push({ kind: 'joker', joker: forced, cost: 0, couponed: true });
+                continue;
+            }
             this.items.push(createCardForShop(this.rng, this.context));
         }
     }

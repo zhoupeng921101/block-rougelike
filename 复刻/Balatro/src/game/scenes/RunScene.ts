@@ -24,6 +24,8 @@ import type { Joker } from '../../core/jokers';
 import { evaluatePokerHand } from '../../core/poker-hands';
 import type { Round } from '../../core/round';
 import { Run } from '../../core/run';
+import { TAG_CENTERS, isTagImplemented } from '../../core/tags';
+import { getBlindAmount } from '../../core/scoring';
 import { CardSprite } from '../card-sprite';
 import { BoosterSprite } from '../booster-sprite';
 import { ConsumableSprite } from '../consumable-sprite';
@@ -124,6 +126,8 @@ export class RunScene extends Scene {
     private discardBtn!: GameObjects.Text;
     private nextBtn!: GameObjects.Text;
     private rerollBtn!: GameObjects.Text;
+    /** 盲注选择界面上的「跳过盲注」。与开包界面的「跳过」（`skipBtn`）不是一回事 */
+    private skipBlindBtn!: GameObjects.Text;
 
     constructor() {
         super('Run');
@@ -196,8 +200,10 @@ export class RunScene extends Scene {
         this.nextBtn = this.makeButton(toPx(7.6), toPx(10.2), '下一关', '#3c6ea5', () => this.doNext());
         this.rerollBtn = this.makeButton(toPx(12.0), toPx(10.2), '重掷', '#8a5fb0', () => this.doReroll());
         this.skipBtn = this.makeButton(toPx(15.2), toPx(10.2), '跳过', '#6b7280', () => this.doSkipPack());
+        this.skipBlindBtn = this.makeButton(toPx(18.4), toPx(10.2), '跳过盲注', '#a07a2c', () => this.doSkipBlind());
 
-        this.startRound();
+        // 开局先进盲注选择（原作如此）：能看到这一格跳过给什么标签，再决定打还是跳
+        this.showBlindSelect();
         this.setupCrt();
     }
 
@@ -225,13 +231,52 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.refresh();
     }
 
-    /** 「下一关」按钮：在商店里就离开商店，在过关画面就进下一关。 */
+    /**
+     * 盲注选择界面（`run.state === 'blind-select'`）。
+     *
+     * 手牌区空着；标签开的包（Charm / Meteor …）在这一屏上挑，挑完或跳过才能开打。
+     */
+    private showBlindSelect(): void {
+        this.selected.clear();
+        this.clearShop();
+        this.rebuildHand();
+        this.rebuildJokers();
+        this.rebuildConsumables();
+        this.rebuildPackCards();
+        this.refresh();
+    }
+
+    /** 「跳过盲注」：拿走这一格的标签，直接到下一格（不打、不进商店） */
+    private doSkipBlind(): void {
+        if (this.animating || !this.run.canSkipBlind) return;
+        const tag = this.run.skipBlind();
+        this.sound.play('generic1', { volume: 0.5 });
+        this.message.setText(`拿到 ${tag.center.name}`).setColor('#ffd76e');
+        this.time.delayedCall(1400, () => this.message.setText(''));
+        this.showBlindSelect();
+    }
+
+    /**
+     * 「下一关」按钮：
+     * - 商店里：离开商店，回到盲注选择
+     * - 盲注选择：开打这一格（有标签开的包没挑完就先不让）
+     * - 过关画面：结算、进商店
+     */
     private doNext(): void {
         if (this.animating) return;
 
         if (this.run.state === 'shop') {
+            if (this.run.openPack) return;
             this.sound.play('cardSlide2', { volume: 0.4 });
             this.run.leaveShop();
+            this.showBlindSelect();
+            return;
+        }
+
+        if (this.run.state === 'blind-select') {
+            if (this.run.openPack) return;
+            this.sound.play('cardSlide2', { volume: 0.4 });
+            this.message.setText('');
             this.startRound();
             return;
         }
@@ -257,6 +302,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             const label = {
                 blind: '盲注', hands: '剩余出牌', discards: '剩余弃牌',
                 joker: r.joker?.ability.name ?? '小丑', interest: '利息',
+                tag: r.tag ? (TAG_CENTERS[r.tag]?.name ?? '标签') : '标签',
             }[r.kind];
             return `${label}  +$${r.dollars}`;
         });
@@ -748,10 +794,28 @@ ${String(e instanceof Error ? e.message : e)}`)
         const round = this.round;
         const blindName = BLIND_CENTERS[run.blindKey].name;
 
-        if (run.state === 'shop') {
+        const tagsLine = run.tags.length > 0
+            ? `标签：${run.tags.map((t) => t.center.name + (isTagImplemented(t.key) ? '' : ' ⚠未实现')).join('、')}`
+            : '';
+
+        if (run.state === 'blind-select') {
+            const center = BLIND_CENTERS[run.blindKey];
+            const need = getBlindAmount(run.ante) * center.mult;
+            const skipKey = run.blindKind === 'small' ? run.blindTags.Small : run.blindKind === 'big' ? run.blindTags.Big : '';
+            const skipText = skipKey
+                ? `跳过可得：${TAG_CENTERS[skipKey].name}${isTagImplemented(skipKey) ? '' : ' ⚠未实现'}`
+                : 'Boss 盲注不能跳过';
+            this.hud.setText([
+                `选择盲注 — Ante ${run.ante}   ${blindName}   需要 ${need}`,
+                `$${run.dollars}    ${skipText}    ${tagsLine}`,
+                run.openPack
+                    ? `${run.openPack.center.name}（标签送的）—— 还能挑 ${run.openPack.choicesLeft} 张`
+                    : '「下一关」开打，「跳过盲注」拿标签',
+            ].join('\n'));
+        } else if (run.state === 'shop') {
             this.hud.setText([
                 `商店 — Ante ${run.ante}   下一关：${blindName}`,
-                `$${run.dollars}    重掷 $${run.shop?.rerollCost ?? 0}    小丑 ${run.jokers.length}/${run.jokerSlots}    消耗品 ${run.consumables.length}/${run.consumableSlots}`,
+                `$${run.dollars}    重掷 $${run.shop?.rerollCost ?? 0}    小丑 ${run.jokers.length}/${run.jokerSlots}    消耗品 ${run.consumables.length}/${run.consumableSlots}    ${tagsLine}`,
                 run.openPack
                     ? `${run.openPack.center.name} —— 还能挑 ${run.openPack.choicesLeft} 张`
                     : '点商店的牌买入，点小丑区的牌卖出，点消耗品用掉它',
@@ -785,7 +849,11 @@ ${String(e instanceof Error ? e.message : e)}`)
         const done = !round || round.phase !== 'selecting';
         this.playBtn.setAlpha(done || this.animating ? 0.3 : 1);
         this.discardBtn.setAlpha(done || this.animating || (round?.discardsLeft ?? 0) < 1 ? 0.3 : 1);
-        this.nextBtn.setAlpha(this.animating || (!inShop && !done) ? 0.3 : 1);
+        const inSelect = run.state === 'blind-select';
+        this.nextBtn.setAlpha(
+            this.animating || run.openPack || (!inShop && !inSelect && !done) ? 0.3 : 1,
+        );
+        this.skipBlindBtn.setAlpha(run.canSkipBlind && !this.animating ? 1 : 0.3);
         this.rerollBtn.setAlpha(inShop && !this.animating && !this.run.openPack ? 1 : 0.3);
         // 「跳过」只在开着包的时候能按
         this.skipBtn.setAlpha(this.run.openPack && !this.animating ? 1 : 0.3);

@@ -151,6 +151,8 @@ export type RoundOptions = {
     jokerSlots?: number;
     /** 小丑区的口子。由 `Run` 接上——增删小丑的那几张要碰小丑区与整副牌 */
     jokerArea?: JokerAreaHooks;
+    /** `G.GAME.skips`，Throwback 的派生倍率要读 */
+    skips?: number;
     /**
      * 小丑的 `setting_blind` 那一趟。**构造到一半时调**：盲注与 RNG 已就位，
      * 手牌上限、出牌/弃牌次数、牌堆都还没定。由 `Run` 接上，见构造函数里那条注释
@@ -170,6 +172,8 @@ export type JokerAreaHooks = {
     duplicateJoker(self: Joker, key: string): void;
     /** DNA：复制品进整副牌。**手牌那一半由 `Round` 自己放** */
     addPlayingCard(card: Card): void;
+    /** Diet Cola：卖掉时造一个 Double Tag */
+    addTag(key: string): void;
 };
 
 /** 没接小丑区时的默认实现：**一调就抛**，免得静默吞掉 */
@@ -189,6 +193,9 @@ const NO_JOKER_AREA: JokerAreaHooks = {
     },
     addPlayingCard: () => {
         throw new Error('这个 Round 没接整副牌，但有小丑要复制扑克牌');
+    },
+    addTag: () => {
+        throw new Error('这个 Round 没接标签，但 Diet Cola 要造一个');
     },
 };
 
@@ -344,7 +351,7 @@ export class Round {
 
         // **派生字段先重算一遍**：`Joker Stencil` 的倍率与 `Swashbuckler` 的 mult
         // 是从小丑区推导的（原作每帧重算），不重算就会读到 config 里的初值
-        refreshDerivedAbilities(this.jokers, this.jokerSlots, fullDeck);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, fullDeck, options.skips ?? 0);
 
         // `misc_functions.lua:1855` 的基数，再加上小丑区给的修正。
         // 全部由 `runModifiers` 从小丑区**重算**而不是增量加减——
@@ -513,6 +520,7 @@ export class Round {
                 if (round.blind?.center.boss) round.disableBlind();
             },
             createCertificateCard: () => round.createCertificateCard(),
+            addTag: (key) => round.jokerArea.addTag(key),
             addPlayingCardToHand: (card) => {
                 // 原文 `G.hand:emplace` + `table.insert(G.playing_cards, …)`：手牌这边自己放，
                 // 整副牌那边交给 `Run`
