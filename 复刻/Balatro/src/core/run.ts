@@ -662,6 +662,13 @@ export class Run {
         const consumable = this.consumables[index];
         if (!consumable) throw new Error(`消耗品区没有第 ${index} 张`);
 
+        // `card.lua:1545` 的 `can_use_consumeable`：原作里用不了的卡**按钮是灰的**，
+        // 点不下去。这里不拦的话，选 0 张就用 Death 会在效果里崩，
+        // 而选 0 张用 The Magician 会**静默吞掉**这张卡（计数照记、效果为空）
+        if (!this.canUseConsumable(index, highlighted)) {
+            throw new Error(`${consumable.center.name} 现在用不了（选中 ${highlighted.length} 张）`);
+        }
+
         // `card.lua:1094`：**计数在效果之前**，而且是同步的
         recordConsumableUsage(this.consumableUsage, consumable);
 

@@ -387,6 +387,21 @@ describe('消耗品区', () => {
         expect(run.consumableUsage.total.all).toBe(1);
     });
 
+    /**
+     * 原作里用不了的卡按钮是灰的，点不下去（`card.lua:1545`）。`Run` 不拦的话：
+     * 选 0 张用 Death 会在效果里崩，选 0 张用 The Magician 会**静默吞掉**那张卡——
+     * 计数照记、效果为空。贪心 bot 以前就是这么把塔罗「用」掉的。
+     */
+    it('用不了的卡**抛**，不静默吞掉：选 0 张用 Death / The Magician', () => {
+        const run = new Run('TUTORIAL');
+        run.consumables.push(makeConsumable('c_death'), makeConsumable('c_magician'));
+        expect(() => run.useConsumable(0, [])).toThrow('现在用不了');
+        expect(() => run.useConsumable(1, [])).toThrow('现在用不了');
+        // 没有副作用：卡还在，计数没涨
+        expect(run.consumables).toHaveLength(2);
+        expect(run.consumableUsage.total.all).toBe(0);
+    });
+
     it('用掉之后那张卡还回池子（used 标记解除）', () => {
         const run = new Run('TUTORIAL');
         run.consumables.push(makeConsumable('c_pluto'));

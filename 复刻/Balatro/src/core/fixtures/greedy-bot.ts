@@ -203,7 +203,10 @@ export function shopAndLeave(run: Run, policy: ShopPolicy = {}): string[] {
         // 还没实现行为的消耗品不买——买了占格子、用不了
         if (!isConsumableImplemented(item.consumable.key)) continue;
         bought.push(run.buyConsumable(i).key);
-        run.useConsumable(run.consumables.length - 1);
+        // 要选手牌的（大半塔罗）在商店里用不了，就这么留在格子里——
+        // 这正是本 bot 的短板，不替它补
+        const last = run.consumables.length - 1;
+        if (run.canUseConsumable(last, [])) run.useConsumable(last, []);
     }
 
     run.leaveShop();

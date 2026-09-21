@@ -44,11 +44,17 @@ Lucky Cat、Golden Ticket、Glass Joker、Driver's License。**小丑覆盖面 1
 > 与标准包，bot 两样都用不出来。
 >
 > **2.625 与上面那个 3.375 不可比**：那是一次性脚本量的，seed 与阈值都没留下来。
-> 从这里起以快照为准。**下一刀先写会挑牌的策略**，否则后面每一刀量出来都是零。
+> 从这里起以快照为准。
+
+**会挑牌的策略已交付**（`src/core/fixtures/picky-bot.ts`）：对手牌用塔罗、
+在沙盒里拿真的结算管线给小丑估值、挑包里的牌。60 个 seed 的墙
+（`npm run test:slow`）从贪心的 **2.333** 推到 **3.867**，有一局打穿了 Ante 8。
+贪心量到的墙主要是策略墙。强化牌那 9 张换成挑牌 bot 也还是零贡献——
+3 张新档池子里根本没有，另外 6 张的价值在「以后」，估值只看眼前。
 
 > **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
 > 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
-> 逻辑层有 746 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
+> 逻辑层有 747 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
 > **版本与蜡封的贴图都没有移植**（原作每种版本一个 `.fs`、蜡封是四张叠图），
 > 这一版只用文字标出来（`✦多彩` / `▣红`）。
 
@@ -65,7 +71,7 @@ src/
 │   ├── blinds.generated.ts      30 条盲注定义（生成的，别手改）
 │   ├── economy.ts               回合收益与利息（evaluate_round）
 │   ├── shop.ts                  商店（get_current_pool / create_card_for_shop / 重掷）
-│   ├── fixtures/                12 条 Ante 1 Boss 外部真值 + 贪心 bot（depth.test.ts 用它量墙）
+│   ├── fixtures/                12 条 Ante 1 Boss 外部真值 + 贪心 / 挑牌两个 bot（depth*.test.ts 用它们量墙）
 │   ├── enhancements.ts          8 种强化牌（照抄原作那七个 getter，不收成表）
 │   ├── editions.ts              4 种版本（poll_edition / get_edition）
 │   ├── seals.ts                 4 种蜡封（四个钩子，四个小函数）
@@ -80,7 +86,7 @@ src/
 │   │   └── use-context.ts           喂给消耗品的那张宽接口
 │   ├── atlas.ts                 图集网格推导（**不 import Phaser**，所以可单测）
 │   ├── event-queue.ts           事件队列（G.E_MANAGER）
-│   ├── jokers/                  ← 小丑系统。150 张里 124 张有行为
+│   ├── jokers/                  ← 小丑系统。150 张里 133 张有行为
 │   │   ├── centers.generated.ts     150 张的 center 定义（生成的，别手改）
 │   │   ├── instance.ts              set_ability / set_cost
 │   │   ├── calculate.ts             calculate_joker + 覆盖面登记
@@ -109,7 +115,8 @@ src/
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 718 个测试，必须全绿
+npm test            # 747 个测试，必须全绿
+npm run test:slow   # 60 个 seed 量墙（约 10 秒，改了内容或 bot 之后跑）
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
 ```
