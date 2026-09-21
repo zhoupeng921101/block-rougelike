@@ -1,5 +1,5 @@
 /**
- * 「墙在哪」的**结论版**：60 个 seed，三组并排。默认 `npm test` 不跑它（约 6 秒），
+ * 「墙在哪」的**结论版**：60 个 seed，三组并排。默认 `npm test` 不跑它（约 20 秒），
  * 要跑用 `npm run test:slow`。
  *
  * 为什么要 60 个：`depth.test.ts` 那 8 个 seed 只够当快照——
@@ -45,21 +45,25 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
     });
 
     /**
-     * **策略欠的约是 1.5 个 Ante。** 贪心的墙主要是策略墙，不是内容墙。
-     * 最大的一项是小丑估值：贪心把钱先花在包上、买小丑不看好坏，
-     * 死的时候小丑区常常只有一两张废的。
+     * **策略欠的约是 1.8 个 Ante。** 贪心的墙主要是策略墙，不是内容墙。
+     *
+     * 两步来的：小丑估值 + 用塔罗 + 挑包（2.333 → 3.867），
+     * 再加出牌（带小丑精算挑哪一手、模拟挑弃法、弃牌按手数分配额，→ 4.133）。
+     * 出牌那一步在**另一批没参与调参的 60 个 seed**（`H${i * 104729 + 17}`）上复核过：
+     * 3.967 → 4.350，不是在这批 seed 上调出来的巧合。
      */
-    it('挑牌：平均 3.867，有一局打穿了 Ante 8', () => {
-        expect(mean(picky)).toBe(3.867);
-        expect(histogram(picky)).toEqual([4, 11, 13, 11, 9, 9, 2, 0, 0, 1]);
-        // 逐 seed 比：挑牌更深的远多于更浅的
+    it('挑牌：平均 4.133，46 个 seed 比贪心深、6 个更浅', () => {
+        expect(mean(picky)).toBe(4.133);
+        expect(histogram(picky)).toEqual([3, 9, 11, 12, 13, 6, 4, 1, 1, 0]);
         const deeper = picky.filter((r, i) => r.ante > greedy[i].ante).length;
         const shallower = picky.filter((r, i) => r.ante < greedy[i].ante).length;
-        expect([deeper, shallower]).toEqual([41, 5]);
+        expect([deeper, shallower]).toEqual([46, 6]);
     });
 
     /**
-     * **强化牌那 9 张的贡献，换成挑牌 bot 也还是零**（3.867 vs 3.883，在噪声里）。
+     * **强化牌那 9 张的贡献，换成挑牌 bot 也还是零**——禁掉它们，60 局**逐局深度完全相同**。
+     * 死时手上有其中一张的 2 局，禁买对它们也没影响——那张多半不是 bot 挑的
+     * （`Judgement` / `Wraith` 这类随机造小丑的来源不受禁买名单管）。
      *
      * 两个原因，都不是 bot 的锅：
      * - **3 张新档根本抽不到**：Golden Ticket / Glass Joker / Driver's License
@@ -70,10 +74,10 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      *
      * 第二条是估值的已知短板（只看眼前、不看成长），修它得给估值加「未来」，暂不做。
      */
-    it('禁掉强化牌那 9 张：平均 3.883，与不禁的差在噪声里', () => {
-        expect(mean(pickyBanned)).toBe(3.883);
+    it('禁掉强化牌那 9 张：逐局深度完全相同', () => {
+        expect(pickyBanned.map((r) => r.ante)).toEqual(picky.map((r) => r.ante));
         const held = picky.filter((r) => r.jokers.some((n) => NINE.has(n))).length;
-        expect(held).toBe(1);
+        expect(held).toBe(2);
     });
 
     /**
@@ -82,9 +86,10 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * - 全程存 $25（除非小丑能涨 50%）：明显更差，一半局死在 Ante 2 以前
      * - 后期（Ante 3 起）才存 $25、放行天体包、余钱重掷：最像人的打法，也没赢
      *
-     * 等出牌与估值改好之后重跑这两条——钱那时可能就变得有用了。
+     * 出牌改好之后重跑过（原先 2.900 / 3.633 对 3.867），**结论没变**。
+     * 下一个该重跑的时机是估值学会看成长之后。
      */
-    it('存利息：全程存 $25 掉到 2.900，后期才存 + 重掷 3.633，都不比不存（3.867）好', () => {
+    it('存利息：全程存 $25 掉到 2.867，后期才存 + 重掷 4.017，都不比不存（4.133）好', () => {
         const flat25 = SEEDS.map((s) =>
             pickyRun(fresh(s), { economy: { reserve: () => 25, breakReserveGain: 0.5 } }));
         const late25 = SEEDS.map((s) =>
@@ -96,7 +101,7 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
                     maxRerolls: 10,
                 },
             }));
-        expect(mean(flat25)).toBe(2.9);
-        expect(mean(late25)).toBe(3.633);
+        expect(mean(flat25)).toBe(2.867);
+        expect(mean(late25)).toBe(4.017);
     });
 });

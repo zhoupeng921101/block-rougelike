@@ -1,5 +1,5 @@
 /**
- * 挑牌机器人：在贪心机器人（`greedy-bot.ts`）之上补三件它不会做的事。
+ * 挑牌机器人：在贪心机器人（`greedy-bot.ts`）之上补四件它不会做的事。
  *
  * ## 为什么要它
  *
@@ -18,14 +18,13 @@
  *    **小丑排在包前面买**——它是唯一的乘法来源。
  * 3. **会挑包里的牌。** 天体包挑最常打的那个牌型的星球，标准包挑主花色的牌。
  *
- * 出牌也改了两处：估分算上强化（石头 / 加成 / 倍率 / 玻璃），
- * 以及「够不够打」看牌型（顺子以上才出），不看写死的 250——
- * 牌型升了级、强化多了之后，250 这条线会越来越偏。
+ * 4. **会出牌。** 挑哪一手：粗估筛出前十来个，再**带着小丑**进沙盒精算（`bestPlay`）。
+ *    弃不弃、弃哪几张：对几种弃法各模拟 24 次换牌（只看牌堆构成、不看顺序），
+ *    挑期望最好的，且弃牌按手数分配额（`playRound`）。
  *
  * ## 它**仍然不**会的
  *
- * - **估分不算小丑**：挑哪一手只看牌型与强化。算小丑得把整条管线跑 218 遍，
- *   还会改 ability、消费 RNG
+ * - **模拟只看一手**：弃了之后下一手能凑出什么，不往更远看；模拟的估分也不算小丑
  * - **默认不存利息、不重掷**：参数有（`Economy`），但实测都不划算，见那一节
  * - **不跳盲注、不卖小丑换钱**
  * - **与原作的一处差异它绕不开**：复刻件开奥秘包不会发手牌，
@@ -78,28 +77,6 @@ export function mainSuit(cards: readonly Card[]): Suit {
     return best;
 }
 
-/**
- * 这一手追哪个花色。**手里的张数为主，整副牌的比例为辅**。
- *
- * 不能直接用 `mainSuit`：开局四种花色各 13 张，并列时它固定给黑桃，
- * 于是手里明明四张红桃也会被当成废牌弃掉。整副牌的比例只在被塔罗推歪之后才起作用——
- * 一个花色占到 40%（均匀时 25%），大约顶手里多 0.6 张。
- */
-function roundSuit(hand: readonly Card[], deck: readonly Card[]): Suit {
-    let best: Suit = 'Spades';
-    let bestScore = -Infinity;
-    for (const suit of SUITS) {
-        const inHand = hand.filter((c) => isSuit(c, suit)).length;
-        const share = deck.length > 0 ? deck.filter((c) => isSuit(c, suit)).length / deck.length : 0;
-        const score = inHand + share * 4;
-        if (score > bestScore) {
-            best = suit;
-            bestScore = score;
-        }
-    }
-    return best;
-}
-
 /** 这张牌对「打主花色同花」有多大用。越大越该留、越该强化 */
 function cardValue(card: Card, suit: Suit): number {
     const onSuit = isSuit(card, suit) ? 100 : 0;
@@ -145,31 +122,38 @@ function estimate(cards: Card[], hands: Record<HandName, HandInfo>): number {
     return Math.floor(chips * mult * xMult);
 }
 
-/** 值得直接出的牌型：顺子及以上。低于它的宁可弃牌去追同花 */
-const STRONG_HANDS: ReadonlySet<HandName> = new Set([
-    'Flush Five', 'Flush House', 'Five of a Kind', 'Straight Flush',
-    'Four of a Kind', 'Full House', 'Flush', 'Straight',
-]);
+/** 带着小丑重算的候选数。粗估排前这么多的，才进沙盒跑真管线 */
+const RESCORE_TOP = 12;
 
-/** 穷举 ≤5 张子集挑估分最高的。**钢铁 / 黄金牌不进候选**——它们留在手里才值钱 */
-function bestPlay(
-    hand: Card[],
-    hands: Record<HandName, HandInfo>,
-): { cards: Card[]; score: number; name: HandName | null } {
+type Play = { cards: Card[]; score: number; name: HandName | null };
+
+/** 克隆一张要进沙盒出牌的牌。**保留 `debuff`**（Boss 压下去的牌不计分） */
+function clonePlayed(c: Card): Card {
+    return { ...c, base: { ...c.base }, T: { ...c.T } };
+}
+
+/**
+ * 挑出哪一手。两段：
+ *
+ * 1. **粗估**：穷举 ≤5 张子集（最多 218 个），按 `estimate`（算强化、不算小丑）排序
+ * 2. **精算**：粗估前 `RESCORE_TOP` 个进沙盒，**带着小丑**跑真的结算管线
+ *
+ * 为什么要第二段：粗估不算小丑，而小丑经常改的正是**哪一手最好**——
+ * `Crazy Joker` 让顺子多 12 倍率、`Scholar` 让 A 多 20 筹码。
+ * 更要命的是「够不够过关」：粗估一直低估，于是手上已经够了还在弃牌。
+ * 全部 218 个都精算太慢，粗估前十来个里几乎总有真正最好的那手。
+ *
+ * **钢铁 / 黄金牌不进候选**——它们留在手里才值钱。
+ */
+function bestPlay(run: Run, round: Round): Play {
+    const hand = round.hand;
     const pool = hand.filter((c) => !isHeldValue(c));
     // 全是钢铁 / 黄金也得出点什么
     const source = pool.length > 0 ? pool : hand;
-    let best: { cards: Card[]; score: number; name: HandName | null } = {
-        cards: [source[0]], score: -1, name: null,
-    };
 
+    const candidates: Array<{ cards: Card[]; est: number }> = [];
     const walk = (start: number, picked: Card[]) => {
-        if (picked.length >= 1) {
-            const score = estimate(picked, hands);
-            if (score > best.score) {
-                best = { cards: [...picked], score, name: evaluatePokerHand(picked).topName };
-            }
-        }
+        if (picked.length >= 1) candidates.push({ cards: [...picked], est: estimate(picked, round.hands) });
         if (picked.length === 5) return;
         for (let i = start; i < source.length; i++) {
             picked.push(source[i]);
@@ -178,37 +162,191 @@ function bestPlay(
         }
     };
     walk(0, []);
+    candidates.sort((a, b) => b.est - a.est);
+
+    let best: Play = { cards: candidates[0].cards, score: -Infinity, name: null };
+    for (const cand of candidates.slice(0, RESCORE_TOP)) {
+        const held = hand.filter((c) => !cand.cards.includes(c)).map(clonePlayed);
+        const score = sandboxScore(run, run.jokers, cand.cards.map(clonePlayed), held, {
+            // 出牌时原作已经先扣了一手（`round.ts` 在结算前 `handsLeft--`）
+            hands_left: round.handsLeft - 1,
+            discards_left: round.discardsLeft,
+            hands_played: round.handsPlayedThisRound,
+            deckCount: round.deck.length,
+        });
+        // 沙盒抛了（极少）就退回粗估
+        const s = score < 0 ? cand.est : score;
+        if (s > best.score) best = { cards: cand.cards, score: s, name: null };
+    }
+    best.name = evaluatePokerHand(best.cards).topName;
+    return best;
+}
+
+// ————————————————————————————————————————————————————————————————
+// 弃牌：模拟换牌，挑期望最好的弃法
+// ————————————————————————————————————————————————————————————————
+
+/**
+ * 一整把手牌（通常 8 张）里**能凑出的最好一手**大约值多少分。给模拟用，要快。
+ *
+ * 不能用 `evaluatePokerHand`：它照原作，超过 5 张就不认同花（`get_flush` 的 `#hand > 5`）。
+ * 这里自己数：同花 / 顺子 / 四条 / 葫芦 / 三条 / 两对 / 对子 / 高牌，
+ * 每种按当前牌型等级算 `(筹码 + 计分牌点数) × 倍率`，取最大。不算小丑、不算强化。
+ */
+function quickBest(cards: readonly Card[], hands: Record<HandName, HandInfo>): number {
+    const score = (name: HandName, scoring: readonly Card[]) =>
+        (hands[name].chips + scoring.reduce((n, c) => n + c.base.nominal, 0)) * hands[name].mult;
+    const desc = [...cards].filter((c) => c.enhancement !== 'm_stone')
+        .sort((a, b) => b.base.nominal - a.base.nominal);
+
+    let best = desc.length > 0 ? score('High Card', desc.slice(0, 1)) : 0;
+
+    // 同花
+    for (const suit of SUITS) {
+        const same = desc.filter((c) => isSuit(c, suit));
+        if (same.length >= 5) best = Math.max(best, score('Flush', same.slice(0, 5)));
+    }
+
+    // 顺子（A 可以当 1）
+    const ids = new Set(desc.map((c) => c.base.id));
+    if (ids.has(14)) ids.add(1);
+    for (let top = 14; top >= 5; top--) {
+        let ok = true;
+        for (let k = 0; k < 5; k++) if (!ids.has(top - k)) { ok = false; break; }
+        if (!ok) continue;
+        const run: Card[] = [];
+        for (let k = 0; k < 5; k++) {
+            const id = top - k === 1 ? 14 : top - k;
+            run.push(desc.find((c) => c.base.id === id)!);
+        }
+        best = Math.max(best, score('Straight', run));
+        break;
+    }
+
+    // 同点数
+    const groups = new Map<number, Card[]>();
+    for (const c of desc) groups.set(c.base.id, [...(groups.get(c.base.id) ?? []), c]);
+    const sets = [...groups.values()].sort((a, b) => b.length - a.length || b[0].base.nominal - a[0].base.nominal);
+    const [g1, g2] = sets;
+    if (g1 && g1.length >= 4) best = Math.max(best, score('Four of a Kind', g1.slice(0, 4)));
+    if (g1 && g1.length >= 3 && g2 && g2.length >= 2) {
+        best = Math.max(best, score('Full House', [...g1.slice(0, 3), ...g2.slice(0, 2)]));
+    }
+    if (g1 && g1.length >= 3) best = Math.max(best, score('Three of a Kind', g1.slice(0, 3)));
+    if (g1 && g1.length >= 2 && g2 && g2.length >= 2) {
+        best = Math.max(best, score('Two Pair', [...g1.slice(0, 2), ...g2.slice(0, 2)]));
+    }
+    if (g1 && g1.length >= 2) best = Math.max(best, score('Pair', g1.slice(0, 2)));
     return best;
 }
 
 /**
- * 弃哪几张：留主花色、留钢铁 / 黄金、留成组的同点数，剩下的从最没用的弃起。
- *
- * 与贪心的区别：追哪个花色要把整副牌的比例也算进去（见 `roundSuit`）——
- * 换花色的塔罗一直在往主花色推，被推歪之后这一手也该跟着它走。
+ * bot 自己的随机数（mulberry32）。**绝不能用游戏的 RNG**——
+ * 模拟消费一次 `pseudorandom` 就会让后面的洗牌、商店全部分叉。
+ * 种子从手牌与分数算，所以同一局面总是同一个决定，整局可复现。
  */
-function discardSet(hand: Card[], suit: Suit): Card[] {
-    const byId = new Map<number, number>();
-    for (const c of hand) byId.set(c.base.id, (byId.get(c.base.id) ?? 0) + 1);
-    const onSuit = hand.filter((c) => isSuit(c, suit)).length;
-
-    // 与贪心的 `keepSet` 同一个取舍：同花项目每张值 100、同点数项目每张值 90。
-    // 同花凑不到 3 张就改留同点数组（对子也留）
-    const bestGroup = Math.max(0, ...byId.values());
-    const chaseRanks = onSuit < 3 ? bestGroup >= 2 : 90 * bestGroup > 100 * onSuit;
-
-    const keep = (c: Card) =>
-        isHeldValue(c) ||
-        (chaseRanks ? (byId.get(c.base.id) ?? 0) >= 2 : isSuit(c, suit));
-
-    return hand
-        .filter((c) => !keep(c))
-        .sort((a, b) => cardValue(a, suit) - cardValue(b, suit))
-        .slice(0, 5);
+function localRng(seed: number): () => number {
+    let a = seed >>> 0;
+    return () => {
+        a = (a + 0x6d2b79f5) >>> 0;
+        let t = a;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
 }
 
+function seedOf(round: Round): number {
+    let h = 2166136261;
+    const s = round.hand.map((c) => c.key).join() + '|' + round.chips + '|' + round.discardsLeft;
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    return h;
+}
+
+/** 每种弃法模拟几次换牌。24 次在 60 个 seed 上已经稳定，再多只是变慢 */
+const SAMPLES = 24;
+
+/**
+ * 候选弃法：几种「朝某个方向追」的弃法，每种最多弃 5 张、从最没用的弃起。
+ * - 每个在手里有 ≥2 张的花色：弃掉其余的（追同花）
+ * - 弃掉不成对的（追同点数）
+ * 钢铁 / 黄金牌永远不弃。
+ */
+function discardCandidates(hand: readonly Card[]): Card[][] {
+    const out: Card[][] = [];
+    const disposable = hand.filter((c) => !isHeldValue(c));
+    const low = (a: Card, b: Card) => a.base.nominal - b.base.nominal;
+
+    for (const suit of SUITS) {
+        if (hand.filter((c) => isSuit(c, suit)).length < 2) continue;
+        out.push(disposable.filter((c) => !isSuit(c, suit)).sort(low).slice(0, 5));
+    }
+    const count = new Map<number, number>();
+    for (const c of hand) count.set(c.base.id, (count.get(c.base.id) ?? 0) + 1);
+    out.push(disposable.filter((c) => (count.get(c.base.id) ?? 0) < 2).sort(low).slice(0, 5));
+    return out.filter((d) => d.length > 0);
+}
+
+/**
+ * 挑期望最好的弃法。返回那一组与它的期望分（`quickBest` 口径）。
+ *
+ * **只用牌堆里剩哪些牌，不用它们的顺序**——原作里玩家能看牌堆的构成，看不到顺序。
+ * 所以每次模拟都从剩余牌里随机抽，不是照着 `round.deck` 的末尾摸。
+ */
+function bestDiscard(round: Round): { cards: Card[]; expected: number } | null {
+    const rng = localRng(seedOf(round));
+    const deck = round.deck;
+    let best: { cards: Card[]; expected: number } | null = null;
+
+    for (const discard of discardCandidates(round.hand)) {
+        const kept = round.hand.filter((c) => !discard.includes(c));
+        const draw = Math.min(discard.length, deck.length);
+        let total = 0;
+        for (let s = 0; s < SAMPLES; s++) {
+            // 部分 Fisher–Yates：只洗出前 draw 张
+            const pool = [...deck];
+            for (let i = 0; i < draw; i++) {
+                const j = i + Math.floor(rng() * (pool.length - i));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            total += quickBest([...kept, ...pool.slice(0, draw)], round.hands);
+        }
+        const expected = total / SAMPLES;
+        if (!best || expected > best.expected) best = { cards: discard, expected };
+    }
+    return best;
+}
+
+/**
+ * 把一局打完。每一步三选一：用消耗品、出牌、弃牌。
+ *
+ * ## 什么时候出
+ *
+ * - 这一手（带小丑精算）就够过关
+ * - 没弃牌了、或只剩最后一手
+ * - **这一手的弃牌配额用完了**（见下）
+ * - 模拟下来，弃哪一组都不比现在就出好
+ *
+ * ## 弃牌要在几手之间分着用
+ *
+ * 每一手开始时给一个配额 `ceil(剩余弃牌 / 剩余手数)`，用完就出。
+ * 不分配额的话，bot 会在第一手就把三次弃牌全烧掉去追同花——
+ * 那一手打出了同花，后面三手手上什么都没有、也没法换，只能出对子和高牌。
+ * 实测不分配额反而比原来的写死规则**更差**（3.933 → 3.600，死在 Ante 1 的从 4 局涨到 12 局）。
+ *
+ * 试过又扔掉的两条（60 个 seed 上都没区别）：
+ * 「落后于进度就弃」（这一手 × 剩余手数 < 还差的分），与「顺子以上直接出」。
+ */
 function playRound(run: Run, round: Round): void {
     let guard = 0;
+    let usedThisHand = 0;
+    let allowance = 0;
+    const newHand = () => {
+        usedThisHand = 0;
+        allowance = Math.ceil(round.discardsLeft / Math.max(1, round.handsLeft));
+    };
+    newHand();
+
     while (round.phase === 'selecting') {
         if (guard++ > 60) throw new Error('打不完——策略死循环了');
 
@@ -216,24 +354,22 @@ function playRound(run: Run, round: Round): void {
         useHeldConsumables(run);
         if (round.phase !== 'selecting') break;
 
-        const best = bestPlay(round.hand, round.hands);
+        const best = bestPlay(run, round);
         const need = round.requirement - round.chips;
-        const mustPlay = round.discardsLeft === 0 || round.handsLeft === 1;
-        // **出牌次数比弃牌次数贵**：一手对子打出去就少一次出同花的机会。
-        // 所以只有「够过关」或「已经是顺子以上」才出，否则弃牌去追
-        const strong = best.name !== null && STRONG_HANDS.has(best.name);
+        const mustPlay = round.discardsLeft === 0 || round.handsLeft === 1 || usedThisHand >= allowance;
 
-        if (mustPlay || best.score >= need || strong) {
-            round.play(best.cards);
-            continue;
+        if (!mustPlay && best.score < need) {
+            // 两边都用 `quickBest` 口径比，别拿带小丑的精算分去比不带的模拟分
+            const discard = bestDiscard(round);
+            if (discard && discard.expected > quickBest(round.hand, round.hands)) {
+                round.discard(discard.cards);
+                usedThisHand++;
+                continue;
+            }
         }
 
-        const spare = discardSet(round.hand, roundSuit(round.hand, run.fullDeck));
-        if (spare.length === 0) {
-            round.play(best.cards);
-            continue;
-        }
-        round.discard(spare);
+        round.play(best.cards);
+        newHand();
     }
 }
 
@@ -441,37 +577,63 @@ function referenceHands(run: Run): RefHand[] {
 function teamScore(run: Run, jokers: readonly Joker[]): number {
     let total = 0;
     for (const ref of referenceHands(run)) {
-        const team = jokers.map((j) => structuredClone(j));
-        const hands = structuredClone(run.hands);
-        refreshDerivedAbilities(team, run.jokerSlots, run.fullDeck);
-        const mods = runModifiers(team);
-        const view = makeGameView({
-            hands,
-            jokers: team,
-            joker_slots: run.jokerSlots,
-            handCards: ref.held.map(cloneCard),
-            dollars: run.dollars,
-            deckCount: 30,
-            startingDeckSize: run.fullDeck.length,
-            playingCardCount: run.fullDeck.length,
-            smeared: mods.smeared,
-            probabilities: { normal: mods.probabilityNormal },
-            current_round: { hands_left: 2, discards_left: 1, hands_played: 1 },
-            ante: run.ante,
-            consumable_slots: 0,
-            createConsumable: () => {},
-            createPlayingCard: () => {},
-            duplicateConsumableAsNegative: () => {},
-            pseudorandom: (_k, min, max) =>
-                min !== undefined && max !== undefined ? Math.floor((min + max) / 2) : 0.5,
+        const score = sandboxScore(run, jokers, ref.play.map(cloneCard), ref.held.map(cloneCard), {
+            hands_left: 2, discards_left: 1, hands_played: 1, deckCount: 30,
         });
-        try {
-            total += ref.weight * evaluatePlay(ref.play.map(cloneCard), hands, view, mods.flags).score;
-        } catch {
-            return 0;
-        }
+        if (score < 0) return 0;
+        total += ref.weight * score;
     }
     return total;
+}
+
+/**
+ * 在沙盒里用真的结算管线打一手。**调用方负责传克隆过的牌**。
+ *
+ * 小丑与牌型等级在这里克隆；掷点一律给 0.5（1/2 及以上的概率算中），
+ * 造卡的口子全是空操作——**一次真 RNG 都不碰**。抛了异常返回 -1。
+ *
+ * 不接 Boss 的整手 debuff（The Psychic / The Eye 那一类），只认牌身上已有的 `debuff`。
+ */
+function sandboxScore(
+    run: Run,
+    jokers: readonly Joker[],
+    play: Card[],
+    held: Card[],
+    round: { hands_left: number; discards_left: number; hands_played: number; deckCount: number },
+): number {
+    const team = jokers.map((j) => structuredClone(j));
+    const hands = structuredClone(run.hands);
+    refreshDerivedAbilities(team, run.jokerSlots, run.fullDeck);
+    const mods = runModifiers(team);
+    const view = makeGameView({
+        hands,
+        jokers: team,
+        joker_slots: run.jokerSlots,
+        handCards: held,
+        dollars: run.dollars,
+        deckCount: round.deckCount,
+        startingDeckSize: run.fullDeck.length,
+        playingCardCount: run.fullDeck.length,
+        smeared: mods.smeared,
+        probabilities: { normal: mods.probabilityNormal },
+        current_round: {
+            hands_left: round.hands_left,
+            discards_left: round.discards_left,
+            hands_played: round.hands_played,
+        },
+        ante: run.ante,
+        consumable_slots: 0,
+        createConsumable: () => {},
+        createPlayingCard: () => {},
+        duplicateConsumableAsNegative: () => {},
+        pseudorandom: (_k, min, max) =>
+            min !== undefined && max !== undefined ? Math.floor((min + max) / 2) : 0.5,
+    });
+    try {
+        return evaluatePlay(play, hands, view, mods.flags).score;
+    } catch {
+        return -1;
+    }
 }
 
 /** 小丑区里最弱的那张：拿掉它掉分最少的。没实现的直接算最弱 */
@@ -480,6 +642,8 @@ function weakestJoker(run: Run): number {
     let idx = -1;
     let worst = Infinity;
     run.jokers.forEach((j, i) => {
+        // **Negative 的不算**：它自己占的那一格是它带来的，卖掉它腾不出位子
+        if (j.edition === 'negative') return;
         const loss = isJokerImplemented(j.key)
             ? base - teamScore(run, run.jokers.filter((x) => x !== j))
             : -Infinity;
@@ -500,6 +664,7 @@ function jokerGain(run: Run, candidate: Joker): number {
     const now = Math.max(1, teamScore(run, run.jokers));
     if (!run.jokersFull) return teamScore(run, [...run.jokers, candidate]) / now - 1;
     const w = weakestJoker(run);
+    if (w < 0) return -1;
     const swapped = run.jokers.map((j, i) => (i === w ? candidate : j));
     return teamScore(run, swapped) / now - 1;
 }
@@ -579,7 +744,7 @@ const SWAP_GAIN = 0.15;
  *
  * 60 个 seed 试了 15 种组合（存 5 / 10 / 15 / 25、前期存 / 后期才存、
  * 放不放行天体包、配不配重掷），**没有一种比不存好**，前期就存的明显更差
- * （全程存 $25：3.867 → 2.900）。利息确实发了——全程存 $25 时每回合多拿约 $2.5——
+ * （全程存 $25：3.867 → 2.900；出牌改好之后重跑，4.133 → 2.867，结论不变）。利息确实发了——全程存 $25 时每回合多拿约 $2.5——
  * 但多出来的钱变不成战力：
  * - 回本太慢：少花 $25 要 5 回合满利息才补回来，而这个 bot 平均只活十来个回合
  * - 花不出去：重掷只换货架两格，刷到的小丑多半过不了估值线
@@ -661,6 +826,7 @@ function buyJokers(run: Run): void {
         if (item.kind !== 'joker') continue;
         const full = run.jokersFull;
         const w = full ? weakestJoker(run) : -1;
+        if (full && w < 0) continue;
         const refund = full ? run.jokers[w].sell_cost : 0;
         if (item.cost > run.dollars + refund) continue;
 
@@ -669,6 +835,7 @@ function buyJokers(run: Run): void {
         // 要动存款的，只有涨得够多的才值——少吃的利息是每回合都在亏的
         if (item.cost > spendable(run) + refund && gain < policy.breakReserveGain) continue;
         if (full) run.sellJoker(w);
+        if (run.jokersFull || item.cost > run.dollars) continue;
         run.buyJoker(i);
     }
 }

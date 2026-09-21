@@ -67,17 +67,21 @@ describe('贪心深度', () => {
 });
 
 describe('挑牌深度', () => {
-    it('八个 seed 各自死在第几个 Ante（平均 3.75）', () => {
+    /**
+     * **注意这 8 个的均值比改出牌之前还低**（3.75 → 2.75），而 60 个 seed 的均值是涨的
+     * （3.867 → 4.133）。这正是「8 个只够当快照」的活例子——别拿它下结论。
+     */
+    it('八个 seed 各自死在第几个 Ante（平均 2.75）', () => {
         expect(bySeed(picky)).toEqual({
             TUTORIAL: 2,
             ALEEB: 5,
             '7LB2WVPK': 2,
-            JHZ7FPM: 6,
-            QQQ777: 5,
+            JHZ7FPM: 2,
+            QQQ777: 3,
             MNBVCXZ: 2,
-            ZZZZZZ: 5,
-            ABCDEF: 3,
+            ZZZZZZ: 4,
+            ABCDEF: 2,
         });
-        expect(mean(picky)).toBe(3.75);
+        expect(mean(picky)).toBe(2.75);
     });
 });

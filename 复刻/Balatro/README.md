@@ -56,6 +56,10 @@ Lucky Cat、Golden Ticket、Glass Joker、Driver's License。**小丑覆盖面 1
 全程存 $25 反而从 3.867 掉到 2.900。参数留在 `picky-bot.ts` 的 `Economy` 里、默认关。
 卡住 bot 的是出牌（每关一手同花之后只剩对子）与只看眼前的小丑估值。
 
+**出牌改好了**：挑哪一手带着小丑精算、弃哪几张模拟换牌挑期望最好的、弃牌按手数分配额。
+60 个 seed 3.867 → **4.133**（另一批没参与调参的 seed 上 3.967 → 4.350）。
+剩下最大的短板是小丑估值不看成长。
+
 > **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
 > 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
 > 逻辑层有 747 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
@@ -120,7 +124,7 @@ src/
 ```bash
 npm run dev         # localhost:8080
 npm test            # 747 个测试，必须全绿
-npm run test:slow   # 60 个 seed 量墙（约 10 秒，改了内容或 bot 之后跑）
+npm run test:slow   # 60 个 seed 量墙（约 20 秒，改了内容或 bot 之后跑）
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
 ```
