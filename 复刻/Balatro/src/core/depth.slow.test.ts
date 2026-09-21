@@ -42,10 +42,11 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
     /**
      * 「增删牌」那 8 张接进来之后 2.333 → 2.417：贪心什么都买，
      * 买到的 Riff-raff 现在真的会造小丑了。
+     * 补上版本加价之后 → 2.383（带版本的小丑变贵了，见下一条）。
      */
-    it('贪心：平均 2.417，一半以上死在 Ante 2', () => {
-        expect(mean(greedy)).toBe(2.417);
-        expect(histogram(greedy)).toEqual([4, 32, 20, 3, 1, 0, 0, 0, 0, 0]);
+    it('贪心：平均 2.383，一半以上死在 Ante 2', () => {
+        expect(mean(greedy)).toBe(2.383);
+        expect(histogram(greedy)).toEqual([4, 31, 23, 2, 0, 0, 0, 0, 0, 0]);
     });
 
     /**
@@ -60,13 +61,18 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      *
      * 「增删牌」那 8 张之后 4.333 → 4.267，**不是内容的作用**（挑牌 bot 一张都没买，
      * 禁掉它们 240 局逐局相同），是顺带修的时序改了 RNG 路径——在噪声里。
+     *
+     * **补上版本加价之后 → 4.083**（240 seed：4.146 → 3.992）。这是**纠偏不是退步**：
+     * 原先带版本的小丑按基础价卖（Negative / Polychrome 少收 $5），复刻件比原作便宜，
+     * 墙被高估了约 0.15 个 Ante。同一刀加的 Credit Card / Rocket / Gift Card 贡献为零
+     * （禁掉它们 3.996，在噪声里）。
      */
-    it('挑牌：平均 4.267，43 个 seed 比贪心深、8 个更浅', () => {
-        expect(mean(picky)).toBe(4.267);
-        expect(histogram(picky)).toEqual([3, 9, 12, 10, 12, 7, 2, 3, 1, 1]);
+    it('挑牌：平均 4.083，41 个 seed 比贪心深、8 个更浅', () => {
+        expect(mean(picky)).toBe(4.083);
+        expect(histogram(picky)).toEqual([3, 11, 13, 9, 10, 8, 3, 2, 0, 1]);
         const deeper = picky.filter((r, i) => r.ante > greedy[i].ante).length;
         const shallower = picky.filter((r, i) => r.ante < greedy[i].ante).length;
-        expect([deeper, shallower]).toEqual([43, 8]);
+        expect([deeper, shallower]).toEqual([41, 8]);
     });
 
     /**
@@ -98,10 +104,12 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * - 全程存 $25（除非小丑能涨 50%）：明显更差，一半局死在 Ante 2 以前
      * - 后期（Ante 3 起）才存 $25、放行天体包、余钱重掷：最像人的打法，也没赢
      *
-     * 重跑过三次，**结论都没变**：出牌改好之后（2.867 / 4.017 对 4.133），
-     * 估值学会看成长之后（2.950 / 4.133 对 4.333），增删牌那 8 张之后（3.0 / 4.167 对 4.267）。
+     * 重跑过四次：出牌改好之后（2.867 / 4.017 对 4.133），
+     * 估值学会看成长之后（2.950 / 4.133 对 4.333），增删牌那 8 张之后（3.0 / 4.167 对 4.267），
+     * 补上版本加价之后（2.933 / 4.100 对 4.083）。**全程存一直明显更差；后期存 + 重掷
+     * 这次打平**——差 0.017，远在噪声里，不算赢。
      */
-    it('存利息：全程存 $25 掉到 3.0，后期才存 + 重掷 4.167，都不比不存（4.267）好', () => {
+    it('存利息：全程存 $25 掉到 2.933，后期才存 + 重掷 4.100，与不存（4.083）打平', () => {
         const flat25 = SEEDS.map((s) =>
             pickyRun(fresh(s), { economy: { reserve: () => 25, breakReserveGain: 0.5 } }));
         const late25 = SEEDS.map((s) =>
@@ -113,7 +121,7 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
                     maxRerolls: 10,
                 },
             }));
-        expect(mean(flat25)).toBe(3);
-        expect(mean(late25)).toBe(4.167);
+        expect(mean(flat25)).toBe(2.933);
+        expect(mean(late25)).toBe(4.1);
     });
 });

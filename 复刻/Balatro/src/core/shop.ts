@@ -37,7 +37,7 @@ import { type BoosterCenter, BOOSTER_CENTERS, SHOP_BOOSTER_MAX, getPack } from '
 import { pollEdition } from './editions';
 import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET, makeConsumable } from './consumables';
 import type { Consumable, ConsumableSet, PlanetConfig } from './consumables';
-import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, findJoker, makeJoker } from './jokers';
+import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, findJoker, makeJoker, setCost } from './jokers';
 import type { Joker } from './jokers';
 import type { HandName } from './poker-hands';
 import type { PseudorandomState } from './rng';
@@ -371,7 +371,11 @@ export function createJokerCard(
     // `common_events.lua:2192` 的 `poll_edition('edi'+append+ante)`。
     // **掷点与落地是同一次**——16 号票时只掷不用，现在把结果接上了
     const edition = pollEdition(rng, `edi${keyAppend}${context.ante}`);
-    if (edition) joker.edition = edition;
+    if (edition) {
+        joker.edition = edition;
+        // `set_edition` 末尾的 `set_cost`：带版本的小丑**更贵**（Negative / Polychrome +5）
+        setCost(joker);
+    }
 
     return joker;
 }
@@ -398,7 +402,7 @@ export function createConsumableCard(
 
 function createJokerForShop(rng: PseudorandomState, context: PoolContext): ShopItem {
     const joker = createJokerCard(rng, context, 'sho', 'shop');
-    return { kind: 'joker', joker, cost: joker.center.cost };
+    return { kind: 'joker', joker, cost: joker.cost };
 }
 
 /**
@@ -511,7 +515,8 @@ export class Shop {
     itemCost(index: number): number {
         const item = this.items[index];
         if (!item) return 0;
-        if (item.kind === 'joker') return item.joker.center.cost;
+        // **含版本加价**（`setCost` 算好的），不是 center 上的基础价
+        if (item.kind === 'joker') return item.joker.cost;
         return shopCost(item.consumable.cost, item.consumable.center.set, this.context);
     }
 

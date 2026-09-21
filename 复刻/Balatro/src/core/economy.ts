@@ -40,9 +40,8 @@ export type Payout = {
 /**
  * `card.lua:1657` 的 `Card:calculate_dollar_bonus`。
  *
- * 本里程碑能实现的：`Golden Joker`（固定 $4）、
- * `Delayed Gratification`（本回合一次弃牌都没用过 → 每点剩余弃牌 $2）。
- * `Cloud 9` / `Rocket` / `Satellite` 要九号牌统计 / 跳过盲注 / 星球牌，都不在范围。
+ * 六张：Golden Joker / Cloud 9 / Rocket / Satellite / Delayed Gratification，
+ * 顺序照原文（名字互斥，顺序不影响结果）。
  */
 export function calculateDollarBonus(
     joker: Joker,
@@ -60,6 +59,10 @@ export function calculateDollarBonus(
     switch (joker.ability.name) {
         case 'Golden Joker':
             return joker.ability.extra;
+
+        // `card.lua:1666`：**无条件**给 `extra.dollars`（初值 1，每打完一个 Boss +2，见 calculate.ts）
+        case 'Rocket':
+            return joker.ability.extra.dollars;
 
         // `card.lua:1663`：整副牌里每张 9 给 $1。**一张都没有时返回 nil**，
         // 不是返回 0——收益明细里那一行根本不出现

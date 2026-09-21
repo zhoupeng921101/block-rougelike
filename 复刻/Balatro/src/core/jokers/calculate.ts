@@ -39,6 +39,7 @@ import { blueprintTarget } from './derived';
 import { smearedMatches } from './modifiers';
 import type { HandName } from '../poker-hands';
 import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER } from './centers.generated';
+import { type Priced, setCost } from './instance';
 import type { GameView, Joker, JokerContext, JokerEffect } from './types';
 
 /** `next(context.poker_hands[type])` —— 那一档有没有命中。 */
@@ -695,10 +696,35 @@ const END_OF_ROUND: Record<string, Handler> = {
         return { message: `-${self.ability.extra}`, card: self };
     },
 
-    // `card.lua:2988`。卖价 +3（原作走 `extra_value` 再 `set_cost`）
+    // `card.lua:2988`。卖价 +3：攒进 `extra_value` 再 `set_cost`。
+    // **不能直接改 sell_cost**——之后任何一次 `set_cost`（比如被 Wheel 加上版本）会把它冲掉
     Egg: (self) => {
-        self.sell_cost += self.ability.extra;
+        self.extra_value = (self.extra_value ?? 0) + self.ability.extra;
+        setCost(self);
         return { message: 'val_up', card: self };
+    },
+
+    /**
+     * `card.lua:2996`。小丑区与消耗品区**每一张**（含自己）卖价 +1。
+     * 同 Egg，攒进 `extra_value` 再 `set_cost`。没有 `not context.blueprint`，但它不兼容蓝图
+     */
+    'Gift Card': (self, _context, game) => {
+        const cards: Priced[] = [...game.jokers, ...(game.consumableCards as Priced[])];
+        for (const card of cards) {
+            card.extra_value = (card.extra_value ?? 0) + self.ability.extra;
+            setCost(card);
+        }
+        return { message: 'val_up', card: self };
+    },
+
+    /**
+     * `card.lua:2899`。**打完 Boss** 回合收益 +2（发钱那一半在 `economy.ts`）。
+     * 这一趟排在 `evaluate_round` 之前，所以涨的那 $2 这一关就拿得到
+     */
+    Rocket: (self, context) => {
+        if (!context.blind_boss) return null;
+        self.ability.extra.dollars += self.ability.extra.increase;
+        return { message: 'upgrade', card: self };
     },
 
     // `card.lua:3011`。每回合把 x_mult 打回 1
@@ -1545,6 +1571,8 @@ const IMPLEMENTED_ELSEWHERE: Readonly<Record<string, string>> = {
     'Chaos the Clown': 'shop.ts 的 Shop.freeRerolls',
     // `card.lua:1657` 的 `calculate_dollar_bonus`
     'Golden Joker': 'economy.ts 的 calculateDollarBonus',
+    // 负债下限（`bankrupt_at`），在 `add_to_deck` / `remove_from_deck` 里改
+    'Credit Card': 'run.ts 的 bankruptAt',
     'Delayed Gratification': 'economy.ts 的 calculateDollarBonus',
     // 同上，只是数字来自别处：Cloud 9 数整副牌里的 9（derived.ts 重算），
     // Satellite 数「用过几种星球」（consumables/use.ts 的 distinctPlanetsUsed）

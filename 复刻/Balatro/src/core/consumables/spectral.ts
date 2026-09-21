@@ -29,7 +29,7 @@
 import { type Suit, type Value, cardKey, copyPlayingCard, makeBase, makeCard } from '../card';
 import { pollEdition } from '../editions';
 import { ENHANCEMENT_KEYS_BY_ORDER } from '../enhancements';
-import type { Joker } from '../jokers';
+import { type Joker, setCost } from '../jokers';
 import { levelUpHand } from '../scoring';
 import type { HandName } from '../poker-hands';
 import type { Seal } from '../seals';
@@ -210,7 +210,10 @@ export const SPECTRAL_SPECS: Record<string, ConsumableSpec> = {
     c_ectoplasm: {
         apply: (_c, ctx) => {
             const target = ctx.pickRandom(editionless(ctx), 'ectoplasm');
-            if (target) target.edition = 'negative';
+            if (target) {
+                target.edition = 'negative';
+                setCost(target); // `set_edition` 末尾的 `set_cost`
+            }
             ctx.changeHandSize(-ctx.nextEctoplasmMinus());
         },
         canUse: (_c, ctx) => editionless(ctx).length > 0,
@@ -244,12 +247,15 @@ export const SPECTRAL_SPECS: Record<string, ConsumableSpec> = {
             for (const joker of [...ctx.jokers]) {
                 if (joker !== chosen) ctx.removeJoker(joker);
             }
-            // `copy_card`：复制一份，**Negative 版本要剥掉**（原文 `strip_edition`）
-            ctx.addJoker({
+            // `copy_card`：复制一份，**Negative 版本要剥掉**（原文 `strip_edition`），
+            // 末尾的 `set_seal` 会重算价格——剥掉 Negative 的那张便宜 5 块
+            const copy = {
                 ...chosen,
                 ability: JSON.parse(JSON.stringify(chosen.ability)),
                 edition: chosen.edition === 'negative' ? undefined : chosen.edition,
-            });
+            };
+            setCost(copy);
+            ctx.addJoker(copy);
         },
         canUse: (_c, ctx) => ctx.jokers.length > 0 && ctx.jokerSlots > 1,
     },
@@ -263,6 +269,7 @@ export const SPECTRAL_SPECS: Record<string, ConsumableSpec> = {
             const target = ctx.pickRandom(editionless(ctx), 'hex');
             if (!target) return;
             target.edition = 'polychrome';
+            setCost(target); // `set_edition` 末尾的 `set_cost`
             for (const joker of [...ctx.jokers]) {
                 if (joker !== target) ctx.removeJoker(joker);
             }

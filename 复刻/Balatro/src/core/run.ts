@@ -54,7 +54,7 @@ import {
     recordConsumableUsage,
 } from './consumables';
 import { type Payout, evaluateRound } from './economy';
-import { calculateJoker, makeGameView, refreshDerivedAbilities, runModifiers } from './jokers';
+import { calculateJoker, makeGameView, refreshDerivedAbilities, runModifiers, setCost } from './jokers';
 import type { GameView, Joker } from './jokers';
 import { NO_JOKERS, type JokerFlags } from './poker-hands';
 import { PseudorandomState, pseudorandomElement, pseudoshuffle } from './rng';
@@ -260,6 +260,8 @@ export class Run {
             getting_sliced: false,
         };
         if (copy.ability.invis_rounds !== undefined) copy.ability.invis_rounds = 0;
+        // `copy_card` 末尾的 `set_seal` → `set_cost`：剥掉 Negative 的那张便宜 5 块
+        setCost(copy);
         this.jokers.push(copy);
         this.usedJokers.add(copy.key);
         refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
@@ -313,7 +315,10 @@ export class Run {
     private duplicateConsumableAsNegative(key: string): void {
         const [source] = pseudorandomElement(this.consumables, this.rng.pseudoseed(key));
         if (!source) return;
-        this.consumables.push({ ...source, edition: 'negative' });
+        // `copy_card` 之后 `set_edition({negative = true})` → `set_cost`：**贵 5 块**
+        const copy = { ...source, edition: 'negative' as const };
+        setCost(copy);
+        this.consumables.push(copy);
     }
 
     /** 喂给商店的池子上下文。**每次现建**——`jokers` 与 `grosMichelExtinct` 会变 */
@@ -477,7 +482,8 @@ export class Run {
         // **先收集再删**：遍历中途改数组会跳过元素
         const destroy: Joker[] = [];
         for (const joker of [...this.jokers]) {
-            const effect = calculateJoker(joker, { end_of_round: true }, view);
+            // `blind_boss`：Rocket 只在打完 Boss 时涨（原文读 `G.GAME.blind.boss`）
+            const effect = calculateJoker(joker, { end_of_round: true, blind_boss: this.blindKind === 'boss' }, view);
             if (!effect) continue;
             if (effect.grosMichelExtinct) this.grosMichelExtinct = true;
             if (effect.destroy) destroy.push(joker);
@@ -569,7 +575,7 @@ export class Run {
         if (!item) throw new Error(`商店没有第 ${index} 格`);
         // **现算价**：`Astronomer` 让星球牌免费，而它可能是刚买的
         const cost = this.shop.itemCost(index);
-        if (cost > this.dollars) throw new Error(`买不起：要 $${cost}，只有 $${this.dollars}`);
+        if (!this.canAfford(cost)) throw new Error(`买不起：要 $${cost}，只有 $${this.dollars}`);
         if (item.kind === 'joker' && this.jokersFull) {
             throw new Error(`小丑区满了（${this.jokerSlots} 格）`);
         }
@@ -613,7 +619,7 @@ export class Run {
         if (!slot) throw new Error(`商店没有第 ${index} 个补充包`);
         // **现算价**：`Astronomer` 可能是在这个商店里刚买的
         const cost = this.shop.packCost(index);
-        if (cost > this.dollars) {
+        if (!this.canAfford(cost)) {
             throw new Error(`买不起：要 $${cost}，只有 $${this.dollars}`);
         }
         if (!isBoosterImplemented(slot.key, BOOSTER_CENTERS)) {
@@ -638,7 +644,7 @@ export class Run {
         const slot = this.shop?.packs[index];
         if (!slot || !this.shop) return false;
         if (this.openPack) return false;
-        if (this.shop.packCost(index) > this.dollars) return false;
+        if (!this.canAfford(this.shop.packCost(index))) return false;
         return isBoosterImplemented(slot.key, BOOSTER_CENTERS);
     }
 
@@ -902,11 +908,39 @@ export class Run {
         };
     }
 
+    /**
+     * `G.GAME.bankrupt_at`：钱最低能花到多少。基线 0，**每张 Credit Card -20**
+     * （`card.lua:593` 的 `add_to_deck`，卖掉 / 被毁 / 被 debuff 时 `remove_from_deck` 加回来）。
+     *
+     * 复刻件从小丑区**现算**，不增量维护——与 `runModifiers` 同一条理由：
+     * 小丑会被卖、被毁、被 debuff，增量一处漏了下限就永久跑偏。
+     */
+    get bankruptAt(): number {
+        let at = 0;
+        for (const j of this.jokers) {
+            if (!j.debuff && j.ability.name === 'Credit Card') at -= j.ability.extra;
+        }
+        return at;
+    }
+
+    /** 现在最多能花多少：`dollars - bankrupt_at`。有 Credit Card 时可以花到负数 */
+    get spendable(): number {
+        return this.dollars - this.bankruptAt;
+    }
+
+    /**
+     * `button_callbacks.lua:92` 的 `can_buy`：`cost > dollars - bankrupt_at and cost > 0` 就买不起。
+     * **免费的永远买得起**（Astronomer 的星球），哪怕已经欠到底。
+     */
+    canAfford(cost: number): boolean {
+        return cost <= 0 || cost <= this.spendable;
+    }
+
     /** 重掷商店。`button_callbacks.lua:2965`。 */
     rerollShop(): void {
         if (!this.shop) throw new Error('不在商店里');
         const cost = this.shop.rerollCost;
-        if (cost > this.dollars) throw new Error(`重掷不起：要 $${cost}，只有 $${this.dollars}`);
+        if (!this.canAfford(cost)) throw new Error(`重掷不起：要 $${cost}，只有 $${this.dollars}`);
         this.dollars -= cost;
         this.shop.reroll();
         // `button_callbacks.lua:3010` 的 `context.reroll_shop`：`Flash Card` 靠它长个子

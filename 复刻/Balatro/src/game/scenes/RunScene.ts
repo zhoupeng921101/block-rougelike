@@ -275,7 +275,7 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     private doReroll(): void {
         if (this.animating || this.run.state !== 'shop' || !this.run.shop) return;
-        if (this.run.shop.rerollCost > this.run.dollars) {
+        if (!this.run.canAfford(this.run.shop.rerollCost)) {
             this.sound.play('cancel', { volume: 0.4 });
             return;
         }

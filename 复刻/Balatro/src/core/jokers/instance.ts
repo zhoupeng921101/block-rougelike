@@ -2,10 +2,10 @@
  * 造一张小丑。直译自 `card.lua:223` `Card:set_ability` 与 `card.lua:369` `Card:set_cost`。
  *
  * 只取小丑用得上的部分：`set_ability` 里的精灵尺寸调整（Half Joker 高度 ÷1.7 等）
- * 属于表现层，`set_cost` 里的版本/优惠券/租赁加价本里程碑没有。
- * 每处省略都在下面注明，不要以为是漏了。
+ * 属于表现层；`set_cost` 见 `setCost`。每处省略都在下面注明，不要以为是漏了。
  */
 
+import { type Edition, editionExtraCost } from '../editions';
 import type { HandName } from '../poker-hands';
 import { JOKER_CENTERS } from './centers.generated';
 import type { Joker, JokerAbility, JokerCenter } from './types';
@@ -47,11 +47,8 @@ export function makeAbility(center: JokerCenter): JokerAbility {
 }
 
 /**
- * `card.lua:369` `set_cost` 的小丑分支。
- *
- * 省掉的：`G.GAME.inflation`（Ante 涨价，要 Ante 2+）、版本加价、
- * `discount_percent`（优惠券）、`rental`。本里程碑这些都是 0 / 不存在，
- * 所以 `cost = base_cost`、`sell_cost = max(1, floor(cost/2))`。
+ * `card.lua:382` 那条 `max(1, floor(cost/2))`，不含 `extra_value`。
+ * 完整的定价见 `setCost`。
  */
 export function sellCost(cost: number): number {
     return Math.max(1, Math.floor(cost / 2));
@@ -64,6 +61,36 @@ export function sellCost(cost: number): number {
  */
 export function buyCost(center: { cost: number }): number {
     return Math.max(1, Math.floor(center.cost + 0.5));
+}
+
+/** `setCost` 要读写的那几个字段。小丑与消耗品都有 */
+export type Priced = {
+    center: { cost: number };
+    edition?: Edition;
+    cost: number;
+    sell_cost: number;
+    extra_value?: number;
+};
+
+/**
+ * `card.lua:369` 的 `Card:set_cost`：**从头重算**买价与卖价。
+ *
+ * ```lua
+ * self.extra_cost = 0 + G.GAME.inflation + 版本加价
+ * self.cost = max(1, floor((base_cost + extra_cost + 0.5) * (100 - discount_percent) / 100))
+ * self.sell_cost = max(1, floor(cost / 2)) + (ability.extra_value or 0)
+ * ```
+ *
+ * **原作在这几处调它**：造卡、`set_edition`、`set_seal`（所以 `copy_card` 末尾总会重算）、
+ * Egg / Gift Card 加 `extra_value` 之后。复刻件在同样的位置调——
+ * **漏调一处，那张卡的价格就停在旧版本上**（带 Negative 的小丑少卖 $2 这类）。
+ *
+ * 省掉的：`inflation`（只有挑战模式有）、`discount_percent`（优惠券）、`rental`、`couponed`。
+ * Astronomer 的免费在 `shop.ts` 的 `shopCost` 里。
+ */
+export function setCost(card: Priced): void {
+    card.cost = Math.max(1, Math.floor(card.center.cost + editionExtraCost(card.edition) + 0.5));
+    card.sell_cost = sellCost(card.cost) + (card.extra_value ?? 0);
 }
 
 export type MakeJokerOptions = {
@@ -97,14 +124,15 @@ export function makeJoker(key: string, options: MakeJokerOptions = {}): Joker {
         ability.loyalty_remaining = ability.extra.every;
     }
 
-    const cost = buyCost(center);
-
-    return {
+    const joker: Joker = {
         key,
         center,
         ability,
         debuff: false,
-        sell_cost: sellCost(cost),
+        cost: 0,
+        sell_cost: 0,
         T: { x: 0, y: 0, w: 0, h: 0 },
     };
+    setCost(joker);
+    return joker;
 }

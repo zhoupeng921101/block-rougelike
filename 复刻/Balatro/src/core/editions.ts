@@ -44,6 +44,20 @@ export const EDITION_VALUES = {
     negative: 1,
 } as const;
 
+/**
+ * `card.lua:371` 的版本加价：`set_cost` 里 `extra_cost` 那一段。
+ * **Negative 也加 5**——它不参与计分，但价格照加。
+ */
+export function editionExtraCost(edition: Edition | undefined): number {
+    switch (edition) {
+        case 'foil': return 2;
+        case 'holo': return 3;
+        case 'polychrome': return 5;
+        case 'negative': return 5;
+        default: return 0;
+    }
+}
+
 /** `G.GAME.edition_rate`（`game.lua:2110`）。基线 1，优惠券能改 */
 export const EDITION_RATE = 1;
 

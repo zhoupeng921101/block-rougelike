@@ -48,10 +48,12 @@ export type Consumable = {
      * 而 Negative 的效果是**消耗品区多一格**，不参与计分。
      */
     edition?: Edition;
-    /** `card.lua:370` 算出来的买入价 */
+    /** `card.lua:370` 算出来的买入价，**含版本加价**（Perkeo 复制出来的 Negative +5） */
     cost: number;
-    /** 卖价。`max(1, floor(cost/2))`，与小丑同一条 */
+    /** 卖价。`max(1, floor(cost/2)) + extra_value`，与小丑同一条（`setCost`） */
     sell_cost: number;
+    /** Gift Card 攒上去的额外卖价 */
+    extra_value?: number;
 };
 
 /**

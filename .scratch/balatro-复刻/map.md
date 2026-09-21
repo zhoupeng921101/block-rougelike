@@ -265,7 +265,19 @@ Label: wayfinder:map
 > 估值只在沙盒里连打参考牌，这些时机它看不见。Caino / Yorick 是传奇，只有 The Soul 出。
 > 贪心反而涨了（2.333 → 2.417）：它什么都买，买到的 Riff-raff 现在真的会造小丑。
 >
-> **下一刀的判断**：内容剩 9 张，三组各拽一个新系统（负债上限、标签与跳盲注、关掉 Boss）。
+> **「钱」那 3 张已交付**：Credit Card / Rocket / Gift Card。788 个测试绿，
+> **小丑覆盖面 144 / 150，rarity 1 全部做完**。剩 6：标签 4（Diet Cola 从「负债」挪过去了——
+> 它卖掉时造的是 Double Tag）/ 关掉 Boss 2。Rocket 原先也分错了组，它跟负债无关。
+>
+> **顺带补上 `set_cost` 的版本加价**（Foil +2 / Holo +3 / Polychrome +5 / Negative +5）。
+> 17 号票接版本时漏了：带版本的小丑一直按基础价卖，卖价也不跟着涨。现在造卡、`set_edition`
+> （Wheel / Ectoplasm / Hex）、`copy_card`（Ankh / Invisible / Perkeo）、Egg / Gift Card 之后都重算。
+> Egg 原先直接改 `sell_cost`，改成攒 `extra_value` 再重算——否则之后加版本会把它冲掉。
+>
+> **墙因此降了，这是纠偏**：240 seed 挑牌 4.146 → 3.992，60 seed 4.267 → 4.083。
+> 原先复刻件比原作便宜，墙被高估了约 0.15 个 Ante。新加的 3 张贡献为零（禁掉 3.996）。
+>
+> **下一刀的判断**：内容剩 6 张，两组各拽一个新系统（标签与跳盲注、关掉 Boss）。
 > 墙那边，估值的短板已经很清楚——**它只认计分管线里的成长**。要让 bot 用上这类小丑，
 > 沙盒得在连打之间模拟进盲注 / 弃牌 / 加牌，而 Madness 还会毁队友，模拟不当会高估。
 
@@ -598,6 +610,14 @@ Label: wayfinder:map
 - **`playing_card_added` 有五个触发点**：Marble（同步，在自己的 `setting_blind` 里）、
   DNA（同步，在 before 循环里、下一张小丑之前）、Cryptid 与 Familiar / Grim / Incantation
   （整批一次）、标准包挑走一张。Certificate 也是一个，它还没实现。
+
+- **`set_cost` 是「从头重算」，不是增量**：`cost = floor(base + 版本加价 + 0.5)`、
+  `sell = max(1, floor(cost/2)) + extra_value`。原作在造卡、`set_edition`、`set_seal`
+  （所以 `copy_card` 末尾一定会重算）之后都调它。**漏调一处，那张卡的价格就停在旧版本上**。
+  攒卖价的（Egg / Gift Card）必须写 `extra_value`，直接改 `sell_cost` 会被下一次重算冲掉。
+- **`bankrupt_at`**（Credit Card 每张 -20）从小丑区**现算**：卖掉、被毁、被 debuff 都自动收回。
+  判买不买得起是 `cost > 0 and cost > dollars - bankrupt_at`——**免费的永远买得起**。
+  收回下限不会抹平已经欠下的钱；负债时没有利息（`dollars >= 5` 才算）。
 
 ## Out of scope
 

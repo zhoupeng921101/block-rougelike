@@ -97,8 +97,16 @@ export type Joker = {
     ability: JokerAbility;
     /** `card.lua:526` 的 `self.debuff`。被 debuff 的小丑 `calculate_joker` 直接返回 nil */
     debuff: boolean;
-    /** 卖价。`card.lua:369` `set_cost` 算出来的 */
+    /** 买价。`card.lua:375`，**含版本加价**。由 `setCost` 算 */
+    cost: number;
+    /** 卖价。`card.lua:382`，`max(1, floor(cost/2)) + extra_value`。由 `setCost` 算 */
     sell_cost: number;
+    /**
+     * `ability.extra_value`：Egg / Gift Card 攒在卡上的额外卖价。
+     * **放在卡上而不是 ability 上**只是为了与消耗品同形（`setCost` 两边共用），
+     * 语义与原文一样跟着卡走——复制小丑时一并抄过去（`copy_card` 抄整个 ability）
+     */
+    extra_value?: number;
     /**
      * `card.edition`。商店与补充包里的小丑都会掷一次版本
      * （`poll_edition('edi'+append+ante)`）。

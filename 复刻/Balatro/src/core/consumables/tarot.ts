@@ -29,7 +29,7 @@
 
 import { type Card, type Suit, type Value, cardKey, makeBase } from '../card';
 import { pollEdition } from '../editions';
-import type { Joker } from '../jokers';
+import { type Joker, setCost } from '../jokers';
 import type { Consumable } from './types';
 import type { ConsumableSpec, UseContext } from './use-context';
 
@@ -213,7 +213,10 @@ export const TAROT_SPECS: Record<string, ConsumableSpec> = {
             const target = ctx.pickRandom(pool, 'wheel_of_fortune');
             if (!target) return;
             const edition = pollEdition(ctx, 'wheel_of_fortune', { noNeg: true, guaranteed: true });
-            if (edition) target.edition = edition;
+            if (edition) {
+                target.edition = edition;
+                setCost(target); // `set_edition` 末尾的 `set_cost`
+            }
         },
         canUse: (_c, ctx) => eligibleForEdition(ctx).length > 0,
     },

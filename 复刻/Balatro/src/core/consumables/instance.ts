@@ -8,7 +8,7 @@
  * 不复制一遍——复制的那一份迟早会和原文漂开。
  */
 
-import { buyCost, sellCost } from '../jokers';
+import { setCost } from '../jokers';
 import type { HandName } from '../poker-hands';
 import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET } from './centers.generated';
 import type { Consumable, PlanetConfig } from './types';
@@ -17,8 +17,9 @@ export function makeConsumable(key: string): Consumable {
     const center = CONSUMABLE_CENTERS[key];
     if (!center) throw new Error(`没有这张消耗品：${key}`);
 
-    const cost = buyCost(center);
-    return { key, center, cost, sell_cost: sellCost(cost) };
+    const consumable: Consumable = { key, center, cost: 0, sell_cost: 0 };
+    setCost(consumable);
+    return consumable;
 }
 
 /**
