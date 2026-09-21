@@ -37,8 +37,11 @@ import { applyBlindColours } from '../../ui/blind-colour';
 import { C, mixColours, setColour } from '../../ui/colours';
 import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
 import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
+import { createButtons } from '../../ui/definitions/buttons';
+import type { UIElement } from '../../ui/uibox';
 import { cardAreas } from '../areas';
 import { alignHand, alignPlay } from '../align-cards';
+import { DeckSprite } from '../deck-sprite';
 import { numberFormat } from '../../ui/format';
 import { UIBox } from '../../ui/uibox';
 import { RED_DECK } from '../../core/run';
@@ -122,6 +125,9 @@ export class RunScene extends Scene {
     private hudState!: HudState;
     private hudView!: UIBoxView;
     /** 四个 CardArea 身后的底框与计数（`cardarea.lua:288`） */
+    /** 手牌下面的出牌 / 排序 / 弃牌（`G.buttons`）。只在选牌时存在，出牌或弃牌之后重建（`one_press` 复位） */
+    private buttonsView: UIBoxView | null = null;
+    private deckSprite!: DeckSprite;
     /** 已经打到出牌区的牌（`G.play`），逐帧按 `alignPlay` 摆；其余手牌按 `alignHand` */
     private readonly inPlay = new Set<CardSprite>();
     private readonly areas = cardAreas();
@@ -138,8 +144,6 @@ export class RunScene extends Scene {
     private handPreview!: GameObjects.Text;
     private message!: GameObjects.Text;
     private jokerInfo!: GameObjects.Text;
-    private playBtn!: GameObjects.Text;
-    private discardBtn!: GameObjects.Text;
     private nextBtn!: GameObjects.Text;
     private rerollBtn!: GameObjects.Text;
     /** 盲注选择界面上的「跳过盲注」。与开包界面的「跳过」（`skipBtn`）不是一回事 */
@@ -216,6 +220,7 @@ export class RunScene extends Scene {
             major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } },
         });
         this.hudView = new UIBoxView(this, hudBox, 40);
+        this.deckSprite = new DeckSprite(this);
 
         const areas = this.areas;
         const areaAlign = { jokers: 'cl', consumeables: 'cr', hand: 'cm', deck: 'cr' } as const;
@@ -230,22 +235,20 @@ export class RunScene extends Scene {
         }
 
         // 下面这些调试文字与按钮是 UI 直译之前的占位，挪到左侧面板右边；等对应的原作 UI 直译过来再删
-        this.hud = this.add.text(toPx(5.0), toPx(2.75), '', {
+        this.hud = this.add.text(toPx(5.0), toPx(3.1), '', {
             fontFamily: 'monospace', fontSize: 22, color: '#e8e8e8', lineSpacing: 6,
         });
         // 牌型预览已经在左侧面板里了（`hand_text_area`），这行调试字不再显示
         this.handPreview = this.add.text(toPx(5.0), toPx(3.1), '', {
             fontFamily: 'monospace', fontSize: 26, color: '#ffd76e',
         }).setVisible(false);
-        this.jokerInfo = this.add.text(toPx(5.0), toPx(3.55), '', {
+        this.jokerInfo = this.add.text(toPx(5.0), toPx(3.9), '', {
             fontFamily: 'monospace', fontSize: 18, color: '#9fd6ff',
         });
         this.message = this.add.text(CANVAS_W / 2, CANVAS_H / 2, '', {
             fontFamily: 'monospace', fontSize: 44, color: '#ffffff', align: 'center',
         }).setOrigin(0.5).setDepth(100);
 
-        this.playBtn = this.makeButton(toPx(5.0), toPx(10.2), '出牌', '#3fa34d', () => this.doPlay());
-        this.discardBtn = this.makeButton(toPx(7.4), toPx(10.2), '弃牌', '#b5462f', () => this.doDiscard());
         this.nextBtn = this.makeButton(toPx(9.8), toPx(10.2), '下一关', '#3c6ea5', () => this.doNext());
         this.rerollBtn = this.makeButton(toPx(12.2), toPx(10.2), '重掷', '#8a5fb0', () => this.doReroll());
         this.skipBtn = this.makeButton(toPx(14.6), toPx(10.2), '跳过', '#6b7280', () => this.doSkipPack());
@@ -894,6 +897,57 @@ ${String(e instanceof Error ? e.message : e)}`)
     }
 
     /**
+     * `game.lua:3408`：进入选牌时建 `G.buttons`（挂在手牌区底下），离开选牌就拆。
+     * 两个 `can_*` 每帧跑（`button_callbacks.lua:2151` / `:2195`）：不能出 / 不能弃时置灰并摘掉按钮名
+     */
+    private syncButtons(): void {
+        const round = this.round;
+        const selecting = this.run.state === 'playing' && round?.phase === 'selecting' && !this.animating && !this.run.openPack;
+        if (!selecting) {
+            this.buttonsView?.container.destroy();
+            this.buttonsView = null;
+            return;
+        }
+        if (this.buttonsView) return;
+        const box = new UIBox(
+            createButtons({ playButtonPos: 2, mobile: LOOK.mobileUi }),
+            { align: 'bm', offset: { x: 0, y: 0.3 }, major: { T: this.areas.hand } },
+            {
+                can_play: (e: UIElement) => {
+                    const n = this.selected.size;
+                    const ok = n > 0 && n <= 5;
+                    e.config.colour = ok ? C.BLUE : C.UI.BACKGROUND_INACTIVE;
+                    e.config.button = ok ? 'play_cards_from_highlighted' : undefined;
+                },
+                can_discard: (e: UIElement) => {
+                    const ok = (this.round?.discardsLeft ?? 0) > 0 && this.selected.size > 0;
+                    e.config.colour = ok ? C.RED : C.UI.BACKGROUND_INACTIVE;
+                    e.config.button = ok ? 'discard_cards_from_highlighted' : undefined;
+                },
+            },
+        );
+        this.buttonsView = new UIBoxView(this, box, 45, (name) => this.onUIButton(name));
+        this.buttonsView.setResolution(this.mapping.pxPerTile / toPx(1));
+    }
+
+    /** `G.FUNCS[button]`：UI 按钮名接到场景的操作上 */
+    private onUIButton(name: string): void {
+        const round = this.round;
+        if (name === 'play_cards_from_highlighted') this.doPlay();
+        else if (name === 'discard_cards_from_highlighted') {
+            this.doDiscard();
+            // 原作弃完牌 `G.buttons` 会重建（`one_press` 复位）；这里直接拆掉，下一帧 `syncButtons` 重建
+            this.buttonsView?.container.destroy();
+            this.buttonsView = null;
+        } else if (round && (name === 'sort_hand_value' || name === 'sort_hand_suit')) {
+            // `button_callbacks.lua` 的 `sort_hand_value` / `sort_hand_suit`：改排序方式并立即重排
+            round.sortHand(name === 'sort_hand_value' ? 'desc' : 'suit desc');
+            this.rebuildHand();
+        } else return;
+        this.sound.play('button', { volume: 0.3 });
+    }
+
+    /**
      * `cardarea.lua:236`：选牌时手牌区整体上移 1.9 tile，出牌结算时滑回底边，按 `15·dt` 缓动。
      * 手牌区身后的底框与计数以它为 major，跟着走（`UIBox.followMajor`）
      */
@@ -1004,8 +1058,6 @@ ${String(e instanceof Error ? e.message : e)}`)
 
         const inShop = run.state === 'shop';
         const done = !round || round.phase !== 'selecting';
-        this.playBtn.setAlpha(done || this.animating ? 0.3 : 1);
-        this.discardBtn.setAlpha(done || this.animating || (round?.discardsLeft ?? 0) < 1 ? 0.3 : 1);
         const inSelect = run.state === 'blind-select';
         this.nextBtn.setAlpha(
             this.animating || run.openPack || (!inShop && !inSelect && !done) ? 0.3 : 1,
@@ -1017,6 +1069,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.rerollBtn.setAlpha(inShop && !this.animating && !this.run.openPack ? 1 : 0.3);
         // 「跳过」只在开着包的时候能按
         this.skipBtn.setAlpha(this.run.openPack && !this.animating ? 1 : 0.3);
+        // 选牌时这排调试按钮全藏起来：原作的出牌 / 排序 / 弃牌已经在手牌下面了（`G.buttons`）
+        const choosing = run.state === 'playing' && round?.phase === 'selecting';
+        for (const b of [this.nextBtn, this.rerollBtn, this.skipBtn, this.skipBlindBtn]) b.setVisible(!choosing);
 
         if (run.state === 'game-over') {
             this.message.setText('失败').setColor('#e5585f');
@@ -1080,7 +1135,11 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.syncAreas();
         for (const a of this.areaViews) a.view.update(time / 1000);
         this.slideHand(delta / 1000);
+        this.syncButtons();
+        this.buttonsView?.update(time / 1000);
         this.placeCards(time / 1000);
+        // 牌堆：盲注里是剩余张数，盲注外整副牌都在牌堆里
+        this.deckSprite.update(this.areas.deck, this.round && this.run.state === 'playing' ? this.round.deck.length : this.run.fullDeck.length);
     }
 
     /**

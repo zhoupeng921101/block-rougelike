@@ -64,6 +64,7 @@ export const C = {
     BLACK: HEX('374244'),
     L_BLACK: HEX('4f6367'),
     GREY: HEX('5f7377'),
+    JOKER_GREY: HEX('bfc7d5'),
     DYN_UI: {
         MAIN: HEX('374244'),
         DARK: HEX('374244'),

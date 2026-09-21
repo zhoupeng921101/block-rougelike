@@ -18,10 +18,15 @@ export type Look = {
      * 两边都设 0，否则 ±3 像素的漂移会淹没真正的偏差（22 号票）
      */
     screenshake: number;
+    /**
+     * `G.F_MOBILE` 的 UI 分支（`UI_definitions.lua` 里散着的 `G.F_MOBILE and a or b`）。12 号票当时说
+     * 「UI 那层本来就要重写」，现在 UI 定义是直译的，这些分支也跟着进来了，归到这里一并受 `?look=mobile` 控制
+     */
+    mobileUi: boolean;
 };
 
-const DESKTOP: Look = { crt: 70, screenshake: 50 };
-const MOBILE: Look = { crt: 30, screenshake: 50 };
+const DESKTOP: Look = { crt: 70, screenshake: 50, mobileUi: false };
+const MOBILE: Look = { crt: 30, screenshake: 50, mobileUi: true };
 
 function pick(): Look {
     try {

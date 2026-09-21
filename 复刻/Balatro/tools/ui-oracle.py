@@ -56,7 +56,7 @@ G = {
 COLOURS = r'''
 G.C = {
   BLUE = HEX("009dff"), RED = HEX('FE5F55'), MONEY = HEX('f3b958'), IMPORTANT = HEX("ff9a00"),
-  ORANGE = HEX("fda200"), WHITE = {1,1,1,1}, CLEAR = {0,0,0,0}, BLACK = HEX("374244"),
+  ORANGE = HEX("fda200"), WHITE = {1,1,1,1}, CLEAR = {0,0,0,0}, BLACK = HEX("374244"), JOKER_GREY = HEX('bfc7d5'),
   DYN_UI = { MAIN = HEX('374244'), DARK = HEX('374244'), BOSS_MAIN = HEX('374244'), BOSS_DARK = HEX('374244'), BOSS_PALE = HEX('374244') },
   UI = { TEXT_LIGHT = {1,1,1,1}, BACKGROUND_DARK = HEX("7A9E9F"), OUTLINE_LIGHT = HEX("D8D8D8"), TRANSPARENT_DARK = HEX("22222222") },
 }
@@ -174,6 +174,17 @@ def main():
     for name, var in [('area_jokers', 'AREA_JOKERS'), ('area_consumeables', 'AREA_CONS'),
                       ('area_hand', 'AREA_HAND'), ('area_deck', 'AREA_DECK')]:
         cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
+
+    # game.lua:3408 的 G.buttons：挂在选牌状态（上移 1.9）的 G.hand 下面；移动版、出牌在左
+    lua.execute(r'''
+      G.F_MOBILE = true
+      G.SETTINGS.play_button_pos = 2
+      local CW, CH = 2.4*35/41, 2.4*47/41
+      local hw, hh = 6*CW, 0.95*CH
+      G.hand = Moveable{T = {x = 21 - hw - 3.55, y = 11.2 - hh - 1.9, w = hw, h = hh}}
+      BUTTONS = UIBox{ definition = create_UIBox_buttons(), config = {align="bm", offset = {x=0,y=0.3},major = G.hand, bond = 'Weak'} }
+    ''')
+    cases.append({'name': 'buttons_mobile', **to_py(lua.eval('DUMP(BUTTONS)'))})
 
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))

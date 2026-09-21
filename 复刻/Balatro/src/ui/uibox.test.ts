@@ -8,6 +8,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { cardAreas } from '../game/areas';
+import { createButtons } from './definitions/buttons';
 import { cardAreaBox } from './definitions/card-area';
 import { makeHudState, createHud } from './definitions/hud';
 import oracle from './oracle.generated.json';
@@ -62,6 +63,17 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
             align: 'cm',
             offset: { x: 0, y: 0 },
             major: { T: area },
+        });
+        expectSame(dump(box), expected.elements);
+    });
+
+    it('create_UIBox_buttons（移动版、出牌在左）：挂在选牌状态的手牌区下面', () => {
+        const expected = cases.find((c) => c.name === 'buttons_mobile')!;
+        const hand = { ...areas.hand, y: areas.hand.y - 1.9 };
+        const box = new UIBox(createButtons({ playButtonPos: 2, mobile: true }), {
+            align: 'bm',
+            offset: { x: 0, y: 0.3 },
+            major: { T: hand },
         });
         expectSame(dump(box), expected.elements);
     });

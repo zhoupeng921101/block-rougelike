@@ -8,7 +8,7 @@
  */
 import { GameObjects, type Math as PMath, type Scene } from 'phaser';
 
-import { type Colour, darken } from '../ui/colours';
+import { C, type Colour, darken } from '../ui/colours';
 import { DynaText } from '../ui/dynatext';
 import type { SpriteObject } from '../ui/definitions/hud';
 import { EN_FONT } from '../ui/font';
@@ -65,6 +65,9 @@ function makeText(scene: Scene, fontPx: number): GameObjects.Text {
 
 type ElementView = {
     el: UIElement;
+    /** 按钮的命中区（只给定义里带 `button` 的元素建；点到按钮里的字也落在它上面） */
+    zone?: GameObjects.Zone;
+    hovered?: boolean;
     gfx?: GameObjects.Graphics;
     text?: { shadow: GameObjects.Text | null; main: GameObjects.Text };
     letters?: Array<{ shadow: GameObjects.Text | null; main: GameObjects.Text }>;
@@ -81,6 +84,8 @@ export class UIBoxView {
         private readonly scene: Scene,
         readonly box: UIBox,
         depth: number,
+        /** 按钮被点（`G.FUNCS[button]`）。按钮名照原作，如 `play_cards_from_highlighted` */
+        private readonly onButton: (name: string, el: UIElement) => void = () => undefined,
     ) {
         this.container = scene.add.container(0, 0).setDepth(depth);
         this.build();
@@ -125,6 +130,14 @@ export class UIBoxView {
                 view.gfx = this.scene.add.graphics();
                 this.container.add(view.gfx);
             }
+            if (cfg.button) {
+                const zone = this.scene.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive({ useHandCursor: true });
+                zone.on('pointerover', () => { view.hovered = true; });
+                zone.on('pointerout', () => { view.hovered = false; });
+                zone.on('pointerdown', () => this.box.click(el, this.scene.time.now / 1000, this.onButton));
+                this.container.add(zone);
+                view.zone = zone;
+            }
             this.views.push(view);
         }
         this.setResolution(this.resolution);
@@ -144,8 +157,14 @@ export class UIBoxView {
      */
     private layeredParallax = new Map<UIElement, { x: number; y: number }>();
 
-    private computeLayeredParallax(): void {
+    /** 按下中的按钮：阴影不再错开（`parallax_dist = 0`），整体缩到 0.985 */
+    private pressed = new Set<UIElement>();
+
+    private computeLayeredParallax(now: number): void {
         this.layeredParallax.clear();
+        this.pressed.clear();
+        const pointerDown = this.scene.input.activePointer.isDown;
+        const hovered = new Set(this.views.filter((v) => v.hovered).map((v) => v.el));
         for (const el of this.box.root.walk()) {
             const cfg = el.config;
             if (!cfg.button && !cfg.button_UIE) {
@@ -154,10 +173,17 @@ export class UIBoxView {
             }
             const parent = el.parent ? this.layeredParallax.get(el.parent)! : { x: 0, y: 0 };
             const sp = shadowParallax(el.x, el.T.w);
-            this.layeredParallax.set(el, {
+            const lp = {
                 x: parent.x + (cfg.shadow ? 0.4 * sp.x : 0) / TILESIZE,
                 y: parent.y + (cfg.shadow ? 0.4 * sp.y : 0) / TILESIZE,
-            });
+            };
+            // `ui.lua:681`：刚点过（0.1 秒内），或悬停且按着——往阴影方向压下去
+            if (cfg.button && (now - el.lastClicked < 0.1 || (hovered.has(el) && pointerDown))) {
+                lp.x -= (1.5 * sp.x) / TILESIZE;
+                lp.y -= (1.5 * sp.y) / TILESIZE;
+                this.pressed.add(el);
+            }
+            this.layeredParallax.set(el, lp);
         }
     }
 
@@ -178,7 +204,8 @@ export class UIBoxView {
         if (this.box.refresh() || resized) {
             if (resized) this.box.recalculate();
         }
-        this.computeLayeredParallax();
+        this.box.runFuncs();
+        this.computeLayeredParallax(timeSeconds);
         for (const v of this.views) this.draw(v, timeSeconds);
     }
 
@@ -194,12 +221,28 @@ export class UIBoxView {
         const x = el.x + lp.x;
         const y = el.y + lp.y;
 
+        if (v.zone) {
+            v.zone.setPosition(toPx(x), toPx(y)).setSize(toPx(w), toPx(h));
+            v.zone.input!.hitArea.setTo(0, 0, toPx(w), toPx(h));
+        }
+
         if (v.gfx) {
             const g = v.gfx.clear();
-            if (colour[3] <= 0.01) return;
+            if (colour[3] <= 0.01 && !cfg.outline) return;
             g.setPosition(toPx(x), toPx(y));
             const pixel = cfg.r !== undefined && w > 0.01;
-            const parallax = 1.5;
+            const pressed = this.pressed.has(el);
+            const parallax = pressed ? 0 : 1.5;
+            // 所属按钮悬停着（触屏上要按着）或 0.1 秒内点过：叠一层 `G.C.UI.HOVER`
+            const btn = cfg.button_UIE ?? el;
+            const btnView = this.views.find((w2) => w2.el === btn);
+            const hover = !!btn.config.hover && ((!!btnView?.hovered && this.scene.input.activePointer.isDown)
+                || t - btn.lastClicked < 0.1);
+            g.setScale(pressed ? 0.985 : 1);
+            if (colour[3] <= 0.01) {
+                this.drawOutline(g, el, w, h, sp, hover);
+                return;
+            }
             // 阴影：原点在左上角时整体 ×0.98，再往远离中线的方向错开
             if (cfg.shadow && SHADOWS_ON) {
                 const shadow = cfg.shadow_colour ?? ([0, 0, 0, 0.3 * colour[3]] as Colour);
@@ -211,13 +254,16 @@ export class UIBoxView {
             }
             // 压花：往下错开 emboss，暗三成（悬停时暗五成）
             if (cfg.emboss) {
-                const em = darken(colour, 0.3);
+                const em = darken(colour, hover ? 0.5 : 0.3);
                 g.fillStyle(rgb(em), em[3]);
                 if (pixel) g.fillPoints(pts(pixellatedRect(w, h, cfg.res, cfg.ext_up).map((p) => ({ x: p.x * U, y: (p.y + cfg.emboss! * TILESIZE) * U }))), true);
             }
-            g.fillStyle(rgb(colour), colour[3]);
-            if (pixel) g.fillPoints(pts(pixellatedRect(w, h, cfg.res, cfg.ext_up).map((p) => ({ x: p.x * U, y: p.y * U }))), true);
-            else g.fillRect(0, 0, toPx(w), toPx(h));
+            for (const c of hover ? [colour, C.UI.HOVER] : [colour]) {
+                g.fillStyle(rgb(c), c[3]);
+                if (pixel) g.fillPoints(pts(pixellatedRect(w, h, cfg.res, cfg.ext_up).map((p) => ({ x: p.x * U, y: p.y * U }))), true);
+                else g.fillRect(0, 0, toPx(w), toPx(h));
+            }
+            this.drawOutline(g, el, w, h, sp, hover);
             return;
         }
 
@@ -235,7 +281,9 @@ export class UIBoxView {
             // `ui.lua:721`：行框左上角在 (x + TEXT_OFFSET.x·s·FONTSCALE/TILESIZE, y + TEXT_OFFSET.y·…)
             const ox = (font.TEXT_OFFSET.x * s * font.FONTSCALE) / TILESIZE;
             const oy = (font.TEXT_OFFSET.y * s * font.FONTSCALE) / TILESIZE;
-            v.text.main.setText(text).setColor(css(colour)).setAlpha(colour[3]).setPosition(toPx(x + ox), toPx(y + oy));
+            // `ui.lua:716`：按钮不可用（`button` 被 `can_*` 摘掉了）时字变灰
+            const shown = buttonActive ? colour : C.UI.TEXT_INACTIVE;
+            v.text.main.setText(text).setColor(css(shown)).setAlpha(shown[3]).setPosition(toPx(x + ox), toPx(y + oy));
             if (v.text.shadow) {
                 // 阴影按 0.97 以元素中心缩放，再偏 (-sp.x·0.5, -sp.y·0.5)/TILESIZE
                 const k = 0.97;
@@ -251,6 +299,26 @@ export class UIBoxView {
         // O 节点里的对象自己是 Moveable，`prep_draw` 读的是它自己的 `layered_parallax`（恒 0），不吃按钮视差
         if (v.letters && cfg.object instanceof DynaText) this.drawDynaText(v, cfg.object, el.x, el.y, t);
         if (v.image) v.image.setPosition(toPx(el.x), toPx(el.y)).setDisplaySize(toPx(w), toPx(h));
+    }
+
+    /**
+     * `ui.lua:799`：描边。线宽单位与顶点一样是 1/TILESIZE tile。`line_emboss` 先画一圈暗三成的、
+     * 往阴影方向错开的描边（y 错 `−emboss·sp.y`、x 错 `−0.7·emboss·sp.x`），再画本色描边
+     */
+    private drawOutline(g: GameObjects.Graphics, el: UIElement, w: number, h: number, sp: { x: number; y: number }, hover: boolean): void {
+        const cfg = el.config;
+        const oc = cfg.outline_colour;
+        if (!cfg.outline || !oc || oc[3] <= 0.01) return;
+        const ring = pixellatedRect(w, h, cfg.res, cfg.ext_up);
+        if (cfg.line_emboss) {
+            const em = darken(oc, hover ? 0.5 : 0.3);
+            const dx = -0.7 * cfg.line_emboss * sp.x;
+            const dy = -cfg.line_emboss * sp.y;
+            g.lineStyle(cfg.outline * U, rgb(em), em[3]);
+            g.strokePoints(pts(ring.map((p) => ({ x: (p.x + dx) * U, y: (p.y + dy) * U }))), true, true);
+        }
+        g.lineStyle(cfg.outline * U, rgb(oc), oc[3]);
+        g.strokePoints(pts(ring.map((p) => ({ x: p.x * U, y: p.y * U }))), true, true);
     }
 
     /** `text.lua:236` 的 `DynaText:draw`：逐字画，每个字以自己的格子中心为原点缩放、旋转 */

@@ -67,6 +67,10 @@ export type UIConfig = {
     mid?: boolean;
     /** 按钮的子孙指回那个按钮（`ui.lua:246`，`set_parent_child` 往下传的），绘制时算分层视差要用 */
     button_UIE?: UIElement;
+    /** 点一下就失效（`ui.lua:993`），直到这个 UIBox 被重建 */
+    one_press?: boolean;
+    /** 描边宽度（原作单位：1/TILESIZE tile 下的线宽）与描边压花 */
+    line_emboss?: number;
     [key: string]: unknown;
 };
 
@@ -90,6 +94,10 @@ export class UIElement {
     readonly content = { w: 0, h: 0 };
     /** `config.prev_value`：绑定值上次的样子，变了才重排 */
     prevValue: unknown;
+    /** `one_press` 按过之后置真（原作的 `disable_button`） */
+    disabled = false;
+    /** `last_clicked`（秒），按下后 0.1 秒内画悬停色 */
+    lastClicked = -1;
 
     constructor(
         readonly box: UIBox,
@@ -382,6 +390,28 @@ export class UIBox implements Major {
         }
         if (dirty) this.recalculate();
         return dirty;
+    }
+
+    /** `ui.lua:951` 的 `UIElement:update` 里那一句：有 `func` 的元素每帧调一次（`can_play` 这类据此改颜色、摘按钮） */
+    runFuncs(): void {
+        for (const el of this.root.walk()) {
+            const f = el.config.func;
+            if (f) this.funcs[f]?.(el);
+        }
+    }
+
+    /**
+     * `ui.lua:992` 的 `UIElement:click`：自己有 `button` 就触发，然后**把点击转给所属按钮**
+     * （按钮里的字被点到，等于点了按钮）。返回触发了哪个按钮名。
+     */
+    click(el: UIElement, now: number, onButton: (name: string, e: UIElement) => void): void {
+        const cfg = el.config;
+        if (cfg.button && (el.lastClicked < 0 || el.lastClicked + 0.1 < now) && !el.disabled) {
+            if (cfg.one_press) el.disabled = true;
+            el.lastClicked = now;
+            onButton(cfg.button, el);
+        }
+        if (cfg.button_UIE) this.click(cfg.button_UIE, now, onButton);
     }
 
     /** `ui.lua:101` */
