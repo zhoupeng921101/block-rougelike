@@ -65,6 +65,8 @@ export type UIConfig = {
     res?: number;
     ext_up?: number;
     mid?: boolean;
+    /** 按钮的子孙指回那个按钮（`ui.lua:246`，`set_parent_child` 往下传的），绘制时算分层视差要用 */
+    button_UIE?: UIElement;
     [key: string]: unknown;
 };
 
@@ -213,6 +215,9 @@ export class UIBox implements Major {
         let mid: UIElement | null = null;
         const build = (def: UINodeDef, parent: UIElement | null): UIElement => {
             const el = new UIElement(this, parent, def.n, { ...(def.config ?? {}) });
+            // `ui.lua:246`：按钮的孩子指回按钮，孙子沿用孩子的
+            if (parent?.config.button) el.config.button_UIE = parent;
+            if (parent?.config.button_UIE) el.config.button_UIE = parent.config.button_UIE;
             if (def.config?.mid) mid = el;
             if (def.n === UIT.C || def.n === UIT.R || def.n === UIT.ROOT) {
                 for (const child of def.nodes ?? []) if (child) el.children.push(build(child, el));

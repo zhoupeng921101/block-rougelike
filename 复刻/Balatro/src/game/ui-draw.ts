@@ -133,6 +133,30 @@ export class UIBoxView {
         return Math.round(src.width / f.width);
     }
 
+    /**
+     * `ui.lua:677`：按钮（及其子孙）的分层视差。带阴影的一层比父层多往阴影反方向挪 `0.4·sp/TILESIZE`，
+     * 所以按钮里带阴影的文字挪两层——实机截图上 Run Info 的字比布局位置偏左上约 6.8 像素就是这个。
+     * 不是按钮的元素恒为 0。按下时的回弹（`last_clicked`）还没做。
+     */
+    private layeredParallax = new Map<UIElement, { x: number; y: number }>();
+
+    private computeLayeredParallax(): void {
+        this.layeredParallax.clear();
+        for (const el of this.box.root.walk()) {
+            const cfg = el.config;
+            if (!cfg.button && !cfg.button_UIE) {
+                this.layeredParallax.set(el, { x: 0, y: 0 });
+                continue;
+            }
+            const parent = el.parent ? this.layeredParallax.get(el.parent)! : { x: 0, y: 0 };
+            const sp = shadowParallax(el.x, el.T.w);
+            this.layeredParallax.set(el, {
+                x: parent.x + (cfg.shadow ? 0.4 * sp.x : 0) / TILESIZE,
+                y: parent.y + (cfg.shadow ? 0.4 * sp.y : 0) / TILESIZE,
+            });
+        }
+    }
+
     /** 每帧：同步绑定值、必要时重排，再按当前布局画一遍 */
     update(timeSeconds: number): void {
         let resized = false;
@@ -149,6 +173,7 @@ export class UIBoxView {
         if (this.box.refresh() || resized) {
             if (resized) this.box.recalculate();
         }
+        this.computeLayeredParallax();
         for (const v of this.views) this.draw(v, timeSeconds);
     }
 
@@ -156,11 +181,13 @@ export class UIBoxView {
         const el = v.el;
         const cfg = el.config;
         const colour = cfg.colour!;
-        const x = el.x;
-        const y = el.y;
         const w = el.T.w;
         const h = el.T.h;
-        const sp = shadowParallax(x, w);
+        // 阴影视差按元素自己的布局位置算（`calculate_parrallax` 读 T），分层视差只挪画的位置（`prep_draw`）
+        const sp = shadowParallax(el.x, w);
+        const lp = this.layeredParallax.get(el) ?? { x: 0, y: 0 };
+        const x = el.x + lp.x;
+        const y = el.y + lp.y;
 
         if (v.gfx) {
             const g = v.gfx.clear();
@@ -190,6 +217,13 @@ export class UIBoxView {
         }
 
         if (v.text) {
+            // `ui.lua:697`：按钮里的字（且按钮可用）无论 `shadow` 配没配都画阴影
+            const button = cfg.button_UIE;
+            const buttonActive = !button || !!button.config.button;
+            if (v.text.shadow === null && button && buttonActive && SHADOWS_ON) {
+                v.text.shadow = makeText(this.scene, toPx(cfg.scale ?? 1)).setResolution(this.resolution);
+                this.container.addAt(v.text.shadow, this.container.getIndex(v.text.main));
+            }
             const s = cfg.scale ?? 1;
             const text = cfg.text ?? '';
             const font = cfg.lang ?? EN_FONT;
@@ -209,8 +243,9 @@ export class UIBoxView {
             return;
         }
 
-        if (v.letters && cfg.object instanceof DynaText) this.drawDynaText(v, cfg.object, x, y, t);
-        if (v.image) v.image.setPosition(toPx(x), toPx(y)).setDisplaySize(toPx(w), toPx(h));
+        // O 节点里的对象自己是 Moveable，`prep_draw` 读的是它自己的 `layered_parallax`（恒 0），不吃按钮视差
+        if (v.letters && cfg.object instanceof DynaText) this.drawDynaText(v, cfg.object, el.x, el.y, t);
+        if (v.image) v.image.setPosition(toPx(el.x), toPx(el.y)).setDisplaySize(toPx(w), toPx(h));
     }
 
     /** `text.lua:236` 的 `DynaText:draw`：逐字画，每个字以自己的格子中心为原点缩放、旋转 */

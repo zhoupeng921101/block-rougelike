@@ -12,14 +12,23 @@
 export type Look = {
     /** `G.SETTINGS.GRAPHICS.crt`：`F_MOBILE and 30 or 70` */
     crt: number;
+    /**
+     * `G.SETTINGS.screenshake`：两版缺省都是 50（`common_events.lua:1145`）。驱动房间的「呼吸」摆动
+     * （`RunScene` 的 `update_canvas_juice`）。**`?shake=0`** 关掉它——与实机逐像素比对时
+     * 两边都设 0，否则 ±3 像素的漂移会淹没真正的偏差（22 号票）
+     */
+    screenshake: number;
 };
 
-const DESKTOP: Look = { crt: 70 };
-const MOBILE: Look = { crt: 30 };
+const DESKTOP: Look = { crt: 70, screenshake: 50 };
+const MOBILE: Look = { crt: 30, screenshake: 50 };
 
 function pick(): Look {
     try {
-        return new URLSearchParams(window.location.search).get('look') === 'mobile' ? MOBILE : DESKTOP;
+        const q = new URLSearchParams(window.location.search);
+        const base = q.get('look') === 'mobile' ? MOBILE : DESKTOP;
+        const shake = q.get('shake');
+        return shake !== null && Number.isFinite(Number(shake)) ? { ...base, screenshake: Number(shake) } : base;
     } catch {
         return DESKTOP;
     }

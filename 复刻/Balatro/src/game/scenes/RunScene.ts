@@ -32,6 +32,7 @@ import { BoosterSprite } from '../booster-sprite';
 import { ConsumableSprite } from '../consumable-sprite';
 import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, TILE_H, TILE_W, roomMapping, toPx } from '../coords';
 import { UIBoxView, UI_FONT_FAMILY } from '../ui-draw';
+import { makeRoomJuice, stepRoomJuice } from '../room-juice';
 import { applyBlindColours } from '../../ui/blind-colour';
 import { C, mixColours, setColour } from '../../ui/colours';
 import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
@@ -1028,6 +1029,11 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     update(time: number, delta: number): void {
         this.queue.update(delta / 1000);
+        // `update_canvas_juice`：光标用屏幕 tile 坐标（`G.CURSOR.T`）
+        const p = this.input.activePointer;
+        const P = this.mapping.pxPerTile;
+        this.placeRoom(stepRoomJuice(this.juice, delta / 1000, time / 1000, LOOK.screenshake,
+            { x: p.x / P, y: p.y / P }, { x: this.mapping.roomX, y: this.mapping.roomY }));
         this.syncHud();
         this.hudView.update(time / 1000);
     }
@@ -1104,25 +1110,53 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.fullscreenQuads.push(bg);
     }
 
-    /**
-     * 按 `love.resize` 摆相机（22 号票）。世界坐标固定 72 像素 / tile（`toPx`），
-     * 相机把它缩放到窗口的每 tile 像素、再平移到房间原点。背景与 CRT 两个全屏 quad 跟着可视区走。
-     */
+    /** `love.resize` 的结果：窗口变了才重算 */
+    private mapping = roomMapping(1, 1);
+    /** `update_canvas_juice` 的状态（缓动光标、余振） */
+    private readonly juice = makeRoomJuice();
+
+    /** 窗口变了：重算 `TILESCALE` 与房间原点（`G.ROOM_ORIG`），文字按新的缩放重新栅格化 */
     private applyRoomCamera(): void {
         const { width, height } = this.scale;
-        const m = roomMapping(width, height);
-        const zoom = m.pxPerTile / toPx(1);
+        this.mapping = roomMapping(width, height);
+        this.hudView?.setResolution(this.mapping.pxPerTile / toPx(1));
+        this.placeRoom({ x: this.mapping.roomX, y: this.mapping.roomY, r: 0 });
+    }
+
+    /**
+     * 把房间的 `T`（位置与旋转，tile）落到相机上（22 号票）。世界坐标固定 72 像素 / tile（`toPx`）。
+     *
+     * 原作 `Node:translate_container`（`engine/node.lua:320`）以**屏幕上的** (ROOM.w/2, ROOM.h/2) 为轴旋转，
+     * 再平移到房间原点：`屏幕 = P·(R·(局部 + ROOM − c) + c)`，c = (TILE_W/2, TILE_H/2)，P = 每 tile 像素。
+     * Phaser 的相机是 `屏幕 = O + R·z·(世界 − scroll − O)`：取 O = P·c、z = P/72，
+     * scroll = −72·(ROOM − c) − O 就与之相等（O 在 Phaser 里是按世界单位减的，照它的算法来）。
+     *
+     * 背景与 CRT 两个全屏 quad 要贴屏：自己反转 −r、摆在屏幕中心对应的世界点、尺寸 = 屏幕 / z。
+     */
+    private placeRoom(room: { x: number; y: number; r: number }): void {
+        const { width, height } = this.scale;
+        const P = this.mapping.pxPerTile;
+        const z = P / toPx(1);
+        const cx = TILE_W / 2;
+        const cy = TILE_H / 2;
+        const O = { x: P * cx, y: P * cy };
         const cam = this.cameras.main;
-        cam.setOrigin(0, 0);
-        cam.setZoom(zoom);
-        cam.setScroll(-toPx(m.roomX), -toPx(m.roomY));
-        this.hudView?.setResolution(zoom);
-        const vw = width / zoom;
-        const vh = height / zoom;
+        cam.setOrigin(O.x / width, O.y / height);
+        cam.setZoom(z);
+        cam.setRotation(room.r);
+        cam.setScroll(-toPx(room.x - cx) - O.x, -toPx(room.y - cy) - O.y);
+
+        // 屏幕中心 → 世界：world = scroll + O + R⁻¹·(屏幕 − O)/z
+        const dx = (width / 2 - O.x) / z;
+        const dy = (height / 2 - O.y) / z;
+        const cos = Math.cos(-room.r);
+        const sin = Math.sin(-room.r);
+        const wx = cam.scrollX + O.x + dx * cos - dy * sin;
+        const wy = cam.scrollY + O.y + dx * sin + dy * cos;
         for (const quad of this.fullscreenQuads) {
-            quad.setPosition(cam.scrollX + vw / 2, cam.scrollY + vh / 2);
+            quad.setPosition(wx, wy).setRotation(-room.r);
             // `setSize` 不刷新 `displayOrigin`：不补这句，quad 仍按创建时 1×1 的原点、从中心往右下画
-            quad.setSize(vw, vh).updateDisplayOrigin();
+            quad.setSize(width / z, height / z).updateDisplayOrigin();
         }
     }
 
