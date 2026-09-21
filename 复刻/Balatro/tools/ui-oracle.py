@@ -415,6 +415,33 @@ def main():
     for name, var in [('shop', 'SHOP'), ('shop_sign', 'G.SHOP_SIGN'), ('price_tag', 'PRICE')]:
         cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
 
+    # 开包界面：create_UIBox_*_pack 挂在手牌区上（game.lua:3727，tmi，offset 落定在 -2.2）。
+    # 五个口味只差标题与 G.pack_cards 的宽度，取四个有代表性的：奥秘 3、天体 3、小丑 2、巨型标准 5
+    lua.execute(r'''
+      function MAKE_PACK(fn, size, choices)
+        G.GAME.pack_size = size
+        G.GAME.pack_choices = choices
+        local box = UIBox{ definition = fn(), config = {align='tmi', offset = {x=0,y=G.ROOM.T.y + 9}, major = G.hand, bond = 'Weak'} }
+        box.alignment.offset.y = -2.2
+        local function settle(b)
+          b.alignment.prev_type = ''
+          b:align_to_major()
+          b.T.x = b.role.major.T.x + b.role.offset.x
+          b.T.y = b.role.major.T.y + b.role.offset.y
+          b.UIRoot:initialize_VT()
+        end
+        settle(box)
+        return box
+      end
+      PACK_ARCANA = MAKE_PACK(create_UIBox_arcana_pack, 3, 1)
+      PACK_CELESTIAL = MAKE_PACK(create_UIBox_celestial_pack, 3, 1)
+      PACK_BUFFOON = MAKE_PACK(create_UIBox_buffoon_pack, 2, 1)
+      PACK_STANDARD = MAKE_PACK(create_UIBox_standard_pack, 5, 2)
+    ''')
+    for name, var in [('pack_arcana', 'PACK_ARCANA'), ('pack_celestial', 'PACK_CELESTIAL'),
+                      ('pack_buffoon', 'PACK_BUFFOON'), ('pack_standard', 'PACK_STANDARD')]:
+        cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 

@@ -80,3 +80,23 @@ export function alignJokers(area: Rect, cards: CardIn[], isConsumeables: boolean
         return { x, y, r };
     });
 }
+
+/**
+ * `cardarea.lua:536`：`type = 'consumeable'` 的区域——开包时的 `G.pack_cards`。
+ * 铺满整个宽度（一张居中）、不转角；没选中的牌上下浮动（振幅 0.05、比小丑区快）
+ */
+export function alignConsumeable(area: Rect, cards: CardIn[], real: number, cardW = CARD_W): Placed[] {
+    const n = cards.length;
+    return cards.map((c, i) => {
+        const k = i + 1;
+        const w = c.w ?? CARD_W;
+        const h = c.h ?? CARD_H;
+        let x = n > 1
+            ? area.x + (area.w - cardW) * ((k - 1) / (n - 1)) + 0.5 * (cardW - w)
+            : area.x + area.w / 2 - cardW / 2 + 0.5 * (cardW - w);
+        const y = area.y + area.h / 2 - h / 2 - (c.highlighted ? HIGHLIGHT_H : 0)
+            + (c.highlighted ? 0 : 0.05 * Math.sin(2 * 1.666 * real + x));
+        x += cardShadowParallaxX(c.prevX, w) / 30;
+        return { x, y, r: 0 };
+    });
+}

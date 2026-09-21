@@ -13,6 +13,7 @@ import { createButtons } from './definitions/buttons';
 import { type EvalRow, RoundEval, evalTimeline } from './definitions/round-eval';
 import { cardAreaBox } from './definitions/card-area';
 import { createShop, createShopSign, priceTag, shopAreas } from './definitions/shop';
+import { createBoosterPack, packCardsArea } from './definitions/booster-pack';
 import { createHudBlind, makeHudBlindState } from './definitions/hud-blind';
 import { hudBlindFuncs } from './definitions/hud-blind-funcs';
 import { makeHudState, createHud } from './definitions/hud';
@@ -176,5 +177,16 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
         const card = { cost: 5, T: { x: 8, y: 4, w: (2.4 * 35) / 41, h: (2.4 * 47) / 41 } };
         const price = new UIBox(priceTag(card), { align: 'tm', offset: { x: 0, y: 0.38 }, major: card });
         expectSame(dump(price), cases.find((c) => c.name === 'price_tag')!.elements);
+    });
+
+    /** 开包界面挂在手牌区上（`tmi`，offset −2.2），五个口味只差标题与区域宽 */
+    it('create_UIBox_*_pack：奥秘 3、天体 3、小丑 2、巨型标准 5', () => {
+        const table = [['arcana', 'Arcana', 3, 1], ['celestial', 'Celestial', 3, 1], ['buffoon', 'Buffoon', 2, 1], ['standard', 'Standard', 5, 2]] as const;
+        for (const [name, kind, size, choices] of table) {
+            const box = new UIBox(createBoosterPack(kind, packCardsArea(kind, size), { pack_choices: choices }), {
+                align: 'tmi', offset: { x: 0, y: -2.2 }, major: { T: areas.hand },
+            });
+            expectSame(dump(box), cases.find((c) => c.name === `pack_${name}`)!.elements);
+        }
     });
 });

@@ -32,7 +32,7 @@ import { ConsumableSprite } from '../consumable-sprite';
 import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, TILE_H, TILE_W, roomMapping, toPx } from '../coords';
 import { UIBoxView, UI_FONT_FAMILY } from '../ui-draw';
 import { makeRoomJuice, stepRoomJuice } from '../room-juice';
-import { applyBlindColours } from '../../ui/blind-colour';
+import { type BackgroundColours, applyBlindColours, backgroundFor, packMainColour } from '../../ui/blind-colour';
 import { C, mixColours, setColour } from '../../ui/colours';
 import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
 import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
@@ -46,7 +46,8 @@ import { type EvalRow, type EvalStep, RoundEval, evalTimeline } from '../../ui/d
 import { BLIND_TEXT, DICTIONARY } from '../../ui/lang.generated';
 import type { Rect, UIElement } from '../../ui/uibox';
 import { cardAreas } from '../areas';
-import { type Placed, alignHand, alignJokers, alignPlay } from '../align-cards';
+import { type Placed, alignConsumeable, alignHand, alignJokers, alignPlay } from '../align-cards';
+import { type PackCardsObject, createBoosterPack, packCardsArea } from '../../ui/definitions/booster-pack';
 import { type CardAreaObject, createShop, createShopSign, priceTag, shopAreas } from '../../ui/definitions/shop';
 import { DeckSprite } from '../deck-sprite';
 import { numberFormat } from '../../ui/format';
@@ -55,12 +56,8 @@ import { RED_DECK } from '../../core/run';
 import { JokerSprite } from '../joker-sprite';
 import { LOOK } from '../look';
 import { VoucherSprite } from '../voucher-sprite';
-import { BACKGROUND_COLOURS, BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
+import { BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
 import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
-
-/** 开着的包：内容摊在屏幕中间 */
-const PACK_OPEN_Y_TILES = 1.6;
-const PACK_OPEN_X_TILES = 1.2;
 
 /**
  * 版本的文字标记。
@@ -102,7 +99,10 @@ export class RunScene extends Scene {
     private packSprites: BoosterSprite[] = [];
     /** 开着的包里那几张 */
     private packCardSprites: Array<JokerSprite | ConsumableSprite | CardSprite> = [];
-    private skipBtn!: GameObjects.Text;
+    /** 开包界面（外框、标题、Skip）与 `G.pack_cards` 在房间里的位置 */
+    private packUi: { view: UIBoxView; area: PackCardsObject; rect: Rect } | null = null;
+    /** 标准包里扑克牌的版本 / 蜡封文字标记（贴图没移植） */
+    private packLabels: GameObjects.Text[] = [];
     /** 商店里那些消耗品格。与 `shopSprites` 分开存，两者的类型不一样 */
     private shopConsumableSprites: ConsumableSprite[] = [];
     /** 商店格子下面那行价格／「未实现」标记 */
@@ -160,7 +160,7 @@ export class RunScene extends Scene {
     private jokerInfo!: GameObjects.Text;
     private nextBtn!: GameObjects.Text;
     private rerollBtn!: GameObjects.Text;
-    /** 盲注选择界面上的「跳过盲注」。与开包界面的「跳过」（`skipBtn`）不是一回事 */
+    /** 盲注选择界面上的「跳过盲注」（调试按钮；卡片上的 Skip Blind 接管之后只在标签开包时露出来） */
     private skipBlindBtn!: GameObjects.Text;
     /** Director's Cut：盲注选择界面上花 $10 重掷 Boss */
     private rerollBossBtn!: GameObjects.Text;
@@ -281,7 +281,6 @@ export class RunScene extends Scene {
 
         this.nextBtn = this.makeButton(toPx(9.8), toPx(10.2), '下一关', '#3c6ea5', () => this.doNext());
         this.rerollBtn = this.makeButton(toPx(12.2), toPx(10.2), '重掷', '#8a5fb0', () => this.doReroll());
-        this.skipBtn = this.makeButton(toPx(14.6), toPx(10.2), '跳过', '#6b7280', () => this.doSkipPack());
         this.skipBlindBtn = this.makeButton(toPx(17.0), toPx(10.2), '跳过盲注', '#a07a2c', () => this.doSkipBlind());
         this.rerollBossBtn = this.makeButton(toPx(17.0), toPx(9.2), '重掷 Boss $10', '#b5462f', () => this.doRerollBoss());
 
@@ -632,10 +631,17 @@ ${String(e instanceof Error ? e.message : e)}`)
     private clearPackCards(): void {
         for (const s of this.packCardSprites) s.destroy();
         this.packCardSprites = [];
+        for (const t of this.packLabels) t.destroy();
+        this.packLabels = [];
+        if (this.packUi) {
+            this.packUi.view.destroy();
+            this.packUi = null;
+        }
     }
 
     /**
-     * 开着的包：内容摊在屏幕上排，点一张就挑走它。
+     * 开包界面（`create_UIBox_*_pack`）：外框挂在手牌区上（`tmi`，offset 落定 −2.2），
+     * 包里的牌放进 `G.pack_cards`，每帧按 `align_cards` 的 consumeable 分支摆（`layoutPackCards`）。
      *
      * **挑不走的也画出来**（小丑区满了之类），点一下给一句反馈——
      * 与「点不动的塔罗」同一条：不画出来等于把限制伪装成「这张不存在」。
@@ -645,35 +651,52 @@ ${String(e instanceof Error ? e.message : e)}`)
         const pack = this.run.openPack;
         if (!pack) return;
 
-        pack.cards.forEach((card, i) => {
-            const x = PACK_OPEN_X_TILES + i * (CARD_W + 0.5);
-            if (card.kind === 'joker') {
-                const sprite = new JokerSprite(this, card.joker, () => this.takeFromPack(i));
-                sprite.layout(x, PACK_OPEN_Y_TILES);
-                this.packCardSprites.push(sprite);
-            } else if (card.kind === 'consumable') {
-                const sprite = new ConsumableSprite(this, card.consumable, () => this.takeFromPack(i));
-                sprite.layout(x, PACK_OPEN_Y_TILES);
-                this.packCardSprites.push(sprite);
-            } else {
-                // 标准包的扑克牌。`CardSprite` 按 `T.x` 排版，所以先把它摆好
-                card.card.T.x = x - PACK_OPEN_X_TILES;
-                const sprite = new CardSprite(this, card.card, () => this.takeFromPack(i));
-                sprite.layout(PACK_OPEN_X_TILES, PACK_OPEN_Y_TILES);
-                this.packCardSprites.push(sprite);
+        const area = packCardsArea(pack.center.kind, pack.center.extra);
+        const game = { pack_choices: pack.choicesLeft };
+        const box = new UIBox(createBoosterPack(pack.center.kind, area, game), { align: 'tmi', offset: { x: 0, y: -2.2 }, major: { T: this.areas.hand } }, {
+            set_button_pip: () => undefined,
+            // `button_callbacks.lua:2242`：包里还有牌才能跳（奥秘 / 幽灵包还要手里有牌——手牌那一支还没做）
+            can_skip_booster: (e: UIElement) => {
+                const ok = !!this.run.openPack?.cards.length && !this.animating;
+                e.config.colour = ok ? C.GREY : C.UI.BACKGROUND_INACTIVE;
+                e.config.button = ok ? 'skip_booster' : undefined;
+            },
+        });
+        const view = new UIBoxView(this, box, 0.5, (name) => this.onUIButton(name));
+        view.setResolution(this.mapping.pxPerTile / toPx(1));
+        const el = [...box.root.walk()].find((e) => e.config.object === area)!;
+        this.packUi = { view, area, rect: { x: el.x, y: el.y, w: area.T.w, h: area.T.h } };
 
+        pack.cards.forEach((card, i) => {
+            if (card.kind === 'joker') {
+                this.packCardSprites.push(new JokerSprite(this, card.joker, () => this.takeFromPack(i)));
+            } else if (card.kind === 'consumable') {
+                this.packCardSprites.push(new ConsumableSprite(this, card.consumable, () => this.takeFromPack(i)));
+            } else {
+                this.packCardSprites.push(new CardSprite(this, card.card, () => this.takeFromPack(i)));
                 // **版本与蜡封的贴图都没有移植**，只用文字标出来——
                 // 一张 Red 蜡封的牌会多算一遍分，不标就看不出来
                 const tags = `${editionTag(card.card.edition)}${sealTag(card.card.seal)}`.trim();
-                if (tags) {
-                    this.shopLabels.push(
-                        this.add.text(toPx(x), toPx(PACK_OPEN_Y_TILES + CARD_H + 0.1), tags, {
-                            fontFamily: 'monospace', fontSize: 15, color: '#9fd6ff',
-                        }).setDepth(40),
-                    );
-                }
+                this.packLabels.push(this.add.text(0, 0, tags, { fontFamily: 'monospace', fontSize: 15, color: '#9fd6ff' }).setDepth(40));
             }
         });
+        this.layoutPackCards();
+    }
+
+    /** `align_cards` 的 consumeable 分支，每帧摆（没选中的牌上下浮动） */
+    private layoutPackCards(real = this.time.now / 1000): void {
+        if (!this.packUi) return;
+        const U = toPx(1);
+        const sprites = this.packCardSprites;
+        const size = (s: JokerSprite | ConsumableSprite | CardSprite) =>
+            s instanceof CardSprite ? { w: CARD_W, h: CARD_H } : { w: s.w / U, h: s.h / U };
+        let label = 0;
+        alignConsumeable(this.packUi.rect, sprites.map((s) => ({ highlighted: false, prevX: s.prevX, ...size(s) })), real)
+            .forEach((p, i) => {
+                const s = sprites[i]!;
+                s.place(p, i);
+                if (s instanceof CardSprite) this.packLabels[label++]?.setPosition(toPx(p.x), toPx(p.y + CARD_H + 0.1));
+            });
     }
 
     private takeFromPack(index: number): void {
@@ -688,6 +711,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.sound.play('card1', { volume: 0.5 });
         this.rebuildJokers();
         this.rebuildConsumables();
+        if (!this.run.openPack) this.rebuildShop();
         this.rebuildPackCards();
         this.refresh();
     }
@@ -697,6 +721,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.run.skipPack();
         this.sound.play('cardSlide2', { volume: 0.4 });
         this.rebuildJokers();
+        this.rebuildShop();
         this.rebuildPackCards();
         this.refresh();
     }
@@ -745,6 +770,10 @@ ${String(e instanceof Error ? e.message : e)}`)
         const sign = new UIBox(createShopSign(), { align: 'cm', offset: { x: 0, y: 0 }, major: this.hudView.box.getById('row_blind')!.asMajor });
         const onButton = (name: string) => this.onUIButton(name);
         this.shopUi = { view: new UIBoxView(this, box, 0.5, onButton), sign: new UIBoxView(this, sign, 41), tags: [] };
+        for (const v of [this.shopUi.view, this.shopUi.sign]) v.setResolution(this.mapping.pxPerTile / U);
+        // 开包时商店整个挪出屏幕（`update_*_pack`：`G.shop.alignment.offset.y = G.ROOM.T.y + 11`），只留招牌；
+        // 货架上的卡不建，关包时重建
+        if (this.run.openPack) return;
 
         // 区域在房间里的位置 = 装它的 O 元素的位置
         const rectOf = (a: CardAreaObject): Rect => {
@@ -822,8 +851,6 @@ ${String(e instanceof Error ? e.message : e)}`)
             tag(p, PW, PH, shop.packCost(i), 0.5);
             warn(p, PH, isBoosterImplemented(slot!.key, BOOSTER_CENTERS));
         });
-
-        for (const v of [this.shopUi.view, this.shopUi.sign]) v.setResolution(this.mapping.pxPerTile / U);
     }
 
     /** 商店的 UI（外框、招牌、价签）。开包时整个收起（原作把 `G.shop` 挪到屏幕外） */
@@ -1105,6 +1132,10 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.doNext();
             return;
         }
+        if (name === 'skip_booster') {
+            this.doSkipPack();
+            return;
+        }
         if (name === 'reroll_shop') {
             this.doReroll();
             return;
@@ -1142,6 +1173,7 @@ ${String(e instanceof Error ? e.message : e)}`)
      */
     private placeCards(real: number): void {
         this.layoutJokers(real);
+        this.layoutPackCards(real);
         const round = this.round;
         if (!round) return;
         const hand = this.sprites.filter((s) => !this.inPlay.has(s));
@@ -1187,22 +1219,18 @@ ${String(e instanceof Error ? e.message : e)}`)
 
         if (run.state === 'blind-select') {
             // 盲注名、目标分、奖励、跳过标签都在卡片上了；这里只剩还没有 UI 的已有标签、优惠券、
-            // 开包提示，以及跳过标签没实现时的警告
+            // 以及跳过标签没实现时的警告（开包提示在开包界面上）
             const skipKey = run.blindKind === 'small' ? run.blindTags.Small : run.blindKind === 'big' ? run.blindTags.Big : '';
             this.hud.setText([
                 skipKey && !isTagImplemented(skipKey) ? `⚠ 跳过可得的 ${TAG_CENTERS[skipKey].name} 还没实现` : '',
                 [tagsLine, vouchersLine].filter(Boolean).join('    '),
-                run.openPack ? `${run.openPack.center.name}（标签送的）—— 还能挑 ${run.openPack.choicesLeft} 张` : '',
             ].filter(Boolean).join('\n'));
         } else if (this.roundEval) {
             // 回合结算中：`run.state` 已经是 'shop'，但 Cash Out 之前商店还没开
             this.hud.setText('');
         } else if (run.state === 'shop') {
-            // 盲注、钱、重掷价、格数都在 UI 里了；这里只剩还没有 UI 的已有标签 / 优惠券与开包提示
-            this.hud.setText([
-                [tagsLine, vouchersLine].filter(Boolean).join('    '),
-                run.openPack ? `${run.openPack.center.name} —— 还能挑 ${run.openPack.choicesLeft} 张` : '',
-            ].filter(Boolean).join('\n'));
+            // 盲注、钱、重掷价、格数、开包都在 UI 里了；这里只剩还没有 UI 的已有标签 / 优惠券
+            this.hud.setText([tagsLine, vouchersLine].filter(Boolean).join('    '));
         } else if (round) {
             // 盲注、目标分、出牌 / 弃牌数、钱都在左侧面板与盲注面板里了，这里只剩上一手的结算说明
             this.hud.setText(lastAction);
@@ -1236,23 +1264,20 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.rerollBossBtn.setVisible(run.vouchers.directorsCut && run.state === 'blind-select');
         this.rerollBossBtn.setAlpha(run.canRerollBoss && !this.animating ? 1 : 0.3);
         this.rerollBtn.setAlpha(inShop && !this.animating && !this.run.openPack ? 1 : 0.3);
-        // 「跳过」只在开着包的时候能按
-        this.skipBtn.setAlpha(this.run.openPack && !this.animating ? 1 : 0.3);
         // 选牌时这排调试按钮全藏起来：原作的出牌 / 排序 / 弃牌已经在手牌下面了（`G.buttons`）
         const choosing = run.state === 'playing' && round?.phase === 'selecting';
-        for (const b of [this.nextBtn, this.rerollBtn, this.skipBtn, this.skipBlindBtn]) b.setVisible(!choosing);
+        for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn]) b.setVisible(!choosing);
         // 选盲注界面上「下一关」「跳过盲注」由卡片上的 Select / Skip Blind 代替；标签开的包挑完之前卡片收起
         // （`button_callbacks.lua:2306` 把 `G.blind_select` 挪到屏幕外），那时调试按钮还在
         if (inSelect && !run.openPack) {
             this.nextBtn.setVisible(false);
             this.skipBlindBtn.setVisible(false);
-            this.skipBtn.setVisible(false);
             this.rerollBtn.setVisible(false);
         }
         this.blindSelectViews?.select.setVisible(!run.openPack);
-        if (this.roundEval) for (const b of [this.nextBtn, this.rerollBtn, this.skipBtn, this.skipBlindBtn]) b.setVisible(false);
-        // 商店里 Next Round / Reroll 由商店 UI 接管；开包时「跳过」还要用
-        if (inShop && !run.openPack) for (const b of [this.nextBtn, this.rerollBtn, this.skipBtn, this.skipBlindBtn]) b.setVisible(false);
+        if (this.roundEval) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn]) b.setVisible(false);
+        // 商店里 Next Round / Reroll 由商店 UI 接管；开包时的 Skip 在开包界面上
+        if (inShop || run.openPack) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn]) b.setVisible(false);
 
         if (run.state === 'game-over') {
             this.message.setText('失败').setColor('#e5585f');
@@ -1333,6 +1358,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             }
             this.shopUi.sign.update(time / 1000);
         }
+        this.packUi?.view.update(time / 1000);
         this.roundEval?.view.update(time / 1000);
         this.roundEval?.cashView?.update(time / 1000);
         this.placeCards(time / 1000);
@@ -1433,11 +1459,32 @@ ${String(e instanceof Error ? e.message : e)}`)
         const evalBlind = this.roundEval?.blindHeld ? this.roundEval.last.blindKey : null;
         applyBlindColours(run.state === 'playing' ? run.blindKey : evalBlind);
         if (run.state === 'shop' && !this.roundEval) setColour(C.DYN_UI.MAIN, mixColours(C.RED, C.BLACK, 0.9));
+        if (run.openPack) setColour(C.DYN_UI.MAIN, packMainColour(run.openPack.center.kind));
+
+        // 背景：`ease_background_colour_blind` 的后一半，终点变了就从当前值线性缓动 0.6 秒（`ease_value` 的 lerp）
+        this.easeBackground(backgroundFor(run.openPack?.center.kind ?? null, run.state === 'playing' ? run.blindKey : evalBlind));
     }
 
     // ————————————————————————————————————————————————————————————————
     // 背景与 CRT
     // ————————————————————————————————————————————————————————————————
+
+    /** `G.C.BACKGROUND` 的当前值，与正在缓动的那一段 */
+    private bg: { now: BackgroundColours; from: BackgroundColours; to: BackgroundColours; t0: number } = (() => {
+        const b = backgroundFor(null, null);
+        return { now: b, from: b, to: b, t0: -Infinity };
+    })();
+
+    private easeBackground(target: BackgroundColours): void {
+        const now = this.time.now / 1000;
+        const same = (a: BackgroundColours, b: BackgroundColours) =>
+            a.contrast === b.contrast && (['C', 'L', 'D'] as const).every((k) => a[k].every((v, i) => v === b[k][i]));
+        if (!same(target, this.bg.to)) this.bg = { now: this.bg.now, from: this.bg.now, to: target, t0: now };
+        const p = Math.min(1, (now - this.bg.t0) / 0.6);
+        const lerp = (a: number, b: number) => a + (b - a) * p;
+        const mix = (k: 'C' | 'L' | 'D') => this.bg.from[k].map((v, i) => lerp(v, this.bg.to[k][i]!)) as BackgroundColours['C'];
+        this.bg.now = { C: mix('C'), L: mix('L'), D: mix('D'), contrast: lerp(this.bg.from.contrast, this.bg.to.contrast) };
+    }
 
     /**
      * 背景的动态 shader。必须最先 add——它得画在所有东西之下。
@@ -1455,10 +1502,10 @@ ${String(e instanceof Error ? e.message : e)}`)
                     const t = this.time.now / 1000;
                     setUniform('time', t);
                     setUniform('spin_time', t);
-                    setUniform('colour_1', BACKGROUND_COLOURS.colour_1);
-                    setUniform('colour_2', BACKGROUND_COLOURS.colour_2);
-                    setUniform('colour_3', BACKGROUND_COLOURS.colour_3);
-                    setUniform('contrast', BACKGROUND_COLOURS.contrast);
+                    setUniform('colour_1', this.bg.now.C);
+                    setUniform('colour_2', this.bg.now.L);
+                    setUniform('colour_3', this.bg.now.D);
+                    setUniform('contrast', this.bg.now.contrast);
                     // G.ARGS.spin.amount，game.lua:2494 起手是 0
                     setUniform('spin_amount', 0);
                     // 原作用片元的屏幕像素坐标（`screen_coords`）与 `love_ScreenSize`，

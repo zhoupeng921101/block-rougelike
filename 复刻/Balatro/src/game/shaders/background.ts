@@ -88,29 +88,6 @@ void main ()
 }
 `;
 
-type RGBA = [number, number, number, number];
-
-/**
- * 小盲注的背景色。
- *
- * `globals.lua:506-511` 那个 `L = {1,1,0,1}`（纯黄）只是**初值**，
- * 进回合时会被 `ease_background_colour` 覆盖——
- * `common_events.lua:347`：小盲注与大盲注都用 `G.C.BLIND.Small`，
- * 即 `globals.lua:492` 的 `HEX("50846e")`。
- *
- * 三个通道由同一个色按亮度系数派生（`common_events.lua:287`）：
- * `L × 1.3`、`C × 0.9`、`D × 0.7`。
- *
- * shader 的绑定顺序见 `game.lua:2504-2506`：
- * `colour_1 = C`、`colour_2 = L`、`colour_3 = D`。
- */
-const BLIND_SMALL: RGBA = [0x50 / 255, 0x84 / 255, 0x6e / 255, 1];
-
-const scale = (c: RGBA, k: number): RGBA => [c[0] * k, c[1] * k, c[2] * k, c[3]];
-
-export const BACKGROUND_COLOURS = {
-    colour_1: scale(BLIND_SMALL, 0.9),
-    colour_2: scale(BLIND_SMALL, 1.3),
-    colour_3: scale(BLIND_SMALL, 0.7),
-    contrast: 1,
-} as const;
+// 背景的三个颜色与对比度不是常量：盲注、Boss、开包各不相同，
+// 由 `ui/blind-colour.ts` 的 `backgroundFor`（`ease_background_colour_blind` 直译）算，场景每帧喂进来。
+// shader 的绑定顺序见 `game.lua:2504-2506`：`colour_1 = C`、`colour_2 = L`、`colour_3 = D`。
