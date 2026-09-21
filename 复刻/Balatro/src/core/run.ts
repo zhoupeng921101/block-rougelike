@@ -58,7 +58,7 @@ import { calculateJoker, makeGameView, refreshDerivedAbilities, runModifiers } f
 import type { GameView, Joker } from './jokers';
 import { NO_JOKERS, type JokerFlags } from './poker-hands';
 import { PseudorandomState, pseudorandomElement, pseudoshuffle } from './rng';
-import { Round, STARTING_PARAMS } from './round';
+import { type JokerAreaHooks, Round, STARTING_PARAMS } from './round';
 import { type HandInfo, type HandName, initialHands } from './scoring';
 import {
     type PoolContext,
@@ -186,14 +186,112 @@ export class Run {
     }
 
     /**
+     * `card.lua:2521` 的 `context.setting_blind`：**进盲注时问一遍每张小丑**。
+     * 由 `Round` 在构造到一半时回调（见那边的注释），此时手牌上限与牌堆都还没定。
+     *
+     * 这一趟里的增删**都是入队的**，照原作的顺序落地：
+     * 1. 逐张问小丑。Madness / Ceremonial Dagger 只**打标记**（`getting_sliced`），
+     *    Riff-raff 只**记账**（`joker_buffer`）——后面的小丑仍看得见被判死刑的那张
+     * 2. 跑完之后先造 Riff-raff 的小丑、再删被判死刑的。
+     *    先造后删是因为原作里删是 `start_dissolve`（带动画延迟），造是紧跟着的事件——
+     *    造的时候被删的那张还占着 `used_jokers`，不会被抽出来
+     */
+    private settingBlind(round: Round): void {
+        this.jokerBuffer = 0;
+        this.pendingJokers = [];
+        const context = { setting_blind: true, blind_boss: this.blindKind === 'boss' };
+        for (const joker of [...this.jokers]) {
+            calculateJoker(joker, context, round.gameView());
+        }
+
+        for (const { keyAppend, rarity } of this.pendingJokers) {
+            this.jokers.push(createJokerCard(this.rng, this.poolContext(), keyAppend, 'none', { rarity }));
+        }
+        this.pendingJokers = [];
+        for (const joker of this.jokers.filter((j) => j.getting_sliced)) {
+            const i = this.jokers.indexOf(joker);
+            this.jokers.splice(i, 1);
+            releaseUsed(this.poolContext(), joker.key);
+        }
+        this.jokerBuffer = 0;
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+    }
+
+    /** `G.GAME.joker_buffer`。只在 `setting_blind` 那一趟里非零 */
+    private jokerBuffer = 0;
+    /** 这一次用消耗品造出来的扑克牌（Cryptid / Familiar …），用完一起报给 Hologram */
+    private addedByConsumable: Card[] = [];
+    /** Riff-raff 说好要造、还没造的小丑 */
+    private pendingJokers: Array<{ keyAppend: string; rarity: number }> = [];
+
+    /** 小丑区的口子，`Round` 与商店视图共用 */
+    private jokerAreaHooks(): JokerAreaHooks {
+        return {
+            getBuffer: () => this.jokerBuffer,
+            setBuffer: (n) => { this.jokerBuffer = n; },
+            queueJoker: (keyAppend, rarity) => { this.pendingJokers.push({ keyAppend, rarity }); },
+            sliceJoker: (target) => { target.getting_sliced = true; },
+            duplicateJoker: (self, key) => this.duplicateJoker(self, key),
+            addPlayingCard: (card) => {
+                this.fullDeck.push(card);
+                refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+            },
+        };
+    }
+
+    /**
+     * `card.lua:2374` 的 Invisible Joker：从小丑区里**除自己之外**随机复制一张。
+     *
+     * 判空位用 `#小丑区 <= card_limit`——**这时自己还在区里**（`selling_self` 在移出之前），
+     * 所以满格也能复制：卖掉自己之后正好空出那一格。复制品的 Negative 剥掉（`copy_card` 的
+     * `strip_edition`），`ability` 深拷贝，复制到的若也是 Invisible Joker，它的回合数归零。
+     */
+    private duplicateJoker(self: Joker, key: string): void {
+        const others = this.jokers.filter((j) => j !== self);
+        if (others.length === 0) return;
+        if (this.jokers.length > this.jokerSlots) return;
+        const [chosen] = pseudorandomElement(others, this.rng.pseudoseed(key));
+        if (!chosen) return;
+        const copy: Joker = {
+            ...chosen,
+            ability: structuredClone(chosen.ability),
+            edition: chosen.edition === 'negative' ? undefined : chosen.edition,
+            T: { ...chosen.T },
+            getting_sliced: false,
+        };
+        if (copy.ability.invis_rounds !== undefined) copy.ability.invis_rounds = 0;
+        this.jokers.push(copy);
+        this.usedJokers.add(copy.key);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+    }
+
+    /**
+     * `misc_functions.lua:1604` 的 `playing_card_joker_effects`：**有扑克牌加进了牌组**，
+     * 问一遍每张小丑（`Hologram` 按张数长倍率）。
+     *
+     * 触发点（原作）：Marble Joker、DNA（在结算里，见 `scoring.ts`）、
+     * Cryptid 与 Familiar / Grim / Incantation（消耗品）、标准包里挑走一张扑克牌。
+     */
+    private playingCardsAdded(cards: unknown[]): void {
+        if (cards.length === 0) return;
+        const view = this.round?.gameView() ?? this.shopGameView();
+        for (const joker of [...this.jokers]) {
+            calculateJoker(joker, { playing_card_added: true, cards }, view);
+        }
+    }
+
+    /**
      * `card.lua:2584` 的 `Marble Joker`：造一张扑克牌进整副牌。
      *
      * **消费一次 `pseudorandom_element(P_CARDS, pseudoseed(key))`**——
      * `P_CARDS` 是以 key 为键的表，抽取按 key 的字节序排（不是 2→A 的牌序），
      * 与标准包造牌走的是同一条路。
      *
-     * 只进 `fullDeck`：原文把它 `emplace` 进 `G.play`（出牌区）而不是牌堆，
-     * 所以这一关摸不到它，要等下一次洗牌。
+     * 进 `fullDeck`，**这一关就在牌堆里**：原文先 `emplace` 进出牌区，紧跟着
+     * `draw_card(G.play, G.deck)` 放回牌堆，而本关的洗牌排在这之后。
+     * 复刻件的 `setting_blind` 那一趟跑在 `Round` 复制牌堆之前，所以直接进 `fullDeck` 就对了。
+     *
+     * 造完**同步**跑一趟 `playing_card_added`（原文 `playing_card_joker_effects({true})`）。
      */
     private createPlayingCard(enhancement: string | null, key: string): void {
         const [, frontKey] = pseudorandomElement(P_CARDS, this.rng.pseudoseed(key));
@@ -203,6 +301,7 @@ export class Run {
         this.fullDeck.push(card);
         // 整副牌变了，`Steel/Stone Joker` 与 `Driver's License` 的 tally 要跟着重算
         refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+        this.playingCardsAdded([card]);
     }
 
     /**
@@ -278,12 +377,10 @@ export class Run {
             onCreatePlayingCard: (enhancement, key) => this.createPlayingCard(enhancement, key),
             consumables: this.consumableHooks(),
             handSizeDelta: this.handSizeDelta,
+            jokerSlots: this.jokerSlots,
+            jokerArea: this.jokerAreaHooks(),
+            onSettingBlind: (round) => this.settingBlind(round),
         });
-        // `card.lua:2521` 的 `context.setting_blind`：**进盲注时问一遍每张小丑**。
-        // `Cartomancer` 在这时造一张塔罗（消费 `Tarotcar<ante>`）
-        for (const joker of [...this.jokers]) {
-            calculateJoker(joker, { setting_blind: true }, this.round.gameView());
-        }
 
         this.state = 'playing';
         return this.round;
@@ -569,6 +666,8 @@ export class Run {
             // 不进当前这一局的牌堆——原作也是 `G.deck` 加，本局的 `Round` 已经洗过了
             this.fullDeck.push(card.card);
             refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+            // `button_callbacks.lua:2338`
+            this.playingCardsAdded([card.card]);
         }
 
         pack.cards.splice(index, 1);
@@ -679,6 +778,7 @@ export class Run {
         this.consumables.splice(index, 1);
 
         const ctx = this.useContext(highlighted);
+        this.addedByConsumable = [];
         applyConsumable(consumable, ctx);
 
         releaseUsed(this.poolContext(), consumable.key);
@@ -700,6 +800,11 @@ export class Run {
                 this.round?.gameView() ?? this.shopGameView(),
             );
         }
+
+        // `card.lua:1218` / `:1339`：Cryptid 与 Familiar / Grim / Incantation 造完牌，
+        // **整批**跑一趟 `playing_card_added`。原文是入队的，排在上面那趟之后
+        this.playingCardsAdded(this.addedByConsumable);
+        this.addedByConsumable = [];
 
         // `misc_functions.lua:1227` 的双层嵌套 immediate：
         // **在效果之后才写**，所以 `The Fool` 读到的是上一张、不是自己
@@ -774,6 +879,7 @@ export class Run {
                 // `create_playing_card`：进整副牌**与当前这一局的手牌**
                 this.fullDeck.push(card);
                 this.round?.addToHand(card);
+                this.addedByConsumable.push(card);
             },
             changeHandSize: (delta) => { this.handSizeDelta += delta; },
             createConsumable: (set, keyAppend) =>
@@ -827,6 +933,7 @@ export class Run {
             duplicateConsumableAsNegative: (key) => this.duplicateConsumableAsNegative(key),
             createConsumable: (set, keyAppend) => this.consumableHooks().create(set, keyAppend),
             createPlayingCard: (enhancement, key) => this.createPlayingCard(enhancement, key),
+            duplicateJoker: (self, key) => this.duplicateJoker(self, key),
             deckCount: this.fullDeck.length,
             startingDeckSize: this.fullDeck.length,
             playingCardCount: this.fullDeck.length,

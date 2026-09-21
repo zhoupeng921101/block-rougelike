@@ -207,6 +207,25 @@ export function makeCard(key: string, suit: Suit, value: Value): Card {
 }
 
 /**
+ * `common_events.lua:2198` 的 `copy_card`，扑克牌那一半。Cryptid 与 DNA 共用。
+ *
+ * **是一张新牌**：走 `makeCard`，推进 `sort_id` / `unique_val`——
+ * 原文也是 `G.playing_card + 1` 再 `Card(...)`，新牌拿到新的序号。
+ *
+ * 复制的是整个 `ability`（`for k, v in pairs(other.ability)`），
+ * 所以**永久筹码（Hiker 加的）跟着走**；版本、蜡封、debuff 也跟着走。
+ */
+export function copyPlayingCard(source: Card): Card {
+    const copy = makeCard(source.key, source.base.suit, source.base.value);
+    copy.enhancement = source.enhancement;
+    copy.edition = source.edition;
+    copy.seal = source.seal;
+    copy.perma_bonus = source.perma_bonus;
+    copy.debuff = source.debuff;
+    return copy;
+}
+
+/**
  * `card.lua:958` 的 `get_id`。
  *
  * **石头牌返回一个与任何真实点数都不相等的值**，所以它凑不成对子、顺子、

@@ -283,6 +283,16 @@ export function evaluatePlay(
             before: true,
         }, game);
 
+        // `state_events.lua:652` 的 `card_eval_status_text` → `common_events.lua:924`：
+        // DNA 造了牌就**当场**跑一趟 `playing_card_added`，排在下一张小丑的 before 之前
+        const created = effects.jokers?.playingCardsCreated ?? 0;
+        if (created > 0) {
+            const cards = Array.from({ length: created }, () => true);
+            for (const other of [...game.jokers]) {
+                calculateJoker(other, { playing_card_added: true, cards }, game);
+            }
+        }
+
         if (effects.jokers?.level_up) levelUpHand(hands, handName);
     }
 

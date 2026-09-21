@@ -140,11 +140,56 @@ export type RoundOptions = {
      */
     onRemoveFromDeck?(cards: Card[]): void;
     /**
-     * `Marble Joker` 造一张扑克牌进整副牌。**不进这一局的牌堆**——
-     * 原文把它 `emplace` 进出牌区，所以这一关摸不到它。
-     * 由 `Run` 接上（它才持有 `fullDeck`）。
+     * `Marble Joker` 造一张扑克牌进整副牌。由 `Run` 接上（它才持有 `fullDeck`）。
+     * 调用发生在 `onSettingBlind` 里、复制牌堆之前，所以这张牌这一关就在牌堆里。
      */
     onCreatePlayingCard?(enhancement: string | null, key: string): void;
+    /**
+     * 小丑区的格数（`G.jokers.config.card_limit`），**含 Negative 多给的格子**。
+     * 由 `Run` 传——`Round` 不知道小丑区之外的事。不给就是起手的 5 格
+     */
+    jokerSlots?: number;
+    /** 小丑区的口子。由 `Run` 接上——增删小丑的那几张要碰小丑区与整副牌 */
+    jokerArea?: JokerAreaHooks;
+    /**
+     * 小丑的 `setting_blind` 那一趟。**构造到一半时调**：盲注与 RNG 已就位，
+     * 手牌上限、出牌/弃牌次数、牌堆都还没定。由 `Run` 接上，见构造函数里那条注释
+     */
+    onSettingBlind?(round: Round): void;
+};
+
+/**
+ * 结算过程中要**增删小丑或扑克牌**的那几个口子。`Round` 不持有小丑区之外的状态，
+ * 所以由 `Run` 传进来。字段与 `GameView` 上同名的那组一一对应，语义见那边。
+ */
+export type JokerAreaHooks = {
+    getBuffer(): number;
+    setBuffer(n: number): void;
+    queueJoker(keyAppend: string, rarity: number): void;
+    sliceJoker(target: Joker): void;
+    duplicateJoker(self: Joker, key: string): void;
+    /** DNA：复制品进整副牌。**手牌那一半由 `Round` 自己放** */
+    addPlayingCard(card: Card): void;
+};
+
+/** 没接小丑区时的默认实现：**一调就抛**，免得静默吞掉 */
+const NO_JOKER_AREA: JokerAreaHooks = {
+    getBuffer: () => 0,
+    setBuffer: () => {
+        throw new Error('这个 Round 没接小丑区，但有小丑要动 joker_buffer');
+    },
+    queueJoker: () => {
+        throw new Error('这个 Round 没接小丑区，但有小丑要造小丑');
+    },
+    sliceJoker: () => {
+        throw new Error('这个 Round 没接小丑区，但有小丑要毁小丑');
+    },
+    duplicateJoker: () => {
+        throw new Error('这个 Round 没接小丑区，但有小丑要复制小丑');
+    },
+    addPlayingCard: () => {
+        throw new Error('这个 Round 没接整副牌，但有小丑要复制扑克牌');
+    },
 };
 
 /**
@@ -236,6 +281,8 @@ export class Round {
     private readonly consumables: ConsumableHooks;
     private readonly onRemoveFromDeck?: (cards: Card[]) => void;
     private readonly onCreatePlayingCard?: (enhancement: string | null, key: string) => void;
+    readonly jokerSlots: number;
+    private readonly jokerArea: JokerAreaHooks;
 
     constructor(seed: string, fullDeck: Card[], options: RoundOptions = {}) {
         this.ante = options.ante ?? 1;
@@ -247,13 +294,9 @@ export class Round {
         // 与调用方传进来的（测试用）取并集
         this.onRemoveFromDeck = options.onRemoveFromDeck;
         this.onCreatePlayingCard = options.onCreatePlayingCard;
+        this.jokerSlots = options.jokerSlots ?? STARTING_PARAMS.joker_slots;
+        this.jokerArea = options.jokerArea ?? NO_JOKER_AREA;
         this.consumables = options.consumables ?? NO_CONSUMABLES;
-        const passedFlags = options.jokerFlags ?? NO_JOKERS;
-        const jokerMods = runModifiers(options.jokers ?? []);
-        this.jokerFlags = {
-            fourFingers: passedFlags.fourFingers || jokerMods.flags.fourFingers,
-            shortcut: passedFlags.shortcut || jokerMods.flags.shortcut,
-        };
         this.blind = options.blind ?? null;
         // `debuff_hand` 要读牌型等级与本局最常用牌型，还要能降级、能清空钱。
         // 那些都是 `Round` 的状态，所以由它提供而不是 `blinds.ts` 自己去拿
@@ -273,9 +316,27 @@ export class Round {
         this.rng = options.rng ?? new PseudorandomState(seed);
         this.requirement = getBlindAmount(this.ante) * (this.blind?.center.mult ?? 1);
 
+        // `state_events.lua:354`：**`set_blind` → 小丑的 `setting_blind` → 洗牌 → 发牌**。
+        // 小丑那一趟会增删小丑（Madness / Ceremonial Dagger / Riff-raff）、往整副牌里加牌
+        // （Marble Joker 的石头牌是 `draw_card(G.play, G.deck)` 进了牌堆、再被洗进去的），
+        // 所以它**必须排在下面算手牌上限、复制牌堆、洗牌之前**——
+        // 否则 Riff-raff 造出来的 Juggler 这一关不加手牌、Marble 的石头牌这一关摸不到
+        // `gameView()` 要读 `mods`（概率、Smeared），先按现在的小丑区算一份，这一趟之后重算
+        this.mods = runModifiers(this.jokers);
+        options.onSettingBlind?.(this);
+
+        // `Four Fingers` 与 `Shortcut` 是小丑给的牌型判定松紧，
+        // 与调用方传进来的（测试用）取并集。**在 setting_blind 之后算**，理由同上
+        const passedFlags = options.jokerFlags ?? NO_JOKERS;
+        const jokerMods = runModifiers(this.jokers);
+        this.jokerFlags = {
+            fourFingers: passedFlags.fourFingers || jokerMods.flags.fourFingers,
+            shortcut: passedFlags.shortcut || jokerMods.flags.shortcut,
+        };
+
         // **派生字段先重算一遍**：`Joker Stencil` 的倍率与 `Swashbuckler` 的 mult
         // 是从小丑区推导的（原作每帧重算），不重算就会读到 config 里的初值
-        refreshDerivedAbilities(this.jokers, STARTING_PARAMS.joker_slots, fullDeck);
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, fullDeck);
 
         // `misc_functions.lua:1855` 的基数，再加上小丑区给的修正。
         // 全部由 `runModifiers` 从小丑区**重算**而不是增量加减——
@@ -344,6 +405,21 @@ export class Round {
                 return round.consumables.slots;
             },
             createConsumable: (set, keyAppend) => round.consumables.create(set, keyAppend),
+            get jokerBuffer() {
+                return round.jokerArea.getBuffer();
+            },
+            set jokerBuffer(n: number) {
+                round.jokerArea.setBuffer(n);
+            },
+            queueJoker: (keyAppend, rarity) => round.jokerArea.queueJoker(keyAppend, rarity),
+            sliceJoker: (target) => round.jokerArea.sliceJoker(target),
+            duplicateJoker: (self, key) => round.jokerArea.duplicateJoker(self, key),
+            addPlayingCardToHand: (card) => {
+                // 原文 `G.hand:emplace` + `table.insert(G.playing_cards, …)`：手牌这边自己放，
+                // 整副牌那边交给 `Run`
+                round.addToHand(card);
+                round.jokerArea.addPlayingCard(card);
+            },
             createPlayingCard: (enhancement, key) => {
                 if (!round.onCreatePlayingCard) {
                     throw new Error('这个 Round 没接 onCreatePlayingCard，但 Marble Joker 要造牌');
@@ -378,7 +454,7 @@ export class Round {
             // `Oops! All 6s` 每张把它 ×2。**不是常量**
             probabilities: { normal: this.mods.probabilityNormal },
             jokers: this.jokers,
-            joker_slots: STARTING_PARAMS.joker_slots,
+            joker_slots: this.jokerSlots,
             get deckCount() {
                 return round.deck.length;
             },
@@ -445,7 +521,6 @@ export class Round {
         // `ease_hands_played(-1)`。**在结算之前减**——Dusk 与 Acrobat 判的是
         // `hands_left == 0`，减在后面它们就永远不触发
         this.handsLeft--;
-        this.handsPlayedThisRound++;
 
         // `state_events.lua:502`。`The Pillar` 靠它认「本 Ante 打过的牌」，
         // 而清除是在 **Boss 打完之后**（`state_events.lua:287`），不是每回合
@@ -466,6 +541,11 @@ export class Round {
         // `state_events.lua:597` 的 `G.GAME.last_hand_played`。Blue 蜡封读它
         this.lastHandPlayed = result.handName;
         this.chips += result.score;
+
+        // `state_events.lua:545`：**本回合出牌数在结算之后才 +1**（`ease_hands_played` 那个是手数，
+        // 这个是计数，两回事）。放在结算前会让结算里读到的第一手是 1——
+        // `Sixth Sense` 与 `DNA` 判「本回合第一手」用的就是它，放错它们在真局里永远不触发
+        this.handsPlayedThisRound++;
 
         // 第 13 步销毁掉的牌（碎掉的玻璃牌）。**离开这一局的弃牌堆**，
         // 而且要真的从整副牌里拿走——`Run` 跨回合持有同一批 `Card` 对象，

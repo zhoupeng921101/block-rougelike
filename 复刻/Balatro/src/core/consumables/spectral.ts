@@ -26,7 +26,7 @@
  * 强化的候选池是 8 张里**去掉石头牌**的 7 张（`card.lua:1329`）。
  */
 
-import { type Suit, type Value, cardKey, makeBase, makeCard } from '../card';
+import { type Suit, type Value, cardKey, copyPlayingCard, makeBase, makeCard } from '../card';
 import { pollEdition } from '../editions';
 import { ENHANCEMENT_KEYS_BY_ORDER } from '../enhancements';
 import type { Joker } from '../jokers';
@@ -276,13 +276,8 @@ export const SPECTRAL_SPECS: Record<string, ConsumableSpec> = {
             const source = ctx.highlighted[0];
             if (!source) return;
             const count = c.center.config.extra as number;
-            for (let i = 0; i < count; i++) {
-                const copy = makeCard(source.key, source.base.suit, source.base.value);
-                copy.enhancement = source.enhancement;
-                copy.edition = source.edition;
-                copy.seal = source.seal;
-                ctx.addPlayingCard(copy);
-            }
+            // `copy_card` 连永久筹码与 debuff 一起复制——原先这里只抄了三样
+            for (let i = 0; i < count; i++) ctx.addPlayingCard(copyPlayingCard(source));
         },
         canUse: (_c, ctx) => ctx.highlighted.length === 1,
     },

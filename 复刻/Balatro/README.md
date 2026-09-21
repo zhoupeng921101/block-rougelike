@@ -64,9 +64,15 @@ Lucky Cat、Golden Ticket、Glass Joker、Driver's License。**小丑覆盖面 1
 强化牌那 9 张仍然零贡献：参考牌固定、新牌组没有强化牌，它们的成长条件在沙盒里碰不到。
 存利息复测仍不划算。
 
+**「增删牌」8 张小丑已交付**：Ceremonial Dagger / DNA / Madness / Riff-raff / Invisible Joker /
+Caino / Yorick / Hologram。**小丑覆盖面 141 / 150**，剩 9：负债 4 / 标签 3 / 关掉 Boss 2。
+顺带修了三个真 bug：本回合出牌数加早了（Sixth Sense 在真局里从没触发过）、
+小丑的 `setting_blind` 跑在发牌之后、Marble 的石头牌这一关就该在牌堆里。
+挑牌 bot 对这 8 张仍然零贡献——它们的作用全在「打一手」之外，估值看不见。
+
 > **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
 > 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
-> 逻辑层有 747 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
+> 逻辑层有 775 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
 > **版本与蜡封的贴图都没有移植**（原作每种版本一个 `.fs`、蜡封是四张叠图），
 > 这一版只用文字标出来（`✦多彩` / `▣红`）。
 
@@ -98,7 +104,7 @@ src/
 │   │   └── use-context.ts           喂给消耗品的那张宽接口
 │   ├── atlas.ts                 图集网格推导（**不 import Phaser**，所以可单测）
 │   ├── event-queue.ts           事件队列（G.E_MANAGER）
-│   ├── jokers/                  ← 小丑系统。150 张里 133 张有行为
+│   ├── jokers/                  ← 小丑系统。150 张里 141 张有行为
 │   │   ├── centers.generated.ts     150 张的 center 定义（生成的，别手改）
 │   │   ├── instance.ts              set_ability / set_cost
 │   │   ├── calculate.ts             calculate_joker + 覆盖面登记
@@ -127,7 +133,7 @@ src/
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 747 个测试，必须全绿
+npm test            # 775 个测试，必须全绿
 npm run test:slow   # 60 个 seed 量墙（约 30 秒，改了内容或 bot 之后跑）
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build

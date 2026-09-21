@@ -83,6 +83,12 @@ export type JokerAbility = {
     stone_tally?: number;
     /** `Driver's License`：整副牌里有几张**带任意强化**的。`card.lua:4182` */
     driver_tally?: number;
+    /** `Invisible Joker`：已经熬过几个回合。`set_ability` 里置 0（`card.lua:308`） */
+    invis_rounds?: number;
+    /** `Caino`：自己攒的倍率，初值 1（`card.lua:324`）。**不走 `x_mult`**，main 分支单独读 */
+    caino_xmult?: number;
+    /** `Yorick`：还要再弃几张才长一档，初值 `extra.discards`（`card.lua:327`） */
+    yorick_discards?: number;
 };
 
 export type Joker = {
@@ -101,6 +107,15 @@ export type Joker = {
     edition?: Edition;
     /** 表现层排序用，单位是 tile（与 `Card.T` 同口径，见 10 号票） */
     T: { x: number; y: number; w: number; h: number };
+    /**
+     * `card.getting_sliced`：**已经被 Madness / Ceremonial Dagger 判了死刑、还没真的删掉**。
+     *
+     * 原作在 `setting_blind` 那一趟里只打标记，删除是入队的——所以同一趟里
+     * 后面的小丑仍然看得见它（Riff-raff 数小丑区张数时算它一张），
+     * 而它自己的 `setting_blind` 分支被 `not self.getting_sliced` 挡掉。
+     * 复刻件照这个语义：标记、跑完整趟、再删。
+     */
+    getting_sliced?: boolean;
 };
 
 /**
@@ -177,6 +192,15 @@ export type JokerContext = {
      * `Cartomancer` 在这时造一张塔罗。
      */
     setting_blind?: boolean;
+    /** 跟着 `setting_blind` 来的 `context.blind.boss`。`Madness` 在 Boss 盲注不动手 */
+    blind_boss?: boolean;
+    /**
+     * `misc_functions.lua:1604` 的 `playing_card_joker_effects`：**有扑克牌加进了牌组**。
+     * `Hologram` 按 `#cards` 长倍率。
+     */
+    playing_card_added?: boolean;
+    /** 跟着 `playing_card_added` 一起来的那批。**只有张数有意义**（Marble 与 DNA 传的是 `{true}`） */
+    cards?: unknown[];
     /**
      * `card.lua:2338` 的 `context.open_booster`：**刚打开一个补充包**。
      * `Hallucination` 读它。**这一趟排在「造包里的牌」之前**（`card.lua:1799`）。
@@ -195,7 +219,7 @@ export type JokerContext = {
     /**
      * `state_events.lua:996` 与 `card.lua:1370` 的 `remove_playing_cards`：
      * 有扑克牌被永久销毁（碎掉的玻璃牌 / The Hanged Man）。
-     * `Glass Joker` 读它（只数 `shattered`）；`Hologram` / `Caino` 也读，还没实现
+     * `Glass Joker`（只数 `shattered`）与 `Caino`（数人头牌）读它
      */
     remove_playing_cards?: boolean;
     /** 跟着 `remove_playing_cards` 一起来的那批牌 */
@@ -278,13 +302,38 @@ export type GameView = {
      * `card.lua:2584` 的 `Marble Joker`：造一张扑克牌进 `G.playing_cards`。
      * **消费一次 `pseudorandom_element(P_CARDS, pseudoseed(key))`**（`marb_fr`）。
      *
-     * 原文把牌 `emplace` 进 `G.play`（出牌区）而不是牌堆，所以**这一关摸不到它**，
-     * 要等下一次洗牌。复刻件照这个语义走：只进 `Run.fullDeck`，不进当前这一局的牌堆。
+     * 原文先 `emplace` 进 `G.play`（出牌区），紧跟着 `draw_card(G.play, G.deck)` 放回牌堆，
+     * 而本关的洗牌排在这之后——所以**这一关就摸得到它**。复刻件的 `setting_blind` 那一趟
+     * 跑在 `Round` 复制牌堆之前，进 `Run.fullDeck` 就等于进了这一关的牌堆。
      *
      * 原文还跟着入队一次 `G.deck.config.card_limit + 1`——那是牌堆**那一摞的视觉高度**，
      * 不是任何数值上限，复刻件不建模。
      */
     createPlayingCard(enhancement: string | null, key: string): void;
+    /**
+     * `G.GAME.joker_buffer`：**已经说好要进小丑区、但还没进的张数**（可以是负的）。
+     * Riff-raff 造小丑前 `+n`，Ceremonial Dagger 切掉一张 `-1`——
+     * 同一趟 `setting_blind` 里后面的 Riff-raff 数空位时要算上它。
+     * **Madness 切掉的那张不减**，原文如此。
+     */
+    jokerBuffer: number;
+    /**
+     * Riff-raff 的 `create_card('Joker', …, _rarity, …, keyAppend)`。
+     * **入队**：原文是 `add_event`，在这一趟 `setting_blind` 跑完之后才真的造。
+     */
+    queueJoker(keyAppend: string, rarity: number): void;
+    /** Madness / Ceremonial Dagger：给一张小丑判死刑（`getting_sliced = true`），这一趟跑完再删 */
+    sliceJoker(target: Joker): void;
+    /**
+     * `card.lua:2374` 的 Invisible Joker：**从小丑区里除自己之外随机复制一张**，
+     * 消费一次 `pseudorandom_element(others, pseudoseed(key))`。满了就不复制。
+     */
+    duplicateJoker(self: Joker, key: string): void;
+    /**
+     * DNA：把一张扑克牌的复制品（`copy_card`）放进**手牌与整副牌**。
+     * 不进牌堆——原文 `G.hand:emplace`。
+     */
+    addPlayingCardToHand(card: Card): void;
     /**
      * `Smeared Joker` 在场——红桃认方块、黑桃认梅花。
      * 由 `modifiers.ts` 从小丑区算出来，不是每张小丑自己去 `find_joker`。
@@ -345,6 +394,12 @@ export type JokerEffect = {
     destroyCard?: boolean;
     /** `Burnt Joker`：把刚弃掉那手的牌型升一级 */
     levelUpDiscarded?: boolean;
+    /**
+     * `playing_cards_created`：这次造了几张扑克牌（`DNA`）。
+     * 原作在 `card_eval_status_text` 里看到它就跑一趟 `playing_card_joker_effects`
+     * （`common_events.lua:924`），**同步，排在下一张小丑的 before 之前**。
+     */
+    playingCardsCreated?: number;
     /** 效果来自哪张小丑，表现层用来 juice */
     card?: Joker;
     /** 纯提示，不影响数值。表现层用 */

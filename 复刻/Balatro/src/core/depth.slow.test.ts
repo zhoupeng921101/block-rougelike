@@ -39,9 +39,13 @@ const histogram = (xs: Array<{ ante: number }>) =>
     Array.from({ length: 10 }, (_, a) => xs.filter((r) => r.ante === a + 1).length);
 
 describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
-    it('贪心：平均 2.333，一半以上死在 Ante 2', () => {
-        expect(mean(greedy)).toBe(2.333);
-        expect(histogram(greedy)).toEqual([4, 35, 19, 1, 1, 0, 0, 0, 0, 0]);
+    /**
+     * 「增删牌」那 8 张接进来之后 2.333 → 2.417：贪心什么都买，
+     * 买到的 Riff-raff 现在真的会造小丑了。
+     */
+    it('贪心：平均 2.417，一半以上死在 Ante 2', () => {
+        expect(mean(greedy)).toBe(2.417);
+        expect(histogram(greedy)).toEqual([4, 32, 20, 3, 1, 0, 0, 0, 0, 0]);
     });
 
     /**
@@ -53,13 +57,16 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      *    在另一批没参与调参的 60 个 seed（`H${i * 104729 + 17}`）上复核：3.967 → 4.350
      * 3. 估值看成长（沙盒连打 4 手、小丑状态带进下一手）：→ 4.333。
      *    视野 1 / 4 / 8 手在 240 个 seed 上是 3.967 / 4.158 / 4.125，4 手在四批里每批都赢
+     *
+     * 「增删牌」那 8 张之后 4.333 → 4.267，**不是内容的作用**（挑牌 bot 一张都没买，
+     * 禁掉它们 240 局逐局相同），是顺带修的时序改了 RNG 路径——在噪声里。
      */
-    it('挑牌：平均 4.333，46 个 seed 比贪心深、7 个更浅', () => {
-        expect(mean(picky)).toBe(4.333);
-        expect(histogram(picky)).toEqual([3, 9, 11, 10, 12, 7, 3, 3, 1, 1]);
+    it('挑牌：平均 4.267，43 个 seed 比贪心深、8 个更浅', () => {
+        expect(mean(picky)).toBe(4.267);
+        expect(histogram(picky)).toEqual([3, 9, 12, 10, 12, 7, 2, 3, 1, 1]);
         const deeper = picky.filter((r, i) => r.ante > greedy[i].ante).length;
         const shallower = picky.filter((r, i) => r.ante < greedy[i].ante).length;
-        expect([deeper, shallower]).toEqual([46, 7]);
+        expect([deeper, shallower]).toEqual([43, 8]);
     });
 
     /**
@@ -91,10 +98,10 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * - 全程存 $25（除非小丑能涨 50%）：明显更差，一半局死在 Ante 2 以前
      * - 后期（Ante 3 起）才存 $25、放行天体包、余钱重掷：最像人的打法，也没赢
      *
-     * 重跑过两次，**结论都没变**：出牌改好之后（2.867 / 4.017 对 4.133），
-     * 估值学会看成长之后（2.950 / 4.133 对 4.333）。
+     * 重跑过三次，**结论都没变**：出牌改好之后（2.867 / 4.017 对 4.133），
+     * 估值学会看成长之后（2.950 / 4.133 对 4.333），增删牌那 8 张之后（3.0 / 4.167 对 4.267）。
      */
-    it('存利息：全程存 $25 掉到 2.950，后期才存 + 重掷 4.133，都不比不存（4.333）好', () => {
+    it('存利息：全程存 $25 掉到 3.0，后期才存 + 重掷 4.167，都不比不存（4.267）好', () => {
         const flat25 = SEEDS.map((s) =>
             pickyRun(fresh(s), { economy: { reserve: () => 25, breakReserveGain: 0.5 } }));
         const late25 = SEEDS.map((s) =>
@@ -106,7 +113,7 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
                     maxRerolls: 10,
                 },
             }));
-        expect(mean(flat25)).toBe(2.95);
-        expect(mean(late25)).toBe(4.133);
+        expect(mean(flat25)).toBe(3);
+        expect(mean(late25)).toBe(4.167);
     });
 });

@@ -38,18 +38,18 @@ const bySeed = (xs: Array<{ seed: string; ante: number }>) =>
     Object.fromEntries(xs.map((r) => [r.seed, r.ante]));
 
 describe('贪心深度', () => {
-    it('八个 seed 各自死在第几个 Ante（平均 2.625）', () => {
+    it('八个 seed 各自死在第几个 Ante（平均 2.75）', () => {
         expect(bySeed(greedy)).toEqual({
             TUTORIAL: 3,
             ALEEB: 3,
             '7LB2WVPK': 3,
-            JHZ7FPM: 3,
+            JHZ7FPM: 4,
             QQQ777: 2,
             MNBVCXZ: 2,
             ZZZZZZ: 3,
             ABCDEF: 2,
         });
-        expect(mean(greedy)).toBe(2.625);
+        expect(mean(greedy)).toBe(2.75);
     });
 
     /**
@@ -71,10 +71,10 @@ describe('挑牌深度', () => {
      * **注意这 8 个的均值与 60 个的走势对不上**：改出牌时 3.75 → 2.75（60 个是 3.867 → 4.133），
      * 估值看成长后 2.75 → 3.0（60 个 4.133 → 4.333）。这正是「8 个只够当快照」的活例子。
      */
-    it('八个 seed 各自死在第几个 Ante（平均 3.0）', () => {
+    it('八个 seed 各自死在第几个 Ante（平均 2.75）', () => {
         expect(bySeed(picky)).toEqual({
             TUTORIAL: 2,
-            ALEEB: 5,
+            ALEEB: 3,
             '7LB2WVPK': 2,
             JHZ7FPM: 2,
             QQQ777: 3,
@@ -82,6 +82,6 @@ describe('挑牌深度', () => {
             ZZZZZZ: 6,
             ABCDEF: 2,
         });
-        expect(mean(picky)).toBe(3);
+        expect(mean(picky)).toBe(2.75);
     });
 });

@@ -39,6 +39,19 @@ export function makeGameView(overrides: Partial<GameView> = {}): GameView {
         createPlayingCard: () => {
             throw new Error('这个 GameView 没有接整副牌，但 Marble Joker 要造一张石头牌——显式传进来');
         },
+        jokerBuffer: 0,
+        queueJoker: () => {
+            throw new Error('这个 GameView 没有接小丑区，但有小丑要造小丑——显式传进来');
+        },
+        sliceJoker: () => {
+            throw new Error('这个 GameView 没有接小丑区，但有小丑要毁小丑——显式传进来');
+        },
+        duplicateJoker: () => {
+            throw new Error('这个 GameView 没有接小丑区，但 Invisible Joker 要复制——显式传进来');
+        },
+        addPlayingCardToHand: () => {
+            throw new Error('这个 GameView 没有接手牌，但 DNA 要复制一张——显式传进来');
+        },
         smeared: false,
         ante: 1,
         startingDeckSize: 52,

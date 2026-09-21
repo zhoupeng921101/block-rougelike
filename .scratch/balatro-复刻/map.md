@@ -243,6 +243,31 @@ Label: wayfinder:map
 >
 > **下一刀的判断（更新）**：策略侧的大头都吃掉了（贪心 2.333 → 挑牌 4.333），
 > 继续调 bot 边际在变小。**建议回到内容侧**：「增删牌」8 张，覆盖面最大的一组。
+>
+> **「增删牌」8 张已交付**：Ceremonial Dagger / DNA / Madness / Riff-raff / Invisible Joker /
+> Caino / Yorick / Hologram。775 个测试绿，**小丑覆盖面 141 / 150**，剩 9：
+> 负债 4 / 标签 3 / 关掉 Boss 2。为它们补了四样机制：`getting_sliced`（先标记、跑完一趟再删）、
+> `joker_buffer`、`playing_card_added`（五个触发点）、卖出时复制小丑。
+>
+> **顺带修掉的三处，都是真 bug**：
+> - **本回合出牌数在结算之前就 +1 了**（原作在结算之后，`state_events.lua:545`）。
+>   **Sixth Sense 在真局里一次都没触发过**——它的单测用手写视图，所以一直是绿的
+> - **`setting_blind` 跑在 Round 发完牌之后**。原作是 `set_blind → setting_blind → 洗牌 → 发牌`，
+>   所以 Riff-raff 造的 Juggler 这一关就加手牌。`Round` 构造拆成两段，中间回调 `Run`
+> - **Marble Joker 的石头牌这一关就在牌堆里**。上一刀写成「这一关摸不到」是读漏了
+>   紧跟着的 `draw_card(G.play, G.deck)`——它把牌放回牌堆，排在洗牌之前
+>
+> 另外 `Round` 的小丑格数原先写死 5（没算 Negative），Cryptid 的复制原先漏抄永久筹码与 debuff。
+>
+> **墙：挑牌 bot 对这 8 张的贡献还是零**（240 seed 放开 / 禁掉逐局相同，4.146）。
+> 这次原因很干净：它们的作用**全在「打一手」之外**——Madness / Dagger 在进盲注时长、
+> Hologram 在加牌时长、Yorick 在弃牌时长、Riff-raff 造的是小丑不是分；
+> 估值只在沙盒里连打参考牌，这些时机它看不见。Caino / Yorick 是传奇，只有 The Soul 出。
+> 贪心反而涨了（2.333 → 2.417）：它什么都买，买到的 Riff-raff 现在真的会造小丑。
+>
+> **下一刀的判断**：内容剩 9 张，三组各拽一个新系统（负债上限、标签与跳盲注、关掉 Boss）。
+> 墙那边，估值的短板已经很清楚——**它只认计分管线里的成长**。要让 bot 用上这类小丑，
+> 沙盒得在连打之间模拟进盲注 / 弃牌 / 加牌，而 Madness 还会毁队友，模拟不当会高估。
 
 ## Not yet specified
 
@@ -554,6 +579,25 @@ Label: wayfinder:map
   复刻件只进 `Run.fullDeck`。它跟着入队的 `G.deck.config.card_limit + 1` 是牌堆那一摞的
   视觉高度，不是数值上限，不建模。
 - **`Driver's License` 的门槛 16 写死在代码里**，`config.extra = 3` 是倍率不是门槛。
+
+- **本回合出牌数（`current_round.hands_played`）在结算之后才 +1**（`state_events.lua:545`）。
+  放在结算前，结算里读到的第一手就是 1——Sixth Sense / DNA 永远不触发。
+  注意它与**出牌次数**（`hands_left`，结算前就减，Dusk / Acrobat 靠它）是两回事。
+- **`setting_blind` 在洗牌与发牌之前**（`state_events.lua:354`）。复刻件的 `Round` 构造拆成两段，
+  中间回调 `Run.settingBlind`；手牌上限、出牌/弃牌次数、Four Fingers 这类判定松紧都在它之后才算。
+  **残留偏差**：原作里 Burglar 在同一趟里先入队了效果、之后才被 Madness 切掉的话，效果照样生效；
+  复刻件的 Burglar 是从「这一趟之后还活着的小丑」重算的，切掉就没了。
+- **Marble Joker 的石头牌这一关就在牌堆里**：先 `emplace` 进出牌区，紧跟着 `draw_card(G.play, G.deck)`。
+- **`setting_blind` 那一趟里的增删都是「先标记、跑完、再落地」**：Madness / Dagger 只打 `getting_sliced`，
+  后面的小丑仍看得见被判死刑的那张（Riff-raff 数空位时算它一张）。
+  **`joker_buffer`**：Riff-raff `+n`、Dagger `-1`、**Madness 不减**——原文如此。
+  跑完先造 Riff-raff 的小丑、再删判了死刑的（删是带动画的 `start_dissolve`，造是紧跟着的事件）。
+- **小丑没有 `sort_id`**。原作的小丑也是 Card，`pseudorandom_element` 会按 `sort_id`（创建序）排；
+  复刻件按小丑区顺序。bot 从不挪小丑所以一致；**玩家拖过小丑顺序后，Madness / Invisible Joker /
+  Ankh 的随机结果会与原作不同**。修它要给 `Joker` 加 `sort_id` 并与扑克牌共用计数器。
+- **`playing_card_added` 有五个触发点**：Marble（同步，在自己的 `setting_blind` 里）、
+  DNA（同步，在 before 循环里、下一张小丑之前）、Cryptid 与 Familiar / Grim / Incantation
+  （整批一次）、标准包挑走一张。Certificate 也是一个，它还没实现。
 
 ## Out of scope
 

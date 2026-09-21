@@ -86,6 +86,11 @@ export function makeJoker(key: string, options: MakeJokerOptions = {}): Joker {
         ability.to_do_poker_hand = options.pickToDoHand();
     }
 
+    // `card.lua:308` / `:324` / `:327`：三张在 `set_ability` 里挂自己的计数器
+    if (ability.name === 'Invisible Joker') ability.invis_rounds = 0;
+    if (ability.name === 'Caino') ability.caino_xmult = 1;
+    if (ability.name === 'Yorick') ability.yorick_discards = ability.extra.discards;
+
     // `card.lua:330` 起的 Loyalty Card 分支
     if (ability.name === 'Loyalty Card') {
         ability.hands_played_at_create = options.handsPlayed ?? 0;

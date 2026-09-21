@@ -33,7 +33,7 @@
  * 返回 `JokerEffect | null` 保证。破了它会在一次结算里把同一张小丑算两遍。
  */
 
-import { type Card, type Suit, getId, isFace, isSuit } from '../card';
+import { type Card, type Suit, copyPlayingCard, getId, isFace, isSuit } from '../card';
 import { isEnhancement } from '../enhancements';
 import { blueprintTarget } from './derived';
 import { smearedMatches } from './modifiers';
@@ -453,6 +453,19 @@ const BEFORE: Record<string, Handler> = {
         return { message: `X${self.ability.x_mult}`, card: self };
     },
 
+    /**
+     * `card.lua:3504`。**本回合第一手、只打了一张**：把那张复制一份进手牌与牌组。
+     *
+     * **没有 `not context.blueprint`**——蓝图照样复制，一手出两张复制品。
+     * 返回 `playingCardsCreated`，结算循环看到它就跑一趟 `playing_card_added`（Hologram）。
+     */
+    DNA: (self, context, game) => {
+        if (game.current_round.hands_played !== 0) return null;
+        if ((context.full_hand?.length ?? 0) !== 1) return null;
+        game.addPlayingCardToHand(copyPlayingCard(context.full_hand![0]));
+        return { message: 'copied', card: self, playingCardsCreated: 1 };
+    },
+
     // `card.lua:3494`
     // 注意：**before 循环不消费返回值里的 `dollars`**（`state_events.lua:655-670`
     // 只看 `level_up`），所以这钱得自己加——原文也是自己调 `ease_dollars`。
@@ -576,6 +589,21 @@ const AFTER: Record<string, Handler> = {
 // ————————————————————————————————————————————————————————————————
 
 const DISCARD: Record<string, Handler> = {
+    /**
+     * `card.lua:2791`。**每弃一张**倒数一格，数到底就 x_mult +1、重新从 23 数。
+     * 判定是 `<= 1` 再重置——所以是第 23 张那一下长，不是第 24 张。
+     */
+    Yorick: (self, context) => {
+        if (context.blueprint) return null;
+        if ((self.ability.yorick_discards ?? 0) <= 1) {
+            self.ability.yorick_discards = self.ability.extra.discards;
+            self.ability.x_mult += self.ability.extra.xmult;
+            return { message: `X${self.ability.x_mult}`, card: self };
+        }
+        self.ability.yorick_discards = (self.ability.yorick_discards ?? 0) - 1;
+        return null;
+    },
+
     // `card.lua:2828`。弃掉的牌点数撞上本回合的 mail_card 就给钱
     'Mail-In Rebate': (self, context, game) => {
         if (context.other_card!.debuff) return null;
@@ -635,6 +663,13 @@ const DISCARD: Record<string, Handler> = {
 // ————————————————————————————————————————————————————————————————
 
 const END_OF_ROUND: Record<string, Handler> = {
+    // `card.lua:2937`。每熬过一回合 +1；够数之后卖掉它才有用（见 SELLING_SELF）
+    'Invisible Joker': (self, context) => {
+        if (context.blueprint) return null;
+        self.ability.invis_rounds = (self.ability.invis_rounds ?? 0) + 1;
+        return { message: `${self.ability.invis_rounds}/${self.ability.extra}`, card: self };
+    },
+
     /**
      * `card.lua:2906`。每回合手牌上限的加成 **-1**，掉到 0 就自毁。
      * 与 `Popcorn` 同一个形状：**先判会不会掉到 0、再减**。
@@ -808,6 +843,19 @@ const DESTROYING_CARD: Record<string, Handler> = {
  */
 const REMOVE_PLAYING_CARDS: Record<string, Handler> = {
     /**
+     * `card.lua:2676`。毁掉的那批里**每有一张人头牌**，自己的倍率 +1。
+     * 不挑怎么毁的——碎掉的玻璃牌、The Hanged Man、Sixth Sense 都算。
+     * 攒的是 `caino_xmult`，不是 `x_mult`（main 分支单独读）。
+     */
+    Caino: (self, context, game) => {
+        if (context.blueprint) return null;
+        const faces = (context.removed ?? []).filter((c) => faceCheck(c, game)).length;
+        if (faces === 0) return null;
+        self.ability.caino_xmult = (self.ability.caino_xmult ?? 1) + faces * self.ability.extra;
+        return { message: `X${self.ability.caino_xmult}`, card: self };
+    },
+
+    /**
      * `card.lua:2690`。销毁掉的那批里**碎掉的玻璃牌**有几张就长几档。
      *
      * `val.shattered` 这个条件把 The Hanged Man 那条路排除在外——
@@ -840,15 +888,70 @@ const SETTING_BLIND: Record<string, Handler> = {
     /**
      * `card.lua:2583`。每关开始造一张**石头牌**进整副牌。
      *
-     * `not (context.blueprint_card or self).getting_sliced` —— 被 `Ceremonial Dagger`
-     * 正在切掉的那张不算。`getting_sliced` 那张小丑还没实现，所以这条恒真，
-     * 接上它的时候要回来补。
+     * `not (context.blueprint_card or self).getting_sliced` —— 被 Madness / Ceremonial Dagger
+     * 判了死刑的那张不造（蓝图复制时看的是蓝图自己）。
      *
-     * **牌进的是出牌区、不是牌堆**，所以这一关摸不到它（见 `createPlayingCard`）。
+     * 石头牌**这一关就在牌堆里**：原文先进出牌区、再 `draw_card` 回牌堆，都排在洗牌之前。
      */
-    'Marble Joker': (self, _context, game) => {
+    'Marble Joker': (self, context, game) => {
+        if ((context.blueprint_card ?? self).getting_sliced) return null;
         game.createPlayingCard('m_stone', 'marb_fr');
         return { message: 'plus_stone', card: self };
+    },
+
+    /**
+     * `card.lua:2506`。**非 Boss 盲注**：x_mult +0.5，并随机毁掉另一张小丑。
+     *
+     * - 长倍率**无条件**（有没有可毁的都长）
+     * - 可毁的是「不是自己、没被判死刑」的那些（没有永恒标签系统，`eternal` 恒假）
+     * - **没有可毁的就不掷点**（`#destructable > 0 and pseudorandom_element(...)`）
+     *
+     * 抽取是 `pseudorandom_element(destructable, pseudoseed('madness'))`，
+     * 与 `pseudorandom('madness', 1, n)` 同一次消费、同一个结果——前提是**候选的顺序对**：
+     * 原作的小丑也是 Card、带 `sort_id`，会按它排；复刻件的小丑没有 `sort_id`，
+     * 按小丑区的顺序走。bot 从不挪小丑，两者一致；玩家拖过顺序就可能不一致（见 map 的已知的坑）。
+     */
+    Madness: (self, context, game) => {
+        if (context.blueprint || context.blind_boss) return null;
+        self.ability.x_mult += self.ability.extra;
+        const destructable = game.jokers.filter((j) => j !== self && !j.getting_sliced);
+        const victim = destructable.length > 0
+            ? destructable[game.pseudorandom('madness', 1, destructable.length) - 1]
+            : undefined;
+        if (victim && !(context.blueprint_card ?? self).getting_sliced) game.sliceJoker(victim);
+        return { message: `X${self.ability.x_mult}`, card: self };
+    },
+
+    /**
+     * `card.lua:2532`。小丑区有空位就造**最多 2 张普通小丑**（`_rarity = 0` → 1 级，不掷 rarity）。
+     *
+     * 空位算的是 `card_limit - (#小丑区 + joker_buffer)`：同一趟里前面的 Riff-raff 已经
+     * 说好要进的、Ceremonial Dagger 切掉的（-1），都要算进去。**造是入队的**，这一趟跑完才造。
+     */
+    'Riff-raff': (self, context, game) => {
+        if ((context.blueprint_card ?? self).getting_sliced) return null;
+        const room = game.joker_slots - (game.jokers.length + game.jokerBuffer);
+        if (room <= 0) return null;
+        const n = Math.min(2, room);
+        game.jokerBuffer += n;
+        for (let i = 0; i < n; i++) game.queueJoker('rif', 0);
+        return { message: 'plus_joker', card: context.blueprint_card ?? self };
+    },
+
+    /**
+     * `card.lua:2564`。右边有、且两边都没被判死刑，就切掉右边那张，
+     * 自己 `mult += 2 × 它的卖价`，`joker_buffer -= 1`（Riff-raff 因此多一个空位——Madness 切的就不给）。
+     */
+    'Ceremonial Dagger': (self, context, game) => {
+        if (context.blueprint) return null;
+        const i = game.jokers.indexOf(self);
+        const right = i >= 0 ? game.jokers[i + 1] : undefined;
+        if (!right || self.getting_sliced || right.getting_sliced) return null;
+        game.sliceJoker(right);
+        game.jokerBuffer -= 1;
+        // 原文加 mult 是入队的，但读的卖价与现在同一个值，同一趟里也没人读这张的 mult
+        self.ability.mult += right.sell_cost * 2;
+        return { message: `+${self.ability.mult}`, card: self };
     },
 
     // `card.lua:2548`。每关开始造一张塔罗
@@ -856,6 +959,35 @@ const SETTING_BLIND: Record<string, Handler> = {
         if (game.consumableCount >= game.consumable_slots) return null;
         game.createConsumable('Tarot', 'car');
         return { message: 'plus_tarot', card: self };
+    },
+};
+
+/**
+ * `card.lua:2459` 的 `context.playing_card_added`：**有扑克牌加进了牌组**。
+ * 触发点见 `Run.playingCardsAdded`。
+ */
+const PLAYING_CARD_ADDED: Record<string, Handler> = {
+    // `card.lua:2460`。按张数长：一次加 2 张（Cryptid）就长两档
+    Hologram: (self, context) => {
+        if (context.blueprint) return null;
+        const n = context.cards?.length ?? 0;
+        if (n === 0) return null;
+        self.ability.x_mult += n * self.ability.extra;
+        return { message: `X${self.ability.x_mult}`, card: self };
+    },
+};
+
+/** `card.lua:2357` 的 `context.selling_self`：**卖掉自己，在移出小丑区之前** */
+const SELLING_SELF: Record<string, Handler> = {
+    /**
+     * `card.lua:2374`。熬够 `extra` 回合之后卖掉，**复制一张别的小丑**。
+     * 复制品的 Negative 会被剥掉；复制到的若也是 Invisible Joker，它的回合数归零。
+     */
+    'Invisible Joker': (self, context, game) => {
+        if (context.blueprint) return null;
+        if ((self.ability.invis_rounds ?? 0) < self.ability.extra) return null;
+        game.duplicateJoker(self, 'invisible');
+        return { message: 'duplicated', card: self };
     },
 };
 
@@ -987,6 +1119,15 @@ const MAIN: Record<string, Handler> = {
         if (tally <= 0) return null;
         const x = 1 + self.ability.extra * tally;
         return { message: `X${x}`, Xmult_mod: x };
+    },
+
+    // `card.lua:3740`。切小丑攒的 mult，非零才给
+    'Ceremonial Dagger': (self) => flatMult(self),
+
+    // `card.lua:4055`。读的是 `caino_xmult`，不是泛化那条的 `x_mult`
+    Caino: (self) => {
+        const x = self.ability.caino_xmult ?? 1;
+        return x > 1 ? { message: `X${x}`, Xmult_mod: x } : null;
     },
 
     // `card.lua:3939`。钱 > 0 才给，算的是 `dollars + dollar_buffer`
@@ -1178,8 +1319,15 @@ export function calculateJoker(
         return ENDING_SHOP[name]?.(self, context, game) ?? null;
     }
 
-    // 原文 elseif 链里还有这两条，但没有一张已实现的小丑用它们
-    if (context.buying_card || context.selling_self) return null;
+    // `buying_card` 在原文里是个空分支
+    if (context.buying_card) return null;
+    if (context.selling_self) return SELLING_SELF[name]?.(self, context, game) ?? null;
+
+    // `card.lua:2459`：`playing_card_added and not self.getting_sliced`
+    if (context.playing_card_added) {
+        if (self.getting_sliced) return null;
+        return PLAYING_CARD_ADDED[name]?.(self, context, game) ?? null;
+    }
 
     if (context.using_consumeable) {
         return USING_CONSUMEABLE[name]?.(self, context, game) ?? null;
@@ -1194,7 +1342,9 @@ export function calculateJoker(
         return REMOVE_PLAYING_CARDS[name]?.(self, context, game) ?? null;
     }
 
+    // `card.lua:2494`：`setting_blind and not self.getting_sliced`——判了死刑的这一趟不动
     if (context.setting_blind) {
+        if (self.getting_sliced) return null;
         return SETTING_BLIND[name]?.(self, context, game) ?? null;
     }
 
@@ -1367,6 +1517,8 @@ const NAMES_WITH_HANDLERS: ReadonlySet<string> = new Set([
     ...Object.keys(SKIPPING_BOOSTER),
     ...Object.keys(DESTROYING_CARD),
     ...Object.keys(REMOVE_PLAYING_CARDS),
+    ...Object.keys(PLAYING_CARD_ADDED),
+    ...Object.keys(SELLING_SELF),
     ...Object.keys(ENDING_SHOP),
     // `calculateJoker` 开头那条 copycat 分支，不走查表
     'Blueprint',
