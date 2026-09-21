@@ -26,8 +26,31 @@ for (let i = start + 1; i < lines.length; i++) {
 
 const keys = Object.keys(dict).sort();
 const body = keys.map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(dict[k])},`).join('\n');
+
+// descriptions.Blind：每个盲注的 name 与 text（debuff 描述，按行）。左上盲注面板要（`Blind:set_text`）
+const blindStart = lines.findIndex((l) => /^ {8}Blind=\{\s*$/.test(l));
+if (blindStart < 0) throw new Error('没找到 descriptions.Blind');
+const blinds = {};
+let cur = null;
+let inText = false;
+for (let i = blindStart + 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^ {8}\},?\s*$/.test(line)) break;
+    let m;
+    if ((m = line.match(/^ {12}(bl_\w+)=\{\s*$/))) cur = blinds[m[1]] = { name: '', text: [] };
+    else if (cur && (m = line.match(/^ {16}name="((?:[^"\\]|\\.)*)",\s*$/))) cur.name = unescape(m[1]);
+    else if (cur && /^ {16}text=\{\s*$/.test(line)) inText = true;
+    else if (cur && inText && (m = line.match(/^ {20}"((?:[^"\\]|\\.)*)",\s*$/))) cur.text.push(unescape(m[1]));
+    else if (inText && /^ {16}\},?\s*$/.test(line)) inText = false;
+}
+const blindBody = Object.keys(blinds).sort()
+    .map((k) => `    ${k}: ${JSON.stringify(blinds[k])},`).join('\n');
+
 writeFileSync(
     new URL('../src/ui/lang.generated.ts', import.meta.url),
-    `// 由 tools/gen-localization.mjs 从 本地化/en-us.lua 的 misc.dictionary 生成，不要手改。\nexport const DICTIONARY: Readonly<Record<string, string>> = {\n${body}\n};\n`,
+    `// 由 tools/gen-localization.mjs 从 本地化/en-us.lua 生成，不要手改。\n` +
+    `/** \`misc.dictionary\` 的纯字符串条目 */\nexport const DICTIONARY: Readonly<Record<string, string>> = {\n${body}\n};\n\n` +
+    `/** \`descriptions.Blind\`：盲注名与描述行（\`{#1#}\` 这类占位符原样保留） */\n` +
+    `export const BLIND_TEXT: Readonly<Record<string, { name: string; text: string[] }>> = {\n${blindBody}\n};\n`,
 );
-console.log(`${keys.length} entries`);
+console.log(`${keys.length} dictionary entries, ${Object.keys(blinds).length} blinds`);

@@ -1,4 +1,5 @@
-// 由 tools/gen-localization.mjs 从 本地化/en-us.lua 的 misc.dictionary 生成，不要手改。
+// 由 tools/gen-localization.mjs 从 本地化/en-us.lua 生成，不要手改。
+/** `misc.dictionary` 的纯字符串条目 */
 export const DICTIONARY: Readonly<Record<string, string>> = {
     "$": "$",
     "b_FAQ": "FAQ",
@@ -273,4 +274,38 @@ export const DICTIONARY: Readonly<Record<string, string>> = {
     "ph_vouchers_redeemed": "Vouchers redeemed this run",
     "ph_you_win": "YOU WIN!",
     "ph_you_win_demo": "YOU WIN THE DEMO!",
+};
+
+/** `descriptions.Blind`：盲注名与描述行（`{#1#}` 这类占位符原样保留） */
+export const BLIND_TEXT: Readonly<Record<string, { name: string; text: string[] }>> = {
+    bl_arm: {"name":"The Arm","text":["Decrease level of","played poker hand"]},
+    bl_big: {"name":"Big Blind","text":[]},
+    bl_club: {"name":"The Club","text":["All Club cards","are debuffed"]},
+    bl_eye: {"name":"The Eye","text":["No repeat hand","types this round"]},
+    bl_final_acorn: {"name":"Amber Acorn","text":["Flips and shuffles","all Joker cards"]},
+    bl_final_bell: {"name":"Cerulean Bell","text":["Forces 1 card to","always be selected"]},
+    bl_final_heart: {"name":"Crimson Heart","text":["One random Joker","disabled every hand"]},
+    bl_final_leaf: {"name":"Verdant Leaf","text":["All cards debuffed","until 1 Joker sold"]},
+    bl_final_vessel: {"name":"Violet Vessel","text":["Very large blind"]},
+    bl_fish: {"name":"The Fish","text":["Cards drawn face down","after each hand played"]},
+    bl_flint: {"name":"The Flint","text":["Base Chips and","Mult are halved"]},
+    bl_goad: {"name":"The Goad","text":["All Spade cards","are debuffed"]},
+    bl_head: {"name":"The Head","text":["All Heart cards","are debuffed"]},
+    bl_hook: {"name":"The Hook","text":["Discards 2 random","cards per hand played"]},
+    bl_house: {"name":"The House","text":["First hand is","drawn face down"]},
+    bl_manacle: {"name":"The Manacle","text":["-1 Hand Size"]},
+    bl_mark: {"name":"The Mark","text":["All face cards are","drawn face down"]},
+    bl_mouth: {"name":"The Mouth","text":["Play only 1 hand","type this round"]},
+    bl_needle: {"name":"The Needle","text":["Play only 1 hand"]},
+    bl_ox: {"name":"The Ox","text":["Playing a #1#","sets money to $0"]},
+    bl_pillar: {"name":"The Pillar","text":["Cards played previously","this Ante are debuffed"]},
+    bl_plant: {"name":"The Plant","text":["All face cards","are debuffed"]},
+    bl_psychic: {"name":"The Psychic","text":["Must play 5 cards"]},
+    bl_serpent: {"name":"The Serpent","text":["After Play or Discard,","always draw 3 cards"]},
+    bl_small: {"name":"Small Blind","text":[]},
+    bl_tooth: {"name":"The Tooth","text":["Lose $1 per","card played"]},
+    bl_wall: {"name":"The Wall","text":["Extra large blind"]},
+    bl_water: {"name":"The Water","text":["Start with","0 discards"]},
+    bl_wheel: {"name":"The Wheel","text":[" in 7 cards get","drawn face down"]},
+    bl_window: {"name":"The Window","text":["All Diamond cards","are debuffed"]},
 };

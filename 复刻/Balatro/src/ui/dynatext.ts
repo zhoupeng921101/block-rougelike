@@ -7,12 +7,12 @@
  */
 import type { Colour } from './colours';
 import { EN_FONT, type FontSpec, fontHeight, fontWidth } from './font';
-import { TILESIZE, type Rect, type UIObject, luaToString } from './uibox';
+import { TILESIZE, type Rect, type UIObject, luaToString, readRef } from './uibox';
 
 /** `string` 里的一段：纯文字，或者绑定到某个表的某个字段 */
 export type DynaPart =
     | string
-    | { ref_table: Record<string, unknown>; ref_value: string; prefix?: string; suffix?: string; scale?: number }
+    | { ref_table: object; ref_value: string; prefix?: string; suffix?: string; scale?: number }
     | { string: string; prefix?: string; suffix?: string; scale?: number };
 
 export type DynaTextConfig = {
@@ -70,7 +70,7 @@ export class DynaText implements UIObject {
         let partScale = 1;
         if (typeof part === 'string') str = part;
         else {
-            const body = 'ref_table' in part ? luaToString(part.ref_table[part.ref_value]) : part.string;
+            const body = 'ref_table' in part ? luaToString(readRef(part.ref_table, part.ref_value)) : part.string;
             str = (part.prefix ?? '') + body + (part.suffix ?? '');
             partScale = part.scale ?? 1;
         }

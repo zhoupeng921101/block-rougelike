@@ -186,6 +186,38 @@ def main():
     ''')
     cases.append({'name': 'buttons_mobile', **to_py(lua.eval('DUMP(BUTTONS)'))})
 
+    # create_UIBox_HUD_blind：挂在 HUD 的 row_blind 上（game.lua:2617，动画落定后 offset = 0）。
+    # G.FUNCS 用 button_callbacks.lua 里的原文；G.GAME.blind 是只带面板所需字段的桩（尺寸 1.5×1.5）
+    lua.execute((SRC / 'functions/button_callbacks.lua').read_text(encoding='utf-8'))
+    lua.execute(r'''
+      G.GAME.probabilities = { normal = 1 }
+      G.GAME.modifiers = {}
+      function MAKE_HUD_BLIND(name, chips, lines)
+        G.GAME.blind = Moveable(0, 0, 1.5, 1.5)
+        G.GAME.blind.change_dim = function() end
+        G.GAME.blind.name = name
+        G.GAME.blind.loc_name = name
+        G.GAME.blind.chips = chips
+        G.GAME.blind.chip_text = number_format(chips)
+        G.GAME.blind.loc_debuff_lines = { lines[1] or '', lines[2] or '' }
+        G.GAME.blind.loc_debuff_text = (lines[1] or '')..' '..(lines[2] or '')
+        if not lines[1] then G.GAME.blind.loc_debuff_text = '' end
+        G.GAME.current_round.dollars_to_be_earned = '$$$'
+        return UIBox{ definition = create_UIBox_HUD_blind(),
+          config = {major = HUD:get_UIE_by_ID('row_blind'), align = 'cm', offset = {x=0,y=0}, bond = 'Weak'} }
+      end
+      HUD_BLIND_SMALL = MAKE_HUD_BLIND('Small Blind', 300, {})
+      -- 让每帧跑的 func（HUD_blind_debuff 等）跑一遍，就像画第一帧之前那样
+      local function run_funcs(e) if e.config.func then G.FUNCS[e.config.func](e) end; for _, c in ipairs(e.children) do run_funcs(c) end end
+      run_funcs(HUD_BLIND_SMALL.UIRoot)
+      HUD_BLIND_SMALL.UIRoot:initialize_VT()
+      HUD_BLIND_HEAD = MAKE_HUD_BLIND('The Head', 600, {'All Heart cards', 'are debuffed'})
+      run_funcs(HUD_BLIND_HEAD.UIRoot)
+      HUD_BLIND_HEAD.UIRoot:initialize_VT()
+    ''')
+    cases.append({'name': 'hud_blind_small', **to_py(lua.eval('DUMP(HUD_BLIND_SMALL)'))})
+    cases.append({'name': 'hud_blind_head', **to_py(lua.eval('DUMP(HUD_BLIND_HEAD)'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 

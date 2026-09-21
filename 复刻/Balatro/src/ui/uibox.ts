@@ -54,7 +54,8 @@ export type UIConfig = {
     id?: string;
     text?: string;
     scale?: number;
-    ref_table?: Record<string, unknown>;
+    /** 绑定的表（原作存的是 Lua 表的引用）。任何对象都行，按 `ref_value` 取字段 */
+    ref_table?: object;
     ref_value?: string;
     lang?: FontSpec;
     vert?: boolean;
@@ -92,6 +93,12 @@ export class UIElement {
     readonly offset = { x: 0, y: 0 };
     /** `content_dimensions` */
     readonly content = { w: 0, h: 0 };
+    /**
+     * `node.ARGS.xywh_node_trans`：`calculate_xywh` 的 `_nt` 是**挂在节点上的持久表**，不是局部变量。
+     * 这有可观测后果：布局进行到一半时某个 `func` 触发 `recalculate`（`HUD_blind_debuff` 就这么干），
+     * 嵌套那次会改写祖先节点的这张表，外层接着拿被改过的值取 max。用局部变量会差出 0.05 tile
+     */
+    readonly nt: Rect = { x: 0, y: 0, w: 0, h: 0 };
     /** `config.prev_value`：绑定值上次的样子，变了才重排 */
     prevValue: unknown;
     /** `one_press` 按过之后置真（原作的 `disable_button`） */
@@ -123,7 +130,7 @@ export class UIElement {
         this.offset.x = t.x;
         this.offset.y = t.y;
         if (this.config.ref_table && this.config.ref_value) {
-            this.prevValue = this.config.ref_table[this.config.ref_value];
+            this.prevValue = readRef(this.config.ref_table, this.config.ref_value);
         }
         if (!this.config.colour) {
             this.config.colour =
@@ -246,7 +253,7 @@ export class UIBox implements Major {
 
     /** `ui.lua:118` */
     private calculateXYWH(node: UIElement, t: Rect, recalculate: boolean, scale?: number): [number, number] {
-        const nt: Rect = { x: 0, y: 0, w: 0, h: 0 };
+        const nt = node.nt;
         const ct: Rect = { x: 0, y: 0, w: 0, h: 0 };
         const padding = node.config.padding ?? DEFAULT_PADDING;
         const cfg = node.config;
@@ -259,7 +266,7 @@ export class UIBox implements Major {
             if (node.UIT === UIT.T) {
                 const s = cfg.scale ?? 1;
                 if (cfg.ref_table && cfg.ref_value) {
-                    cfg.text = luaToString(cfg.ref_table[cfg.ref_value]);
+                    cfg.text = luaToString(readRef(cfg.ref_table, cfg.ref_value));
                     if (cfg.func && !recalculate) this.funcs[cfg.func]?.(node);
                 }
                 if (cfg.text === undefined) cfg.text = '[UI ERROR]';
@@ -267,6 +274,9 @@ export class UIBox implements Major {
                 let tx = (fontWidth(cfg.text, font) * font.squish * s * font.FONTSCALE) / TILESIZE;
                 let ty = (fontHeight(font) * s * font.FONTSCALE * font.TEXT_HEIGHT_SCALE) / TILESIZE;
                 if (cfg.vert) [tx, ty] = [ty, tx];
+                // 四个分量一起重赋（`ui.lua:146`）：上面的 `func` 可能触发了嵌套重排、改写过这张持久表的 x / y
+                nt.x = t.x;
+                nt.y = t.y;
                 nt.w = tx;
                 nt.h = ty;
                 node.content.w = t.w;
@@ -381,7 +391,7 @@ export class UIBox implements Major {
         for (const el of this.root.walk()) {
             const cfg = el.config;
             if (el.UIT !== UIT.T || !cfg.ref_table || !cfg.ref_value) continue;
-            const now = cfg.ref_table[cfg.ref_value];
+            const now = readRef(cfg.ref_table, cfg.ref_value);
             if (now === el.prevValue) continue;
             const text = luaToString(now);
             if (!cfg.no_recalc && el.prevValue !== undefined && luaToString(el.prevValue).length !== text.length) dirty = true;
@@ -419,6 +429,11 @@ export class UIBox implements Major {
         for (const el of this.root.walk()) if (el.config.id === id) return el;
         return null;
     }
+}
+
+/** `ref_table[ref_value]` */
+export function readRef(table: object, key: string): unknown {
+    return (table as Record<string, unknown>)[key];
 }
 
 /** Lua（LuaJIT）的 `tostring`：数按 `%.14g`，整数值不带小数点 */

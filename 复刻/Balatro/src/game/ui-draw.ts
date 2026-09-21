@@ -8,7 +8,9 @@
  */
 import { GameObjects, type Math as PMath, type Scene } from 'phaser';
 
+import { BLIND_CENTERS } from '../core/blinds';
 import { C, type Colour, darken } from '../ui/colours';
+import type { HudBlind } from '../ui/definitions/hud-blind';
 import { DynaText } from '../ui/dynatext';
 import type { SpriteObject } from '../ui/definitions/hud';
 import { EN_FONT } from '../ui/font';
@@ -63,6 +65,12 @@ function makeText(scene: Scene, fontPx: number): GameObjects.Text {
     });
 }
 
+/** 字号跟着 `config.scale` 走：`func`（例如 `blind_chip_UI_scale`）会在建好之后改它 */
+function syncFontPx(t: GameObjects.Text, fontPx: number): void {
+    if (Number(t.style.fontSize.toString().replace('px', '')) === fontPx) return;
+    t.setStyle({ fontSize: `${fontPx}px`, metrics: { ascent: fontPx * 0.75, descent: fontPx * 0.25, fontSize: fontPx } });
+}
+
 type ElementView = {
     el: UIElement;
     /** 按钮的命中区（只给定义里带 `button` 的元素建；点到按钮里的字也落在它上面） */
@@ -72,7 +80,13 @@ type ElementView = {
     text?: { shadow: GameObjects.Text | null; main: GameObjects.Text };
     letters?: Array<{ shadow: GameObjects.Text | null; main: GameObjects.Text }>;
     image?: GameObjects.Image;
+    /** 盲注筹码（`Blind` 的 `animatedSprite`）：阴影一张、本体一张 */
+    blindChip?: { shadow: GameObjects.Image; main: GameObjects.Image };
 };
+
+/** `game.lua:978`：`blind_chips` 图集每行 21 帧，`G.ANIMATION_FPS = 10`（`globals.lua:388`） */
+const BLIND_CHIP_FRAMES = 21;
+const ANIMATION_FPS = 10;
 
 /** 一个 UIBox 的全部显示对象，按原作的绘制顺序（先自己、再孩子）建在一个 Container 里 */
 export class UIBoxView {
@@ -121,6 +135,11 @@ export class UIBoxView {
                 this.container.add(view.text.main);
             } else if (el.UIT === UIT.O && cfg.object instanceof DynaText) {
                 view.letters = [];
+            } else if (el.UIT === UIT.O && (cfg.object as HudBlind | undefined)?.kind === 'blind') {
+                const shadow = this.scene.add.image(0, 0, 'blind_chips', 0).setTint(0x000000).setAlpha(0.3);
+                const main = this.scene.add.image(0, 0, 'blind_chips', 0);
+                this.container.add([shadow, main]);
+                view.blindChip = { shadow, main };
             } else if (el.UIT === UIT.O && (cfg.object as SpriteObject | undefined)?.kind === 'sprite') {
                 const sprite = cfg.object as SpriteObject;
                 const frame = sprite.pos.y * this.atlasColumns(sprite.atlas) + sprite.pos.x;
@@ -276,6 +295,8 @@ export class UIBoxView {
                 this.container.addAt(v.text.shadow, this.container.getIndex(v.text.main));
             }
             const s = cfg.scale ?? 1;
+            syncFontPx(v.text.main, toPx(s));
+            if (v.text.shadow) syncFontPx(v.text.shadow, toPx(s));
             const text = cfg.text ?? '';
             const font = cfg.lang ?? EN_FONT;
             // `ui.lua:721`：行框左上角在 (x + TEXT_OFFSET.x·s·FONTSCALE/TILESIZE, y + TEXT_OFFSET.y·…)
@@ -299,6 +320,7 @@ export class UIBoxView {
         // O 节点里的对象自己是 Moveable，`prep_draw` 读的是它自己的 `layered_parallax`（恒 0），不吃按钮视差
         if (v.letters && cfg.object instanceof DynaText) this.drawDynaText(v, cfg.object, el.x, el.y, t);
         if (v.image) v.image.setPosition(toPx(el.x), toPx(el.y)).setDisplaySize(toPx(w), toPx(h));
+        if (v.blindChip) this.drawBlindChip(v.blindChip, cfg.object as HudBlind, el.x, el.y, w, h, t);
     }
 
     /**
@@ -319,6 +341,26 @@ export class UIBoxView {
         }
         g.lineStyle(cfg.outline * U, rgb(oc), oc[3]);
         g.strokePoints(pts(ring.map((p) => ({ x: p.x * U, y: p.y * U }))), true, true);
+    }
+
+    /**
+     * `blind.lua:446` 的 `Blind:draw`：筹码动画先按阴影高 0.1 画一遍（往远离中线错开、×0.98），再画本体。
+     * 帧 = `floor(10·t) % 21`（`AnimatedSprite:animate`），转角 `0.02·sin(2t + x)`（`Blind:align`）。
+     * `HUD_blind_visible`：没有盲注时不画
+     */
+    private drawBlindChip(chip: { shadow: GameObjects.Image; main: GameObjects.Image }, b: HudBlind, x: number, y: number, w: number, h: number, t: number): void {
+        const center = b.key ? BLIND_CENTERS[b.key] : undefined;
+        chip.main.setVisible(!!center);
+        chip.shadow.setVisible(!!center);
+        if (!center) return;
+        const frame = center.pos.y * BLIND_CHIP_FRAMES + (Math.floor(ANIMATION_FPS * t) % BLIND_CHIP_FRAMES);
+        const r = 0.02 * Math.sin(2 * t + x);
+        const sp = shadowParallax(x, w);
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        chip.main.setFrame(frame).setPosition(toPx(cx), toPx(cy)).setDisplaySize(toPx(w), toPx(h)).setRotation(r);
+        chip.shadow.setFrame(frame).setPosition(toPx(cx - sp.x * 0.1), toPx(cy - sp.y * 0.1))
+            .setDisplaySize(toPx(w) * 0.98, toPx(h) * 0.98).setRotation(r);
     }
 
     /** `text.lua:236` 的 `DynaText:draw`：逐字画，每个字以自己的格子中心为原点缩放、旋转 */

@@ -818,7 +818,7 @@ export class Round {
      * 并列时取**先达到该次数**的那个——`Record` 的插入序就是 `initialHands` 的声明序，
      * 而那是从高牌型到低牌型，所以并列时偏向高牌型。原作靠 `>` 严格大于，同此。
      */
-    private mostPlayedHand(): HandName {
+    mostPlayedHand(): HandName {
         let best: HandName = 'High Card';
         let most = 0;
         for (const [name, info] of Object.entries(this.hands) as Array<[HandName, HandInfo]>) {

@@ -38,6 +38,9 @@ import { C, mixColours, setColour } from '../../ui/colours';
 import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
 import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
+import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/definitions/hud-blind';
+import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
+import { BLIND_TEXT } from '../../ui/lang.generated';
 import type { UIElement } from '../../ui/uibox';
 import { cardAreas } from '../areas';
 import { alignHand, alignPlay } from '../align-cards';
@@ -124,6 +127,9 @@ export class RunScene extends Scene {
     /** 左侧面板（`create_UIBox_HUD`，22 号票）。`hudState` 是它绑定的 `G.GAME` 同形对象 */
     private hudState!: HudState;
     private hudView!: UIBoxView;
+    /** 左上盲注面板（`G.HUD_blind`，挂在左侧面板的 `row_blind` 上） */
+    private hudBlindState!: HudBlindState;
+    private hudBlindView!: UIBoxView;
     /** 四个 CardArea 身后的底框与计数（`cardarea.lua:288`） */
     /** 手牌下面的出牌 / 排序 / 弃牌（`G.buttons`）。只在选牌时存在，出牌或弃牌之后重建（`one_press` 复位） */
     private buttonsView: UIBoxView | null = null;
@@ -163,6 +169,8 @@ export class RunScene extends Scene {
         this.load.font(UI_FONT_FAMILY, '/assets/fonts/m6x11plus.ttf');
         // `game.lua:996`：赌注筹码，29×29 一格
         this.load.spritesheet('chips', '/assets/textures/chips.png', { frameWidth: 29, frameHeight: 29 });
+        // `game.lua:978`：盲注筹码，34×34 一格，每行 21 帧动画
+        this.load.spritesheet('blind_chips', '/assets/textures/BlindChips.png', { frameWidth: 34, frameHeight: 34 });
         this.load.spritesheet('cards', '/assets/textures/8BitDeck.png', {
             frameWidth: 71,
             frameHeight: 95,
@@ -220,6 +228,15 @@ export class RunScene extends Scene {
             major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } },
         });
         this.hudView = new UIBoxView(this, hudBox, 40);
+
+        // `game.lua:2617`：`G.HUD_blind = UIBox{definition = create_UIBox_HUD_blind(), config = {major = row_blind, align = 'cm'}}`
+        const row = hudBox.getById('row_blind')!;
+        this.hudBlindState = makeHudBlindState();
+        this.hudBlindView = new UIBoxView(this, new UIBox(
+            createHudBlind(this.hudBlindState),
+            { align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: row.x, y: row.y, w: row.T.w, h: row.T.h } } },
+            hudBlindFuncs(this.hudBlindState),
+        ), 41);
         this.deckSprite = new DeckSprite(this);
 
         const areas = this.areas;
@@ -1032,11 +1049,8 @@ ${String(e instanceof Error ? e.message : e)}`)
                     : `点商店的牌买入，点小丑区的牌卖出，点消耗品用掉它    ${vouchersLine}`,
             ].join('\n'));
         } else if (round) {
-            this.hud.setText([
-                `Ante ${run.ante}  ${blindName}   ${round.chips} / ${round.requirement}`,
-                `出牌 ${round.handsLeft}    弃牌 ${round.discardsLeft}    牌堆 ${round.deck.length}    $${run.dollars}`,
-                lastAction,
-            ].join('\n'));
+            // 盲注、目标分、出牌 / 弃牌数、钱都在左侧面板与盲注面板里了，这里只剩上一手的结算说明
+            this.hud.setText(lastAction);
         }
 
         this.jokerInfo.setText(this.describeJokers());
@@ -1132,6 +1146,8 @@ ${String(e instanceof Error ? e.message : e)}`)
             { x: p.x / P, y: p.y / P }, { x: this.mapping.roomX, y: this.mapping.roomY }));
         this.syncHud();
         this.hudView.update(time / 1000);
+        this.syncHudBlind();
+        this.hudBlindView.update(time / 1000);
         this.syncAreas();
         for (const a of this.areaViews) a.view.update(time / 1000);
         this.slideHand(delta / 1000);
@@ -1141,6 +1157,43 @@ ${String(e instanceof Error ? e.message : e)}`)
         // 牌堆：盲注里是剩余张数，盲注外整副牌都在牌堆里
         this.deckSprite.update(this.areas.deck, this.round && this.run.state === 'playing' ? this.round.deck.length : this.run.fullDeck.length);
     }
+
+    /**
+     * 盲注面板的绑定值：`Blind:set_text`（`blind.lua:47`）与 `set_blind` 里的目标分、奖励。
+     * 描述行的 `#1#` 只有 The Ox 要填（本局最常打的牌型）；被关掉的 Boss 没有描述。
+     * 不在盲注里时整块不画（原作是把它挪到屏幕上方外面，`offset.y = -10`）
+     */
+    private syncHudBlind(): void {
+        const run = this.run;
+        const round = this.round;
+        const b = this.hudBlindState.blind;
+        const playing = run.state === 'playing' && round !== null;
+        this.hudBlindView.setVisible(playing);
+        if (!playing) return;
+        const key = run.blindKey;
+        const center = BLIND_CENTERS[key];
+        const text = BLIND_TEXT[key];
+        b.key = key;
+        b.loc_name = text?.name ?? '';
+        b.chips = round.requirement;
+        b.chip_text = numberFormat(round.requirement);
+        const lines = round.blind?.disabled || !text
+            ? []
+            : text.text.map((l) => (key === 'bl_ox' ? l.replace('#1#', round.mostPlayedHand()) : l));
+        b.loc_debuff_lines['1'] = lines[0] ?? '';
+        b.loc_debuff_lines['2'] = lines[1] ?? '';
+        b.loc_debuff_text = lines.map((l) => `${l} `).join('');
+        this.hudBlindState.current_round.dollars_to_be_earned = center ? '$'.repeat(center.dollars) : '';
+        // `blind.lua:113`：`set_blind` 末尾 `G.HUD_blind:recalculate()`——同字数换数（300 → 450）也重排
+        const sig = `${key}|${b.chip_text}|${b.loc_debuff_text}`;
+        if (sig !== this.hudBlindSig) {
+            this.hudBlindSig = sig;
+            this.hudBlindView.box.refresh();
+            this.hudBlindView.box.recalculate();
+        }
+    }
+
+    private hudBlindSig = '';
 
     /**
      * 区域计数同步，以及 `cardarea.lua:283` 的隐藏规则：手牌区在商店、开包、回合结算、选盲注时不画框。
@@ -1242,6 +1295,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         const { width, height } = this.scale;
         this.mapping = roomMapping(width, height);
         this.hudView?.setResolution(this.mapping.pxPerTile / toPx(1));
+        this.hudBlindView?.setResolution(this.mapping.pxPerTile / toPx(1));
         for (const a of this.areaViews) a.view.setResolution(this.mapping.pxPerTile / toPx(1));
         this.placeRoom({ x: this.mapping.roomX, y: this.mapping.roomY, r: 0 });
     }

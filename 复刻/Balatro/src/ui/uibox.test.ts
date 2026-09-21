@@ -10,6 +10,8 @@ import { describe, expect, it } from 'vitest';
 import { cardAreas } from '../game/areas';
 import { createButtons } from './definitions/buttons';
 import { cardAreaBox } from './definitions/card-area';
+import { createHudBlind, makeHudBlindState } from './definitions/hud-blind';
+import { hudBlindFuncs } from './definitions/hud-blind-funcs';
 import { makeHudState, createHud } from './definitions/hud';
 import oracle from './oracle.generated.json';
 import { UIBox, type UIElement } from './uibox';
@@ -64,6 +66,34 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
             offset: { x: 0, y: 0 },
             major: { T: area },
         });
+        expectSame(dump(box), expected.elements);
+    });
+
+    /**
+     * 盲注面板：挂在 HUD 的 `row_blind` 上。几个 `func`（debuff 行伸缩、分数字号、奖励行）在建盒子时跑一次、
+     * 画第一帧前再跑一次——Boss 那一格两行 debuff 文字把面板撑高，小盲注那一格收起
+     */
+    it.each([
+        ['hud_blind_small', 'Small Blind', 300, [] as string[]],
+        ['hud_blind_head', 'The Head', 600, ['All Heart cards', 'are debuffed']],
+    ])('%s：create_UIBox_HUD_blind 与它的 G.FUNCS', (name, blindName, chips, lines) => {
+        const expected = cases.find((c) => c.name === name)!;
+        const hud = new UIBox(createHud(makeHudState()), {
+            align: 'cli', offset: { x: -0.7, y: 0 }, major: { T: { x: 0, y: 0, w: 21, h: 11.2 } },
+        });
+        const row = hud.getById('row_blind')!;
+        const state = makeHudBlindState();
+        Object.assign(state.blind, {
+            key: 'x', loc_name: blindName, chips, chip_text: String(chips),
+            loc_debuff_text: lines.length ? `${lines[0]} ${lines[1]}` : '',
+        });
+        state.blind.loc_debuff_lines['1'] = lines[0] ?? '';
+        state.blind.loc_debuff_lines['2'] = lines[1] ?? '';
+        state.current_round.dollars_to_be_earned = '$$$';
+        const box = new UIBox(createHudBlind(state), {
+            align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: row.x, y: row.y, w: row.T.w, h: row.T.h } },
+        }, hudBlindFuncs(state));
+        box.runFuncs();
         expectSame(dump(box), expected.elements);
     });
 
