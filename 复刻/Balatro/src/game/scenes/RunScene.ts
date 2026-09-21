@@ -32,6 +32,7 @@ import { BoosterSprite } from '../booster-sprite';
 import { ConsumableSprite } from '../consumable-sprite';
 import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, toPx } from '../coords';
 import { JokerSprite } from '../joker-sprite';
+import { LOOK } from '../look';
 import { VoucherSprite } from '../voucher-sprite';
 import { BACKGROUND_COLOURS, BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
 import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
@@ -57,12 +58,6 @@ const PACK_X_TILES = SHOP_X_TILES;
 /** 开着的包：内容摊在屏幕中间 */
 const PACK_OPEN_Y_TILES = 1.6;
 const PACK_OPEN_X_TILES = 1.2;
-
-/**
- * `G.SETTINGS.GRAPHICS.crt`。`globals.lua:231` 是 `F_MOBILE and 30 or 70`；
- * 12 号票裁定取桌面值。
- */
-const CRT_STRENGTH = 70;
 
 /**
  * 版本的文字标记。
@@ -1066,7 +1061,12 @@ ${String(e instanceof Error ? e.message : e)}`)
                 fragmentSource: CRT_FRAG,
                 vertexSource: CRT_VERT,
                 setupUniforms: (setUniform: (n: string, v: unknown) => void) => {
-                    const u = crtUniforms(CRT_STRENGTH, width, height, this.time.now / 1000);
+                    // 扫描线密度与色散都按**显示出来的物理像素**算：原作的画布就是屏幕分辨率
+                    // （`G.CANVAS:getPixelHeight()`、`love_ScreenSize`），复刻件的画布只有 CANVAS_W×CANVAS_H、
+                    // 再被 CSS 放大，按画布尺寸算会让线粗一倍多（21 号票在模拟器上与正版并排看出来的）
+                    const dpr = window.devicePixelRatio;
+                    const shown = this.scale.displaySize;
+                    const u = crtUniforms(LOOK.crt, shown.width * dpr, shown.height * dpr, this.time.now / 1000);
                     setUniform('uMainSampler', 0);
                     setUniform('distortion_fac', u.distortion_fac);
                     setUniform('scale_fac', u.scale_fac);

@@ -114,9 +114,15 @@ void main ()
  *
  * `crt` 是 `G.SETTINGS.GRAPHICS.crt`：**移动版 30，桌面版 70**
  * （`globals.lua:231`）。按 [12 号票](../../../../.scratch/balatro-复刻/issues/12-外观基准是移动版还是桌面版.md)
- * 的裁定，复刻件取桌面值 70。
+ * 的裁定，复刻件默认取桌面值 70（见 `look.ts`）。
+ *
+ * **喂进 shader 的是设置值的 0.3 倍**：`game.lua:3292` 先 `crt = crt*0.3`，喂完 uniform 再 `/0.3` 还原。
+ * 14 号票移植时漏了这一行，复刻件的 CRT 因此一直是原作的 3.3 倍强——21 号票在模拟器上
+ * 与正版并排量出来的（同为 30 时扫描线峰谷差：实机 7 级、复刻件 18 级）。
+ * `screenW` / `screenH` 是**显示出来的物理像素**，不是画布尺寸（见 `RunScene.setupCrt`）。
  */
-export function crtUniforms(crt: number, screenW: number, screenH: number, timeSeconds: number) {
+export function crtUniforms(setting: number, screenW: number, screenH: number, timeSeconds: number) {
+    const crt = setting * 0.3;
     return {
         distortion_fac: [1.0 + 0.07 * crt / 100, 1.0 + 0.1 * crt / 100] as [number, number],
         scale_fac: [1.0 - 0.008 * crt / 100, 1.0 - 0.008 * crt / 100] as [number, number],
