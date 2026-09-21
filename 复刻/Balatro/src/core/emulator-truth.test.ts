@@ -19,7 +19,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { cardId, pickCards, sortedIds } from './fixtures/card-id';
+import { cardId, pickCards } from './fixtures/card-id';
 import { Run } from './run';
 
 describe('TESTSEED（2026-09-21 实机）', () => {
@@ -36,19 +36,25 @@ describe('TESTSEED（2026-09-21 实机）', () => {
      * 原因是开局造牌的顺序——`game.lua:2584` 按 `花色..点数` 的**字符串**排序，
      * 点数是 `2..9 A J K Q T`，而复刻件按 2 → A 造。见 `makeStandardDeck`。
      */
+    /**
+     * 比的是**手牌区数组本身**（实机截图从左到右），不是排序后的集合：
+     * 原作每摸一张都 `G.hand:sort()`，复刻件曾经不排（`Round.sortHand`）。
+     */
     it('小盲注的首手与之后 12 张抽牌', () => {
         run.startRound();
         const round = run.round!;
-        expect(sortedIds(round.hand)).toEqual(['AH', 'KH', 'QD', '9S', '9C', '5C', '5D', '4C']);
+        // 红牌组 +1 弃牌（`back.lua:211`）。复刻件曾经漏了这一步，按 3 次打
+        expect([round.handsLeft, round.discardsLeft]).toEqual([4, 4]);
+        expect(round.hand.map(cardId)).toEqual(['AH', 'KH', 'QD', '9S', '9C', '5C', '5D', '4C']);
 
         round.discard(pickCards(round.hand, '4C,5D,5C'));
-        expect(sortedIds(round.hand)).toEqual(['AH', 'KH', 'QD', 'TC', '9S', '9C', '8C', '7H']);
+        expect(round.hand.map(cardId)).toEqual(['AH', 'KH', 'QD', 'TC', '9S', '9C', '8C', '7H']);
 
         round.discard(pickCards(round.hand, 'AH,KH,QD,9S,7H'));
-        expect(sortedIds(round.hand)).toEqual(['AS', 'AD', 'QC', 'TC', 'TD', '9C', '8C', '2D']);
+        expect(round.hand.map(cardId)).toEqual(['AS', 'AD', 'QC', 'TC', 'TD', '9C', '8C', '2D']);
 
         round.discard(pickCards(round.hand, 'AS,AD,TD,2D'));
-        expect(sortedIds(round.hand)).toEqual(['AC', 'KS', 'QC', 'TC', '9C', '8C', '3H', '2C']);
+        expect(round.hand.map(cardId)).toEqual(['AC', 'KS', 'QC', 'TC', '9C', '8C', '3H', '2C']);
     });
 
     it('同花 83 × 4 = 332 过关，兑现 $6（盲注 $3 + 剩 3 手）', () => {
@@ -56,6 +62,8 @@ describe('TESTSEED（2026-09-21 实机）', () => {
         round.play(pickCards(round.hand, 'AC,QC,TC,9C,8C'));
         expect(round.chips).toBe(332);
         expect(round.phase).toBe('won');
+        // 实机此刻 Hands 3 / Discards 1
+        expect([round.handsLeft, round.discardsLeft]).toEqual([3, 1]);
 
         const { payout } = run.finishRound();
         expect(payout.total).toBe(6);

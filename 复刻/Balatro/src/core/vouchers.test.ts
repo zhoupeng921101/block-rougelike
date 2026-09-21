@@ -301,7 +301,7 @@ describe('回合参数那几张', () => {
         expect(run.consumableSlots).toBe(3);
         const round = run.startRound();
         expect(round.handsLeft).toBe(5);
-        expect(round.discardsLeft).toBe(4);
+        expect(round.discardsLeft).toBe(5); // 3 + 红牌组 1 + Wasteful 1
         expect(round.handLimit).toBe(9);
     });
 

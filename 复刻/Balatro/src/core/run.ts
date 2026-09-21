@@ -96,8 +96,18 @@ export type RunState =
     | 'shop'
     | 'game-over';
 
+/**
+ * 牌组（`G.GAME.selected_back`）。复刻件只做红牌组（`game.lua:629`）。
+ *
+ * `back.lua:211` 的 `Back:apply_to_run` 把 `config.discards` 加进 `G.GAME.starting_params`，
+ * **07 号票起一直漏了这一步**：复刻件按 3 次弃牌打，实机红牌组是 4 次（21 号票，模拟器首帧就看得到）。
+ * `Round` 单独构造时仍是 `get_starting_params` 的基础值 3——牌组效果属于整局，由 `Run` 传进去。
+ */
+export const RED_DECK = { key: 'b_red', config: { discards: 1 } } as const;
+
 export class Run {
     readonly seed: string;
+    readonly back = RED_DECK;
     readonly rng: PseudorandomState;
     /** 整副牌。**跨回合持有同一批 `Card` 对象**——`played_this_ante` 挂在它们身上 */
     readonly fullDeck: Card[];
@@ -725,7 +735,7 @@ export class Run {
             // （`temp_handsize` 在回合结束时减回去，`state_events.lua:291`）
             handSizeDelta: this.handSizeDelta + this.vouchers.handSize + this.takeRoundStartBonus(),
             handsDelta: this.vouchers.hands,
-            discardsDelta: this.vouchers.discards,
+            discardsDelta: this.back.config.discards + this.vouchers.discards,
             discountPercent: this.discountPercent,
             jokerSlots: this.jokerSlots,
             jokerArea: this.jokerAreaHooks(),

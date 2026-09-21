@@ -12,9 +12,10 @@
  *
  * 红了的处理与 `depth.test.ts` 相同：先想清楚是内容变了、bot 变了还是 RNG 顺序变了。
  *
- * **2026-09-21 整张表换了一批数**：模拟器实机首手抓到开局造牌的规范序错了（`makeStandardDeck`），
- * 改对之后同一个 seed 的整副牌序全变——等于换了 60 局。下面各条括号里的旧数都是旧牌序下的，
- * **新旧之间不可比**；各条的结论（谁比谁好）在新牌序下重新核过，写在各条里。
+ * **2026-09-21 整张表换了一批数**：21 号票在模拟器上对出三处原作行为——开局造牌的规范序
+ * （`makeStandardDeck`，同 seed 整副牌序全变）、红牌组 +1 弃牌（`back.lua:211`）、
+ * 摸牌后手牌区按点数重排（`Round.sortHand`）。等于换了 60 局、而且多一次弃牌。
+ * 下面各条括号里的旧数都是改之前的，**新旧之间不可比**；各条的结论在新口径下重新核过，写在各条里。
  */
 
 import { describe, expect, it } from 'vitest';
@@ -47,11 +48,11 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * 「增删牌」那 8 张接进来之后 2.333 → 2.417：贪心什么都买，
      * 买到的 Riff-raff 现在真的会造小丑了。
      * 补上版本加价之后 → 2.383（带版本的小丑变贵了，见下一条）。
-     * 牌序改对之后 → 2.3（换了一批局，不可比）。
+     * 21 号票那三处改完之后 → 2.367（换了一批局，不可比）。
      */
-    it('贪心：平均 2.3，四成死在 Ante 2', () => {
-        expect(mean(greedy)).toBe(2.3);
-        expect(histogram(greedy)).toEqual([10, 25, 22, 3, 0, 0, 0, 0, 0, 0]);
+    it('贪心：平均 2.367，将近一半死在 Ante 2', () => {
+        expect(mean(greedy)).toBe(2.367);
+        expect(histogram(greedy)).toEqual([6, 28, 24, 2, 0, 0, 0, 0, 0, 0]);
     });
 
     /**
@@ -75,20 +76,21 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * Trading Card / Certificate / Luchador / Chicot 之后 → 4.1。**第一批让挑牌 bot 受益的内容**，
      * 虽然很小：240 seed 放开 4.000、禁掉 3.992，2 局更深、0 局更浅。
      *
-     * 牌序改对之后 → 3.85，对贪心仍差约 1.5 个 Ante。
+     * 21 号票那三处改完之后 → 3.8，对贪心仍差约 1.4 个 Ante。
      */
-    it('挑牌：平均 3.85，41 个 seed 比贪心深、5 个更浅', () => {
-        expect(mean(picky)).toBe(3.85);
-        expect(histogram(picky)).toEqual([4, 11, 11, 11, 15, 5, 1, 2, 0, 0]);
+    it('挑牌：平均 3.8，40 个 seed 比贪心深、6 个更浅', () => {
+        expect(mean(picky)).toBe(3.8);
+        expect(histogram(picky)).toEqual([2, 15, 10, 12, 13, 5, 1, 2, 0, 0]);
         const deeper = picky.filter((r, i) => r.ante > greedy[i].ante).length;
         const shallower = picky.filter((r, i) => r.ante < greedy[i].ante).length;
-        expect([deeper, shallower]).toEqual([41, 5]);
+        expect([deeper, shallower]).toEqual([40, 6]);
     });
 
     /**
-     * **强化牌那 9 张的贡献，换成挑牌 bot 也几乎是零。** 旧牌序下禁掉它们 60 局**逐局深度完全相同**；
-     * 牌序改对之后 **59 局相同、1 局浅一级**（`S253408`：放开时买了 Steel Joker 到 Ante 4，
-     * 禁掉后那一格换成 Odd Todd，死在 Ante 3）。死时手上有其中一张的仍是 2 局。
+     * **强化牌那 9 张的贡献，换成挑牌 bot 也几乎是零。** 21 号票之前禁掉它们 60 局**逐局深度完全相同**；
+     * 之后 **59 局相同、1 局反而深一级**（`S229651`：放开时买了 Marble Joker 死在 Ante 5，
+     * 禁掉后那一格换成 Blue Joker / Photograph，到了 Ante 6）。死时手上有其中一张的仍是 2 局。
+     * 中间一版（只改了牌序）是另一局浅一级——单局的正负是噪声，「几乎是零」才是结论。
      *
      * 两个原因，都不是 bot 的锅：
      * - **3 张新档根本抽不到**：Golden Ticket / Glass Joker / Driver's License
@@ -101,11 +103,11 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * 而新牌组里没有强化牌，Steel / Stone / Lucky Cat / Vampire 的成长条件碰不到。
      * 要让它们有价值，得让估值看到「bot 自己以后会往牌组里加什么」，那是另一个量级的活。
      */
-    it('禁掉强化牌那 9 张：59 局逐局相同，只有 S253408 浅一级', () => {
+    it('禁掉强化牌那 9 张：59 局逐局相同，只有 S229651 深一级', () => {
         const differ = SEEDS.filter((_, i) => pickyBanned[i].ante !== picky[i].ante);
-        expect(differ).toEqual(['S253408']);
-        const i = SEEDS.indexOf('S253408');
-        expect([picky[i].ante, pickyBanned[i].ante]).toEqual([4, 3]);
+        expect(differ).toEqual(['S229651']);
+        const i = SEEDS.indexOf('S229651');
+        expect([picky[i].ante, pickyBanned[i].ante]).toEqual([5, 6]);
         const held = picky.filter((r) => r.jokers.some((n) => NINE.has(n))).length;
         expect(held).toBe(2);
     });
@@ -119,10 +121,10 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * 重跑过四次：出牌改好之后（2.867 / 4.017 对 4.133），
      * 估值学会看成长之后（2.950 / 4.133 对 4.333），增删牌那 8 张之后（3.0 / 4.167 对 4.267），
      * 补上版本加价之后（2.933 / 4.100 对 4.083），关掉 Boss 那一刀之后（2.933 / 4.100 对 4.100），
-     * 牌序改对之后（2.667 / 3.883 对 3.85）。
-     * **全程存一直明显更差；后期存 + 重掷已经连着三次打平或高一点点**（+0.033 是 60 局里多深 2 级），不算赢。
+     * 21 号票那三处改完之后（2.983 / 3.867 对 3.8）。
+     * **全程存一直明显更差；后期存 + 重掷连着几次打平或高一点点**（+0.067 是 60 局里多深 4 级），不算赢。
      */
-    it('存利息：全程存 $25 掉到 2.667，后期才存 + 重掷 3.883，与不存（3.85）打平', () => {
+    it('存利息：全程存 $25 掉到 2.983，后期才存 + 重掷 3.867，与不存（3.8）打平', () => {
         const flat25 = SEEDS.map((s) =>
             pickyRun(fresh(s), { economy: { reserve: () => 25, breakReserveGain: 0.5 } }));
         const late25 = SEEDS.map((s) =>
@@ -134,8 +136,8 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
                     maxRerolls: 10,
                 },
             }));
-        expect(mean(flat25)).toBe(2.667);
-        expect(mean(late25)).toBe(3.883);
+        expect(mean(flat25)).toBe(2.983);
+        expect(mean(late25)).toBe(3.867);
     });
 
     /**
@@ -145,14 +147,19 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * 两轮实验（细节见 18 号票）。120 seed：全跳 2.517、只为好标签跳 3.575、Ante 2 起 3.717、
      * 只跳小盲注 3.833、只为开包标签跳 3.975，对不跳 4.008。240 seed 加「上一关赢得轻松才跳」：
      * **最好的「赢 5 倍以上才跳」4.021 对不跳 4.000，但平均每局只跳 0.1 次**，在噪声里。
-     * 所以默认不跳，这两条是代表。牌序改对之后仍然成立（2.2 / 3.733 对 3.85）。
+     * 所以默认不跳，这两条是代表。
+     *
+     * **21 号票那三处改完之后，这 60 个 seed 上「只为开包标签跳」反而高 0.233**（4.033 对 3.8）。
+     * 拿另外三批各 60 个复核（`H${i*104729+17}` / `K${i*15485863+3}` / `P${i*32452843+11}`）：
+     * 3.75 对 3.967、3.55 对 3.533、3.733 对 3.833，**240 个合计 3.767 对 3.783，打平**。
+     * S 这一批是碰巧，结论不变。
      */
-    it('跳过盲注：全跳 2.2，只为开包标签跳 3.733，都不比不跳（3.85）好', () => {
+    it('跳过盲注：全跳 2.367；只为开包标签跳 4.033，这 60 个上高过不跳（3.8），但 240 个上打平', () => {
         const PACKS = new Set(['tag_charm', 'tag_meteor', 'tag_buffoon', 'tag_ethereal', 'tag_standard']);
         const all = SEEDS.map((s) => pickyRun(fresh(s), { skip: () => true }));
         const packs = SEEDS.map((s) => pickyRun(fresh(s), { skip: (_run, k) => PACKS.has(k) }));
-        expect(mean(all)).toBe(2.2);
-        expect(mean(packs)).toBe(3.733);
+        expect(mean(all)).toBe(2.367);
+        expect(mean(packs)).toBe(4.033);
     });
 
     /**
@@ -163,14 +170,14 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * **「余钱才买」与不买打平**（全买 4.046、换一批 seed 4.071 对 4.067），
      * 但那是因为平均每局只买到 0.19 张——bot 买完小丑和包几乎从不剩 $10。
      * To Do List 修好之后「先买」3.0 → 2.983（有一局碰到了它），别的几条没动。
-     * 所以默认不买，这两条是代表。旧牌序下 60 seed 上余钱才买高出 0.067，是碰巧赢的几局，不是信号——
-     * 牌序改对之后它变成低 0.017（3.833 对 3.85），正好印证。
+     * 所以默认不买，这两条是代表。21 号票之前 60 seed 上余钱才买高出 0.067，之后是高 0.05（3.85 对 3.8）——
+     * 始终在 240 seed 打平的范围里。
      */
-    it('优惠券：全买且先买掉到 3.15；余钱才买 3.833，与不买（3.85）打平', () => {
+    it('优惠券：全买且先买掉到 3.017；余钱才买 3.85，与不买（3.8）打平', () => {
         const all = (k: string) => k.startsWith('v_');
         const first = SEEDS.map((s) => pickyRun(fresh(s), { vouchers: { want: all, first: true } }));
         const after = SEEDS.map((s) => pickyRun(fresh(s), { vouchers: { want: all, first: false } }));
-        expect(mean(first)).toBe(3.15);
-        expect(mean(after)).toBe(3.833);
+        expect(mean(first)).toBe(3.017);
+        expect(mean(after)).toBe(3.85);
     });
 });

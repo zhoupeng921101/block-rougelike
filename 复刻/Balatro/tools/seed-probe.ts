@@ -16,7 +16,7 @@
 // 不给动作时只打印开局：Ante 1 的 Boss、优惠券、两个跳过标签。
 import { Run } from '../src/core/run';
 import type { Card } from '../src/core/card';
-import { cardId, pickCards, sortedIds } from '../src/core/fixtures/card-id';
+import { cardId, pickCards } from '../src/core/fixtures/card-id';
 
 const [seed, ...actions] = process.argv.slice(2);
 if (!seed) {
@@ -34,7 +34,7 @@ console.log(`tags     Small=${run.blindTags.Small} Big=${run.blindTags.Big}`);
 
 function printHand(): void {
     const round = run.round!;
-    console.log(`  hand   ${sortedIds(round.hand).join(' ')}`);
+    console.log(`  hand   ${line(round.hand)}`);
     // 牌堆从数组尾部摸，所以倒过来才是接下来的抽牌序
     console.log(`  next   ${line([...round.deck].reverse().slice(0, 10))}`);
 }

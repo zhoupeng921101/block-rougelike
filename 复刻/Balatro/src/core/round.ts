@@ -28,7 +28,7 @@ import {
     stayFlipped,
 } from './blinds';
 import { PURPLE_SEAL_APPEND, sealDiscardCreatesTarot } from './seals';
-import { type Card, P_CARDS, type Suit, makeCard } from './card';
+import { type Card, P_CARDS, type Suit, getNominal, makeCard } from './card';
 import { calculateJoker, refreshDerivedAbilities, runModifiers } from './jokers';
 import type { GameView, Joker, RunModifiers } from './jokers';
 import { PseudorandomState, pseudorandomElement, pseudoshuffle } from './rng';
@@ -256,6 +256,13 @@ export class Round {
     deck: Card[] = [];
     hand: Card[] = [];
     discardPile: Card[] = [];
+    /**
+     * `G.hand.config.sort`。**每摸一张都照它把手牌区重排一遍**（`draw_card` 的 `sort` 参数，
+     * `draw_from_deck_to_hand` 传的是 true），玩家点「按点数 / 按花色」时改它（`sort_hand_value` /
+     * `sort_hand_suit`）。手牌区的顺序是逻辑状态：打出去的牌按 `T.x` 计分、手牌区遍历按下标——
+     * 复刻件曾经不排（21 号票，模拟器首帧看出来的），同一手牌的计分次序因此与原作不同。
+     */
+    handSort: 'desc' | 'suit desc' = 'desc';
 
     handsLeft: number;
     discardsLeft: number;
@@ -474,7 +481,7 @@ export class Round {
             const card = this.deck.pop();
             if (card) {
                 this.hand.push(card);
-                alignHand(this.hand);
+                this.sortHand();
             }
         }
 
@@ -624,11 +631,22 @@ export class Round {
             }
             this.hand.push(card);
         }
-        alignHand(this.hand);
+        this.sortHand();
 
         // `blind.lua:572` 的 `drawn_to_hand`——**在整批抽完之后调一次**，不是逐张。
         // 它会无条件清掉 `prepped`，`The Fish` 只盖一批就靠这个
         if (this.blind) drawnToHand(this.blind, this.hand, this.jokers, this.rng);
+    }
+
+    /**
+     * `cardarea.lua:583` 的 `CardArea:sort`：按 `get_nominal` 降序（`suit desc` 用花色加权那一支）。
+     * `get_nominal` 末项带 `unique_val`，任意两张严格不等，所以 LuaJIT 的不稳定排序也是确定的。
+     */
+    sortHand(mode: 'desc' | 'suit desc' = this.handSort): void {
+        this.handSort = mode;
+        const key = (c: Card) => getNominal(c, mode === 'suit desc' ? 'suit' : undefined);
+        this.hand.sort((a, b) => key(b) - key(a));
+        alignHand(this.hand);
     }
 
     /** 出牌。`selected` 是选中的牌，会按 `T.x` 排序后结算。 */
