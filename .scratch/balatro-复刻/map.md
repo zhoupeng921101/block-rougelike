@@ -278,6 +278,23 @@ Label: wayfinder:map
 > 原先复刻件比原作便宜，墙被高估了约 0.15 个 Ante。新加的 3 张贡献为零（禁掉 3.996）。
 >
 > **下一刀的判断**：内容剩 6 张，两组各拽一个新系统（标签与跳盲注、关掉 Boss）。
+>
+> **又做了 4 张：Trading Card / Certificate / Luchador / Chicot**。808 个测试绿，
+> **小丑覆盖面 148 / 150**。Certificate 与 Trading Card 原先分在「标签」，其实用不到标签
+> （一个在每关第一次发完牌时造牌，一个在第一次弃牌时毁牌给钱）。
+> 剩下的 **Throwback / Diet Cola 都要标签与跳过盲注**。
+>
+> 为它们补的：`Blind:disable()`（各 Boss 的进场效果逐个还原，重跑 debuff，够分当场过关）、
+> `first_hand_drawn`、弃牌时的 `remove`（毁掉的牌不进弃牌堆，玻璃牌算「碎掉」）、
+> Chicot 的 `add_to_deck`（Boss 局中途进小丑区也关掉）。
+>
+> **顺带修掉的两处**：
+> - **弃牌计数加早了**，与上一刀出牌计数同一类：原作在逐张问完小丑之后才扣次数、计数。
+>   Burnt Joker 原先靠传 `discardsUsed - 1` 绕过去，现在去掉了这个补丁
+> - **The Needle 写死「减 3」**，而原文是 `round_resets.hands - 1`（含 Troubadour 的 -1）。
+>   Troubadour + The Needle 原先得到 0 次出牌，进场即输
+>
+> **墙：第一批让挑牌 bot 受益的内容**，虽然很小：240 seed 放开 4.000、禁掉 3.992，2 局更深、0 局更浅。
 > 墙那边，估值的短板已经很清楚——**它只认计分管线里的成长**。要让 bot 用上这类小丑，
 > 沙盒得在连打之间模拟进盲注 / 弃牌 / 加牌，而 Madness 还会毁队友，模拟不当会高估。
 
@@ -618,6 +635,15 @@ Label: wayfinder:map
 - **`bankrupt_at`**（Credit Card 每张 -20）从小丑区**现算**：卖掉、被毁、被 debuff 都自动收回。
   判买不买得起是 `cost > 0 and cost > dollars - bankrupt_at`——**免费的永远买得起**。
   收回下限不会抹平已经欠下的钱；负债时没有利息（`dollars >= 5` 才算）。
+
+- **`Blind:disable()` 在构造中途与之后做的事不一样**。Chicot 在 `setting_blind` 里调它时，
+  手牌上限、出牌/弃牌次数、牌堆 debuff 都还没算，所以只打标记、改分数要求，构造后半段读 `disabled`
+  （等价于原作「set_blind 先扣、Chicot 的事件再还回来」）。之后调（Luchador、中途进场的 Chicot）
+  才逐个还原：The Water 还弃牌、The Needle 还出牌、The Manacle +1 上限并补抽 1 张（不看上限）、
+  四个盖牌 Boss 翻牌、Cerulean Bell 清强制选中、The Wall / Violet Vessel 分数要求 ÷2 / ÷3，
+  然后整副牌与小丑区重跑 debuff，**够分就当场过关**。
+- **弃牌计数（`discards_used` / `discards_left`）在逐张弃牌循环之后才变**（`state_events.lua:451`），
+  与出牌计数同一类坑。
 
 ## Out of scope
 

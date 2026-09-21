@@ -74,9 +74,13 @@ Caino / Yorick / Hologram。**小丑覆盖面 141 / 150**，剩 9：负债 4 / �
 **小丑覆盖面 144 / 150**，剩 6：标签 4 / 关掉 Boss 2。顺带补上了漏掉的**版本加价**
 （带版本的小丑原先按基础价卖），墙因此从 4.267 纠偏到 4.083——原先复刻件比原作便宜。
 
+**又做了 4 张：Trading Card / Certificate / Luchador / Chicot**，补上了关掉 Boss（`Blind:disable`）。
+**小丑覆盖面 148 / 150**，剩下的 Throwback / Diet Cola 都要标签系统。顺带修了弃牌计数的时机，
+以及 The Needle 与 Troubadour 同场时出牌次数变成 0 的 bug。
+
 > **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
 > 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
-> 逻辑层有 788 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
+> 逻辑层有 808 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
 > **版本与蜡封的贴图都没有移植**（原作每种版本一个 `.fs`、蜡封是四张叠图），
 > 这一版只用文字标出来（`✦多彩` / `▣红`）。
 
@@ -108,7 +112,7 @@ src/
 │   │   └── use-context.ts           喂给消耗品的那张宽接口
 │   ├── atlas.ts                 图集网格推导（**不 import Phaser**，所以可单测）
 │   ├── event-queue.ts           事件队列（G.E_MANAGER）
-│   ├── jokers/                  ← 小丑系统。150 张里 144 张有行为
+│   ├── jokers/                  ← 小丑系统。150 张里 148 张有行为
 │   │   ├── centers.generated.ts     150 张的 center 定义（生成的，别手改）
 │   │   ├── instance.ts              set_ability / set_cost
 │   │   ├── calculate.ts             calculate_joker + 覆盖面登记
@@ -137,7 +141,7 @@ src/
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 788 个测试，必须全绿
+npm test            # 808 个测试，必须全绿
 npm run test:slow   # 60 个 seed 量墙（约 30 秒，改了内容或 bot 之后跑）
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build

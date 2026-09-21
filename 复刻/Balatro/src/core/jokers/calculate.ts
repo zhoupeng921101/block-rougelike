@@ -591,6 +591,18 @@ const AFTER: Record<string, Handler> = {
 
 const DISCARD: Record<string, Handler> = {
     /**
+     * `card.lua:2805`。**本回合第一次弃牌、只弃一张**：给 $3，并把那张牌毁掉。
+     * `discards_used` 在逐张循环之后才 +1，所以第一次弃牌时这里读到的是 0
+     */
+    'Trading Card': (self, context, game) => {
+        if (context.blueprint) return null;
+        if ((game.current_round.discards_used ?? 0) > 0) return null;
+        if ((context.full_hand?.length ?? 0) !== 1) return null;
+        game.dollars += self.ability.extra;
+        return { message: `$${self.ability.extra}`, remove: true, card: self };
+    },
+
+    /**
      * `card.lua:2791`。**每弃一张**倒数一格，数到底就 x_mult +1、重新从 23 数。
      * 判定是 `<= 1` 再重置——所以是第 23 张那一下长，不是第 24 张。
      */
@@ -980,6 +992,17 @@ const SETTING_BLIND: Record<string, Handler> = {
         return { message: `+${self.ability.mult}`, card: self };
     },
 
+    /**
+     * `card.lua:2495`。**进 Boss 盲注就关掉它**。原文是两层事件，落地在这一趟之后、发牌之前——
+     * 复刻件直接调：`Round` 构造到这里时还没算手牌上限与次数，后面会读 `disabled`。
+     * （Chicot 在 Boss 盲注**中途**进小丑区时，走的是 `add_to_deck`，见 `Run`）
+     */
+    Chicot: (self, context, game) => {
+        if (context.blueprint || !context.blind_boss) return null;
+        game.disableBoss();
+        return { message: 'boss_disabled', card: self };
+    },
+
     // `card.lua:2548`。每关开始造一张塔罗
     Cartomancer: (self, _context, game) => {
         if (game.consumableCount >= game.consumable_slots) return null;
@@ -1003,8 +1026,27 @@ const PLAYING_CARD_ADDED: Record<string, Handler> = {
     },
 };
 
+/** `card.lua:2465` 的 `context.first_hand_drawn`：**这一关第一次发完牌** */
+const FIRST_HAND_DRAWN: Record<string, Handler> = {
+    // `card.lua:2466`。每关往手里塞一张带蜡封的普通牌。蓝图照样触发
+    Certificate: (self, context, game) => {
+        game.createCertificateCard();
+        return { card: context.blueprint_card ?? self };
+    },
+};
+
 /** `card.lua:2357` 的 `context.selling_self`：**卖掉自己，在移出小丑区之前** */
 const SELLING_SELF: Record<string, Handler> = {
+    /**
+     * `card.lua:2358`。**卖掉它就关掉当前的 Boss**。原文判 `G.GAME.blind and not disabled
+     * and get_type() == 'Boss'`——不在 Boss 盲注里卖（商店里）什么也不发生。
+     * 没有 `not context.blueprint`，但 selling_self 只问被卖的那一张，蓝图碰不到
+     */
+    Luchador: (self, _context, game) => {
+        game.disableBoss();
+        return { message: 'boss_disabled', card: self };
+    },
+
     /**
      * `card.lua:2374`。熬够 `extra` 回合之后卖掉，**复制一张别的小丑**。
      * 复制品的 Negative 会被剥掉；复制到的若也是 Invisible Joker，它的回合数归零。
@@ -1349,6 +1391,8 @@ export function calculateJoker(
     if (context.buying_card) return null;
     if (context.selling_self) return SELLING_SELF[name]?.(self, context, game) ?? null;
 
+    if (context.first_hand_drawn) return FIRST_HAND_DRAWN[name]?.(self, context, game) ?? null;
+
     // `card.lua:2459`：`playing_card_added and not self.getting_sliced`
     if (context.playing_card_added) {
         if (self.getting_sliced) return null;
@@ -1544,6 +1588,7 @@ const NAMES_WITH_HANDLERS: ReadonlySet<string> = new Set([
     ...Object.keys(DESTROYING_CARD),
     ...Object.keys(REMOVE_PLAYING_CARDS),
     ...Object.keys(PLAYING_CARD_ADDED),
+    ...Object.keys(FIRST_HAND_DRAWN),
     ...Object.keys(SELLING_SELF),
     ...Object.keys(ENDING_SHOP),
     // `calculateJoker` 开头那条 copycat 分支，不走查表

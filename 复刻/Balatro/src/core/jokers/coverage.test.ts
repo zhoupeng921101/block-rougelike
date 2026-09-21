@@ -21,7 +21,7 @@ import { describe, expect, it } from 'vitest';
 import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, isJokerImplemented, unimplementedJokers } from './index';
 
 /**
- * 还没实现的 6 张，按**卡在哪个系统**分组。
+ * 还没实现的 2 张，按**卡在哪个系统**分组。
  *
  * 这份分组是这个文件真正的价值：一眼能看出「补哪个系统能一次解开多少张」。
  * 数字是当前的实际张数，实现一张就从下面删掉一行。
@@ -29,19 +29,21 @@ import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, isJokerImplemented, unimplementedJo
 const BLOCKED: Readonly<Record<string, readonly string[]>> = {
 
     /**
-     * 标签与跳过盲注。解开 4 张。
-     * `Diet Cola` 原先分在「负债」，其实它卖掉时造的是一个 Double Tag（`card.lua:2364`）
+     * 标签与跳过盲注。
+     * - `Throwback`：每跳过一个盲注 +0.25 倍率（要 `G.GAME.skips`）
+     * - `Diet Cola`：卖掉时造一个 Double Tag（`card.lua:2364`），原先误分在「负债」
+     *
+     * 原先也在这组的 Certificate / Trading Card 其实**用不到标签**（一个在每关第一次发牌时
+     * 造牌，一个在第一次弃牌时毁牌给钱），已经做了
      */
-    标签: ['Throwback', 'Certificate', 'Trading Card', 'Diet Cola'],
-    /** Boss 的 `disable()`。解开 2 张 */
-    关掉Boss: ['Luchador', 'Chicot'],
+    标签: ['Throwback', 'Diet Cola'],
 };
 
 describe('覆盖面', () => {
-    it('150 张里 144 张有行为', () => {
+    it('150 张里 148 张有行为', () => {
         const implemented = JOKER_KEYS_BY_ORDER.filter(isJokerImplemented);
         expect(implemented.length + unimplementedJokers().length).toBe(150);
-        expect(implemented).toHaveLength(144);
+        expect(implemented).toHaveLength(148);
     });
 
     it('rarity 1 的 61 张全做完了', () => {
@@ -50,11 +52,11 @@ describe('覆盖面', () => {
     });
 
     /** 未实现的名单快照。**实现一张就来 `BLOCKED` 里删一行。** */
-    it('未实现的 6 张，与分组表逐条对得上', () => {
+    it('未实现的 2 张，与分组表逐条对得上', () => {
         const actual = unimplementedJokers().map((k) => JOKER_CENTERS[k].name).sort();
         const grouped = Object.values(BLOCKED).flat().slice().sort();
         expect(actual).toEqual(grouped);
-        expect(actual).toHaveLength(6);
+        expect(actual).toHaveLength(2);
     });
 
     it('分组表里没有重复，也没有拼错的名字', () => {
@@ -64,12 +66,12 @@ describe('覆盖面', () => {
         for (const name of all) expect(names.has(name), name).toBe(true);
     });
 
-    it('下一刀是标签那 4 张', () => {
+    it('最后两张都卡在标签系统上', () => {
         // 这条不是断言代码行为，是把「下一步做什么」的依据钉住：
         // 哪个分组最大，下一刀就先做它
         const sizes = Object.entries(BLOCKED).map(([k, v]) => [k, v.length] as const);
         const biggest = sizes.reduce((a, b) => (b[1] > a[1] ? b : a));
         expect(biggest[0]).toBe('标签');
-        expect(biggest[1]).toBe(4);
+        expect(biggest[1]).toBe(2);
     });
 });

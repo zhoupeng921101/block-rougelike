@@ -203,6 +203,11 @@ export type JokerContext = {
     /** 跟着 `setting_blind` 来的 `context.blind.boss`。`Madness` 在 Boss 盲注不动手 */
     blind_boss?: boolean;
     /**
+     * `game.lua:3589` 的 `context.first_hand_drawn`：**这一关第一次发完牌**。
+     * Certificate 在这时塞一张带蜡封的牌
+     */
+    first_hand_drawn?: boolean;
+    /**
      * `misc_functions.lua:1604` 的 `playing_card_joker_effects`：**有扑克牌加进了牌组**。
      * `Hologram` 按 `#cards` 长倍率。
      */
@@ -260,6 +265,11 @@ export type GameView = {
         hands_left: number;
         discards_left: number;
         hands_played: number;
+        /**
+         * `G.GAME.current_round.discards_used`：本回合已弃几次。
+         * **逐张弃牌循环之后才 +1**（`state_events.lua:454`），Trading Card 判「第一次弃牌」用它
+         */
+        discards_used?: number;
         /**
          * `G.GAME.current_round.mail_card`。每回合抽一个点数，`Mail-In Rebate` 读它。
          * `undefined` = 本回合没抽（小丑区里没有 Mail-In Rebate 时原作也不抽）。
@@ -343,6 +353,13 @@ export type GameView = {
      */
     addPlayingCardToHand(card: Card): void;
     /**
+     * `blind.lua:356` 的 `Blind:disable()`（Luchador / Chicot）。
+     * **只对 Boss 生效**；不在 Boss 盲注里（商店里卖掉 Luchador）什么也不做
+     */
+    disableBoss(): void;
+    /** Certificate：往手里塞一张随机牌面、随机蜡封的牌（`cert_fr` / `certsl`），见 `round.ts` */
+    createCertificateCard(): void;
+    /**
      * `Smeared Joker` 在场——红桃认方块、黑桃认梅花。
      * 由 `modifiers.ts` 从小丑区算出来，不是每张小丑自己去 `find_joker`。
      */
@@ -400,6 +417,11 @@ export type JokerEffect = {
     saved?: boolean;
     /** `context.destroying_card` 下返回真值 = 这张牌要被毁掉（`Sixth Sense`） */
     destroyCard?: boolean;
+    /**
+     * `context.discard` 下返回 `remove = true`：**这张被弃的牌直接毁掉**，不进弃牌堆
+     * （Trading Card）。弃牌循环照样把后面的小丑问完
+     */
+    remove?: boolean;
     /** `Burnt Joker`：把刚弃掉那手的牌型升一级 */
     levelUpDiscarded?: boolean;
     /**

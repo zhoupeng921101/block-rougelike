@@ -264,7 +264,21 @@ export class Run {
         setCost(copy);
         this.jokers.push(copy);
         this.usedJokers.add(copy.key);
+        this.onJokerAdded(copy);
         refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+    }
+
+    /**
+     * `card.lua:579` 的 `add_to_deck` 里与局面有关的那几条。**Boss 盲注中途**进小丑区的：
+     * Chicot 当场关掉 Boss（`card.lua:596`）。买、开包都在商店里，碰不到这条；
+     * 碰得到的是出牌阶段用 Judgement / The Soul / Wraith、卖 Invisible Joker。
+     *
+     * 其余 `add_to_deck` 效果（手牌上限、概率、Credit Card …）都是从小丑区现算的，不在这里。
+     */
+    private onJokerAdded(joker: Joker): void {
+        if (joker.debuff || joker.ability.name !== 'Chicot') return;
+        const round = this.round;
+        if (round?.blind?.center.boss && round.phase === 'selecting') round.disableBlind();
     }
 
     /**
@@ -873,6 +887,7 @@ export class Run {
             addJoker: (j) => {
                 this.jokers.push(j);
                 this.usedJokers.add(j.key);
+                this.onJokerAdded(j);
                 refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
             },
             removeJoker: (j) => {
@@ -968,6 +983,8 @@ export class Run {
             createConsumable: (set, keyAppend) => this.consumableHooks().create(set, keyAppend),
             createPlayingCard: (enhancement, key) => this.createPlayingCard(enhancement, key),
             duplicateJoker: (self, key) => this.duplicateJoker(self, key),
+            // 商店里没有正在打的盲注：卖掉 Luchador 什么也不发生（原文判 `G.GAME.blind` 是不是 Boss）
+            disableBoss: () => {},
             deckCount: this.fullDeck.length,
             startingDeckSize: this.fullDeck.length,
             playingCardCount: this.fullDeck.length,

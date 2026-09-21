@@ -28,10 +28,10 @@ import {
     stayFlipped,
 } from './blinds';
 import { PURPLE_SEAL_APPEND, sealDiscardCreatesTarot } from './seals';
-import type { Card, Suit } from './card';
+import { type Card, P_CARDS, type Suit, makeCard } from './card';
 import { calculateJoker, refreshDerivedAbilities, runModifiers } from './jokers';
 import type { GameView, Joker, RunModifiers } from './jokers';
-import { PseudorandomState, pseudoshuffle } from './rng';
+import { PseudorandomState, pseudorandomElement, pseudoshuffle } from './rng';
 import { type JokerFlags, NO_JOKERS, evaluatePokerHand } from './poker-hands';
 import {
     type BlindHooks,
@@ -250,12 +250,20 @@ export class Round {
     phase: RoundPhase = 'selecting';
     handsPlayedThisRound = 0;
 
-    readonly requirement: number;
+    /** 分数要求。**可变**：The Wall / Violet Vessel 被关掉时除以 2 / 3（`blind.lua:378`） */
+    requirement: number;
+    /** 构造跑完了没有。`disableBlind` 在构造中途（Chicot 的 setting_blind）与之后做的事不一样 */
+    private started = false;
+    /** The Water 砍掉的弃牌数，关掉 Boss 时还回去（原文 `ease_discard(self.discards_sub)`） */
+    private waterDiscards = 0;
+    /** The Needle 砍掉的出牌数，同上（`ease_hands_played(self.hands_sub)`） */
+    private needleHands = 0;
     readonly hands: Record<HandName, HandInfo>;
     readonly jokers: Joker[];
     readonly ante: number;
     readonly blind: BlindState | null;
-    readonly handLimit: number;
+    /** 手牌上限。**可变**：The Manacle 被关掉时 +1（`blind.lua:387`） */
+    handLimit: number;
     /** 用掉的弃牌次数。`Delayed Gratification` 判的是「一次都没用过」 */
     discardsUsed = 0;
     /** 这一手的牌型等级，`The Arm` 在 `debuff_hand` 里要读它 */
@@ -344,10 +352,13 @@ export class Round {
         this.mods = runModifiers(this.jokers);
         // `Ouija` / `Ectoplasm` 的 `G.hand:change_size` 是**跨回合持续**的，
         // 所以由 `Run` 传进来，不在 `runModifiers` 里算
+        // **Boss 的进场效果都看 `disabled`**：Chicot 在上面那一趟里就可能把它关掉了。
+        // 原作是「set_blind 先扣、Chicot 的事件再还回来」，净效果与「一开始就不扣」相同
+        const boss = this.blind && !this.blind.disabled ? this.blind : null;
         this.handLimit = Math.max(
             0,
             STARTING_PARAMS.hand_size + this.mods.handSize +
-            (options.handSizeDelta ?? 0) + (this.blind?.handSizeMod ?? 0),
+            (options.handSizeDelta ?? 0) + (boss?.handSizeMod ?? 0),
         );
 
         // `blind.lua:179-186` 的 `discards_sub` / `hands_sub`，**在进场时一次性扣掉**。
@@ -355,13 +366,17 @@ export class Round {
         // 所以用哨兵 `ALL_DISCARDS` 表示归零而不是写死一个数。
         // `Burglar` 走的是同一处（`card.lua:2525` 的 setting_blind）：
         // **弃牌清零、出牌 +3**，顺序上它排在 Boss 的 sub 之后
-        this.handsLeft =
-            STARTING_PARAMS.hands - (this.blind?.handsSub ?? 0) + this.mods.hands + this.mods.burglarHands;
+        //
+        // `The Needle` 的 `hands_sub = round_resets.hands - 1`——`round_resets.hands` **含小丑给的**
+        // （Troubadour -1），所以是「砍到只剩 1」，不是「减 3」。原先写成减 3，
+        // Troubadour + The Needle 会得到 0 次出牌
+        const handsBase = STARTING_PARAMS.hands + this.mods.hands;
+        this.needleHands = boss && boss.handsSub > 0 ? handsBase - 1 : 0;
+        this.handsLeft = handsBase - this.needleHands + this.mods.burglarHands;
         const discardsBase = STARTING_PARAMS.discards + this.mods.discards;
+        this.waterDiscards = boss?.discardsSub === ALL_DISCARDS ? discardsBase : (boss?.discardsSub ?? 0);
         this.discardsLeft =
-            this.blind?.discardsSub === ALL_DISCARDS || this.mods.burglarHands > 0
-                ? 0
-                : discardsBase - (this.blind?.discardsSub ?? 0);
+            this.mods.burglarHands > 0 ? 0 : discardsBase - this.waterDiscards;
 
         this.startingDeckSize = fullDeck.length;
         this.deck = [...fullDeck];
@@ -374,6 +389,86 @@ export class Round {
         // `state_events.lua:365` 回合开始洗牌，key 是 'nr'..ante
         pseudoshuffle(this.deck, this.rng.pseudoseed(`nr${this.ante}`));
         this.drawToHandLimit();
+        this.started = true;
+
+        // `game.lua:3589`：**这一关第一次发完牌**（还没出过牌、也没弃过牌）问一遍小丑。
+        // Certificate 在这时往手里塞一张带蜡封的牌
+        for (const joker of [...this.jokers]) {
+            calculateJoker(joker, { first_hand_drawn: true }, this.gameView());
+        }
+    }
+
+    /**
+     * `card.lua:2466` 的 Certificate：往**手里**塞一张随机牌面、随机蜡封的普通牌。
+     *
+     * 两次掷点，先牌面后蜡封：`pseudorandom_element(P_CARDS, pseudoseed('cert_fr'))`，
+     * 然后 `pseudorandom(pseudoseed('certsl'))`——>0.75 Red、>0.5 Blue、>0.25 Gold、否则 Purple。
+     * 进手之后 Boss 对它跑一遍 `debuff_card`，再报一次 `playing_card_added`。
+     */
+    createCertificateCard(): void {
+        const [, frontKey] = pseudorandomElement(P_CARDS, this.rng.pseudoseed('cert_fr'));
+        const front = P_CARDS[String(frontKey)];
+        const card = makeCard(String(frontKey), front.suit, front.value);
+        const roll = this.rng.pseudorandom('certsl');
+        card.seal = roll > 0.75 ? 'Red' : roll > 0.5 ? 'Blue' : roll > 0.25 ? 'Gold' : 'Purple';
+        if (this.blind) card.debuff = debuffCard(this.blind, card);
+        this.addToHand(card);
+        this.jokerArea.addPlayingCard(card);
+        for (const joker of [...this.jokers]) {
+            calculateJoker(joker, { playing_card_added: true, cards: [true] }, this.gameView());
+        }
+    }
+
+    /**
+     * `blind.lua:356` 的 `Blind:disable()`：**关掉 Boss**（Luchador / Chicot）。
+     *
+     * 各 Boss 的进场效果逐个还回去，然后对整副牌与小丑区重跑一遍 `debuff_card`
+     * （关掉之后它恒返回「不 debuff」），最后**够分就当场过关**。
+     *
+     * 在构造中途调（Chicot 的 setting_blind）时只打标记、改分数要求——
+     * 手牌上限、出牌/弃牌次数、牌堆的 debuff 都还没算，构造后半段会读 `disabled`。
+     */
+    disableBlind(): void {
+        const blind = this.blind;
+        if (!blind || blind.disabled) return;
+        blind.disabled = true;
+
+        // `blind.lua:377` / `:393`：分数要求降下来。`self.chips` 是原值，不是剩余
+        const name = blind.center.name;
+        if (name === 'The Wall') this.requirement /= 2;
+        if (name === 'Violet Vessel') this.requirement /= 3;
+        if (!this.started) return;
+
+        // `blind.lua:361`
+        if (name === 'The Water') this.discardsLeft += this.waterDiscards;
+        // `blind.lua:364`：四个盖牌 Boss——手里盖着的翻回来
+        if (name === 'The Wheel' || name === 'The House' || name === 'The Mark' || name === 'The Fish') {
+            for (const card of this.hand) card.facing = 'front';
+        }
+        // `blind.lua:374`
+        if (name === 'The Needle') this.handsLeft += this.needleHands;
+        // `blind.lua:381`
+        if (name === 'Cerulean Bell') {
+            for (const card of [...this.deck, ...this.hand, ...this.discardPile]) card.forced_selection = false;
+        }
+        // `blind.lua:386`：手牌上限 +1 并**补抽 1 张**（`draw_from_deck_to_hand(1)` 不看上限）
+        if (name === 'The Manacle') {
+            this.handLimit += 1;
+            const card = this.deck.pop();
+            if (card) {
+                this.hand.push(card);
+                alignHand(this.hand);
+            }
+        }
+
+        // `blind.lua:407`：整副牌与小丑区重跑 `debuff_card`
+        for (const card of [...this.deck, ...this.hand, ...this.discardPile]) {
+            card.debuff = debuffCard(blind, card);
+        }
+        for (const joker of this.jokers) joker.debuff = false;
+
+        // `blind.lua:400`：**够分就当场过关**（The Wall 除以 2 之后常常就够了）
+        if (this.phase === 'selecting' && this.chips >= this.requirement) this.phase = 'won';
     }
 
     /**
@@ -414,6 +509,10 @@ export class Round {
             queueJoker: (keyAppend, rarity) => round.jokerArea.queueJoker(keyAppend, rarity),
             sliceJoker: (target) => round.jokerArea.sliceJoker(target),
             duplicateJoker: (self, key) => round.jokerArea.duplicateJoker(self, key),
+            disableBoss: () => {
+                if (round.blind?.center.boss) round.disableBlind();
+            },
+            createCertificateCard: () => round.createCertificateCard(),
             addPlayingCardToHand: (card) => {
                 // 原文 `G.hand:emplace` + `table.insert(G.playing_cards, …)`：手牌这边自己放，
                 // 整副牌那边交给 `Run`
@@ -445,6 +544,9 @@ export class Round {
                 },
                 get hands_played() {
                     return round.handsPlayedThisRound;
+                },
+                get discards_used() {
+                    return round.discardsUsed;
                 },
                 mail_card: this.mailCard,
                 idol_card: this.special.idolCard,
@@ -589,9 +691,11 @@ export class Round {
         this.requireSelecting(selected);
         if (this.discardsLeft < 1) throw new Error('没有弃牌次数了');
 
+        this.discardCards(selected);
+        // `state_events.lua:451`：**扣次数与计数都在逐张循环之后**。放在前面的话，
+        // 循环里读到的「已弃次数」就多 1——Trading Card 判「本回合第一次弃牌」读的就是它
         this.discardsLeft--;
         this.discardsUsed++;
-        this.discardCards(selected);
         this.drawToHandLimit();
         this.settlePhase();
     }
@@ -616,7 +720,7 @@ export class Round {
         for (const joker of this.jokers) {
             const effect = calculateJoker(
                 joker,
-                { pre_discard: true, full_hand: cards, hook, discardsUsed: this.discardsUsed - 1 },
+                { pre_discard: true, full_hand: cards, hook, discardsUsed: this.discardsUsed },
                 this.gameView(),
             );
             // `Burnt Joker`：把刚弃掉那手的牌型升一级。
@@ -627,6 +731,7 @@ export class Round {
             }
         }
 
+        const destroyed: Card[] = [];
         // `state_events.lua:421`：逐张问每张小丑。**直接调 `calculate_joker`、不带
         // `cardarea`**——原文如此，`context.discard` 那条分支在 cardarea 判定之前。
         for (const card of cards) {
@@ -640,16 +745,33 @@ export class Round {
                 }
             }
 
+            // `state_events.lua:425`：**任何一张小丑回 `remove` 就毁掉这张**（Trading Card），
+            // 但循环照样跑完——后面的小丑仍然看得到它
+            let removed = false;
             for (const joker of this.jokers) {
-                calculateJoker(
+                const effect = calculateJoker(
                     joker,
                     { discard: true, other_card: card, full_hand: cards },
                     this.gameView(),
                 );
+                if (effect?.remove) removed = true;
             }
+            if (removed) destroyed.push(card);
         }
 
-        this.moveOut(cards);
+        // 毁掉的不进弃牌堆。玻璃牌走 `shatter()`，那会打上 `shattered`（`card.lua:2084`）——
+        // 所以 Glass Joker 也数 Trading Card 毁掉的玻璃牌
+        for (const card of destroyed) {
+            if (card.enhancement === 'm_glass') card.shattered = true;
+        }
+        this.moveOut(cards.filter((c) => !destroyed.includes(c)));
+        if (destroyed.length > 0) {
+            this.removeFromDeck(destroyed);
+            // `state_events.lua:445`：整批一次
+            for (const joker of this.jokers) {
+                calculateJoker(joker, { remove_playing_cards: true, removed: destroyed }, this.gameView());
+            }
+        }
     }
 
     /**

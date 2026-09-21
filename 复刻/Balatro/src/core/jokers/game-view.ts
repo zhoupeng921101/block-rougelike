@@ -52,6 +52,12 @@ export function makeGameView(overrides: Partial<GameView> = {}): GameView {
         addPlayingCardToHand: () => {
             throw new Error('这个 GameView 没有接手牌，但 DNA 要复制一张——显式传进来');
         },
+        disableBoss: () => {
+            throw new Error('这个 GameView 没有接盲注，但有小丑要关掉 Boss——显式传进来');
+        },
+        createCertificateCard: () => {
+            throw new Error('这个 GameView 没有接手牌，但 Certificate 要造一张——显式传进来');
+        },
         smeared: false,
         ante: 1,
         startingDeckSize: 52,
