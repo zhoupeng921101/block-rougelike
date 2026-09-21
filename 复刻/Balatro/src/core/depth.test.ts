@@ -38,18 +38,18 @@ const bySeed = (xs: Array<{ seed: string; ante: number }>) =>
     Object.fromEntries(xs.map((r) => [r.seed, r.ante]));
 
 describe('贪心深度', () => {
-    it('八个 seed 各自死在第几个 Ante（平均 2.75）', () => {
+    it('八个 seed 各自死在第几个 Ante（平均 3.125）', () => {
         expect(bySeed(greedy)).toEqual({
-            TUTORIAL: 3,
+            TUTORIAL: 2,
             ALEEB: 3,
             '7LB2WVPK': 3,
             JHZ7FPM: 4,
-            QQQ777: 2,
+            QQQ777: 4,
             MNBVCXZ: 2,
-            ZZZZZZ: 3,
+            ZZZZZZ: 5,
             ABCDEF: 2,
         });
-        expect(mean(greedy)).toBe(2.75);
+        expect(mean(greedy)).toBe(3.125);
     });
 
     /**
@@ -70,18 +70,21 @@ describe('挑牌深度', () => {
     /**
      * **注意这 8 个的均值与 60 个的走势对不上**：改出牌时 3.75 → 2.75（60 个是 3.867 → 4.133），
      * 估值看成长后 2.75 → 3.0（60 个 4.133 → 4.333）。这正是「8 个只够当快照」的活例子。
+     *
+     * 2.75 → 3.875 那次不是内容也不是策略：**开局造牌的规范序改对了**（`makeStandardDeck`，
+     * 模拟器实机首手抓到的），同 seed 的整副牌序全变，这 8 局等于换了 8 局。
      */
-    it('八个 seed 各自死在第几个 Ante（平均 2.75）', () => {
+    it('八个 seed 各自死在第几个 Ante（平均 3.875）', () => {
         expect(bySeed(picky)).toEqual({
             TUTORIAL: 2,
-            ALEEB: 3,
-            '7LB2WVPK': 2,
-            JHZ7FPM: 2,
-            QQQ777: 3,
+            ALEEB: 6,
+            '7LB2WVPK': 4,
+            JHZ7FPM: 5,
+            QQQ777: 5,
             MNBVCXZ: 2,
-            ZZZZZZ: 6,
+            ZZZZZZ: 5,
             ABCDEF: 2,
         });
-        expect(mean(picky)).toBe(2.75);
+        expect(mean(picky)).toBe(3.875);
     });
 });

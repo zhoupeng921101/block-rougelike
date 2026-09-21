@@ -157,14 +157,14 @@ src/
 │   ├── voucher-sprite.ts        优惠券（单层，`voucher` 扫光 shader 没移植）
 │   ├── shaders/                 background / CRT / dissolve + 7 个叠加层（editions.generated.ts）
 │   └── scenes/RunScene.ts       整局：手牌 / 小丑区 / 商店 / 收益明细
-└── tools/                    八个生成器 + 共用的 Lua 表解析器
+└── tools/                    八个生成器 + 共用的 Lua 表解析器 + 实机对拍的两个脚本
 ```
 
 ## 命令
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 884 个测试，必须全绿（含 13 条 shader 编译检查）
+npm test            # 889 个测试，必须全绿（含 13 条 shader 编译检查、5 条实机真值）
 npm run test:slow   # 60 个 seed 量墙（约 30 秒，改了内容或 bot 之后跑）
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
@@ -184,6 +184,17 @@ node tools/gen-edition-shaders.mjs   # 这个读的是 资源/shaders/*.fs，不
 ```
 
 七个生成器共用 `tools/lua-table.mjs` 的 Lua 表解析器。
+
+实机对拍（雷电模拟器里的正版，同一个 1.0.1o 移动版构建；操作坑见
+[21 号票](../../.scratch/balatro-复刻/issues/21-实机对拍通道.md)）：
+
+```bash
+node tools/emu.mjs shot out.png          # 截图（1280×720 缩略 + 原图）
+node tools/emu.mjs tap 445 268           # 坐标按缩略图
+npx vite-node tools/seed-probe.ts TESTSEED sel d:4C,5D,5C p:AC,QC,TC,9C,8C cash pack:1
+```
+
+读出来的真值钉在 `src/core/emulator-truth.test.ts`。**截下来的原作画面不入库。**
 
 **用 npm，不要用 pnpm。** pnpm 在本机装 `esbuild` 时稳定复现 `ERR_PNPM_EPERM`
 （硬链接 rename 被拒），换 npm 即可。

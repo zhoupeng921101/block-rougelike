@@ -1,0 +1,91 @@
+/**
+ * **实机对拍**：同一个 seed 在正版 Balatro 1.0.1o（移动版，雷电模拟器）里跑出来的真值。
+ *
+ * 这是复刻件第一批「整局层面」的外部真值——此前洗牌只有结构性验证（04 号票：
+ * 独立重推一遍 Fisher–Yates 逐位比对），而那条验证与复刻件共用「开局造牌的顺序」这个假设，
+ * 所以两边一起错也看得出来是绿的。这里的每个数都是从实机截图上读的。
+ *
+ * ## 怎么取的
+ *
+ * `tools/emu.mjs` 驱动模拟器（截图、点按、敲 seed），`tools/seed-probe.ts` 让复刻件按同一串动作跑。
+ * 口径：红牌组、白注、Options → New Run → Seeded Run，**档要先走完新手教程**——
+ * 教程会强制首个商店的两格、优惠券与两个跳过标签（`button_callbacks.lua:1982`），
+ * 还会给补充包加 $3（`card.lua:377`）。
+ *
+ * ## 红了怎么办
+ *
+ * 这些数不是快照，是**原作的行为**。红了说明复刻件偏离了原作，不要改期望值去迁就，
+ * 除非能证明截图读错了（读错的话在这里记一笔）。
+ */
+import { describe, expect, it } from 'vitest';
+
+import { cardId, pickCards, sortedIds } from './fixtures/card-id';
+import { Run } from './run';
+
+describe('TESTSEED（2026-09-21 实机）', () => {
+    const run = new Run('TESTSEED');
+
+    it('开局：Boss、优惠券、两个跳过标签', () => {
+        expect(run.bossKey).toBe('bl_head');
+        expect(run.currentVoucher).toBe('v_crystal_ball');
+        expect(run.blindTags).toEqual({ Small: 'tag_economy', Big: 'tag_investment' });
+    });
+
+    /**
+     * 首手曾经对不上：复刻件给的是 K♦ Q♥ 10♥ 9♣ 9♠ 5♣ 5♦ 4♣，5 张对、3 张错位。
+     * 原因是开局造牌的顺序——`game.lua:2584` 按 `花色..点数` 的**字符串**排序，
+     * 点数是 `2..9 A J K Q T`，而复刻件按 2 → A 造。见 `makeStandardDeck`。
+     */
+    it('小盲注的首手与之后 12 张抽牌', () => {
+        run.startRound();
+        const round = run.round!;
+        expect(sortedIds(round.hand)).toEqual(['AH', 'KH', 'QD', '9S', '9C', '5C', '5D', '4C']);
+
+        round.discard(pickCards(round.hand, '4C,5D,5C'));
+        expect(sortedIds(round.hand)).toEqual(['AH', 'KH', 'QD', 'TC', '9S', '9C', '8C', '7H']);
+
+        round.discard(pickCards(round.hand, 'AH,KH,QD,9S,7H'));
+        expect(sortedIds(round.hand)).toEqual(['AS', 'AD', 'QC', 'TC', 'TD', '9C', '8C', '2D']);
+
+        round.discard(pickCards(round.hand, 'AS,AD,TD,2D'));
+        expect(sortedIds(round.hand)).toEqual(['AC', 'KS', 'QC', 'TC', '9C', '8C', '3H', '2C']);
+    });
+
+    it('同花 83 × 4 = 332 过关，兑现 $6（盲注 $3 + 剩 3 手）', () => {
+        const round = run.round!;
+        round.play(pickCards(round.hand, 'AC,QC,TC,9C,8C'));
+        expect(round.chips).toBe(332);
+        expect(round.phase).toBe('won');
+
+        const { payout } = run.finishRound();
+        expect(payout.total).toBe(6);
+        expect(run.dollars).toBe(10);
+    });
+
+    it('第一个商店：两格小丑、两个包、优惠券', () => {
+        const shop = run.shop!;
+        expect(shop.items.map((i) => (i.kind === 'joker' ? [i.joker.center.name, i.joker.edition, i.cost] : i.kind)))
+            .toEqual([['Raised Fist', undefined, 5], ['Pareidolia', undefined, 5]]);
+        // 第一格包恒是小丑包、不掷点（`common_events.lua:1984`）；`_1` / `_2` 只差美术，走全局流，不断言
+        expect(shop.packs.map((p) => p?.key.replace(/_\d$/, ''))).toEqual(['p_buffoon_normal', 'p_standard_jumbo']);
+        expect(shop.vouchers.map((v) => v.key)).toEqual(['v_crystal_ball']);
+    });
+
+    /** 标准包的账是全局最绕的一条（`stdset` → `Enhancedsta` → `frontsta` → `standard_edition` → `stdseal` → `stdsealtype`） */
+    it('Jumbo Standard 包的 5 张：点数、强化、蜡封', () => {
+        const open = run.buyAndOpenPack(1);
+        expect(run.dollars).toBe(4);
+        expect(
+            open.cards.map((c) => {
+                if (c.kind !== 'card') return c.kind;
+                return [cardId(c.card), c.card.enhancement, c.card.edition ?? null, c.card.seal ?? null];
+            }),
+        ).toEqual([
+            ['9D', null, null, null],
+            ['6S', 'm_bonus', null, null],
+            ['TH', 'm_steel', null, null],
+            ['JC', null, null, null],
+            ['TS', null, null, 'Purple'],
+        ]);
+    });
+});

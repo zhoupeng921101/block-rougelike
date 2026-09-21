@@ -290,20 +290,22 @@ export const P_CARDS: Record<string, { suit: Suit; value: Value }> = (() => {
     return out;
 })();
 
-/** 一副标准 52 张，顺序照 `game.lua:302` 起的 `P_CARDS`（花色外层、点数内层）。 */
+/**
+ * 一副标准 52 张，**造牌顺序照 `game.lua:2584`**：`card_protos` 按 `花色字母..点数字母`
+ * 的字符串排序后才逐张 `card_from_control`，所以 `sort_id`（`pseudoshuffle` 的规范序）是
+ * `C2..C9, CA, CJ, CK, CQ, CT, D2, …` 的字节序，**不是**「2 到 A」。
+ *
+ * 写成自然序时，同 seed 的洗牌结构完全对、只是规范序里 T/J/Q/K/A 五个位置的牌不同——
+ * 结构性验证（04 号票）与它共用同一个假设，所以看不出来。模拟器实机首手才抓到：
+ * `TESTSEED` 实机是 A♥ K♥ Q♦ 9♠ 9♣ 5♣ 5♦ 4♣，自然序给的是 K♦ Q♥ 10♥ ……
+ */
 export function makeStandardDeck(): Card[] {
     const suits: Suit[] = ['Clubs', 'Diamonds', 'Hearts', 'Spades'];
-    const values: Value[] = [
-        '2', '3', '4', '5', '6', '7', '8', '9', '10',
-        'Jack', 'Queen', 'King', 'Ace',
-    ];
-    const deck: Card[] = [];
-    for (const suit of suits) {
-        for (const value of values) {
-            deck.push(makeCard(cardKey(suit, value), suit, value));
-        }
-    }
-    return deck;
+    const values = Object.keys(VALUE_KEY) as Value[];
+    const protos = suits.flatMap((suit) => values.map((value) => ({ suit, value })));
+    const sortKey = (p: { suit: Suit; value: Value }) => SUIT_LETTER[p.suit] + VALUE_KEY[p.value];
+    protos.sort((a, b) => (sortKey(a) < sortKey(b) ? -1 : sortKey(a) > sortKey(b) ? 1 : 0));
+    return protos.map(({ suit, value }) => makeCard(cardKey(suit, value), suit, value));
 }
 
 /**
