@@ -26,7 +26,9 @@
  *
  * - **模拟只看一手**：弃了之后下一手能凑出什么，不往更远看；模拟的估分也不算小丑
  * - **默认不存利息、不重掷**：参数有（`Economy`），但实测都不划算，见那一节
- * - **不跳盲注、不卖小丑换钱**
+ * - **默认不跳盲注**：策略有（`PickyOptions.skip`），但实测不划算，见 `depth.slow.test.ts`。
+ *   标签送的包它会挑（盲注选择界面上，见 `blindSelect`）
+ * - **不卖小丑换钱**
  * - **与原作的一处差异它绕不开**：复刻件开奥秘包不会发手牌，
  *   包里的塔罗是**拿进消耗品区**而不是当场用。所以格子满了就挑不了——
  *   原作里没有这个限制。这是 Run 层的偏差，不是 bot 的
@@ -737,6 +739,11 @@ function packScore(run: Run, index: number): number {
 
 function openPack(run: Run, index: number): void {
     run.buyAndOpenPack(index);
+    pickFromOpenPack(run);
+}
+
+/** 挑开着的包里的牌，挑不动就跳过。商店的包与标签送的包共用 */
+function pickFromOpenPack(run: Run): void {
     let guard = 0;
     while (run.openPack && guard++ < 10) {
         let bestIdx = -1;
@@ -875,12 +882,30 @@ function buyJokers(run: Run): void {
 /**
  * 拿这个 bot 从头跑到死。返回形状与 `greedyRun` 相同，好并排比。
  */
+/**
+ * 盲注选择界面：先把标签送的包挑完（一个关掉，下一个开包标签接着开），
+ * 再按 `skipPolicy` 决定跳不跳。跳过之后又可能送包，所以是个循环。
+ */
+function blindSelect(run: Run): void {
+    let guard = 0;
+    while (run.openPack && guard++ < 10) pickFromOpenPack(run);
+    while (run.canSkipBlind && guard++ < 20) {
+        const type = run.blindKind === 'small' ? 'Small' : 'Big';
+        if (!skipPolicy(run, run.blindTags[type])) break;
+        run.skipBlind();
+        while (run.openPack && guard++ < 30) pickFromOpenPack(run);
+        tidyConsumablesInShop(run);
+    }
+}
+
 export function pickyRun(run: Run, options: PickyOptions = {}): GreedyRun {
     banned = options.bannedJokers ?? NONE;
     policy = { ...DEFAULT_ECONOMY, ...options.economy };
+    skipPolicy = options.skip ?? NEVER_SKIP;
     try {
         let guard = 0;
         while (guard++ < 60) {
+            blindSelect(run);
             const round = run.startRound();
             playRound(run, round);
             if (round.phase !== 'won') break;
@@ -890,6 +915,7 @@ export function pickyRun(run: Run, options: PickyOptions = {}): GreedyRun {
     } finally {
         banned = NONE;
         policy = DEFAULT_ECONOMY;
+        skipPolicy = NEVER_SKIP;
     }
     return {
         ante: run.ante,
@@ -908,7 +934,15 @@ export type PickyOptions = {
     bannedJokers?: ReadonlySet<string>;
     /** 存利息的参数。不给就用 `DEFAULT_ECONOMY` */
     economy?: Partial<Economy>;
+    /** 这一格（小 / 大盲注）跳不跳：看它给的标签。不给就不跳 */
+    skip?: SkipPolicy;
 };
+
+/** 跳过策略：看这一格给的标签决定跳不跳 */
+export type SkipPolicy = (run: Run, tagKey: string) => boolean;
+const NEVER_SKIP: SkipPolicy = () => false;
+/** 当前这一局的跳过策略。与 `banned` / `policy` 同一个理由做成模块级变量 */
+let skipPolicy: SkipPolicy = NEVER_SKIP;
 
 const NONE: ReadonlySet<string> = new Set();
 /**

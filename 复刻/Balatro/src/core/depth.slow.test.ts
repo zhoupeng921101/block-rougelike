@@ -127,4 +127,20 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
         expect(mean(flat25)).toBe(2.933);
         expect(mean(late25)).toBe(4.1);
     });
+
+    /**
+     * **跳过盲注对挑牌 bot 也不划算**（18 号票第 4 步），与存利息同一个原因：
+     * bot 的瓶颈是战力，跳过就少一次商店、少一关的奖金，标签补不回来。
+     *
+     * 240 seed 上试过七种：全跳 2.517 起、只为好标签跳 3.575、Ante 2 起才跳 3.717、
+     * 只跳小盲注 3.833、只为开包标签跳 3.971……**最好的是「上一关赢了 5 倍以上才跳」4.021 对
+     * 不跳 4.000，但平均每局只跳 0.1 次**，在噪声里。所以默认不跳，这两条是代表。
+     */
+    it('跳过盲注：全跳 2.233，只为开包标签跳 4.083，都不比不跳（4.1）好', () => {
+        const PACKS = new Set(['tag_charm', 'tag_meteor', 'tag_buffoon', 'tag_ethereal', 'tag_standard']);
+        const all = SEEDS.map((s) => pickyRun(fresh(s), { skip: () => true }));
+        const packs = SEEDS.map((s) => pickyRun(fresh(s), { skip: (_run, k) => PACKS.has(k) }));
+        expect(mean(all)).toBe(2.233);
+        expect(mean(packs)).toBe(4.083);
+    });
 });
