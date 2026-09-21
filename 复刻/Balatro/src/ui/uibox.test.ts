@@ -7,6 +7,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
+import { cardAreas } from '../game/areas';
+import { cardAreaBox } from './definitions/card-area';
 import { makeHudState, createHud } from './definitions/hud';
 import oracle from './oracle.generated.json';
 import { UIBox, type UIElement } from './uibox';
@@ -44,6 +46,23 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
         });
         expect([box.T.x, box.T.y, box.T.w, box.T.h].map((v) => Number(v.toFixed(9))))
             .toEqual(expected.box.map((v) => Number(v.toFixed(9))));
+        expectSame(dump(box), expected.elements);
+    });
+
+    /** `area_uibox`：底板那行 `mid = true`，UIBox 以它居中对齐到区域，计数行挂在下面 */
+    const areas = cardAreas();
+    it.each([
+        ['area_jokers', areas.jokers, 'cl', 0, 5],
+        ['area_consumeables', areas.consumeables, 'cr', 0, 2],
+        ['area_hand', areas.hand, 'cm', 8, 8],
+        ['area_deck', areas.deck, 'cr', 44, 52],
+    ] as const)('%s：CardArea 的底框与计数', (name, area, align, count, limit) => {
+        const expected = cases.find((c) => c.name === name)!;
+        const box = new UIBox(cardAreaBox(area, { card_count: count, card_limit: limit }, align), {
+            align: 'cm',
+            offset: { x: 0, y: 0 },
+            major: { T: area },
+        });
         expectSame(dump(box), expected.elements);
     });
 });

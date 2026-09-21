@@ -337,6 +337,17 @@ export class UIBox implements Major {
         this.T.y = major.T.y + this.offset.y;
     }
 
+    /**
+     * major 挪了，盒子跟着挪（强绑定的 `move_with_major`：`T = major.T + role.offset`，offset 在对齐时就定了）。
+     * 例：手牌区上下滑动时，它身后的底框与「8/8」跟着走
+     */
+    followMajor(): void {
+        const major = this.config.major;
+        if (!major || !this.config.align || this.config.align === 'a') return;
+        this.T.x = major.T.x + this.offset.x;
+        this.T.y = major.T.y + this.offset.y;
+    }
+
     /** `moveable.lua:322` */
     private lrClamp(): void {
         const roomW = this.config.roomW ?? 21;

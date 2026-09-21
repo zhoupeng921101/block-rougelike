@@ -86,6 +86,10 @@ export class UIBoxView {
         this.build();
     }
 
+    setVisible(on: boolean): void {
+        this.container.setVisible(on);
+    }
+
     /** 文字按相机缩放后的实际像素栅格化，不然放大后是糊的 */
     setResolution(r: number): void {
         this.resolution = r;
@@ -159,6 +163,7 @@ export class UIBoxView {
 
     /** 每帧：同步绑定值、必要时重排，再按当前布局画一遍 */
     update(timeSeconds: number): void {
+        this.box.followMajor();
         let resized = false;
         for (const el of this.box.root.walk()) {
             const obj = el.config.object;

@@ -12,6 +12,7 @@ import type { GameObjects, Scene } from 'phaser';
 import type { Card, Suit } from '../core/card';
 import { ENHANCEMENT_CENTERS, isStone } from '../core/enhancements';
 import { CARD_H, CARD_W, toPx } from './coords';
+import { type Placed, cardShadowParallaxX } from './align-cards';
 import {
     CENTERS_ATLAS,
     DECK_ATLAS,
@@ -51,6 +52,11 @@ const SEAL_POS: Record<string, { x: number; y: number }> = {
     Blue: { x: 6, y: 4 },
 };
 
+/** `card.lua:58`：卡的 `T.scale` */
+const CARD_SCALE = 0.95;
+/** `card.lua:4369`：手牌区里的 `shadow_height`（出牌区选中、拖拽时 0.35，这里先只做 0.1） */
+const SHADOW_HEIGHT = 0.1;
+
 export function atlasPos(card: Card): { x: number; y: number } {
     return { x: VALUE_COL[card.base.value], y: SUIT_ROW[card.base.suit] };
 }
@@ -80,6 +86,13 @@ export class CardSprite {
      * 盖牌**不改任何数值**——牌还能选、还照常计分，玩家只是看不见它是什么。
      */
     readonly back: GameObjects.Shader;
+    /**
+     * 阴影层（`card.lua:4368`）：底板用 `dissolve` 的阴影模式再画一遍，往远离中线方向错开、缩小 2%。
+     * 原作画的是 `G.shared_shadow`（正面朝上是底板、朝下是牌背，两者外形一样），这里恒用底板
+     */
+    private readonly shadow: GameObjects.Shader;
+    /** 上一次摆放的 x（tile）。`align_cards` 的正弦相位与阴影视差读的是上一帧的 `T.x` */
+    prevX = 0;
     /** 选中的牌抬起来。`G.HIGHLIGHT_H` 在原作里是 tile 量。 */
     highlighted = false;
     /** 被 debuff 的牌画得暗一点。逻辑层的 `card.debuff` 是真状态，不是显示标记 */
@@ -140,6 +153,21 @@ export class CardSprite {
         });
         this.back.setDepth(2);
 
+        this.shadow = makeShaderQuad(scene, {
+            name: `shadow_${card.key}_${card.unique_val}`,
+            textureKey: 'centers',
+            atlas: CENTERS_ATLAS,
+            pos: basePos,
+            cardTime, w, h, tilt: () => 0,
+            shadow: true,
+        });
+        this.shadow.setDepth(-1);
+
+        // `card.lua:58`：**所有卡的 `T.scale` 都是 0.95**，以中心缩放。阴影再 × (1 − 0.2·shadow_height)。
+        // 在这里设一次，`place` 不碰缩放——计分时的弹一下是缩放补间，每帧覆盖会把它吃掉
+        for (const q of this.allQuads()) q.setScale(CARD_SCALE);
+        this.shadow.setScale(CARD_SCALE * (1 - 0.2 * SHADOW_HEIGHT));
+
         // `Shader` 没有 Tint 组件、`setAlpha` 是 NOOP，所以「藏起来」只能靠
         // `setVisible`——它来自 Visible 组件，是 Shader 混入的那 8 个之一
         this.applyFacing();
@@ -164,12 +192,35 @@ export class CardSprite {
      */
     layout(offsetXTiles: number, baseYTiles: number): void {
         const liftTiles = this.highlighted ? 0.6 : 0;
-        const x = toPx(this.card.T.x + offsetXTiles) + toPx(CARD_W) / 2;
-        const y = toPx(baseYTiles - liftTiles) + toPx(CARD_H) / 2;
-        this.baseLayers.setPosition(x, y);
-        this.frontLayers.setPosition(x, y);
-        this.seal?.setPosition(x, y);
-        this.back.setPosition(x, y);
+        this.place({ x: this.card.T.x + offsetXTiles, y: baseYTiles - liftTiles, r: 0 }, 0);
+    }
+
+    /**
+     * 按 `align_cards` 算出的目标摆（22 号票）：`p` 是左上角（tile）与转角，`index` 定深度——
+     * 后面的牌压前面的牌，全部阴影压在全部卡牌之下（`CardArea:draw` 先画完 'shadow' 层再画 'card' 层）。
+     */
+    place(p: Placed, index: number): void {
+        const cx = toPx(p.x + CARD_W / 2);
+        const cy = toPx(p.y + CARD_H / 2);
+        const d = 10 + index;
+        this.baseLayers.setDepth(d);
+        this.frontLayers.setDepth(d + 0.1);
+        this.seal?.setDepth(d + 0.2);
+        this.back.setDepth(d + 0.3);
+        for (const layer of [this.baseLayers, this.frontLayers]) {
+            layer.setPosition(cx, cy);
+            layer.setRotation(p.r);
+        }
+        this.seal?.setPosition(cx, cy);
+        this.seal?.setRotation(p.r);
+        this.back.setPosition(cx, cy).setRotation(p.r);
+        // `sprite.lua:76`：阴影 VT 挪 `-shadow_parrallax * shadow_height`（y 分量恒 -1.5）
+        const sh = SHADOW_HEIGHT;
+        const spx = cardShadowParallaxX(p.x, CARD_W);
+        this.shadow.setDepth(1 + index * 0.001)
+            .setPosition(toPx(p.x + CARD_W / 2 - spx * sh), toPx(p.y + CARD_H / 2 + 1.5 * sh))
+            .setRotation(p.r);
+        this.prevX = p.x;
         this.applyFacing();
     }
 
@@ -200,7 +251,7 @@ export class CardSprite {
         for (const layer of this.allQuads()) {
             this.scene.tweens.add({
                 targets: layer,
-                scaleX: 1.18, scaleY: 1.18,
+                scaleX: CARD_SCALE * 1.18, scaleY: CARD_SCALE * 1.18,
                 duration: 90, yoyo: true, ease: 'Quad.easeOut',
             });
         }
@@ -216,7 +267,7 @@ export class CardSprite {
     }
 
     private allQuads(): GameObjects.Shader[] {
-        return [...this.baseLayers.quads, ...this.frontLayers.quads, ...(this.seal?.quads ?? []), this.back];
+        return [...this.baseLayers.quads, ...this.frontLayers.quads, ...(this.seal?.quads ?? []), this.back, this.shadow];
     }
 
     /** 让 `scene` 字段不被 noUnusedParameters 判死，同时留个取用口 */

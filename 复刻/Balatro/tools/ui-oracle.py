@@ -142,6 +142,39 @@ def main():
     ''')
     cases.append({'name': 'hud', **to_py(lua.eval('DUMP(HUD)'))})
 
+    # cardarea.lua:289 的 area_uibox，定义原文照抄；区域位置按 set_screen_positions 算
+    lua.execute(r'''
+      function AREA_BOX(x, y, w, h, align, count, limit)
+        local self = Moveable{T = {x = x, y = y, w = w, h = h}}
+        self.config = {card_count = count, card_limit = limit}
+        local card_count = {n=G.UIT.R, config={align = align, padding = 0.03, no_fill = true}, nodes={
+            {n=G.UIT.B, config={w = 0.1,h=0.1}},
+            {n=G.UIT.T, config={ref_table = self.config, ref_value = 'card_count', scale = 0.3, lang = G.LANGUAGES['en-us'], colour = G.C.WHITE}},
+            {n=G.UIT.T, config={text = '/', scale = 0.3, lang = G.LANGUAGES['en-us'], colour = G.C.WHITE}},
+            {n=G.UIT.T, config={ref_table = self.config, ref_value = 'card_limit', scale = 0.3, lang = G.LANGUAGES['en-us'], colour = G.C.WHITE}},
+            {n=G.UIT.B, config={w = 0.1,h=0.1}}
+        }}
+        return UIBox{
+          definition = {n=G.UIT.ROOT, config = {align = 'cm', colour = G.C.CLEAR}, nodes={
+            {n=G.UIT.R, config={minw = self.T.w,minh = self.T.h,align = "cm", padding = 0.1, mid = true, r = 0.1, colour = {0,0,0,0.1}, ref_table = self}, nodes={}},
+            card_count
+          }},
+          config = { align = 'cm', offset = {x=0,y=0}, major = self, parent = self}
+        }
+      end
+      local CW, CH = 2.4*35/41, 2.4*47/41
+      local hw, hh = 6*CW, 0.95*CH
+      local hx, hy = 21 - hw - 3.55, 11.2 - hh
+      local jw = 4.9*CW
+      AREA_JOKERS = AREA_BOX(hx - 0.1, 0, jw, 0.95*CH, 'cl', 0, 5)
+      AREA_CONS = AREA_BOX(hx - 0.1 + jw + 0.8, 0, 2.3*CW, 0.95*CH, 'cr', 0, 2)
+      AREA_HAND = AREA_BOX(hx, hy, hw, hh, 'cm', 8, 8)
+      AREA_DECK = AREA_BOX(21 - 1.1*CW - 0.5, 11.2 - 0.95*CH, 1.1*CW, 0.95*CH, 'cr', 44, 52)
+    ''')
+    for name, var in [('area_jokers', 'AREA_JOKERS'), ('area_consumeables', 'AREA_CONS'),
+                      ('area_hand', 'AREA_HAND'), ('area_deck', 'AREA_DECK')]:
+        cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 

@@ -46,6 +46,8 @@ export type QuadOptions = {
      * 顶点部分全部共用 `DISSOLVE_VERT`（7 个 `.fs` 的顶点段与 `dissolve.fs` 逐字节相同）
      */
     shader?: 'dissolve' | OverlayShader;
+    /** `dissolve.fs` 的阴影模式：黑色、三成透明度（`Card:draw` 的 `'shadow'` 层） */
+    shadow?: boolean;
 };
 
 /**
@@ -78,7 +80,7 @@ export function makeShaderQuad(scene: Scene, opts: QuadOptions): GameObjects.Sha
                 setUniform('time', opts.cardTime);
                 setUniform('texture_details', [pos.x, pos.y, atlas.frameW, atlas.frameH]);
                 setUniform('image_details', [atlas.w, atlas.h]);
-                setUniform('shadow', false);
+                setUniform('shadow', opts.shadow ?? false);
                 setUniform('burn_colour_1', [0, 0, 0, 0]);
                 setUniform('burn_colour_2', [0, 0, 0, 0]);
                 if (shader === 'dissolve') {
@@ -92,10 +94,14 @@ export function makeShaderQuad(scene: Scene, opts: QuadOptions): GameObjects.Sha
                 // 而 `TILESCALE*TILESIZE*CANV_SCALE` 正是「每 tile 多少像素」，
                 // 所以 `mouse_offset` 的量纲是「tile ÷ mouse_damping」，
                 // `position()` 里那串手调常数原样成立。
+                //
+                // **用屏幕坐标**：Phaser 喂给顶点着色器的 quad 顶点已经过相机变换（屏幕像素），
+                // 所以光标也得是屏幕像素、每 tile 像素也得乘上相机缩放（22 号票改了相机之后）
                 const p = scene.input.activePointer;
-                setUniform('mouse_screen_pos', [p.worldX, p.worldY]);
+                const zoom = scene.cameras.main.zoom;
+                setUniform('mouse_screen_pos', [p.x, p.y]);
                 setUniform('hovering', opts.tilt());
-                setUniform('screen_scale', PX_PER_TILE * MOUSE_DAMPING);
+                setUniform('screen_scale', PX_PER_TILE * zoom * MOUSE_DAMPING);
                 setUniform('uScreenSize', [scene.scale.width, scene.scale.height]);
             },
         },
@@ -182,6 +188,15 @@ export class LayeredQuad {
 
     setPosition(x: number, y: number): void {
         for (const q of this.quads) q.setPosition(x, y);
+    }
+
+    setRotation(r: number): void {
+        for (const q of this.quads) q.setRotation(r);
+    }
+
+    /** 底层放在 `depth`，叠加层依次 +0.001（整张卡要能按下标整体排深度） */
+    setDepth(depth: number): void {
+        this.quads.forEach((q, i) => q.setDepth(depth + 0.001 * i));
     }
 
     setVisible(v: boolean): void {

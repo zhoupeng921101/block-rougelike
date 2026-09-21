@@ -36,6 +36,9 @@ import { makeRoomJuice, stepRoomJuice } from '../room-juice';
 import { applyBlindColours } from '../../ui/blind-colour';
 import { C, mixColours, setColour } from '../../ui/colours';
 import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
+import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
+import { cardAreas } from '../areas';
+import { alignHand, alignPlay } from '../align-cards';
 import { numberFormat } from '../../ui/format';
 import { UIBox } from '../../ui/uibox';
 import { RED_DECK } from '../../core/run';
@@ -45,12 +48,6 @@ import { VoucherSprite } from '../voucher-sprite';
 import { BACKGROUND_COLOURS, BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
 import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
 
-/** 手牌区基线，tile 单位。牌高 ≈2.75 tile，画布高 11.2 tile */
-const HAND_Y_TILES = 7.0;
-/** 手牌左边距，tile */
-const HAND_X_TILES = 1.2;
-/** 打出区的基线，tile。在手牌上方。 */
-const PLAY_Y_TILES = 4.0;
 /** 小丑区，画在最上面一排 */
 const JOKER_Y_TILES = 0.5;
 const JOKER_X_TILES = 9.0;
@@ -124,6 +121,11 @@ export class RunScene extends Scene {
     /** 左侧面板（`create_UIBox_HUD`，22 号票）。`hudState` 是它绑定的 `G.GAME` 同形对象 */
     private hudState!: HudState;
     private hudView!: UIBoxView;
+    /** 四个 CardArea 身后的底框与计数（`cardarea.lua:288`） */
+    /** 已经打到出牌区的牌（`G.play`），逐帧按 `alignPlay` 摆；其余手牌按 `alignHand` */
+    private readonly inPlay = new Set<CardSprite>();
+    private readonly areas = cardAreas();
+    private areaViews: Array<{ view: UIBoxView; count: AreaCount; key: 'jokers' | 'consumeables' | 'hand' | 'deck' }> = [];
     /** 背景与 CRT：铺满可视区，窗口变了跟着相机重摆（`applyRoomCamera`） */
     private readonly fullscreenQuads: GameObjects.Shader[] = [];
     /** 正在播放出牌动画时不接受输入 */
@@ -215,14 +217,27 @@ export class RunScene extends Scene {
         });
         this.hudView = new UIBoxView(this, hudBox, 40);
 
+        const areas = this.areas;
+        const areaAlign = { jokers: 'cl', consumeables: 'cr', hand: 'cm', deck: 'cr' } as const;
+        for (const key of ['jokers', 'consumeables', 'hand', 'deck'] as const) {
+            const count: AreaCount = { card_count: 0, card_limit: 0 };
+            const box = new UIBox(cardAreaBox(areas[key], count, areaAlign[key]), {
+                align: 'cm',
+                offset: { x: 0, y: 0 },
+                major: { T: areas[key] },
+            });
+            this.areaViews.push({ view: new UIBoxView(this, box, -5), count, key });
+        }
+
         // 下面这些调试文字与按钮是 UI 直译之前的占位，挪到左侧面板右边；等对应的原作 UI 直译过来再删
-        this.hud = this.add.text(toPx(5.0), toPx(0.5), '', {
+        this.hud = this.add.text(toPx(5.0), toPx(2.75), '', {
             fontFamily: 'monospace', fontSize: 22, color: '#e8e8e8', lineSpacing: 6,
         });
+        // 牌型预览已经在左侧面板里了（`hand_text_area`），这行调试字不再显示
         this.handPreview = this.add.text(toPx(5.0), toPx(3.1), '', {
             fontFamily: 'monospace', fontSize: 26, color: '#ffd76e',
-        });
-        this.jokerInfo = this.add.text(toPx(5.0), toPx(2.4), '', {
+        }).setVisible(false);
+        this.jokerInfo = this.add.text(toPx(5.0), toPx(3.55), '', {
             fontFamily: 'monospace', fontSize: 18, color: '#9fd6ff',
         });
         this.message = this.add.text(CANVAS_W / 2, CANVAS_H / 2, '', {
@@ -768,7 +783,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             func: () => {
                 for (const sp of sprites) {
                     sp.highlighted = false;
-                    sp.layout(HAND_X_TILES, PLAY_Y_TILES);
+                    this.inPlay.add(sp);
                 }
                 this.sound.play('cardSlide2', { volume: 0.4 });
                 this.refresh(
@@ -858,6 +873,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     private rebuildHand(): void {
         for (const s of this.sprites) s.destroy();
         this.sprites = [];
+        this.inPlay.clear();
 
         const round = this.round;
         if (!round) {
@@ -874,10 +890,35 @@ ${String(e instanceof Error ? e.message : e)}`)
     }
 
     private layout(): void {
-        for (const s of this.sprites) {
-            s.highlighted = this.selected.has(s.card);
-            s.layout(HAND_X_TILES, HAND_Y_TILES);
-        }
+        for (const s of this.sprites) s.highlighted = this.selected.has(s.card);
+    }
+
+    /**
+     * `cardarea.lua:236`：选牌时手牌区整体上移 1.9 tile，出牌结算时滑回底边，按 `15·dt` 缓动。
+     * 手牌区身后的底框与计数以它为 major，跟着走（`UIBox.followMajor`）
+     */
+    private slideHand(dt: number): void {
+        const round = this.round;
+        const selecting = this.run.state === 'playing' && round?.phase === 'selecting' && !this.animating && !this.run.openPack;
+        const hand = this.areas.hand;
+        const desired = TILE_H - hand.h - 1.9 * (selecting ? 1 : 0);
+        hand.y = 15 * dt * desired + (1 - 15 * dt) * hand.y;
+        if (Math.abs(desired - hand.y) < 0.01) hand.y = desired;
+    }
+
+    /**
+     * 逐帧摆牌（22 号票）：手里的按 `align_cards` 的手牌分支（扇形、弧形、转角、微动），
+     * 打出去的按出牌区分支。上限用手牌上限（`temp_limit` 缺省就是 `card_limit`）
+     */
+    private placeCards(real: number): void {
+        const round = this.round;
+        if (!round) return;
+        const hand = this.sprites.filter((s) => !this.inPlay.has(s));
+        alignHand(this.areas.hand, hand.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX })), round.handLimit, real)
+            .forEach((p, i) => hand[i]!.place(p, i));
+        const played = this.sprites.filter((s) => this.inPlay.has(s));
+        alignPlay(this.areas.play, played.map((s) => ({ highlighted: false, prevX: s.prevX })), 5)
+            .forEach((p, i) => played[i]!.place(p, 20 + i));
     }
 
     private toggle(card: Card): void {
@@ -1036,6 +1077,28 @@ ${String(e instanceof Error ? e.message : e)}`)
             { x: p.x / P, y: p.y / P }, { x: this.mapping.roomX, y: this.mapping.roomY }));
         this.syncHud();
         this.hudView.update(time / 1000);
+        this.syncAreas();
+        for (const a of this.areaViews) a.view.update(time / 1000);
+        this.slideHand(delta / 1000);
+        this.placeCards(time / 1000);
+    }
+
+    /**
+     * 区域计数同步，以及 `cardarea.lua:283` 的隐藏规则：手牌区在商店、开包、回合结算、选盲注时不画框。
+     * 牌堆的上限是整副牌的张数（原作 `G.deck.config.card_limit` 随加牌增长）。
+     */
+    private syncAreas(): void {
+        const run = this.run;
+        const round = this.round;
+        for (const a of this.areaViews) {
+            const c = a.count;
+            if (a.key === 'jokers') [c.card_count, c.card_limit] = [run.jokers.length, run.jokerSlots];
+            else if (a.key === 'consumeables') [c.card_count, c.card_limit] = [run.consumables.length, run.consumableSlots];
+            else if (a.key === 'hand') {
+                [c.card_count, c.card_limit] = [round?.hand.length ?? 0, round?.handLimit ?? 8];
+                a.view.setVisible(run.state === 'playing' && round?.phase === 'selecting' && !run.openPack);
+            } else [c.card_count, c.card_limit] = [round ? round.deck.length : run.fullDeck.length, run.fullDeck.length];
+        }
     }
 
     /**
@@ -1120,6 +1183,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         const { width, height } = this.scale;
         this.mapping = roomMapping(width, height);
         this.hudView?.setResolution(this.mapping.pxPerTile / toPx(1));
+        for (const a of this.areaViews) a.view.setResolution(this.mapping.pxPerTile / toPx(1));
         this.placeRoom({ x: this.mapping.roomX, y: this.mapping.roomY, r: 0 });
     }
 
