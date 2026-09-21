@@ -76,6 +76,8 @@ export class JokerSprite {
         };
         this.layers = new LayeredQuad(scene, quad, 2, { edition: joker.edition });
         this.placed = new PlacedLayers(scene, this.layers, quad, w / toPx(1), h / toPx(1));
+        // 传奇小丑与 Hologram 的 `floating_sprite`（`card.lua:205`）。Hologram 原作用 `hologram` shader 画它，那个还没移植，先按 dissolve
+        if (joker.center.soul_pos) this.placed.addFloating(scene, 'soul_pos', { ...quad, pos: joker.center.soul_pos });
 
         makeClickable(this.shader, w, h, {
             onClick: () => this.onClick(this.joker),

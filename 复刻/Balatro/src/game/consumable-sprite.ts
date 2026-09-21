@@ -11,7 +11,7 @@
 
 import type { GameObjects, Scene } from 'phaser';
 
-import { TAROT_ATLAS } from '../core/atlas';
+import { CENTERS_ATLAS, TAROT_ATLAS } from '../core/atlas';
 import type { Consumable } from '../core/consumables';
 import type { Placed } from './align-cards';
 import { CARD_H, CARD_W, toPx } from './coords';
@@ -49,6 +49,10 @@ export class ConsumableSprite {
         };
         this.layers = new LayeredQuad(scene, quad, 2, { edition: consumable.edition, set: consumable.center.set });
         this.placed = new PlacedLayers(scene, this.layers, quad, CARD_W, CARD_H);
+        // The Soul 的宝石是 `G.shared_soul`：`centers` 图集里 `P_CENTERS.soul.pos`（`game.lua:175`）
+        if (consumable.key === 'c_soul') {
+            this.placed.addFloating(scene, 'soul', { ...quad, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: { x: 0, y: 1 } });
+        }
 
         makeClickable(this.shader, this.w, this.h, {
             onClick: () => this.onClick(this.consumable),

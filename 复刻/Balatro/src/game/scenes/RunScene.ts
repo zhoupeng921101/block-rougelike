@@ -32,8 +32,11 @@ import { ConsumableSprite } from '../consumable-sprite';
 import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, TILE_H, TILE_W, roomMapping, toPx } from '../coords';
 import { UIBoxView, UI_FONT_FAMILY } from '../ui-draw';
 import { makeRoomJuice, stepRoomJuice } from '../room-juice';
+import { Particles } from '../particles';
+import type { OpenPack } from '../../core/booster-open';
+import type { BoosterKind } from '../../core/boosters';
 import { type BackgroundColours, applyBlindColours, backgroundFor, packMainColour } from '../../ui/blind-colour';
-import { C, mixColours, setColour } from '../../ui/colours';
+import { C, HEX, lighten, mixColours, setColour } from '../../ui/colours';
 import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
 import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
@@ -103,6 +106,8 @@ export class RunScene extends Scene {
     private packUi: { view: UIBoxView; area: PackCardsObject; rect: Rect } | null = null;
     /** 标准包里扑克牌的版本 / 蜡封文字标记（贴图没移植） */
     private packLabels: GameObjects.Text[] = [];
+    /** 开包的粒子（`booster_pack_sparkles` / `_stars` / `_meteors`）：跟着包走，挑牌重建界面时不重开 */
+    private packFx: { pack: OpenPack; systems: Particles[] } | null = null;
     /** 奥秘 / 幽灵包发下来的那手牌（`run.packHand`）。点选进 `selected`，就是包里塔罗的目标 */
     private packHandSprites: CardSprite[] = [];
     /** 商店里那些消耗品格。与 `shopSprites` 分开存，两者的类型不一样 */
@@ -654,7 +659,13 @@ ${String(e instanceof Error ? e.message : e)}`)
     private rebuildPackCards(): void {
         this.clearPackCards();
         const pack = this.run.openPack;
+        // `end_consumeable`：粒子淡出 1 秒后移除
+        if (this.packFx && this.packFx.pack !== pack) {
+            for (const p of this.packFx.systems) p.fadeOutAndRemove(1);
+            this.packFx = null;
+        }
         if (!pack) return;
+        if (!this.packFx) this.packFx = { pack, systems: this.makePackParticles(pack.center.kind) };
 
         const area = packCardsArea(pack.center.kind, pack.center.extra);
         const game = { pack_choices: pack.choicesLeft };
@@ -688,6 +699,30 @@ ${String(e instanceof Error ? e.message : e)}`)
         // 手牌区的开包分支（`cardarea.lua:441`）：发下来的牌抬到手牌区上方
         this.packHandSprites = (this.run.packHand ?? []).map((c) => new CardSprite(this, c, (card) => this.togglePackHand(card)));
         this.layoutPackCards();
+    }
+
+    /** `game.lua:3714` 起各 `update_*_pack` 里建的粒子。小丑包没有 */
+    private makePackParticles(kind: BoosterKind): Particles[] {
+        switch (kind) {
+            case 'Arcana':
+                return [new Particles(this, { timer: 0.015, scale: 0.2, initialize: true, lifespan: 1, speed: 1.1, padding: -1, fill: true,
+                    colours: [C.WHITE, lighten(C.PURPLE, 0.4), lighten(C.PURPLE, 0.2), lighten(C.GOLD, 0.2)] }).fadeIn()];
+            case 'Spectral':
+                return [new Particles(this, { timer: 0.015, scale: 0.1, initialize: true, lifespan: 3, speed: 0.2, padding: -1, fill: true,
+                    colours: [C.WHITE, lighten(C.GOLD, 0.2)] }).fadeIn()];
+            case 'Standard':
+                return [new Particles(this, { timer: 0.015, scale: 0.3, initialize: true, lifespan: 3, speed: 0.2, padding: -1, fill: true,
+                    colours: [C.BLACK, C.RED] }).fadeIn()];
+            case 'Celestial':
+                // 星星与流星都不淡入（没设 `fade_alpha`）；流星不 `fill`，从房间正中射出
+                return [
+                    new Particles(this, { timer: 0.07, scale: 0.1, initialize: true, lifespan: 15, speed: 0.1, padding: -4, fill: true,
+                        colours: [C.WHITE, HEX('a7d6e0'), HEX('fddca0')] }),
+                    new Particles(this, { timer: 2, scale: 0.05, lifespan: 1.5, speed: 4, colours: [C.WHITE] }),
+                ];
+            case 'Buffoon':
+                return [];
+        }
     }
 
     /** 点选开包时的手牌（`G.hand` 的 `highlight_limit` 是 5） */
