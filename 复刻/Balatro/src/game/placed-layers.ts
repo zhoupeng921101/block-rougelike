@@ -91,9 +91,9 @@ export class PlacedLayers {
         if (this.motion) this.motion.hovered = v;
     }
 
-    /** `juice_up`：计分、买下、用掉时弹一下 */
+    /** `Card:juice_up`：计分、买下、用掉时弹一下（参数是卡牌版的，内部 ×0.4） */
     juiceUp(amount?: number, rot?: number): void {
-        this.motion?.juiceUp(this.scene.time.now / 1000, amount, rot);
+        this.motion?.cardJuiceUp(this.scene.time.now / 1000, amount, rot);
     }
 
     private render(now: number, dt: number): void {

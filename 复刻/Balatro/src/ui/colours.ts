@@ -65,6 +65,23 @@ export const C = {
     L_BLACK: HEX('4f6367'),
     GREY: HEX('5f7377'),
     JOKER_GREY: HEX('bfc7d5'),
+    XMULT: HEX('FE5F55'),
+    PALE_GREEN: HEX('56a887'),
+    CHANCE: HEX('4BC292'),
+    VOUCHER: HEX('cb724c'),
+    BOOSTER: HEX('646eb7'),
+    /** 这两个每帧变（`game.lua:2735`），由 `tickColours` 写 */
+    EDITION: [1, 1, 1, 1] as Colour,
+    DARK_EDITION: [0, 0, 0, 1] as Colour,
+    ETERNAL: HEX('c75985'),
+    PERISHABLE: HEX('4f5da1'),
+    RENTAL: HEX('b18f43'),
+    SUITS: {
+        Hearts: HEX('FE5F55'),
+        Diamonds: HEX('FE5F55'),
+        Spades: HEX('374649'),
+        Clubs: HEX('424e54'),
+    } as Record<string, Colour>,
     DYN_UI: {
         MAIN: HEX('374244'),
         DARK: HEX('374244'),
@@ -93,11 +110,39 @@ export const C = {
         Boss: HEX('b44430'),
         won: HEX('4f6367'),
     },
+    SET: {
+        Default: HEX('cdd9dc'),
+        Enhanced: HEX('cdd9dc'),
+        Joker: HEX('424e54'),
+        Tarot: HEX('424e54'),
+        Planet: HEX('424e54'),
+        Spectral: HEX('424e54'),
+        Voucher: HEX('424e54'),
+    } as Record<string, Colour>,
     SECONDARY_SET: {
+        Default: HEX('9bb6bdFF'),
+        Enhanced: HEX('8389DDFF'),
+        Joker: HEX('708b91'),
+        Tarot: HEX('a782d1'),
         Planet: HEX('13afce'),
         Spectral: HEX('4584fa'),
+        Voucher: HEX('fd682b'),
+        Edition: HEX('4ca893'),
     },
+    RARITY: [HEX('009dff'), HEX('4BC292'), HEX('fe5f55'), HEX('b26cbb')],
+    /** 下标 0 是 `G.C.RED`（`globals.lua` 末尾 `HAND_LEVELS[0] = RED`），1..7 照原文 */
+    HAND_LEVELS: [HEX('FE5F55'), HEX('efefef'), HEX('95acff'), HEX('65efaf'), HEX('fae37e'), HEX('ffc052'), HEX('f87d75'), HEX('caa0ef')],
     /** `globals.lua` 末尾：`copy_table(G.C.BLUE)` / `copy_table(G.C.RED)`，是**副本**（会被火焰特效改） */
     UI_CHIPS: HEX('009dff'),
     UI_MULT: HEX('FE5F55'),
 };
+
+/** `Game:update` 里每帧改的两个颜色（`game.lua:2735`）。`t` 是 `G.TIMERS.REAL` */
+export function tickColours(t: number): void {
+    C.DARK_EDITION[0] = 0.6 + 0.2 * Math.sin(t * 1.3);
+    C.DARK_EDITION[2] = 0.6 + 0.2 * (1 - Math.sin(t * 1.3));
+    C.DARK_EDITION[1] = Math.min(C.DARK_EDITION[2], C.DARK_EDITION[0]);
+    C.EDITION[0] = 0.7 + 0.2 * (1 + Math.sin(t * 1.5 + 0));
+    C.EDITION[2] = 0.7 + 0.2 * (1 + Math.sin(t * 1.5 + 3));
+    C.EDITION[1] = 0.7 + 0.2 * (1 + Math.sin(t * 1.5 + 6));
+}

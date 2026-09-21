@@ -50,6 +50,16 @@ export class Motion {
         this.VT.scale = 1 - 0.6 * amount;
     }
 
+    /**
+     * `Card:juice_up(scale, rot_amount)`（`card.lua:4340`）：卡牌版先换算再交给 `Moveable.juice_up`——
+     * 幅度 ×0.4（缺省 0.11），转角 `0.4·rot` 随机正负（缺省 ±0.16）。随机走 `math.random`，不碰 RNG 流
+     */
+    cardJuiceUp(now: number, scale?: number, rotAmount?: number): void {
+        const sign = Math.random() > 0.5 ? 1 : -1;
+        const rot = rotAmount !== undefined ? 0.4 * sign * rotAmount : sign * 0.16;
+        this.juiceUp(now, scale !== undefined ? scale * 0.4 : 0.11, rot);
+    }
+
     /** 推进一帧。`realDt` 是真实帧间隔（秒），`now` 是 `G.TIMERS.REAL` */
     step(realDt: number, now: number): void {
         if (realDt <= 0) return;
