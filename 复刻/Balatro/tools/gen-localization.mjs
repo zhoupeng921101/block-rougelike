@@ -9,23 +9,31 @@ import { readFileSync, writeFileSync } from 'node:fs';
 
 const src = readFileSync(new URL('../../../参考/产物/Balatro_1.0.1o/本地化/en-us.lua', import.meta.url), 'utf8');
 const lines = src.split(/\r?\n/);
-const start = lines.findIndex((l) => /^\s*dictionary=\{\s*$/.test(l));
-if (start < 0) throw new Error('没找到 misc.dictionary');
-const indent = lines[start].match(/^\s*/)[0];
 
 // Lua 字符串里的转义：本文件只用到 \" \\ \n
 const unescape = (s) => s.replace(/\\(["\\n])/g, (_, c) => (c === 'n' ? '\n' : c));
 
-const dict = {};
-for (let i = start + 1; i < lines.length; i++) {
-    const line = lines[i];
-    if (line.startsWith(`${indent}},`) || line === `${indent}}`) break;
-    const m = line.match(/^\s*(?:\["((?:[^"\\]|\\.)*)"\]|([A-Za-z_]\w*))="((?:[^"\\]|\\.)*)",\s*$/);
-    if (m) dict[m[1] !== undefined ? unescape(m[1]) : m[2]] = unescape(m[3]);
+/** `misc.<name>={ ... }` 里的单行字符串条目 */
+function flatSection(name) {
+    const start = lines.findIndex((l) => l.trim() === `${name}={`);
+    if (start < 0) throw new Error(`没找到 misc.${name}`);
+    const indent = lines[start].match(/^\s*/)[0];
+    const out = {};
+    for (let i = start + 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.startsWith(`${indent}},`) || line === `${indent}}`) break;
+        const m = line.match(/^\s*(?:\["((?:[^"\\]|\\.)*)"\]|([A-Za-z_]\w*))="((?:[^"\\]|\\.)*)",\s*$/);
+        if (m) out[m[1] !== undefined ? unescape(m[1]) : m[2]] = unescape(m[3]);
+    }
+    return out;
 }
 
-const keys = Object.keys(dict).sort();
-const body = keys.map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(dict[k])},`).join('\n');
+const dict = flatSection('dictionary');
+// `localize{type = 'variable', key = ...}` 查的是 `misc.v_dictionary`（`#1#` 占位符原样保留）
+const vdict = flatSection('v_dictionary');
+const flat = (d) => Object.keys(d).sort().map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(d[k])},`).join('\n');
+const body = flat(dict);
+const vBody = flat(vdict);
 
 // descriptions.Blind：每个盲注的 name 与 text（debuff 描述，按行）。左上盲注面板要（`Blind:set_text`）
 const blindStart = lines.findIndex((l) => /^ {8}Blind=\{\s*$/.test(l));
@@ -50,7 +58,9 @@ writeFileSync(
     new URL('../src/ui/lang.generated.ts', import.meta.url),
     `// 由 tools/gen-localization.mjs 从 本地化/en-us.lua 生成，不要手改。\n` +
     `/** \`misc.dictionary\` 的纯字符串条目 */\nexport const DICTIONARY: Readonly<Record<string, string>> = {\n${body}\n};\n\n` +
+    `/** \`misc.v_dictionary\`：带 \`#1#\` 占位符的条目（\`localize{type = 'variable'}\`） */\n` +
+    `export const V_DICTIONARY: Readonly<Record<string, string>> = {\n${vBody}\n};\n\n` +
     `/** \`descriptions.Blind\`：盲注名与描述行（\`{#1#}\` 这类占位符原样保留） */\n` +
     `export const BLIND_TEXT: Readonly<Record<string, { name: string; text: string[] }>> = {\n${blindBody}\n};\n`,
 );
-console.log(`${keys.length} dictionary entries, ${Object.keys(blinds).length} blinds`);
+console.log(`${Object.keys(dict).length} dictionary, ${Object.keys(vdict).length} v_dictionary, ${Object.keys(blinds).length} blinds`);

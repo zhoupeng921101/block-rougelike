@@ -27,6 +27,9 @@ export type DynaTextConfig = {
     float?: boolean;
     bump?: boolean;
     pop_in?: number;
+    /** 绘制时整串再挪多少（字体像素，`text.lua:17` 的 `text_offset`），不进布局 */
+    x_offset?: number;
+    y_offset?: number;
     silent?: boolean;
 };
 

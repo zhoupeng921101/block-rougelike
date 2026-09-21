@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { cardAreas } from '../game/areas';
 import { type BlindSelectState, createBlindPrompt, createBlindSelect } from './definitions/blind-select';
 import { createButtons } from './definitions/buttons';
+import { type EvalRow, RoundEval, evalTimeline } from './definitions/round-eval';
 import { cardAreaBox } from './definitions/card-area';
 import { createHudBlind, makeHudBlindState } from './definitions/hud-blind';
 import { hudBlindFuncs } from './definitions/hud-blind-funcs';
@@ -137,5 +138,26 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
         });
         const prompt = new UIBox(createBlindPrompt(), { align: 'cm', offset: { x: 0, y: 0 }, major: hud.getById('row_blind')!.asMajor });
         expectSame(dump(prompt), cases.find((c) => c.name === 'blind_prompt')!.elements);
+    });
+
+    /**
+     * 回合结算：空面板挂在手牌区下（offset −7.8），按 `evaluate_round` 的事件顺序一行行 `add_child`，
+     * 最后单独一个 Cash Out 盒子。A 是 TESTSEED 第二局的实机局面，B 多一行利息
+     */
+    it.each([
+        ['a', [
+            { name: 'blind1', dollars: 3, blindPos: { x: 0, y: 0 }, chipText: '300', chips: 300 },
+            { name: 'hands', dollars: 2, disp: 2, per: 1 },
+        ]],
+        ['b', [
+            { name: 'blind1', dollars: 3, blindPos: { x: 0, y: 0 }, chipText: '300', chips: 300 },
+            { name: 'hands', dollars: 3, disp: 3, per: 1 },
+            { name: 'interest', dollars: 1, interestAmount: 1, interestCap: 25 },
+        ]],
+    ] as Array<[string, EvalRow[]]>)('round_eval_%s：create_UIBox_round_evaluation 与 add_round_eval_row', (k, rows) => {
+        const ev = new RoundEval({ T: areas.hand });
+        for (const { step } of evalTimeline(rows, 3)) ev.apply(step);
+        expectSame(dump(ev.box), cases.find((c) => c.name === `round_eval_${k}`)!.elements);
+        expectSame(dump(ev.cashOut!), cases.find((c) => c.name === `cash_out_${k}`)!.elements);
     });
 });

@@ -237,20 +237,8 @@ export class UIBox implements Major {
         readonly config: UIBoxConfig = {},
         readonly funcs: UIFuncs = {},
     ) {
-        let mid: UIElement | null = null;
-        const build = (def: UINodeDef, parent: UIElement | null): UIElement => {
-            const el = new UIElement(this, parent, def.n, { ...(def.config ?? {}) });
-            // `ui.lua:246`：按钮的孩子指回按钮，孙子沿用孩子的
-            if (parent?.config.button) el.config.button_UIE = parent;
-            if (parent?.config.button_UIE) el.config.button_UIE = parent.config.button_UIE;
-            if (def.config?.mid) mid = el;
-            if (def.n === UIT.C || def.n === UIT.R || def.n === UIT.ROOT) {
-                for (const child of def.nodes ?? []) if (child) el.children.push(build(child, el));
-            }
-            return el;
-        };
-        this.root = build(definition, null);
-        this.mid = mid ?? this.root;
+        this.root = this.build(definition, null);
+        this.mid = this.midFound ?? this.root;
 
         this.calculateXYWH(this.root, this.T, false);
         this.T.w = this.root.T.w;
@@ -293,6 +281,32 @@ export class UIBox implements Major {
     /** `alignment.offset` 改了之后重新对齐（`blind_choice_handler` 把选盲注卡往上提） */
     realign(): void {
         if (this.config.major) this.attachTo(this.config.major);
+    }
+
+    private midFound: UIElement | null = null;
+    /** 结构变了（`add_child`）的次数，绘制层据此重建显示对象 */
+    version = 0;
+
+    /** `ui.lua:236` 的 `set_parent_child`：按定义递归建元素 */
+    private build(def: UINodeDef, parent: UIElement | null): UIElement {
+        const el = new UIElement(this, parent, def.n, { ...(def.config ?? {}) });
+        // `ui.lua:246`：按钮的孩子指回按钮，孙子沿用孩子的
+        if (parent?.config.button) el.config.button_UIE = parent;
+        if (parent?.config.button_UIE) el.config.button_UIE = parent.config.button_UIE;
+        if (def.config?.mid) this.midFound = el;
+        if (def.n === UIT.C || def.n === UIT.R || def.n === UIT.ROOT) {
+            for (const child of def.nodes ?? []) if (child) el.children.push(this.build(child, el));
+        }
+        return el;
+    }
+
+    /** `ui.lua:330` 的 `add_child`：挂到 `parent` 最后面，整盒重排（回合结算逐行往里加就靠它） */
+    addChild(def: UINodeDef, parent: UIElement): UIElement {
+        const el = this.build(def, parent);
+        parent.children.push(el);
+        this.recalculate();
+        this.version++;
+        return el;
     }
 
     /** `ui.lua:118` */

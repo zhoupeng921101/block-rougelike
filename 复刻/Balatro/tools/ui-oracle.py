@@ -74,6 +74,7 @@ def make_runtime():
     lua.globals().UPEM = upem
     lua.execute(r'''
       local function w(text)
+        text = tostring(text)
         local total = 0
         for _, c in utf8.chars(text) do
           local cp = 0
@@ -305,6 +306,76 @@ def main():
     for k in ['small', 'big', 'boss']:
         cases.append({'name': f'blind_choice_{k}', **to_py(lua.eval(f'DUMP(G.blind_select_opts.{k})'))})
     cases.append({'name': 'blind_prompt', **to_py(lua.eval('DUMP(G.blind_prompt_box)'))})
+
+    # 回合结算：create_UIBox_round_evaluation 挂在手牌区下（game.lua:3678，offset 落定在 -7.8），
+    # 再用原文 add_round_eval_row 一行行加（common_events.lua 原样加载，事件排队后按序执行、delay 空转）。
+    # 第一组是 TESTSEED 第二局的实机局面（盲注 $3、剩 2 手），第二组多一行利息
+    lua.execute("package.preload['engine/platform'] = function() return {} end")
+    lua.execute((SRC / 'functions/common_events.lua').read_text(encoding='utf-8'))
+    lua.execute(r'''
+      -- 事件先排队、全部 add_round_eval_row 调完再按序执行：evaluate_round 就是一口气排好整串事件的，
+      -- 所以每一行的 width（G.round_eval.T.w - 0.51）取的都是空面板的宽度
+      local QUEUE = {}
+      G.E_MANAGER = { add_event = function(self, e) QUEUE[#QUEUE + 1] = e end }
+      function RUN_QUEUE() local q = QUEUE; QUEUE = {}; for _, e in ipairs(q) do e.func() end end
+      delay = function() end
+      play_sound = function() end
+      check_for_unlock = function() end
+      G.VIBRATION = 0
+      G.PROFILES = { [1] = { career_stats = { c_round_interest_cap_streak = 0 } } }
+      G.SETTINGS.profile = 1
+      G.GAME.seeded = true
+      G.GAME.interest_amount = 1; G.GAME.interest_cap = 25
+      local V = { remaining_hand_money = "Remaining Hands ($#1# each)", interest = "#1# interest per $#2# (#3# max)" }
+      local plain = localize
+      localize = function(args, misc_cat)
+        if type(args) == 'table' and args.type == 'variable' then
+          local s = V[args.key]
+          for i, v in ipairs(args.vars) do s = s:gsub('#'..i..'#', tostring(v)) end
+          return s
+        end
+        return plain(args, misc_cat)
+      end
+      G.GAME.blind = Moveable(0, 0, 1.5, 1.5)
+      G.GAME.blind.juice_up = function() end
+      G.GAME.blind.pos = { x = 0, y = 0 }
+      G.GAME.blind.chips = 300
+      G.GAME.blind.chip_text = '300'
+      G.GAME.current_round.dollars_to_be_earned = '$$$'
+      function MAKE_EVAL(rows)
+        G.round_eval = UIBox{ definition = create_UIBox_round_evaluation(),
+          config = {align="bm", offset = {x=0,y=-7.8}, major = G.hand, bond = 'Weak'} }
+        G.round_eval.alignment.prev_type = ''
+        G.round_eval:align_to_major()
+        G.round_eval.T.x = G.hand.T.x + G.round_eval.role.offset.x
+        G.round_eval.T.y = G.hand.T.y + G.round_eval.role.offset.y
+        G.round_eval.UIRoot:initialize_VT()
+        local n0 = #G.I.UIBOX
+        local total = 0
+        for _, r in ipairs(rows) do add_round_eval_row(r); total = total + r.dollars end
+        add_round_eval_row({name = 'bottom', dollars = total})
+        RUN_QUEUE()
+        local cash = G.I.UIBOX[#G.I.UIBOX]
+        cash.alignment.prev_type = ''
+        cash:align_to_major()
+        cash.T.x = G.round_eval.T.x + cash.role.offset.x
+        cash.T.y = G.round_eval.T.y + cash.role.offset.y
+        cash.UIRoot:initialize_VT()
+        G.round_eval.UIRoot:initialize_VT()
+        return G.round_eval, cash
+      end
+      EVAL_A, CASH_A = MAKE_EVAL({
+        {dollars = 3, name = 'blind1', pitch = 0.95},
+        {dollars = 2, disp = 2, bonus = true, name = 'hands', pitch = 1.01},
+      })
+      EVAL_B, CASH_B = MAKE_EVAL({
+        {dollars = 3, name = 'blind1', pitch = 0.95},
+        {dollars = 3, disp = 3, bonus = true, name = 'hands', pitch = 1.01},
+        {dollars = 1, bonus = true, name = 'interest', pitch = 1.07},
+      })
+    ''')
+    for name, var in [('round_eval_a', 'EVAL_A'), ('cash_out_a', 'CASH_A'), ('round_eval_b', 'EVAL_B'), ('cash_out_b', 'CASH_B')]:
+        cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
 
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))

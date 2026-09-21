@@ -276,6 +276,32 @@ export const DICTIONARY: Readonly<Record<string, string>> = {
     "ph_you_win_demo": "YOU WIN THE DEMO!",
 };
 
+/** `misc.v_dictionary`：带 `#1#` 占位符的条目（`localize{type = 'variable'}`） */
+export const V_DICTIONARY: Readonly<Record<string, string>> = {
+    "a_chips": "+#1#",
+    "a_chips_minus": "-#1#",
+    "a_hands": "+#1# Hands",
+    "a_handsize": "+#1# Hand Size",
+    "a_handsize_minus": "-#1# Hand Size",
+    "a_mult": "+#1# Mult",
+    "a_mult_minus": "-#1# Mult",
+    "a_remaining": "#1# Remaining",
+    "a_sold_tally": "#1#/#2# Sold",
+    "a_xmult": "X#1# Mult",
+    "a_xmult_minus": "-X#1# Mult",
+    "ante_x_voucher": "ANTE #1# VOUCHER",
+    "challenges_completed": "Completed #1#/#2# Challenges",
+    "completed": "#1#/#2# Completed",
+    "deck_preview_wheel_plural": "Numbers may be lower due to the #1# cards drawn face down",
+    "deck_preview_wheel_singular": "Numbers may be lower due to the #1# card drawn face down",
+    "interest": "#1# interest per $#2# (#3# max)",
+    "loyalty_active": "Active!",
+    "loyalty_inactive": "#1# remaining",
+    "remaining_discard_money": "Remaining Discards ($#1# each)",
+    "remaining_hand_money": "Remaining Hands ($#1# each)",
+    "unlocked": "#1#/#2# Unlocked",
+};
+
 /** `descriptions.Blind`：盲注名与描述行（`{#1#}` 这类占位符原样保留） */
 export const BLIND_TEXT: Readonly<Record<string, { name: string; text: string[] }>> = {
     bl_arm: {"name":"The Arm","text":["Decrease level of","played poker hand"]},

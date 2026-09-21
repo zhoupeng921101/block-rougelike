@@ -41,7 +41,9 @@ import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/
 import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
 import { type BlindSelectState, createBlindPrompt, createBlindSelect } from '../../ui/definitions/blind-select';
 import { mostPlayedHand } from '../../core/round';
-import { BLIND_TEXT } from '../../ui/lang.generated';
+import { runModifiers } from '../../core/jokers/modifiers';
+import { type EvalRow, type EvalStep, RoundEval, evalTimeline } from '../../ui/definitions/round-eval';
+import { BLIND_TEXT, DICTIONARY } from '../../ui/lang.generated';
 import type { Rect, UIElement } from '../../ui/uibox';
 import { cardAreas } from '../areas';
 import { alignHand, alignJokers, alignPlay } from '../align-cards';
@@ -133,6 +135,17 @@ export class RunScene extends Scene {
      * 跳过或重掷 Boss 之后整个重建（原作也是重建）
      */
     private blindSelectViews: { select: UIBoxView; prompt: UIBoxView } | null = null;
+    /** 回合结算（`G.round_eval` 与 Cash Out）。`blindHeld`：左上盲注面板在 `defeat` 之前还留着 */
+    private roundEval: {
+        ev: RoundEval;
+        view: UIBoxView;
+        cashView: UIBoxView | null;
+        blindHeld: boolean;
+        /** 刚打完那一关的样子：左侧面板在 Cash Out 之前还显示它（分数、剩余手数 / 弃牌、盲注配色） */
+        last: { blindKey: string; chips: number; handsLeft: number; discardsLeft: number };
+    } | null = null;
+    /** 已经算进 `run.dollars`、但还没按 Cash Out 的那笔（左侧 $ 要扣掉它显示） */
+    private pendingPayout = 0;
     private deckSprite!: DeckSprite;
     /** 已经打到出牌区的牌（`G.play`），逐帧按 `alignPlay` 摆；其余手牌按 `alignHand` */
     private readonly inPlay = new Set<CardSprite>();
@@ -208,7 +221,7 @@ export class RunScene extends Scene {
         // coin1 买卖（card.lua:1610）、coin2+other1 重掷（button_callbacks.lua:2991）
         for (const key of [
             'cardSlide2', 'chips1', 'chips2', 'card1', 'button', 'generic1',
-            'coin1', 'coin2', 'coin3', 'other1', 'tarot1', 'cancel', 'multhit1',
+            'coin1', 'coin2', 'coin3', 'coin6', 'other1', 'tarot1', 'cancel', 'multhit1', 'highlight1',
         ]) {
             this.load.audio(key, `/assets/sounds/${key}.ogg`);
         }
@@ -383,29 +396,110 @@ ${String(e instanceof Error ? e.message : e)}`)
             return;
         }
 
-        const wasWon = this.run.won;
-        const { payout } = this.run.finishRound();
-        this.sound.play('coin1', { volume: 0.5 });
+        this.startRoundEval();
+    }
 
-        const lines = payout.rows.map((r) => {
-            const label = {
-                blind: '盲注', hands: '剩余出牌', discards: '剩余弃牌',
-                joker: r.joker?.ability.name ?? '小丑', interest: '利息',
-                tag: r.tag ? (TAG_CENTERS[r.tag]?.name ?? '标签') : '标签',
-            }[r.kind];
-            return `${label}  +$${r.dollars}`;
-        });
-        // 打过 Ante 8 的 Boss：原作弹胜利窗口、可以接着打（无尽模式）。这里只给一行字，局照常往下走
-        const title = !wasWon && this.run.won ? ['赢了！接着打就是无尽模式', ''] : [];
-        this.message.setText([...title, `本关收益 $${payout.total}`, ...lines].join('\n')).setColor('#ffd76e');
+    /**
+     * 过关：`end_round` → `evaluate_round`（`state_events.lua:1156`）。收益在 core 里一次算完（`finishRound`），
+     * 表现层按原作的事件队列把结算面板一行行加出来（`evalTimeline`），最后出「Cash Out」按钮；
+     * **按了才入账、才进商店**（`G.FUNCS.cash_out`）。在那之前左侧 $ 显示的是入账前的余额
+     */
+    private startRoundEval(): void {
+        const round = this.round;
+        if (!round || round.phase !== 'won' || this.roundEval) return;
+        const run = this.run;
+        const blindKey = run.blindKey;
+        const requirement = round.requirement;
+        const jokersBefore = [...run.jokers];
+        const last = { blindKey, chips: round.chips, handsLeft: round.handsLeft, discardsLeft: round.discardsLeft };
+        const wasWon = run.won;
+        const { payout } = run.finishRound();
+        this.pendingPayout = payout.total;
+        // 打过 Ante 8 的 Boss：原作弹胜利窗口、可以接着打（无尽模式）。这里只给一行字
+        if (!wasWon && run.won) this.message.setText('赢了！接着打就是无尽模式').setColor('#ffd76e');
 
-        // 进商店之前把上一关的牌收掉。`finishRound` 已经把 `run.round` 置空，
-        // 不清的话那 8 张会一直挂在商店界面上
+        // 手牌收进弃牌堆（`draw_from_hand_to_discard`）。`finishRound` 已经把 `run.round` 置空
         for (const sprite of this.sprites) sprite.destroy();
         this.sprites = [];
         this.selected.clear();
-
         this.rebuildJokers(); // end_of_round 可能吃掉小丑（Popcorn / Gros Michel）
+
+        let tagIndex = 0;
+        const rows: EvalRow[] = payout.rows.map((r): EvalRow => {
+            switch (r.kind) {
+                case 'blind':
+                    return { name: 'blind1', dollars: r.dollars, blindPos: BLIND_CENTERS[blindKey].pos, chipText: numberFormat(requirement), chips: requirement };
+                case 'hands':
+                    return { name: 'hands', dollars: r.dollars, disp: r.count ?? 0, per: 1 };
+                case 'discards':
+                    return { name: 'discards', dollars: r.dollars, disp: r.count ?? 0, per: r.count ? r.dollars / r.count : 0 };
+                case 'joker':
+                    return { name: `joker${jokersBefore.indexOf(r.joker!) + 1}`, dollars: r.dollars, jokerName: r.joker!.center.name };
+                case 'tag':
+                    tagIndex++;
+                    // 会在结算时兑现的标签只有 Investment（`tag.lua` 的 `eval`），条件恒是「打过 Boss」
+                    return { name: `tag${tagIndex}`, dollars: r.dollars, tagPos: TAG_CENTERS[r.tag!].pos, condition: DICTIONARY.ph_defeat_the_boss! };
+                case 'interest':
+                    return { name: 'interest', dollars: r.dollars, interestAmount: runModifiers(run.jokers).interestAmount, interestCap: run.vouchers.interestCap };
+            }
+        });
+
+        const ev = new RoundEval({ T: this.areas.hand });
+        const onButton = (name: string) => this.onUIButton(name);
+        const view = new UIBoxView(this, ev.box, 30, onButton);
+        view.setResolution(this.mapping.pxPerTile / toPx(1));
+        this.roundEval = { ev, view, cashView: null, blindHeld: true, last };
+        this.message.setText('');
+
+        // 最后一手结算完到面板出现之间，原作有牌飞走、面板滑上来的一段，这里先空等
+        let t = 0.4;
+        const blindDollars = rows[0]?.dollars ?? 0;
+        for (const { wait, step } of evalTimeline(rows, blindDollars)) {
+            t += wait;
+            this.time.delayedCall(t * 1000, () => this.applyEvalStep(step));
+        }
+        this.refresh();
+    }
+
+    private applyEvalStep(step: EvalStep): void {
+        const state = this.roundEval;
+        if (!state) return;
+        state.ev.apply(step);
+        switch (step.kind) {
+            case 'row':
+                this.sound.play('cancel', { volume: 0.5 });
+                this.sound.play('highlight1', { volume: 0.2 });
+                break;
+            case 'dollar':
+                this.sound.play('coin3', { volume: 0.7, rate: 0.9 + 0.2 * Math.random() });
+                // 盲注那行每出一个 $，左上面板的奖励就少一个（`dollars_to_be_earned:sub(2)`）
+                if (step.row.name === 'blind1') {
+                    const cr = this.hudBlindState.current_round;
+                    cr.dollars_to_be_earned = cr.dollars_to_be_earned.slice(1);
+                }
+                break;
+            case 'defeat':
+                // `Blind:defeat()`：左上盲注面板收起
+                state.blindHeld = false;
+                break;
+            case 'cash_out': {
+                this.sound.play('coin6', { volume: 0.6 });
+                state.cashView = new UIBoxView(this, state.ev.cashOut!, 31, (name) => this.onUIButton(name));
+                state.cashView.setResolution(this.mapping.pxPerTile / toPx(1));
+                break;
+            }
+        }
+    }
+
+    /** `G.FUNCS.cash_out`：入账、拆掉结算面板、进商店 */
+    private cashOut(): void {
+        const state = this.roundEval;
+        if (!state?.cashView) return;
+        state.view.destroy();
+        state.cashView.destroy();
+        this.roundEval = null;
+        this.pendingPayout = 0;
+        this.sound.play('coin1', { volume: 0.5 });
         this.rebuildShop();
         this.refresh();
     }
@@ -1005,6 +1099,10 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.doSkipBlind();
             return;
         }
+        if (name === 'cash_out') {
+            this.cashOut();
+            return;
+        }
         if (name === 'play_cards_from_highlighted') this.doPlay();
         else if (name === 'discard_cards_from_highlighted') {
             this.doDiscard();
@@ -1091,6 +1189,9 @@ ${String(e instanceof Error ? e.message : e)}`)
                 [tagsLine, vouchersLine].filter(Boolean).join('    '),
                 run.openPack ? `${run.openPack.center.name}（标签送的）—— 还能挑 ${run.openPack.choicesLeft} 张` : '',
             ].filter(Boolean).join('\n'));
+        } else if (this.roundEval) {
+            // 回合结算中：`run.state` 已经是 'shop'，但 Cash Out 之前商店还没开
+            this.hud.setText('');
         } else if (run.state === 'shop') {
             this.hud.setText([
                 `商店 — Ante ${run.ante}${run.won ? '（无尽）' : ''}   下一关：${blindName}`,
@@ -1146,6 +1247,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.rerollBtn.setVisible(false);
         }
         this.blindSelectViews?.select.setVisible(!run.openPack);
+        if (this.roundEval) for (const b of [this.nextBtn, this.rerollBtn, this.skipBtn, this.skipBlindBtn]) b.setVisible(false);
 
         if (run.state === 'game-over') {
             this.message.setText('失败').setColor('#e5585f');
@@ -1217,6 +1319,9 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.blindSelectViews.select.update(time / 1000);
             this.blindSelectViews.prompt.update(time / 1000);
         }
+        if (this.round?.phase === 'won' && !this.animating && !this.roundEval) this.startRoundEval();
+        this.roundEval?.view.update(time / 1000);
+        this.roundEval?.cashView?.update(time / 1000);
         this.placeCards(time / 1000);
         // 牌堆：盲注里是剩余张数，盲注外整副牌都在牌堆里
         this.deckSprite.update(this.areas.deck, this.round && this.run.state === 'playing' ? this.round.deck.length : this.run.fullDeck.length);
@@ -1232,7 +1337,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         const round = this.round;
         const b = this.hudBlindState.blind;
         const playing = run.state === 'playing' && round !== null;
-        this.hudBlindView.setVisible(playing);
+        // 结算中（`defeat` 之前）面板留着、值不再更新——奖励的 $ 正被一个个挪进结算面板
+        const held = this.roundEval?.blindHeld ?? false;
+        this.hudBlindView.setVisible(playing || held);
         if (!playing) return;
         const key = run.blindKey;
         const center = BLIND_CENTERS[key];
@@ -1288,27 +1395,31 @@ ${String(e instanceof Error ? e.message : e)}`)
         const round = this.round;
         const s = this.hudState;
         const inRound = run.state === 'playing' && round !== null;
-        s.dollars = inRound ? round.dollars : run.dollars;
+        s.dollars = inRound ? round.dollars : run.dollars - this.pendingPayout;
         s.round = run.roundNumber;
         s.round_resets.ante = run.ante;
-        s.chips_text = numberFormat(inRound ? round.chips : 0);
-        s.current_round.hands_left = round ? round.handsLeft : 4 + run.vouchers.hands;
+        const last = this.roundEval?.last;
+        s.chips_text = numberFormat(inRound ? round.chips : last?.chips ?? 0);
+        s.current_round.hands_left = round ? round.handsLeft : last?.handsLeft ?? 4 + run.vouchers.hands;
         s.current_round.discards_left = round
             ? round.discardsLeft
-            : 3 + RED_DECK.config.discards + run.vouchers.discards;
+            : last?.discardsLeft ?? 3 + RED_DECK.config.discards + run.vouchers.discards;
 
         const hand = s.current_round.current_hand;
         const preview = round && this.selected.size > 0 ? evaluatePokerHand(this.selectedInOrder()) : null;
         const info = preview?.topName ? round!.hands[preview.topName] : null;
         hand.handname_text = preview?.topName ?? '';
-        hand.hand_level = info ? `lvl.${info.level}` : '';
+        // `common_events.lua:561`：前面带一个空格（`' '..localize('k_lvl')..level`），牌型名与等级之间的间距就是它
+        hand.hand_level = info ? ` ${DICTIONARY.k_lvl}${info.level}` : '';
         hand.chip_text = numberFormat(info?.chips ?? 0);
         hand.mult_text = numberFormat(info?.mult ?? 0);
 
         // `ease_background_colour_blind`：盲注里按盲注换色；选盲注与商店时 `G.GAME.blind` 是空名字的占位，
         // 商店再把 MAIN 换成暗红
-        applyBlindColours(run.state === 'playing' ? run.blindKey : null);
-        if (run.state === 'shop') setColour(C.DYN_UI.MAIN, mixColours(C.RED, C.BLACK, 0.9));
+        // 结算中：`defeat` 之前还是刚打完那一关的颜色，之后回到默认；商店的暗红要等 Cash Out
+        const evalBlind = this.roundEval?.blindHeld ? this.roundEval.last.blindKey : null;
+        applyBlindColours(run.state === 'playing' ? run.blindKey : evalBlind);
+        if (run.state === 'shop' && !this.roundEval) setColour(C.DYN_UI.MAIN, mixColours(C.RED, C.BLACK, 0.9));
     }
 
     // ————————————————————————————————————————————————————————————————

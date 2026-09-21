@@ -130,9 +130,15 @@ export class UIBoxView {
         }
     }
 
+    /** 建显示对象时盒子的 `version`；`add_child` 之后不一致就整个重建 */
+    private builtVersion = -1;
+
     private build(): void {
+        for (const v of this.views) v.child?.destroy();
         this.container.removeAll(true);
         this.views = [];
+        this.viewOf.clear();
+        this.builtVersion = this.box.version;
         for (const el of this.box.root.walk()) {
             const view: ElementView = { el };
             const cfg = el.config;
@@ -264,6 +270,7 @@ export class UIBoxView {
 
     /** 每帧：同步绑定值、必要时重排，再按当前布局画一遍 */
     update(timeSeconds: number): void {
+        if (this.box.version !== this.builtVersion) this.build();
         this.box.followMajor();
         let resized = false;
         for (const el of this.box.root.walk()) {
@@ -463,8 +470,8 @@ export class UIBoxView {
         const norm = Math.hypot(sp.x, sp.y);
         const shadowNorm = { x: ((sp.x / norm) * fs) / TILESIZE, y: ((sp.y / norm) * fs) / TILESIZE };
         const base = {
-            x: x + (d.font.TEXT_OFFSET.x * d.scale * fs) / TILESIZE + ((d.config.spacing ?? 0) * fs) / TILESIZE,
-            y: y + (d.font.TEXT_OFFSET.y * d.scale * fs) / TILESIZE,
+            x: x + ((d.font.TEXT_OFFSET.x * d.scale + (d.config.x_offset ?? 0)) * fs) / TILESIZE + ((d.config.spacing ?? 0) * fs) / TILESIZE,
+            y: y + ((d.font.TEXT_OFFSET.y * d.scale + (d.config.y_offset ?? 0)) * fs) / TILESIZE,
         };
         const colours = d.colours;
         const sqrtS = Math.sqrt(d.scale);
