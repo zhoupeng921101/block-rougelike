@@ -904,3 +904,30 @@ describe('奥秘包：发手牌、包里的塔罗当场用', () => {
         expect(run.canTakeFromPack(0)).toBe(true);
     });
 });
+
+describe('买即用（BUY & USE）', () => {
+    it('星球买即用：扣钱、升级、不进消耗品区，消耗品区满了也能买', () => {
+        for (let n = 0; n < 200; n++) {
+            const run = new Run(`BUYUSE${n}`, makeStandardDeck());
+            const round = run.startRound();
+            (round as unknown as { phase: string }).phase = 'won';
+            run.finishRound();
+            run.dollars = 50;
+            const i = run.shop!.items.findIndex((it) => it.kind === 'consumable' && it.consumable.center.set === 'Planet');
+            if (i < 0) continue;
+            const item = run.shop!.items[i]!;
+            if (item.kind !== 'consumable') continue;
+            run.consumables.push(makeConsumable('c_pluto'), makeConsumable('c_pluto'));
+            const hand = item.consumable.center.config.hand_type as keyof typeof run.hands;
+            const before = run.hands[hand].level;
+            const cost = run.shop!.itemCost(i);
+            expect(run.canBuyAndUse(i)).toBe(true);
+            run.buyAndUseConsumable(i);
+            expect(run.hands[hand].level).toBe(before + 1);
+            expect(run.dollars).toBe(50 - cost);
+            expect(run.consumables).toHaveLength(2);
+            return;
+        }
+        throw new Error('200 个 seed 里没有一个商店卖星球');
+    });
+});

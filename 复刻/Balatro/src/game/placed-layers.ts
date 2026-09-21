@@ -80,6 +80,12 @@ export class PlacedLayers {
         this.render(this.scene.time.now / 1000, 0);
     }
 
+    /** 可见矩形（tile，`VT` 左上角 + 卡面尺寸）：挂在卡上的按钮以它为 major */
+    get rect(): { x: number; y: number; w: number; h: number } {
+        const VT = this.motion?.VT ?? { x: 0, y: 0 };
+        return { x: VT.x, y: VT.y, w: this.wTiles, h: this.hTiles };
+    }
+
     /** 悬停时大 0.05（`zoom`） */
     set hovered(v: boolean) {
         if (this.motion) this.motion.hovered = v;

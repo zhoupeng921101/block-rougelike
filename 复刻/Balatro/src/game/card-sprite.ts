@@ -252,6 +252,12 @@ export class CardSprite {
         this.render(this.scene.time.now / 1000, 0);
     }
 
+    /** 可见矩形（tile） */
+    get rect(): { x: number; y: number; w: number; h: number } {
+        const VT = this.motion?.VT ?? { x: 0, y: 0 };
+        return { x: VT.x, y: VT.y, w: CARD_W, h: CARD_H };
+    }
+
     /** 按缓动后的 `VT` 画。阴影从 VT 往视差反方向错开（视差按 `T.x` 算，`calculate_parrallax`） */
     private render(now: number, dt: number): void {
         const m = this.motion;

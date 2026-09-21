@@ -442,6 +442,67 @@ def main():
                       ('pack_buffoon', 'PACK_BUFFOON'), ('pack_standard', 'PACK_STANDARD')]:
         cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
 
+    # 选中一张卡之后挂在它身上的按钮：use_and_sell_buttons（挂法照 Card:highlight）与 create_shop_card_ui 的 t2 / t3。
+    # 卡是 (8, 4) 处一张标准尺寸的 Moveable，只带按钮定义读的那几项
+    lua.execute(r'''
+      G.C.GREEN = HEX("4BC292"); G.C.UI.BACKGROUND_INACTIVE = HEX("666666FF"); G.C.SECONDARY_SET = { Voucher = HEX("fd682b") }
+      local CW, CH = 2.4*35/41, 2.4*47/41
+      local function settle(b)
+        b.alignment.prev_type = ''
+        b:align_to_major()
+        b.T.x = b.role.major.T.x + b.role.offset.x
+        b.T.y = b.role.major.T.y + b.role.offset.y
+        b.UIRoot:initialize_VT()
+      end
+      G.jokers = { config = { type = 'joker' } }
+      G.consumeables = { config = { type = 'joker' } }
+      G.pack_cards = { config = { type = 'consumeable' } }
+      function MAKE_CARD(area, set, consumeable)
+        local card = Moveable(8, 4, CW, CH)
+        card.area = area
+        card.ability = { set = set, consumeable = consumeable and {} or nil }
+        card.sell_cost_label = 3
+        card.cost = 5
+        card.children = {}
+        card.can_sell_card = function() return true end
+        card.can_use_consumeable = function() return true end
+        return card
+      end
+      G.jokers.cards = {}; G.jokers.config.card_limit = 5
+      function USE_SELL(card)
+        local x_off = card.ability.consumeable and -0.1 or 0
+        local box = UIBox{ definition = G.UIDEF.use_and_sell_buttons(card), config = {
+          align = ((card.area == G.jokers) or (card.area == G.consumeables)) and "cr" or "bmi",
+          offset = ((card.area == G.jokers) or (card.area == G.consumeables)) and {x = x_off - 0.4, y = 0} or {x = 0, y = 0.65},
+          parent = card, major = card } }
+        settle(box)
+        return box
+      end
+      BTN_JOKER = USE_SELL(MAKE_CARD(G.jokers, 'Joker', false))
+      BTN_CONS = USE_SELL(MAKE_CARD(G.consumeables, 'Tarot', true))
+      BTN_PACK_CONS = USE_SELL(MAKE_CARD(G.pack_cards, 'Tarot', true))
+      BTN_PACK_JOKER = USE_SELL(MAKE_CARD(G.pack_cards, 'Joker', false))
+      local captured = {}
+      local real_UIBox = UIBox
+      function SHOP_BUTTONS(set, consumeable)
+        local card = MAKE_CARD({ config = { type = 'shop' } }, set, consumeable)
+        create_shop_card_ui(card)
+        RUN_QUEUE()
+        settle(card.children.buy_button)
+        if card.children.buy_and_use_button then settle(card.children.buy_and_use_button) end
+        return card
+      end
+      SHOP_JOKER = SHOP_BUTTONS('Joker', false)
+      SHOP_VOUCHER = SHOP_BUTTONS('Voucher', false)
+      SHOP_BOOSTER = SHOP_BUTTONS('Booster', false)
+      SHOP_TAROT = SHOP_BUTTONS('Tarot', true)
+    ''')
+    for name, var in [('btn_joker', 'BTN_JOKER'), ('btn_consumeable', 'BTN_CONS'), ('btn_pack_consumeable', 'BTN_PACK_CONS'),
+                      ('btn_pack_joker', 'BTN_PACK_JOKER'), ('btn_shop_buy', 'SHOP_JOKER.children.buy_button'),
+                      ('btn_shop_redeem', 'SHOP_VOUCHER.children.buy_button'), ('btn_shop_open', 'SHOP_BOOSTER.children.buy_button'),
+                      ('btn_shop_buy_and_use', 'SHOP_TAROT.children.buy_and_use_button')]:
+        cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 

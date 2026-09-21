@@ -1034,6 +1034,33 @@ export class Run {
         return bought.consumable;
     }
 
+    /**
+     * `can_buy_and_use`（`button_callbacks.lua:117`）：买得起、而且**现在就用得了**。不看消耗品区有没有空位——
+     * 买即用的那张不进区。`highlighted` 是手牌里选中的（商店里没有手牌，要选牌的塔罗在这里用不了）
+     */
+    canBuyAndUse(index: number, highlighted: Card[] = []): boolean {
+        const item = this.shop?.items[index];
+        if (!item || item.kind !== 'consumable' || !this.shop || this.openPack) return false;
+        if (!this.canAfford(this.shop.itemCost(index))) return false;
+        return isConsumableImplemented(item.consumable.key) && canUseConsumable(item.consumable, this.useContext(highlighted));
+    }
+
+    /**
+     * `buy_from_shop` 的 `buy_and_use` 分支（`:2514`）：不查格子，拿下、扣钱，再 `use_card`。
+     * 买下这一张不跑它自己的 `buying_card`（那一支在 `id ~= 'buy_and_use'` 里）
+     */
+    buyAndUseConsumable(index: number, highlighted: Card[] = []): Consumable {
+        if (!this.canBuyAndUse(index, highlighted)) throw new Error('现在不能买即用');
+        const shop = this.shop!;
+        const item = shop.items[index]!;
+        if (item.kind !== 'consumable') throw new Error('这一格不是消耗品');
+        const cost = shop.itemCost(index);
+        shop.take(index);
+        this.dollars -= cost;
+        this.runConsumable(item.consumable, highlighted);
+        return item.consumable;
+    }
+
     private buy(index: number): ShopItem {
         if (!this.shop) throw new Error('不在商店里');
         const item = this.shop.items[index];

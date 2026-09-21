@@ -63,13 +63,17 @@ export class ConsumableSprite {
 
     /** `xTiles` / `yTiles` 是左上角，tile 单位。换算只发生在这一层（10 号票）。商店、开包里用 */
     layout(xTiles: number, yTiles: number): void {
-        const lift = this.highlighted ? 0.35 : 0;
-        this.place({ x: xTiles, y: yTiles - lift, r: 0 }, 0);
+        this.place({ x: xTiles, y: yTiles, r: 0 }, 0);
     }
 
     /** 按 `align_cards` 算出的目标摆（小丑区 / 消耗品区），`index` 定深度 */
     place(p: Placed, index: number): void {
         this.placed.place(p, index);
+    }
+
+    /** 可见矩形（tile） */
+    get rect(): { x: number; y: number; w: number; h: number } {
+        return this.placed.rect;
     }
 
     /** 上一帧的 x（tile），`align_cards` 要 */

@@ -14,6 +14,7 @@ import { type EvalRow, RoundEval, evalTimeline } from './definitions/round-eval'
 import { cardAreaBox } from './definitions/card-area';
 import { createShop, createShopSign, priceTag, shopAreas } from './definitions/shop';
 import { createBoosterPack, packCardsArea } from './definitions/booster-pack';
+import { buyAndUseButton, shopBuyButton, useAndSellButtons } from './definitions/card-buttons';
 import { createHudBlind, makeHudBlindState } from './definitions/hud-blind';
 import { hudBlindFuncs } from './definitions/hud-blind-funcs';
 import { makeHudState, createHud } from './definitions/hud';
@@ -188,5 +189,21 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
             });
             expectSame(dump(box), cases.find((c) => c.name === `pack_${name}`)!.elements);
         }
+    });
+
+    /** 选中一张卡之后的按钮：挂法照 `Card:highlight`（小丑区 / 消耗品区 `cr`，开包 `bmi` 下压 0.65）与 `create_shop_card_ui` */
+    it('use_and_sell_buttons 与商店的 BUY / REDEEM / OPEN / BUY & USE', () => {
+        const card = () => ({ T: { x: 8, y: 4, w: (2.4 * 35) / 41, h: (2.4 * 47) / 41 }, sell_cost_label: 3 });
+        const cases2: Array<[string, () => UIBox]> = [
+            ['btn_joker', () => { const c = card(); return new UIBox(useAndSellButtons(c, 'joker', false), { align: 'cr', offset: { x: -0.4, y: 0 }, major: c }); }],
+            ['btn_consumeable', () => { const c = card(); return new UIBox(useAndSellButtons(c, 'joker', true), { align: 'cr', offset: { x: -0.5, y: 0 }, major: c }); }],
+            ['btn_pack_consumeable', () => { const c = card(); return new UIBox(useAndSellButtons(c, 'pack', true), { align: 'bmi', offset: { x: 0, y: 0.65 }, major: c }); }],
+            ['btn_pack_joker', () => { const c = card(); return new UIBox(useAndSellButtons(c, 'pack', false), { align: 'bmi', offset: { x: 0, y: 0.65 }, major: c }); }],
+            ['btn_shop_buy', () => { const c = card(); return new UIBox(shopBuyButton('other', c), { align: 'bm', offset: { x: 0, y: -0.3 }, major: c }); }],
+            ['btn_shop_redeem', () => { const c = card(); return new UIBox(shopBuyButton('Voucher', c), { align: 'bm', offset: { x: 0, y: -0.3 }, major: c }); }],
+            ['btn_shop_open', () => { const c = card(); return new UIBox(shopBuyButton('Booster', c), { align: 'bm', offset: { x: 0, y: -0.3 }, major: c }); }],
+            ['btn_shop_buy_and_use', () => { const c = card(); return new UIBox(buyAndUseButton(c), { align: 'cr', offset: { x: -0.3, y: 0 }, major: c }); }],
+        ];
+        for (const [name, make] of cases2) expectSame(dump(make()), cases.find((c) => c.name === name)!.elements);
     });
 });
