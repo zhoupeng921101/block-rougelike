@@ -13,8 +13,8 @@
  * 1. **会挑手牌用消耗品。** 要选牌的塔罗与幽灵牌**攒在格子里，进盲注之后对手牌用**。
  *    原作里它们只能在出牌阶段或开奥秘/幽灵包时用（`card.lua:1566`），商店里用不了。
  *    目标怎么挑：见 `chooseTargets`，核心是「往**主花色**同花上攒」。
- * 2. **会挑小丑。** 在沙盒里拿真的结算管线打两手参考牌，
- *    看这张小丑能让分数涨几成（`teamScore`）。满了就与最弱那张比，值得才换。
+ * 2. **会挑小丑。** 在沙盒里拿真的结算管线连打几手参考牌（小丑状态带进下一手，
+ *    所以成长型也看得到），看这张小丑能让分数涨几成（`teamScore`）。满了就与最弱那张比。
  *    **小丑排在包前面买**——它是唯一的乘法来源。
  * 3. **会挑包里的牌。** 天体包挑最常打的那个牌型的星球，标准包挑主花色的牌。
  *
@@ -564,14 +564,34 @@ function referenceHands(run: Run): RefHand[] {
 }
 
 /**
+ * 估值往后看几手。**同一组小丑连打这么多手参考牌，取平均分**。
+ *
+ * 为什么是 4：240 个 seed 上 1 / 4 / 8 手是 3.967 / **4.158** / 4.125，
+ * 4 手在四批 seed 上每一批都比 1 手好。看得太远会高估成长型——
+ * bot 得先活过眼前这个 Boss，十手之后的倍率救不了现在。
+ */
+const GROWTH_HORIZON = 4;
+
+/**
  * 这一组小丑打参考牌能打多少分（加权平均）。**走真的结算管线**——
  * 不维护一张「每张小丑值多少」的表：150 张手标会漂，而且标不出协同（Blueprint、×倍率叠乘）。
  *
- * 沙盒里的一切都是克隆：小丑、牌、牌型等级。掷点一律给 0.5
- * （1/2 及以上的概率算中、以下不中），造卡的口子全是空操作，
- * **所以沙盒一次真 RNG 都不碰**。哪张小丑在沙盒里抛了就当这一组值 0——
- * 不能让估值把整局带崩。
+ * ## 看成长
  *
+ * 连打 `GROWTH_HORIZON` 手、小丑状态**带进下一手**，取平均。这样
+ * Green Joker / Runner / Hiker / Supernova 这类越打越强的，估值会随手数涨；
+ * Joker / Droll / Crazy 这类定值的不变。
+ *
+ * 掷点用 bot 自己的随机数（固定种子，同一局面同一个估值）。
+ * 不能像 `bestPlay` 那样一律给 0.5：那样 1/5 的幸运牌在沙盒里**永远不中**，
+ * 靠它长的 Lucky Cat 永远是 0。
+ *
+ * **仍然看不到的**：成长条件参考牌碰不到的那些。参考牌是固定的一手 5 张同花与一手对子，
+ * 所以 Square（要恰好 4 张）、Wee（要打出 2）、Obelisk（要换着牌型打）、
+ * Lucky Cat / Vampire（新牌组里没有强化牌）估值还是 0。
+ *
+ * 沙盒里的一切都是克隆、造卡的口子全是空操作，**一次真 RNG 都不碰**。
+ * 哪张小丑在沙盒里抛了就当这一组值 0——不能让估值把整局带崩。
  * 只看计分：`Golden Joker` 这类发钱的在这里值 0，bot 不会主动买它们。
  */
 function teamScore(run: Run, jokers: readonly Joker[]): number {
@@ -579,7 +599,7 @@ function teamScore(run: Run, jokers: readonly Joker[]): number {
     for (const ref of referenceHands(run)) {
         const score = sandboxScore(run, jokers, ref.play.map(cloneCard), ref.held.map(cloneCard), {
             hands_left: 2, discards_left: 1, hands_played: 1, deckCount: 30,
-        });
+        }, GROWTH_HORIZON, localRng(0x5eed));
         if (score < 0) return 0;
         total += ref.weight * score;
     }
@@ -600,6 +620,8 @@ function sandboxScore(
     play: Card[],
     held: Card[],
     round: { hands_left: number; discards_left: number; hands_played: number; deckCount: number },
+    times = 1,
+    rng?: () => number,
 ): number {
     const team = jokers.map((j) => structuredClone(j));
     const hands = structuredClone(run.hands);
@@ -626,11 +648,21 @@ function sandboxScore(
         createConsumable: () => {},
         createPlayingCard: () => {},
         duplicateConsumableAsNegative: () => {},
-        pseudorandom: (_k, min, max) =>
-            min !== undefined && max !== undefined ? Math.floor((min + max) / 2) : 0.5,
+        pseudorandom: (_k, min, max) => {
+            if (!rng) return min !== undefined && max !== undefined ? Math.floor((min + max) / 2) : 0.5;
+            const r = rng();
+            return min !== undefined && max !== undefined ? min + Math.floor(r * (max - min + 1)) : r;
+        },
     });
     try {
-        return evaluatePlay(play, hands, view, mods.flags).score;
+        let total = 0;
+        for (let t = 0; t < times; t++) {
+            // 小丑、牌型等级、牌都**不重新克隆**——成长型小丑长出来的、
+            // Hiker 加在牌上的筹码、Vampire 吸掉的强化，都要带进下一手
+            total += evaluatePlay(play, hands, view, mods.flags).score;
+            refreshDerivedAbilities(team, run.jokerSlots, run.fullDeck);
+        }
+        return total / times;
     } catch {
         return -1;
     }
@@ -744,7 +776,7 @@ const SWAP_GAIN = 0.15;
  *
  * 60 个 seed 试了 15 种组合（存 5 / 10 / 15 / 25、前期存 / 后期才存、
  * 放不放行天体包、配不配重掷），**没有一种比不存好**，前期就存的明显更差
- * （全程存 $25：3.867 → 2.900；出牌改好之后重跑，4.133 → 2.867，结论不变）。利息确实发了——全程存 $25 时每回合多拿约 $2.5——
+ * （全程存 $25：3.867 → 2.900；出牌改好后 4.133 → 2.867；估值看成长后 4.333 → 2.950）。利息确实发了——全程存 $25 时每回合多拿约 $2.5——
  * 但多出来的钱变不成战力：
  * - 回本太慢：少花 $25 要 5 回合满利息才补回来，而这个 bot 平均只活十来个回合
  * - 花不出去：重掷只换货架两格，刷到的小丑多半过不了估值线
