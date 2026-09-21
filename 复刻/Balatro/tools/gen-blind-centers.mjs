@@ -31,10 +31,10 @@ for (const line of lines) {
     const [, key, table] = m;
 
     // `vars = {localize(...)}` → `vars = {}`。本地化不进复刻层
-    // `boss_colour = HEX('xxxxxx')` → 去掉，颜色由表现层自己定
+    // `boss_colour = HEX('xxxxxx')` → 保留成十六进制串：左侧面板的配色要它（22 号票，`get_blind_main_colour`）
     const cleaned = table
         .replace(/vars\s*=\s*\{[^}]*\}/g, 'vars = {}')
-        .replace(/,\s*boss_colour\s*=\s*HEX\([^)]*\)/g, '');
+        .replace(/boss_colour\s*=\s*HEX\(\s*'([0-9a-fA-F]+)'\s*\)/g, "boss_colour = '$1'");
 
     const raw = luaTableToJs(cleaned);
     blinds[key] = {
@@ -45,6 +45,7 @@ for (const line of lines) {
         pos: raw.pos,
         boss: raw.boss ?? null,
         debuff: raw.debuff ?? {},
+        ...(raw.boss_colour ? { boss_colour: raw.boss_colour } : {}),
     };
 }
 
@@ -63,8 +64,8 @@ writeFileSync(
  * 按 key 的字符串序排（\`misc_functions.lua:266\`）。所以抽 boss 的池子顺序
  * 是 key 的字母序，不是 \`order\`。
  *
- * \`vars\`（本地化文本）与 \`boss_colour\` 没有抽进来：前者不属于复刻层，
- * 后者由表现层自己定。
+ * \`vars\`（本地化文本）没有抽进来，它不属于复刻层。
+ * \`boss_colour\` 是 Boss 的主色（十六进制串），左侧面板随盲注换色要用（22 号票）。
  */
 
 import type { BlindCenter } from './blinds';

@@ -142,6 +142,11 @@ export class Run {
     blindIndex = 0;
     /** 整局累计出牌数。`Loyalty Card` 读它 */
     handsPlayed = 0;
+    /**
+     * `G.GAME.round`：选盲注时 +1（`button_callbacks.lua:2643` 的 `ease_round(1)`），跳过盲注不加。
+     * 机制上没人读它（只有成就），左侧面板的「Round」显示它
+     */
+    roundNumber = 0;
     /** 当前在打的那一局。`null` 表示不在 `playing` */
     round: Round | null = null;
 
@@ -743,6 +748,7 @@ export class Run {
             skips: this.skips,
         });
 
+        this.roundNumber++;
         this.state = 'playing';
         return this.round;
     }

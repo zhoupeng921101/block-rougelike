@@ -30,7 +30,14 @@ import { getBlindAmount } from '../../core/scoring';
 import { CardSprite } from '../card-sprite';
 import { BoosterSprite } from '../booster-sprite';
 import { ConsumableSprite } from '../consumable-sprite';
-import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, roomMapping, toPx } from '../coords';
+import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, TILE_H, TILE_W, roomMapping, toPx } from '../coords';
+import { UIBoxView, UI_FONT_FAMILY } from '../ui-draw';
+import { applyBlindColours } from '../../ui/blind-colour';
+import { C, mixColours, setColour } from '../../ui/colours';
+import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
+import { numberFormat } from '../../ui/format';
+import { UIBox } from '../../ui/uibox';
+import { RED_DECK } from '../../core/run';
 import { JokerSprite } from '../joker-sprite';
 import { LOOK } from '../look';
 import { VoucherSprite } from '../voucher-sprite';
@@ -113,6 +120,9 @@ export class RunScene extends Scene {
     /** 事件队列。动画的节奏全靠它，语义直译自 engine/event.lua（09 号票）。
      *  刻意不叫 `events`——那是 Phaser Scene 自己的字段。 */
     private readonly queue = new EventManager();
+    /** 左侧面板（`create_UIBox_HUD`，22 号票）。`hudState` 是它绑定的 `G.GAME` 同形对象 */
+    private hudState!: HudState;
+    private hudView!: UIBoxView;
     /** 背景与 CRT：铺满可视区，窗口变了跟着相机重摆（`applyRoomCamera`） */
     private readonly fullscreenQuads: GameObjects.Shader[] = [];
     /** 正在播放出牌动画时不接受输入 */
@@ -143,6 +153,9 @@ export class RunScene extends Scene {
     }
 
     preload(): void {
+        this.load.font(UI_FONT_FAMILY, '/assets/fonts/m6x11plus.ttf');
+        // `game.lua:996`：赌注筹码，29×29 一格
+        this.load.spritesheet('chips', '/assets/textures/chips.png', { frameWidth: 29, frameHeight: 29 });
         this.load.spritesheet('cards', '/assets/textures/8BitDeck.png', {
             frameWidth: 71,
             frameHeight: 95,
@@ -192,26 +205,36 @@ export class RunScene extends Scene {
 
         this.setupBackground();
 
-        this.hud = this.add.text(toPx(1.2), toPx(0.5), '', {
+        // `game.lua:2613`：`G.HUD = UIBox{definition = create_UIBox_HUD(), config = {align='cli', offset={x=-0.7,y=0}, major=G.ROOM_ATTACH}}`
+        this.hudState = makeHudState();
+        const hudBox = new UIBox(createHud(this.hudState), {
+            align: 'cli',
+            offset: { x: -0.7, y: 0 },
+            major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } },
+        });
+        this.hudView = new UIBoxView(this, hudBox, 40);
+
+        // 下面这些调试文字与按钮是 UI 直译之前的占位，挪到左侧面板右边；等对应的原作 UI 直译过来再删
+        this.hud = this.add.text(toPx(5.0), toPx(0.5), '', {
             fontFamily: 'monospace', fontSize: 22, color: '#e8e8e8', lineSpacing: 6,
         });
-        this.handPreview = this.add.text(toPx(1.2), toPx(3.1), '', {
+        this.handPreview = this.add.text(toPx(5.0), toPx(3.1), '', {
             fontFamily: 'monospace', fontSize: 26, color: '#ffd76e',
         });
-        this.jokerInfo = this.add.text(toPx(1.2), toPx(2.4), '', {
+        this.jokerInfo = this.add.text(toPx(5.0), toPx(2.4), '', {
             fontFamily: 'monospace', fontSize: 18, color: '#9fd6ff',
         });
         this.message = this.add.text(CANVAS_W / 2, CANVAS_H / 2, '', {
             fontFamily: 'monospace', fontSize: 44, color: '#ffffff', align: 'center',
         }).setOrigin(0.5).setDepth(100);
 
-        this.playBtn = this.makeButton(toPx(1.2), toPx(10.2), '出牌', '#3fa34d', () => this.doPlay());
-        this.discardBtn = this.makeButton(toPx(4.4), toPx(10.2), '弃牌', '#b5462f', () => this.doDiscard());
-        this.nextBtn = this.makeButton(toPx(7.6), toPx(10.2), '下一关', '#3c6ea5', () => this.doNext());
-        this.rerollBtn = this.makeButton(toPx(12.0), toPx(10.2), '重掷', '#8a5fb0', () => this.doReroll());
-        this.skipBtn = this.makeButton(toPx(15.2), toPx(10.2), '跳过', '#6b7280', () => this.doSkipPack());
-        this.skipBlindBtn = this.makeButton(toPx(18.4), toPx(10.2), '跳过盲注', '#a07a2c', () => this.doSkipBlind());
-        this.rerollBossBtn = this.makeButton(toPx(18.4), toPx(9.2), '重掷 Boss $10', '#b5462f', () => this.doRerollBoss());
+        this.playBtn = this.makeButton(toPx(5.0), toPx(10.2), '出牌', '#3fa34d', () => this.doPlay());
+        this.discardBtn = this.makeButton(toPx(7.4), toPx(10.2), '弃牌', '#b5462f', () => this.doDiscard());
+        this.nextBtn = this.makeButton(toPx(9.8), toPx(10.2), '下一关', '#3c6ea5', () => this.doNext());
+        this.rerollBtn = this.makeButton(toPx(12.2), toPx(10.2), '重掷', '#8a5fb0', () => this.doReroll());
+        this.skipBtn = this.makeButton(toPx(14.6), toPx(10.2), '跳过', '#6b7280', () => this.doSkipPack());
+        this.skipBlindBtn = this.makeButton(toPx(17.0), toPx(10.2), '跳过盲注', '#a07a2c', () => this.doSkipBlind());
+        this.rerollBossBtn = this.makeButton(toPx(17.0), toPx(9.2), '重掷 Boss $10', '#b5462f', () => this.doRerollBoss());
 
         // 开局先进盲注选择（原作如此）：能看到这一格跳过给什么标签，再决定打还是跳
         this.showBlindSelect();
@@ -1003,8 +1026,44 @@ ${String(e instanceof Error ? e.message : e)}`)
         return t;
     }
 
-    update(_time: number, delta: number): void {
+    update(time: number, delta: number): void {
         this.queue.update(delta / 1000);
+        this.syncHud();
+        this.hudView.update(time / 1000);
+    }
+
+    /**
+     * 把 `Run` 的状态同步进左侧面板绑定的 `HudState`，并按当前阶段给面板换色（`ease_background_colour_blind`）。
+     *
+     * 不在盲注里时，出牌 / 弃牌显示的是 `round_resets` 的基数（原作在回合结束时把 `current_round` 重置成它）。
+     * **缺口**：小丑给的 `d_size` / `h_size`（Drunkard 之类）只在 `Round` 里算，这里没带上。
+     */
+    private syncHud(): void {
+        const run = this.run;
+        const round = this.round;
+        const s = this.hudState;
+        const inRound = run.state === 'playing' && round !== null;
+        s.dollars = inRound ? round.dollars : run.dollars;
+        s.round = run.roundNumber;
+        s.round_resets.ante = run.ante;
+        s.chips_text = numberFormat(inRound ? round.chips : 0);
+        s.current_round.hands_left = round ? round.handsLeft : 4 + run.vouchers.hands;
+        s.current_round.discards_left = round
+            ? round.discardsLeft
+            : 3 + RED_DECK.config.discards + run.vouchers.discards;
+
+        const hand = s.current_round.current_hand;
+        const preview = round && this.selected.size > 0 ? evaluatePokerHand(this.selectedInOrder()) : null;
+        const info = preview?.topName ? round!.hands[preview.topName] : null;
+        hand.handname_text = preview?.topName ?? '';
+        hand.hand_level = info ? `lvl.${info.level}` : '';
+        hand.chip_text = numberFormat(info?.chips ?? 0);
+        hand.mult_text = numberFormat(info?.mult ?? 0);
+
+        // `ease_background_colour_blind`：盲注里按盲注换色；选盲注与商店时 `G.GAME.blind` 是空名字的占位，
+        // 商店再把 MAIN 换成暗红
+        applyBlindColours(run.state === 'playing' ? run.blindKey : null);
+        if (run.state === 'shop') setColour(C.DYN_UI.MAIN, mixColours(C.RED, C.BLACK, 0.9));
     }
 
     // ————————————————————————————————————————————————————————————————
@@ -1057,6 +1116,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         cam.setOrigin(0, 0);
         cam.setZoom(zoom);
         cam.setScroll(-toPx(m.roomX), -toPx(m.roomY));
+        this.hudView?.setResolution(zoom);
         const vw = width / zoom;
         const vh = height / zoom;
         for (const quad of this.fullscreenQuads) {

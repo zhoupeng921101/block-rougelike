@@ -56,6 +56,8 @@ export type BlindCenter = {
     pos: { x: number; y: number };
     /** `null` 表示这是小盲注／大盲注，不是 Boss */
     boss: { min: number; max: number; showdown?: boolean } | null;
+    /** Boss 的主色（十六进制串，`game.lua` 的 `boss_colour = HEX(...)`）。只有表现层用 */
+    boss_colour?: string;
     /** 声明式的 debuff。`blind.lua:624` 的 `debuff_card` 读它 */
     debuff: {
         suit?: Suit;
