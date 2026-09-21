@@ -80,6 +80,7 @@ import {
     pickToDoHand,
     releaseUsed,
 } from './shop';
+import { makeRoundScores, type RoundScores } from './round-scores';
 
 /** `game.lua:2094` 的 `win_ante`。打过这个 Ante 的 Boss 就赢了 */
 export const WIN_ANTE = 8;
@@ -228,6 +229,8 @@ export class Run {
     idolCard?: { id: number; suit: Suit };
     ancientSuit: Suit = 'Spades';
     castleSuit: Suit = 'Spades';
+    /** `G.GAME.round_scores` / `hand_usage`（见 `round-scores.ts`）。只有结束界面读 */
+    readonly scores: RoundScores = makeRoundScores();
 
     constructor(seed: string, deck: Card[] = makeStandardDeck()) {
         this.seed = seed;
@@ -776,6 +779,7 @@ export class Run {
             jokerArea: this.jokerAreaHooks(),
             onSettingBlind: (round) => this.settingBlind(round),
             skips: this.skips,
+            scores: this.scores,
         });
 
         this.roundNumber++;
@@ -1061,6 +1065,7 @@ export class Run {
         const cost = shop.itemCost(index);
         shop.take(index);
         this.dollars -= cost;
+        this.scores.cardsPurchased++;
         this.runConsumable(item.consumable, highlighted);
         return item.consumable;
     }
@@ -1081,6 +1086,7 @@ export class Run {
 
         this.shop.take(index);
         this.dollars -= cost;
+        this.scores.cardsPurchased++;
 
         if (item.kind === 'consumable') {
             this.consumables.push(item.consumable);
@@ -1136,6 +1142,7 @@ export class Run {
         shop.takeVoucher(index);
         this.usedVouchers.add(v.key);
         this.dollars -= cost;
+        this.scores.cardsPurchased++;
         // `card.lua:1852`：**不管买的是不是本 Ante 那张**。买掉 Voucher Tag 给的那张，
         // 主优惠券虽然还摆在这个商店里，这个 Ante 后面的商店也不再摆
         this.currentVoucher = null;
@@ -1239,6 +1246,7 @@ export class Run {
 
         this.shop.takePack(index);
         this.dollars -= cost;
+        this.scores.cardsPurchased++;
 
         // ① `card.lua:1799` 的 `open_booster` 遍历。**同步，排在造牌之前**
         for (const joker of [...this.jokers]) {
@@ -1585,6 +1593,7 @@ export class Run {
         if (!this.canAfford(cost)) throw new Error(`重掷不起：要 $${cost}，只有 $${this.dollars}`);
         this.dollars -= cost;
         this.shop.reroll();
+        this.scores.timesRerolled++;
         // `button_callbacks.lua:3010` 的 `context.reroll_shop`：`Flash Card` 靠它长个子
         for (const joker of this.jokers) {
             calculateJoker(joker, { reroll_shop: true }, this.shopGameView());

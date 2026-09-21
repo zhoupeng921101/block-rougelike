@@ -43,6 +43,7 @@ import {
     initialHands,
     levelUpHand,
 } from './scoring';
+import { makeRoundScores, recordHandScore, recordHandUsage, type RoundScores } from './round-scores';
 
 /** `misc_functions.lua:1853` 的 `get_starting_params`，只取本切片用得上的。 */
 export const STARTING_PARAMS = {
@@ -166,6 +167,8 @@ export type RoundOptions = {
      * 手牌上限、出牌/弃牌次数、牌堆都还没定。由 `Run` 接上，见构造函数里那条注释
      */
     onSettingBlind?(round: Round): void;
+    /** `G.GAME.round_scores` / `hand_usage`，由 `Run` 持有、整局共用。只有结束界面读 */
+    scores?: RoundScores;
 };
 
 /**
@@ -314,6 +317,7 @@ export class Round {
     readonly jokerSlots: number;
     private readonly jokerArea: JokerAreaHooks;
     private readonly discountPercent: number;
+    private readonly scores: RoundScores;
 
     constructor(seed: string, fullDeck: Card[], options: RoundOptions = {}) {
         this.ante = options.ante ?? 1;
@@ -327,6 +331,7 @@ export class Round {
         this.onCreatePlayingCard = options.onCreatePlayingCard;
         this.jokerSlots = options.jokerSlots ?? STARTING_PARAMS.joker_slots;
         this.discountPercent = options.discountPercent ?? 0;
+        this.scores = options.scores ?? makeRoundScores();
         this.jokerArea = options.jokerArea ?? NO_JOKER_AREA;
         this.consumables = options.consumables ?? NO_CONSUMABLES;
         this.blind = options.blind ?? null;
@@ -664,6 +669,7 @@ export class Round {
         // `state_events.lua:502`。`The Pillar` 靠它认「本 Ante 打过的牌」，
         // 而清除是在 **Boss 打完之后**（`state_events.lua:287`），不是每回合
         for (const card of played) card.played_this_ante = true;
+        this.scores.cardsPlayed += played.length;
 
         // 打出去的牌离开手牌区。**要在结算之前**——手牌区遍历（第 10 步）
         // 只看留在手里的，`Raised Fist` 与 `Shoot the Moon` 吃这个差别
@@ -680,6 +686,8 @@ export class Round {
         // `state_events.lua:597` 的 `G.GAME.last_hand_played`。Blue 蜡封读它
         this.lastHandPlayed = result.handName;
         this.chips += result.score;
+        recordHandUsage(this.scores, result.handName);
+        recordHandScore(this.scores, result.score);
 
         // `state_events.lua:545`：**本回合出牌数在结算之后才 +1**（`ease_hands_played` 那个是手数，
         // 这个是计数，两回事）。放在结算前会让结算里读到的第一手是 1——
@@ -753,6 +761,7 @@ export class Round {
         // `state_events.lua:413`：**先按 T.x 排序**。`The Hook` 随机抽出来的两张
         // 也要过这一步，所以排序放在这里而不是 `discard()` 里
         const cards = [...selected].sort((a, b) => a.T.x - b.T.x);
+        this.scores.cardsDiscarded += cards.length;
 
         // `state_events.lua:415`：`pre_discard` 遍历，整批只问一次。
         // 本里程碑没有小丑用它（`Burnt Joker` 是 rarity 3），但调用点先留着——

@@ -58,12 +58,15 @@ import { type CardAreaObject, createShop, createShopSign, priceTag, shopAreas } 
 import { DeckSprite } from '../deck-sprite';
 import { numberFormat } from '../../ui/format';
 import { UIBox } from '../../ui/uibox';
-import { RED_DECK } from '../../core/run';
+import { RED_DECK, WIN_ANTE } from '../../core/run';
 import { JokerSprite } from '../joker-sprite';
 import { LOOK } from '../look';
 import { VoucherSprite } from '../voucher-sprite';
 import { BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
 import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
+import { type GameOverState, createGameOver, createWin } from '../../ui/definitions/game-over';
+import { mostPlayedHandUsage } from '../../core/round-scores';
+import { Motion } from '../moveable';
 
 /**
  * 版本的文字标记。
@@ -72,6 +75,17 @@ import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
  * 所以这一版只用文字标出来——不标的话玩家分不出一张 Polychrome 的小丑
  * 和普通小丑，而两者差 ×1.5。
  */
+/**
+ * `random_string(8)`（`misc_functions.lua:273`）：三成是 1–9，其余 A–N 与 P–Z 各半（没有 O 与 0）。
+ * 原作不指定种子的开局用它；随机源是无种子的 `math.random`
+ */
+function randomSeed(): string {
+    const range = (a: string, b: string) => String.fromCharCode(a.charCodeAt(0) + Math.floor(Math.random() * (b.charCodeAt(0) - a.charCodeAt(0) + 1)));
+    let out = '';
+    for (let i = 0; i < 8; i++) out += Math.random() > 0.7 ? range('1', '9') : Math.random() > 0.45 ? range('A', 'N') : range('P', 'Z');
+    return out;
+}
+
 function editionTag(edition?: string): string {
     if (!edition) return '';
     const label: Record<string, string> = {
@@ -167,6 +181,19 @@ export class RunScene extends Scene {
      */
     private blindSelectViews: { select: UIBoxView; prompt: UIBoxView } | null = null;
     /** 回合结算（`G.round_eval` 与 Cash Out）。`blindHeld`：左上盲注面板在 `defeat` 之前还留着 */
+    /**
+     * `G.OVERLAY_MENU`：游戏结束 / 胜利界面。`motion` 是 UIBox 自己的 VT（`bond = 'Weak'`，从下方 10 tile 弹上来），
+     * `bg` 是背景那张颜色表，alpha 由 `ease_value` 0.3 秒线性缓上去；`blocker` 吞掉底下所有点击与悬停
+     */
+    /** 这一局输了（`G.STATE = GAME_OVER`）。`Run` 停在那一关不再推进 */
+    private runOver = false;
+    private overlay: {
+        view: UIBoxView;
+        motion: Motion;
+        bg: Colour;
+        alpha: { from: number; to: number; start: number };
+        blocker: GameObjects.Zone;
+    } | null = null;
     private roundEval: {
         ev: RoundEval;
         view: UIBoxView;
@@ -213,6 +240,8 @@ export class RunScene extends Scene {
         this.load.font(UI_FONT_FAMILY, '/assets/fonts/m6x11plus.ttf');
         // `game.lua:996`：赌注筹码，29×29 一格
         this.load.spritesheet('chips', '/assets/textures/chips.png', { frameWidth: 29, frameHeight: 29 });
+        // `game.lua:989`：`ui_1`，18×18 一格（结束界面「Best Hand」前的小筹码是 {0,0}）
+        this.load.spritesheet('ui_1', '/assets/textures/ui_assets.png', { frameWidth: 18, frameHeight: 18 });
         // `game.lua:994`：标签，34×34 一格
         this.load.spritesheet('tags', '/assets/textures/tags.png', { frameWidth: 34, frameHeight: 34 });
         // `game.lua:979`：SHOP 招牌，113×57 一格，4 帧
@@ -255,6 +284,7 @@ export class RunScene extends Scene {
         for (const key of [
             'cardSlide1', 'cardSlide2', 'chips1', 'chips2', 'card1', 'button', 'generic1',
             'coin1', 'coin2', 'coin3', 'coin6', 'other1', 'tarot1', 'cancel', 'multhit1', 'highlight1',
+            'negative', 'whoosh2', 'win',
         ]) {
             this.load.audio(key, `/assets/sounds/${key}.ogg`);
         }
@@ -423,9 +453,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (!round || round.phase === 'selecting') return;
 
         if (round.phase === 'lost') {
-            // 输了就到此为止。重开要刷新页面——本里程碑不做局外流程
-            this.run.finishRound();
-            this.refresh();
+            this.gameOver();
             return;
         }
 
@@ -448,8 +476,12 @@ ${String(e instanceof Error ? e.message : e)}`)
         const wasWon = run.won;
         const { payout } = run.finishRound();
         this.pendingPayout = payout.total;
-        // 打过 Ante 8 的 Boss：原作弹胜利窗口、可以接着打（无尽模式）。这里只给一行字
-        if (!wasWon && run.won) this.message.setText('赢了！接着打就是无尽模式').setColor('#ffd76e');
+        // 打过 Ante 8 的 Boss：`win_game`（`state_events.lua:1`）弹胜利窗口，结算在它底下照常走；
+        // 按 Endless 关掉窗口就接着打
+        if (!wasWon && run.won) {
+            this.sound.play('win');
+            this.showOverlay('win');
+        }
 
         // 手牌收进弃牌堆（`draw_from_hand_to_discard`）。`finishRound` 已经把 `run.round` 置空
         for (const sprite of this.sprites) sprite.destroy();
@@ -1469,6 +1501,102 @@ ${String(e instanceof Error ? e.message : e)}`)
     }
 
     /** `G.FUNCS[button]`：UI 按钮名接到场景的操作上 */
+    // ————————————————————————————————————————————————————————————————
+    // 游戏结束 / 胜利（`G.OVERLAY_MENU`）
+    // ————————————————————————————————————————————————————————————————
+
+    /** `end_round` 没够分 → `Game:update_game_over`（`game.lua:3944`） */
+    private gameOver(): void {
+        if (this.runOver) return;
+        // 原作输了只跑一趟小丑的 `end_of_round`（Mr. Bones 在出牌结算里已经判过）就进 GAME_OVER：
+        // 不结算、不清场，底下留着输掉那一局的盲注面板、分数与牌堆。所以这里**不调** `finishRound`
+        this.runOver = true;
+        this.selected.clear();
+        this.refresh();
+        this.sound.play('negative', { rate: 0.5, volume: 0.7 });
+        this.sound.play('whoosh2', { rate: 0.9, volume: 0.7 });
+        this.showOverlay('game_over');
+        this.juice.jiggle += 3;
+    }
+
+    private gameOverState(): GameOverState {
+        const run = this.run;
+        const s = run.scores;
+        return {
+            ante: run.ante,
+            round: run.roundNumber,
+            seed: run.seed,
+            // 复刻件的口径是「新档 + 指定 seed」（18 号票），种子那一格恒是红底
+            seeded: true,
+            bestHand: s.bestHand,
+            mostPlayed: mostPlayedHandUsage(s),
+            cardsPlayed: s.cardsPlayed,
+            cardsDiscarded: s.cardsDiscarded,
+            cardsPurchased: s.cardsPurchased,
+            timesRerolled: s.timesRerolled,
+            newCollection: 0,
+            blindKey: run.blindKey,
+        };
+    }
+
+    /** `G.FUNCS.overlay_menu`（`button_callbacks.lua:1377`）：`cm` 挂房间、offset 从 y=10 改成 0，靠 VT 的弹簧滑上来 */
+    private showOverlay(kind: 'game_over' | 'win'): void {
+        this.closeOverlay();
+        const run = this.run;
+        // `eased_red` / `eased_green`：复制一份、alpha 置 0，再 `ease_value` 到 0.8 / 0.5。无尽模式里输了是蓝的
+        const bg: Colour = [...(kind === 'win' ? C.GREEN : run.ante <= WIN_ANTE ? C.RED : C.BLUE)] as Colour;
+        bg[3] = 0;
+        const def = kind === 'win' ? createWin(this.gameOverState(), bg) : createGameOver(this.gameOverState(), bg);
+        const box = new UIBox(def, { align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } } });
+        const view = new UIBoxView(this, box, 200, (name) => this.onOverlayButton(name));
+        view.setResolution(this.mapping.pxPerTile / toPx(1));
+        const motion = new Motion({ x: box.T.x, y: box.T.y + 10, r: 0, scale: 1 });
+        motion.T.y = box.T.y;
+        // 原作 `G.SETTINGS.paused` + 光标上下文层：底下的东西点不到也悬停不到
+        const blocker = this.add.zone(-toPx(TILE_W * 3), -toPx(TILE_H * 3), toPx(TILE_W * 7), toPx(TILE_H * 7))
+            .setOrigin(0, 0).setInteractive().setDepth(199);
+        this.overlay = { view, motion, bg, alpha: { from: 0, to: kind === 'win' ? 0.5 : 0.8, start: this.time.now / 1000 }, blocker };
+        this.juice.jiggle += 1;
+        this.hidePopup();
+    }
+
+    private closeOverlay(): void {
+        if (!this.overlay) return;
+        this.overlay.view.destroy();
+        this.overlay.blocker.destroy();
+        this.overlay = null;
+    }
+
+    private stepOverlay(dt: number, now: number): void {
+        const o = this.overlay;
+        if (!o) return;
+        o.motion.step(dt, now);
+        o.view.container.y = toPx(o.motion.VT.y - o.motion.T.y);
+        // `ease_value` 的缺省：0.3 秒线性
+        const p = Math.min(1, (now - o.alpha.start) / 0.3);
+        o.bg[3] = o.alpha.from + (o.alpha.to - o.alpha.from) * p;
+        o.view.update(now);
+    }
+
+    private onOverlayButton(name: string): void {
+        if (name === 'copy_seed') {
+            void navigator.clipboard?.writeText(this.run.seed).catch(() => undefined);
+            return;
+        }
+        if (name === 'exit_overlay_menu') {
+            // Endless：关掉胜利窗口接着打
+            this.closeOverlay();
+            return;
+        }
+        // 复刻件没有主菜单与开局设置（牌组 / 赌注 / 种子都定死）：
+        // 「New Run」换一个随机种子重开，「Main Menu」同种子重开。都走整页重载，URL 上的 ?seed 就是这一局的种子
+        if (name === 'notify_then_setup_run' || name === 'go_to_menu') {
+            const params = new URLSearchParams(location.search);
+            params.set('seed', name === 'go_to_menu' ? this.run.seed : randomSeed());
+            location.search = params.toString();
+        }
+    }
+
     private onUIButton(name: string): void {
         const round = this.round;
         if (name === 'select_blind') {
@@ -1633,13 +1761,12 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (this.roundEval) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn]) b.setVisible(false);
         // 商店里 Next Round / Reroll 由商店 UI 接管；开包时的 Skip 在开包界面上
         if (inShop || run.openPack) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn]) b.setVisible(false);
+        if (this.runOver) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn, this.rerollBossBtn]) b.setVisible(false);
 
-        if (run.state === 'game-over') {
-            this.message.setText('失败').setColor('#e5585f');
+        if (run.state === 'game-over' || round?.phase === 'lost') {
+            this.message.setText('');
         } else if (round?.phase === 'won') {
             this.message.setText('过关').setColor('#7ddf64');
-        } else if (round?.phase === 'lost') {
-            this.message.setText('分数不够').setColor('#e5585f');
         } else if (run.state !== 'shop') {
             this.message.setText('');
         }
@@ -1684,6 +1811,9 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.blindSelectViews.prompt.update(time / 1000);
         }
         if (this.round?.phase === 'won' && !this.animating && !this.roundEval) this.startRoundEval();
+        // `end_round`：没够分就直接 `G.STATE = GAME_OVER`，不用点任何按钮
+        if (this.round?.phase === 'lost' && !this.animating) this.gameOver();
+        this.stepOverlay(delta / 1000, time / 1000);
         if (this.shopUi) {
             const hidden = !!this.run.openPack;
             for (const v of [this.shopUi.view, ...this.shopUi.tags]) {
@@ -1762,7 +1892,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             else if (a.key === 'consumeables') [c.card_count, c.card_limit] = [run.consumables.length, run.consumableSlots];
             else if (a.key === 'hand') {
                 [c.card_count, c.card_limit] = [round?.hand.length ?? 0, round?.handLimit ?? 8];
-                a.view.setVisible(run.state === 'playing' && round?.phase === 'selecting' && !run.openPack);
+                a.view.setVisible(run.state === 'playing' && (round?.phase === 'selecting' || this.runOver) && !run.openPack);
             } else [c.card_count, c.card_limit] = [this.deckCount(), run.fullDeck.length];
         }
     }

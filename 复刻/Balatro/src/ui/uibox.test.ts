@@ -16,6 +16,7 @@ import { createShop, createShopSign, priceTag, shopAreas } from './definitions/s
 import { createBoosterPack, packCardsArea } from './definitions/booster-pack';
 import { buyAndUseButton, shopBuyButton, useAndSellButtons } from './definitions/card-buttons';
 import { createHudBlind, makeHudBlindState } from './definitions/hud-blind';
+import { type GameOverState, createGameOver, createWin } from './definitions/game-over';
 import { hudBlindFuncs } from './definitions/hud-blind-funcs';
 import { makeHudState, createHud } from './definitions/hud';
 import oracle from './oracle.generated.json';
@@ -205,5 +206,19 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
             ['btn_shop_buy_and_use', () => { const c = card(); return new UIBox(buyAndUseButton(c), { align: 'cr', offset: { x: -0.3, y: 0 }, major: c }); }],
         ];
         for (const [name, make] of cases2) expectSame(dump(make()), cases.find((c) => c.name === name)!.elements);
+    });
+
+    /** 游戏结束 / 胜利：`overlay_menu` 挂 `G.ROOM_ATTACH`、`cm`，offset 落定为 0。局面与 `ui-oracle.py` 那组同 */
+    it('create_UIBox_game_over 与 create_UIBox_win', () => {
+        const s: GameOverState = {
+            ante: 2, round: 5, seed: 'TESTSEED', seeded: true, bestHand: 1234,
+            mostPlayed: { hand: 'Two Pair', count: 5 },
+            cardsPlayed: 42, cardsDiscarded: 17, cardsPurchased: 6, timesRerolled: 3, newCollection: 0, blindKey: 'bl_head',
+        };
+        const room = { T: { x: 0, y: 0, w: 21, h: 11.2 } };
+        const over = new UIBox(createGameOver(s, [1, 0, 0, 0]), { align: 'cm', offset: { x: 0, y: 0 }, major: room });
+        expectSame(dump(over), cases.find((c) => c.name === 'game_over')!.elements);
+        const win = new UIBox(createWin(s, [0, 1, 0, 0]), { align: 'cm', offset: { x: 0, y: 0 }, major: room });
+        expectSame(dump(win), cases.find((c) => c.name === 'win')!.elements);
     });
 });

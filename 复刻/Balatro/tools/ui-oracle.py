@@ -503,6 +503,46 @@ def main():
                       ('btn_shop_buy_and_use', 'SHOP_TAROT.children.buy_and_use_button')]:
         cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
 
+    # 游戏结束 / 胜利界面：G.FUNCS.overlay_menu 挂在 G.ROOM_ATTACH 上（cm，offset 从 y=10 落定到 0）。
+    # 局面：TESTSEED 风格的指定 seed 对局，Ante 2 第 5 轮、输给 The Head；胜利那张用同一份统计
+    lua.execute(r'''
+      G.C.EDITION = {1,1,1,1}
+      Sprite = function(x, y, w, h) return Moveable(x, y, w, h) end
+      ease_value = function() end
+      local prev_localize = localize
+      localize = function(args, misc_cat)
+        if misc_cat == 'poker_hands' then return args end
+        return prev_localize(args, misc_cat)
+      end
+      G.GAME.round_resets.ante = 2
+      G.GAME.round = 5
+      G.GAME.seeded = true
+      G.GAME.pseudorandom = { seed = 'TESTSEED' }
+      G.GAME.round_scores = {
+        furthest_ante = {label = 'Ante', amt = 2}, furthest_round = {label = 'Round', amt = 5},
+        hand = {label = 'Best Hand', amt = 1234}, poker_hand = {label = 'Most Played Hand', amt = 0},
+        new_collection = {label = 'New Discoveries', amt = 0}, cards_played = {label = 'Cards Played', amt = 42},
+        cards_discarded = {label = 'Cards Discarded', amt = 17}, times_rerolled = {label = 'Times Rerolled', amt = 3},
+        cards_purchased = {label = 'Cards Purchased', amt = 6},
+      }
+      G.GAME.hand_usage = { TwoPair = { count = 5, order = 'Two Pair' }, Flush = { count = 2, order = 'Flush' } }
+      G.GAME.blind = { config = { blind = G.P_BLINDS.bl_head } }
+      function OVERLAY(def)
+        local box = UIBox{ definition = def, config = {align = 'cm', offset = {x=0,y=10}, major = G.ROOM_ATTACH, bond = 'Weak'} }
+        box.alignment.offset.y = 0
+        box.alignment.prev_type = ''
+        box:align_to_major()
+        box.T.x = box.role.major.T.x + box.role.offset.x
+        box.T.y = box.role.major.T.y + box.role.offset.y
+        box.UIRoot:initialize_VT()
+        return box
+      end
+      GAME_OVER = OVERLAY(create_UIBox_game_over())
+      WIN = OVERLAY(create_UIBox_win())
+    ''')
+    for name, var in [('game_over', 'GAME_OVER'), ('win', 'WIN')]:
+        cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 
