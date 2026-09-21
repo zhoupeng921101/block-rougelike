@@ -36,6 +36,9 @@ export function makeGameView(overrides: Partial<GameView> = {}): GameView {
         createConsumable: () => {
             throw new Error('这个 GameView 没有接造卡的口子，但有小丑要造塔罗——显式传进来');
         },
+        createPlayingCard: () => {
+            throw new Error('这个 GameView 没有接整副牌，但 Marble Joker 要造一张石头牌——显式传进来');
+        },
         smeared: false,
         ante: 1,
         startingDeckSize: 52,

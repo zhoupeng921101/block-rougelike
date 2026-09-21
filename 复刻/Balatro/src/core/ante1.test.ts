@@ -13,168 +13,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { BLIND_CENTERS } from './blinds';
-import { type Card, makeStandardDeck } from './card';
+import { makeStandardDeck } from './card';
 import { BOOSTER_CENTERS } from './boosters';
-import { isConsumableImplemented } from './consumables';
+import { clearOneBlind, playRound, shopAndLeave } from './fixtures/greedy-bot';
 import { makeJoker } from './jokers';
-import { evaluatePokerHand } from './poker-hands';
-import type { Round } from './round';
 import { Run } from './run';
 import { SHOP_JOKER_MAX, shopItemKey } from './shop';
-import type { HandInfo, HandName } from './scoring';
-
-/**
- * 穷举手牌的所有 ≤5 张子集，挑得分最高的那一组。
- *
- * 手牌 8 张，子集数 `C(8,1..5) = 218`，穷举比写启发式便宜也准。
- * **不算小丑**——挑哪一手只需要个排序，小丑的加成不改相对优劣的大方向，
- * 而把小丑算进来就得把整条管线跑 218 遍（还会污染 RNG 状态）。
- */
-function bestPlay(hand: Card[], hands: Record<HandName, HandInfo>): { cards: Card[]; score: number } {
-    let best: { cards: Card[]; score: number } = { cards: [], score: -1 };
-
-    const walk = (start: number, picked: Card[]) => {
-        if (picked.length >= 1) {
-            const results = evaluatePokerHand(picked);
-            const name = results.topName;
-            if (name && results.top) {
-                const info = hands[name];
-                const chips = info.chips + results.top[0].reduce((n, c) => n + c.base.nominal, 0);
-                const score = Math.floor(chips * info.mult);
-                if (score > best.score) best = { cards: [...picked], score };
-            }
-        }
-        if (picked.length === 5) return;
-        for (let i = start; i < hand.length; i++) {
-            picked.push(hand[i]);
-            walk(i + 1, picked);
-            picked.pop();
-        }
-    };
-    walk(0, []);
-
-    return best;
-}
-
-/**
- * 决定「留哪 5 张」。
- *
- * 追同花是基础牌组在 Ante 1 的标准打法：同花 300 分，一手就够小盲注，
- * 而一对只有 50–60 分，四手打满也过不了。所以弃牌的目标是**把同花凑出来**，
- * 凑不动才退回「留最大的同点数组」。
- */
-function keepSet(hand: Card[]): Card[] {
-    const candidates: Array<{ cards: Card[]; value: number }> = [];
-
-    // 同花项目：同花色的牌，张数越多越值钱
-    for (const suit of ['Spades', 'Hearts', 'Clubs', 'Diamonds'] as const) {
-        const same = hand
-            .filter((c) => c.base.suit === suit)
-            .sort((a, b) => b.base.nominal - a.base.nominal)
-            .slice(0, 5);
-        if (same.length >= 3) candidates.push({ cards: same, value: 100 * same.length });
-    }
-
-    // 同点数项目：三条 / 四条比一对值钱得多
-    const byId = new Map<number, Card[]>();
-    for (const card of hand) {
-        const list = byId.get(card.base.id) ?? [];
-        list.push(card);
-        byId.set(card.base.id, list);
-    }
-    for (const group of byId.values()) {
-        if (group.length >= 2) candidates.push({ cards: group, value: 90 * group.length });
-    }
-
-    if (candidates.length === 0) {
-        // 什么项目都没有 → 留点数最高的 3 张，剩下全换
-        return [...hand].sort((a, b) => b.base.nominal - a.base.nominal).slice(0, 3);
-    }
-    candidates.sort((a, b) => b.value - a.value);
-    return candidates[0].cards;
-}
-
-/**
- * 把一局打完。
- *
- * 出牌的条件：这一手就能过关、或者手已经打得够好（≥250，约等于一个同花的量级）、
- * 或者没得选了（最后一手 / 弃牌用尽）。否则按 `keepSet` 弃牌换牌。
- */
-function playRound(round: Round): void {
-    let guard = 0;
-    while (round.phase === 'selecting') {
-        if (guard++ > 40) throw new Error('打不完——策略死循环了');
-
-        const best = bestPlay(round.hand, round.hands);
-        const need = round.requirement - round.chips;
-        const mustPlay = round.discardsLeft === 0 || round.handsLeft === 1;
-
-        if (mustPlay || best.score >= need || best.score >= 250) {
-            round.play(best.cards);
-            continue;
-        }
-
-        const keep = keepSet(round.hand);
-        const spare = round.hand
-            .filter((c) => !keep.includes(c))
-            .sort((a, b) => a.base.nominal - b.base.nominal)
-            .slice(0, 5);
-
-        if (spare.length === 0) {
-            round.play(best.cards);
-            continue;
-        }
-        round.discard(spare);
-    }
-}
-
-/**
- * 在商店里能买就买、买不了就走。返回买到的 key。
- *
- * **星球牌买了就立刻用掉**：消耗品区只有 2 格，攒着没有意义，
- * 而升牌型是越早越好（后面每一手都吃到）。还没实现行为的塔罗不买——
- * 买了占格子、用不了，`canUseConsumable` 会告诉我们。
- */
-function shopAndLeave(run: Run, buyConsumables = false): string[] {
-    if (run.state !== 'shop') throw new Error(`现在是 ${run.state}，不在商店`);
-    const bought: string[] = [];
-
-    for (let i = run.shop!.items.length - 1; i >= 0; i--) {
-        const item = run.shop!.items[i];
-        if (item.cost > run.dollars) continue;
-
-        if (item.kind === 'joker') {
-            if (run.jokersFull) continue;
-            bought.push(run.buyJoker(i).key);
-            continue;
-        }
-
-        if (!buyConsumables || run.consumablesFull) continue;
-        if (!isConsumableImplemented(item.consumable.key)) continue;
-        bought.push(run.buyConsumable(i).key);
-        run.useConsumable(run.consumables.length - 1);
-    }
-    run.leaveShop();
-    return bought;
-}
-
-/** 打一关 + 逛一次商店。返回这一关的记录。 */
-function clearOneBlind(
-    run: Run,
-    buyConsumables = false,
-): { kind: string; requirement: number; chips: number; bought: string[] } {
-    const kind = run.blindKind;
-    const round = run.startRound();
-    const requirement = round.requirement;
-    playRound(round);
-
-    if (round.phase !== 'won') {
-        throw new Error(`${kind} 盲注没打过：${round.chips} / ${requirement}`);
-    }
-    const chips = round.chips;
-    run.finishRound();
-    return { kind, requirement, chips, bought: shopAndLeave(run, buyConsumables) };
-}
 
 describe('打通 Ante 1', () => {
     it('小盲注 → 商店 → 大盲注 → 商店 → Boss → 商店 → Ante 2', () => {
@@ -214,7 +58,7 @@ describe('打通 Ante 1', () => {
         let planets = 0;
         for (let i = 0; i < 3; i++) {
             const before = run.consumableUsage.total.planet;
-            clearOneBlind(run, true);
+            clearOneBlind(run, { consumables: true });
             planets += run.consumableUsage.total.planet - before;
         }
         expect(planets, 'QQQ777 的 Ante 1 三个商店里应该买得到星球').toBeGreaterThan(0);
@@ -449,7 +293,7 @@ describe('天体包的供给量', () => {
 
     /**
      * **这一条是 17 号票的验收**：接上补充包之后，整局用掉的星球张数
-     * 要比只有商店时多。贪心策略见 `shopAndLeave`——
+     * 要比只有商店时多。贪心策略见 `fixtures/greedy-bot.ts`——
      * 它不挑牌，所以塔罗基本用不出来，量出来的就是星球那一条线。
      */
     it('带补充包跑完 Ante 1，星球供给比只有商店时多', () => {
@@ -467,30 +311,7 @@ function runAnte1(seed: string, buyPacks: boolean): number {
         playRound(round);
         if (round.phase !== 'won') break;
         run.finishRound();
-
-        if (buyPacks) {
-            for (let p = 0; p < run.shop!.packs.length; p++) {
-                if (!run.canBuyPack(p)) continue;
-                run.buyAndOpenPack(p);
-                let guard = 0;
-                while (run.openPack && guard++ < 10) {
-                    const idx = run.openPack.cards.findIndex((_, j) => run.canTakeFromPack(j));
-                    if (idx < 0) break;
-                    run.takeFromPack(idx);
-                }
-                if (run.openPack) run.skipPack();
-                useAllConsumables(run);
-            }
-        }
-        shopAndLeave(run, true);
-        useAllConsumables(run);
+        shopAndLeave(run, { consumables: true, packs: buyPacks });
     }
     return run.consumableUsage.total.planet;
-}
-
-/** 把用得掉的消耗品全用掉（不挑手牌，所以只有星球那一类用得了） */
-function useAllConsumables(run: Run): void {
-    for (let i = run.consumables.length - 1; i >= 0; i--) {
-        if (run.canUseConsumable(i, [])) run.useConsumable(i, []);
-    }
 }

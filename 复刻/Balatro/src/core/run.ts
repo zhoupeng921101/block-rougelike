@@ -36,7 +36,7 @@ import {
     openBooster,
     releasePack,
 } from './booster-open';
-import { type Card, type Suit, makeStandardDeck } from './card';
+import { type Card, P_CARDS, type Suit, makeCard, makeStandardDeck } from './card';
 import { negativeCount } from './editions';
 import { sealEndOfRoundPlanet } from './seals';
 import { getEndOfRoundDollars } from './enhancements';
@@ -186,6 +186,26 @@ export class Run {
     }
 
     /**
+     * `card.lua:2584` 的 `Marble Joker`：造一张扑克牌进整副牌。
+     *
+     * **消费一次 `pseudorandom_element(P_CARDS, pseudoseed(key))`**——
+     * `P_CARDS` 是以 key 为键的表，抽取按 key 的字节序排（不是 2→A 的牌序），
+     * 与标准包造牌走的是同一条路。
+     *
+     * 只进 `fullDeck`：原文把它 `emplace` 进 `G.play`（出牌区）而不是牌堆，
+     * 所以这一关摸不到它，要等下一次洗牌。
+     */
+    private createPlayingCard(enhancement: string | null, key: string): void {
+        const [, frontKey] = pseudorandomElement(P_CARDS, this.rng.pseudoseed(key));
+        const front = P_CARDS[String(frontKey)];
+        const card = makeCard(String(frontKey), front.suit, front.value);
+        card.enhancement = enhancement;
+        this.fullDeck.push(card);
+        // 整副牌变了，`Steel/Stone Joker` 与 `Driver's License` 的 tally 要跟着重算
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck);
+    }
+
+    /**
      * `card.lua:2419` 的 `Perkeo`：把消耗品区里**随机一张**复制成 Negative 的。
      *
      * Negative 的消耗品**不占格子**（`consumableSlots` 从 `negativeCount` 算），
@@ -255,6 +275,7 @@ export class Run {
                 castleSuit: this.castleSuit,
             },
             onRemoveFromDeck: (cards) => this.removeFromDeck(cards),
+            onCreatePlayingCard: (enhancement, key) => this.createPlayingCard(enhancement, key),
             consumables: this.consumableHooks(),
             handSizeDelta: this.handSizeDelta,
         });
@@ -661,7 +682,14 @@ export class Run {
         for (const joker of [...this.jokers]) {
             calculateJoker(
                 joker,
-                { using_consumeable: true, consumeable: { set: consumable.center.set } },
+                {
+                    using_consumeable: true,
+                    consumeable: { set: consumable.center.set, name: consumable.center.name },
+                    // `Glass Joker` 要数 The Hanged Man 毁掉了几张玻璃牌。
+                    // **牌已经被毁了，但数组还在**——原文读的 `G.hand.highlighted`
+                    // 那时也还没清（销毁是入队的），语义一致
+                    highlighted,
+                },
                 this.round?.gameView() ?? this.shopGameView(),
             );
         }
@@ -710,7 +738,8 @@ export class Run {
                 this.removeFromDeck(cards);
                 this.round?.removeCards(cards);
                 // `card.lua:1370`：销毁之后跑小丑的 `remove_playing_cards`。
-                // 那一组小丑还没实现，调用点先留着——位置在销毁之后
+                // 位置在销毁之后。`Glass Joker` 在这条上**数不到**——被 The Hanged Man
+                // 毁掉的牌没有 `shattered`，它走下面 `using_consumeable` 那一趟
                 for (const joker of this.jokers) {
                     calculateJoker(
                         joker,
@@ -790,6 +819,7 @@ export class Run {
             consumableCards: this.consumables,
             duplicateConsumableAsNegative: (key) => this.duplicateConsumableAsNegative(key),
             createConsumable: (set, keyAppend) => this.consumableHooks().create(set, keyAppend),
+            createPlayingCard: (enhancement, key) => this.createPlayingCard(enhancement, key),
             deckCount: this.fullDeck.length,
             startingDeckSize: this.fullDeck.length,
             playingCardCount: this.fullDeck.length,

@@ -148,6 +148,20 @@ Label: wayfinder:map
 > **下一刀最划算的是强化牌那 9 张小丑**（`coverage.test.ts` 里最大的一组，
 > 前置全在）。但**在那之前值得先写一个会挑牌的策略**——
 > 不然「还差多少内容」这个问题永远测不出来。
+>
+> **强化牌那 9 张已交付**（没开新票，前置全在）。746 个测试绿。
+> **小丑覆盖面 133 / 150**，剩 17：增删牌 8 / 负债 4 / 标签 3 / 关掉 Boss 2。
+>
+> **上面那条「先写策略」的预判被实测坐实了。** 墙现在有了钉住的快照
+> （`src/core/depth.test.ts` + 共享 bot `src/core/fixtures/greedy-bot.ts`，
+> `ante1.test.ts` 也改用它）：八个 seed 平均 **2.625**，**这一刀前后逐 seed 完全相同**
+> ——连买到的小丑与星球张数都一样，也就是 RNG 流一步都没分叉。
+> 原因是结构性的：9 张要整副牌里有强化牌，强化牌来自塔罗（要选手牌）与标准包，
+> 贪心两样都用不出来。**2.625 与上面的 3.375 不可比**——那是一次性脚本，
+> seed 与阈值都没留下来。从这里起以快照为准。
+>
+> **下一刀：会挑牌的策略。** 不是可选项了——不做它，后面任何内容量出来都是零，
+> 包括「增删牌」那 8 张。
 
 ## Not yet specified
 
@@ -444,6 +458,21 @@ Label: wayfinder:map
   把价格烤进商品对象会让它只在「开商店之前就握着」时生效。
 - **销毁判定里小丑那一趟排在玻璃牌之前，而且两个 if 是并列的**
   （`state_events.lua:977` / `:982`）——小丑毁掉了也**照样掷 `glass`**。
+
+- **`context.cards_destroyed` 是死代码。** `card.lua:2625` 有这个分支（Glass Joker 在里面），
+  但全仓没有一处调用方传它。Glass Joker 实际生效的是另外两条：
+  `remove_playing_cards`（计分碎牌，数 `shattered`）与
+  `using_consumeable` + `The Hanged Man`（数 `G.hand.highlighted` 里的玻璃牌）。
+  **两条靠 `shattered` 互斥**——被 The Hanged Man 毁掉的牌不带这个标记，所以不会被数两遍。
+- **`lucky_trigger` 的清除点在小丑逐张循环之后**（`state_events.lua:721`），
+  不在 getter 里。它由 `get_chip_mult` / `get_p_dollars` 置位，中倍率或中钱都算。
+  漏清会让 `Lucky Cat` 在后面每张牌上都当成「刚中了」。
+- **`Vampire` 的 `not v.vampired` 护栏在复刻件里是多余的**：`set_ability(c_base)` 是同步的，
+  吸完那张牌的 center 当场就是 `Default Base`，第二次扫描已经进不来。
+- **`Marble Joker` 造的牌进的是 `G.play` 不是 `G.deck`**，所以这一关摸不到它。
+  复刻件只进 `Run.fullDeck`。它跟着入队的 `G.deck.config.card_limit + 1` 是牌堆那一摞的
+  视觉高度，不是数值上限，不建模。
+- **`Driver's License` 的门槛 16 写死在代码里**，`config.extra = 3` 是倍率不是门槛。
 
 ## Out of scope
 

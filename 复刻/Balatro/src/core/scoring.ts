@@ -355,7 +355,13 @@ export function evaluatePlay(
                 if (eval_.jokers) effects.push({ jokers: eval_.jokers });
             }
 
-            // `state_events.lua:721`：**顺序是 chips → mult → dollars → extra → x_mult**。
+            // `state_events.lua:721`：**小丑逐张循环跑完立刻清 `lucky_trigger`**。
+            // 它在本趟的 `evalCard(card, …)` 里被置位，唯一的读者是 `Lucky Cat`，
+            // 而 `Lucky Cat` 就在上面那个循环里。漏了这一行它会一路留到回合结束，
+            // 后面每张牌的每次重复都会被 `Lucky Cat` 当成「刚中了」
+            card.lucky_trigger = undefined;
+
+            // `state_events.lua:723`：**顺序是 chips → mult → dollars → extra → x_mult**。
             // x_mult 排在最后，所以同一张牌上「加倍率」总是先于「乘倍率」。
             for (const effect of effects) {
                 const applied = applyCardEffect(effect, handChips, mult, game);
@@ -553,7 +559,7 @@ export function evaluatePlay(
     // `pseudorandom('glass')` 的消费条件是「这张是玻璃牌且没被 debuff」——
     // Lua 的 `and` 短路让前两条不成立时不掷点。**中不中都消耗**，
     // 而且小丑那边的 `destroying_card` 判定**不会**让它跳过（原文两个 if 是并列的）。
-    // `destroying_card` 那一组小丑（DNA / Hologram 之类）还没实现，先只做玻璃牌
+    // `destroying_card` 那一组里目前只有 `Sixth Sense`，DNA 之类还没实现
     const destroyed: Card[] = [];
     for (const card of scoringHand) {
         // `state_events.lua:977`：**小丑那一趟在玻璃牌判定之前**，
@@ -575,7 +581,18 @@ export function evaluatePlay(
             byGlass = game.pseudorandom('glass') < game.probabilities.normal / odds;
         }
 
-        if (byJoker || byGlass) destroyed.push(card);
+        if (byJoker || byGlass) {
+            // `state_events.lua:985`：**玻璃牌标 `shattered`，别的标 `destroyed`**。
+            // 这个区分是 `Glass Joker` 的判据——它只数碎掉的玻璃牌
+            if (isEnhancement(card, 'Glass Card')) card.shattered = true;
+            destroyed.push(card);
+        }
+    }
+
+    // `state_events.lua:995`：销毁名单定了之后问一遍每张小丑。
+    // **整批一次，不是逐张**，而且排在「真的把牌拿走」之前
+    for (const joker of game.jokers) {
+        calculateJoker(joker, { remove_playing_cards: true, removed: destroyed }, game);
     }
 
     // —— 第 14 步：全局唯一的一次乘法 ——

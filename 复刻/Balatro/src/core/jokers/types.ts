@@ -77,6 +77,12 @@ export type JokerAbility = {
     to_do_poker_hand?: HandName;
     /** `Cloud 9`：整副牌里有几张 9。由 `refreshDerivedAbilities` **重算**，不增量 */
     nine_tally?: number;
+    /** `Steel Joker`：整副牌里有几张钢铁牌。`card.lua:4188`，同样是**重算** */
+    steel_tally?: number;
+    /** `Stone Joker`：整副牌里有几张石头牌。`card.lua:4200` */
+    stone_tally?: number;
+    /** `Driver's License`：整副牌里有几张**带任意强化**的。`card.lua:4182` */
+    driver_tally?: number;
 };
 
 export type Joker = {
@@ -154,8 +160,18 @@ export type JokerContext = {
      * `Constellation`（星球）与 `Fortune Teller`（塔罗）读它。
      */
     using_consumeable?: boolean;
-    /** 跟着 `using_consumeable` 一起来的那张牌 */
-    consumeable?: { set: 'Tarot' | 'Planet' | 'Spectral' };
+    /**
+     * 跟着 `using_consumeable` 一起来的那张牌。
+     * **`name` 不是可有可无的**：`Glass Joker` 只认 `The Hanged Man`。
+     */
+    consumeable?: { set: 'Tarot' | 'Planet' | 'Spectral'; name?: string };
+    /**
+     * `G.hand.highlighted`——用消耗品时选中的那几张牌。
+     * `Glass Joker` 要数「这一次 The Hanged Man 毁掉了几张玻璃牌」，
+     * 而销毁是同步发生的、`removed` 那条路又已经被 `remove_playing_cards` 占了，
+     * 所以选中列表得单独传。
+     */
+    highlighted?: Card[];
     /**
      * `card.lua:2521` 的 `context.setting_blind`：**刚选定盲注**。
      * `Cartomancer` 在这时造一张塔罗。
@@ -179,7 +195,7 @@ export type JokerContext = {
     /**
      * `state_events.lua:996` 与 `card.lua:1370` 的 `remove_playing_cards`：
      * 有扑克牌被永久销毁（碎掉的玻璃牌 / The Hanged Man）。
-     * `Hologram` / `Glass Joker` 这一组读它，**都还没实现**，调用点先留着
+     * `Glass Joker` 读它（只数 `shattered`）；`Hologram` / `Caino` 也读，还没实现
      */
     remove_playing_cards?: boolean;
     /** 跟着 `remove_playing_cards` 一起来的那批牌 */
@@ -258,6 +274,17 @@ export type GameView = {
      * **消费一次 `pseudoseed(key)`**。
      */
     duplicateConsumableAsNegative(key: string): void;
+    /**
+     * `card.lua:2584` 的 `Marble Joker`：造一张扑克牌进 `G.playing_cards`。
+     * **消费一次 `pseudorandom_element(P_CARDS, pseudoseed(key))`**（`marb_fr`）。
+     *
+     * 原文把牌 `emplace` 进 `G.play`（出牌区）而不是牌堆，所以**这一关摸不到它**，
+     * 要等下一次洗牌。复刻件照这个语义走：只进 `Run.fullDeck`，不进当前这一局的牌堆。
+     *
+     * 原文还跟着入队一次 `G.deck.config.card_limit + 1`——那是牌堆**那一摞的视觉高度**，
+     * 不是任何数值上限，复刻件不建模。
+     */
+    createPlayingCard(enhancement: string | null, key: string): void;
     /**
      * `Smeared Joker` 在场——红桃认方块、黑桃认梅花。
      * 由 `modifiers.ts` 从小丑区算出来，不是每张小丑自己去 `find_joker`。

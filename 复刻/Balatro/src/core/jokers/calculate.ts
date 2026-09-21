@@ -34,6 +34,7 @@
  */
 
 import { type Card, type Suit, getId, isFace, isSuit } from '../card';
+import { isEnhancement } from '../enhancements';
 import { blueprintTarget } from './derived';
 import { smearedMatches } from './modifiers';
 import type { HandName } from '../poker-hands';
@@ -112,6 +113,32 @@ const INDIVIDUAL_PLAY: Record<string, Handler> = {
     // `card.lua:3146`
     'Smiley Face': (self, context, game) =>
         faceCheck(context.other_card!, game) ? { mult: self.ability.extra, card: self } : null,
+
+    /**
+     * `card.lua:3079`。**这张计分牌的幸运掷点刚中了**就长 x_mult。
+     *
+     * 读的是 `context.other_card.lucky_trigger`，而那个标记由
+     * `get_chip_mult` / `get_p_dollars` 在**本趟之前**置位、本趟之后清
+     * （`state_events.lua:721`）。所以它只在这一张牌的这一次重复里可见——
+     * 同一张幸运牌触发两次重复就长两次，是对的。
+     */
+    'Lucky Cat': (self, context) => {
+        if (context.blueprint) return null;
+        if (!context.other_card?.lucky_trigger) return null;
+        self.ability.x_mult += self.ability.extra;
+        return { message: 'upgrade', card: self };
+    },
+
+    /**
+     * `card.lua:3153`。计分牌里每有一张**黄金牌**就给 $4。
+     *
+     * 原文往 `G.GAME.dollar_buffer` 里加了一笔——**这里不加**，
+     * 本复刻的加钱是同步的，加了会让 `Bull` 把同一笔算两遍（见 map 的已知的坑）。
+     */
+    'Golden Ticket': (self, context) =>
+        isEnhancement(context.other_card!, 'Gold Card')
+            ? { dollars: self.ability.extra, card: self }
+            : null,
 
     // `card.lua:3162`
     Scholar: (self, context) =>
@@ -381,6 +408,51 @@ const BEFORE: Record<string, Handler> = {
         return { message: 'upgrade', card: self };
     },
 
+    /**
+     * `card.lua:3446`。把计分牌里的**人头牌全变成黄金牌**。
+     *
+     * 两件要注意的：
+     * - 判人头用 `is_face()`，所以 `Pareidolia` 在场时**整手都变金**
+     * - **换强化是破坏性的**：原来那张牌身上的强化（玻璃、钢铁…）直接没了。
+     *   它排在 `before`，所以变完之后这一手就按黄金牌计分
+     */
+    'Midas Mask': (self, context, game) => {
+        if (context.blueprint) return null;
+        let faces = 0;
+        for (const card of context.scoring_hand ?? []) {
+            if (faceCheck(card, game)) {
+                faces += 1;
+                card.enhancement = 'm_gold';
+            }
+        }
+        return faces > 0 ? { message: 'gold', card: self } : null;
+    },
+
+    /**
+     * `card.lua:3468`。计分牌里每有一张**带强化的**就 +0.1 倍率，
+     * 并且**把那张牌的强化吸掉**（变回普通牌）。
+     *
+     * 原文还有个 `not v.vampired` 的护栏，复刻件不需要：原文的
+     * `set_ability(c_base)` 是同步的，吸完那张牌的 `config.center.name`
+     * 当场就是 `"Default Base"`，第二次再扫也进不来。那个标志是为了
+     * 挡住**同一趟里另一张 Vampire**，而它挡的条件与 center 判定完全重合。
+     *
+     * `not v.debuff` 要照抄：**被 debuff 的牌不吸**。
+     */
+    Vampire: (self, context) => {
+        if (context.blueprint) return null;
+        let enhanced = 0;
+        for (const card of context.scoring_hand ?? []) {
+            if (card.enhancement !== null && !card.debuff) {
+                enhanced += 1;
+                card.enhancement = null;
+            }
+        }
+        if (enhanced === 0) return null;
+        self.ability.x_mult += self.ability.extra * enhanced;
+        return { message: `X${self.ability.x_mult}`, card: self };
+    },
+
     // `card.lua:3494`
     // 注意：**before 循环不消费返回值里的 `dollars`**（`state_events.lua:655-670`
     // 只看 `level_up`），所以这钱得自己加——原文也是自己调 `ease_dollars`。
@@ -643,6 +715,27 @@ const SELLING_CARD: Record<string, Handler> = {
 
 /** `card.lua:2700` 的 `context.using_consumeable`。**刚用掉一张消耗品** */
 const USING_CONSUMEABLE: Record<string, Handler> = {
+    /**
+     * `card.lua:2712`。**只认 `The Hanged Man`**：它毁掉几张玻璃牌就长几档。
+     *
+     * 为什么不走 `remove_playing_cards`：那条分支数的是 `shattered`，
+     * 而 `shattered` 只在**计分的销毁趟**里置位。被 The Hanged Man 毁掉的玻璃牌
+     * 没有这个标记，所以两条分支各管各的，同一张牌不会被数两遍。
+     *
+     * 原文读 `G.hand.highlighted`——**那时候牌还在**（销毁是入队的），
+     * 所以数的是「选中的里面有几张玻璃牌」，不是「已经毁掉了几张」。
+     */
+    'Glass Joker': (self, context) => {
+        if (context.blueprint) return null;
+        if (context.consumeable?.name !== 'The Hanged Man') return null;
+        const shattered = (context.highlighted ?? []).filter((c) =>
+            isEnhancement(c, 'Glass Card'),
+        ).length;
+        if (shattered === 0) return null;
+        self.ability.x_mult += self.ability.extra * shattered;
+        return { message: `X${self.ability.x_mult}`, card: self };
+    },
+
     // `card.lua:2730`。**只认星球**，塔罗不长
     Constellation: (self, context) => {
         if (context.blueprint) return null;
@@ -707,6 +800,28 @@ const DESTROYING_CARD: Record<string, Handler> = {
     },
 };
 
+/**
+ * `card.lua:2675` 的 `context.remove_playing_cards`：**有扑克牌被永久销毁**。
+ *
+ * 两个调用点：计分的销毁趟（`state_events.lua:996`）与
+ * 消耗品毁牌（`card.lua:1370`）。**两处都传整批**，不是逐张。
+ */
+const REMOVE_PLAYING_CARDS: Record<string, Handler> = {
+    /**
+     * `card.lua:2690`。销毁掉的那批里**碎掉的玻璃牌**有几张就长几档。
+     *
+     * `val.shattered` 这个条件把 The Hanged Man 那条路排除在外——
+     * 它走 `using_consumeable`（见上面那张表）。
+     */
+    'Glass Joker': (self, context) => {
+        if (context.blueprint) return null;
+        const glass = (context.removed ?? []).filter((c) => c.shattered).length;
+        if (glass === 0) return null;
+        self.ability.x_mult += self.ability.extra * glass;
+        return { message: `X${self.ability.x_mult}`, card: self };
+    },
+};
+
 /** `card.lua:2415` 的 `context.ending_shop`。**离开商店那一刻** */
 const ENDING_SHOP: Record<string, Handler> = {
     /**
@@ -722,6 +837,20 @@ const ENDING_SHOP: Record<string, Handler> = {
 
 /** `card.lua:2521` 的 `context.setting_blind`。**刚选定盲注** */
 const SETTING_BLIND: Record<string, Handler> = {
+    /**
+     * `card.lua:2583`。每关开始造一张**石头牌**进整副牌。
+     *
+     * `not (context.blueprint_card or self).getting_sliced` —— 被 `Ceremonial Dagger`
+     * 正在切掉的那张不算。`getting_sliced` 那张小丑还没实现，所以这条恒真，
+     * 接上它的时候要回来补。
+     *
+     * **牌进的是出牌区、不是牌堆**，所以这一关摸不到它（见 `createPlayingCard`）。
+     */
+    'Marble Joker': (self, _context, game) => {
+        game.createPlayingCard('m_stone', 'marb_fr');
+        return { message: 'plus_stone', card: self };
+    },
+
     // `card.lua:2548`。每关开始造一张塔罗
     Cartomancer: (self, _context, game) => {
         if (game.consumableCount >= game.consumable_slots) return null;
@@ -837,6 +966,29 @@ const MAIN: Record<string, Handler> = {
         chip_mod: self.ability.extra.chips,
     }),
 
+    /**
+     * `card.lua:3925` / `:3932`。整副牌里每有一张石头 / 钢铁牌就加一档。
+     *
+     * 两个 tally **不在这里数**，由 `derived.ts` 每次重算（`card.lua:4188`/`:4200`）——
+     * 所以卖掉一张石头牌、用 The Hanged Man 毁掉一张钢铁牌，下一手就立刻反映出来。
+     *
+     * **Steel Joker 给的是 `1 + 0.2×n`，不是 `0.2×n`**：它是乘算倍率，
+     * 少了那个 1 会在没钢铁牌时把倍率乘成 0。而 `tally > 0` 的护栏又挡住了
+     * 「零张时乘 1」这个空转——两者都要照抄。
+     */
+    'Stone Joker': (self) => {
+        const tally = self.ability.stone_tally ?? 0;
+        if (tally <= 0) return null;
+        const chips = self.ability.extra * tally;
+        return { message: `+${chips}`, chip_mod: chips };
+    },
+    'Steel Joker': (self) => {
+        const tally = self.ability.steel_tally ?? 0;
+        if (tally <= 0) return null;
+        const x = 1 + self.ability.extra * tally;
+        return { message: `X${x}`, Xmult_mod: x };
+    },
+
     // `card.lua:3939`。钱 > 0 才给，算的是 `dollars + dollar_buffer`
     Bull: (self, _context, game) => {
         const money = game.dollars + game.dollar_buffer;
@@ -844,6 +996,17 @@ const MAIN: Record<string, Handler> = {
             ? { message: `+${money * self.ability.extra}`, chip_mod: money * self.ability.extra }
             : null;
     },
+
+    /**
+     * `card.lua:3946`。整副牌里**带强化的**有 16 张以上就给 ×3。
+     *
+     * `>= 16` 这个门槛是**写死在代码里的**，不是 `config`——
+     * `extra` 是倍率 3，不是门槛。别把它读成 `>= extra`。
+     */
+    "Driver's License": (self) =>
+        (self.ability.driver_tally ?? 0) >= 16
+            ? { message: `X${self.ability.extra}`, Xmult_mod: self.ability.extra }
+            : null,
 
     // `card.lua:3977` / `:3983` / `:3990` / `:3995` / `:4007` / `:4013` / `:4037`
     // ——一组「读 ability.mult，非零才给」的自增型，原文逐个写了一遍
@@ -1026,6 +1189,11 @@ export function calculateJoker(
         return DESTROYING_CARD[name]?.(self, context, game) ?? null;
     }
 
+    // `card.lua:2675`。**排在 `destroying_card` 之后**，与原文的 elseif 链同序
+    if (context.remove_playing_cards) {
+        return REMOVE_PLAYING_CARDS[name]?.(self, context, game) ?? null;
+    }
+
     if (context.setting_blind) {
         return SETTING_BLIND[name]?.(self, context, game) ?? null;
     }
@@ -1198,6 +1366,7 @@ const NAMES_WITH_HANDLERS: ReadonlySet<string> = new Set([
     ...Object.keys(OPEN_BOOSTER),
     ...Object.keys(SKIPPING_BOOSTER),
     ...Object.keys(DESTROYING_CARD),
+    ...Object.keys(REMOVE_PLAYING_CARDS),
     ...Object.keys(ENDING_SHOP),
     // `calculateJoker` 开头那条 copycat 分支，不走查表
     'Blueprint',

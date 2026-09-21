@@ -33,9 +33,22 @@
 > 都用不出来；买小丑也不挑好坏。**下一步该先写一个会挑牌的策略**，
 > 不然「还差多少内容」这个问题永远测不出来。
 
+**强化牌那 9 张小丑已交付**：Marble / Steel / Stone Joker、Vampire、Midas Mask、
+Lucky Cat、Golden Ticket、Glass Joker、Driver's License。**小丑覆盖面 124 → 133 / 150**，
+剩下 17 张：增删牌 8 / 负债 4 / 标签 3 / 关掉 Boss 2。
+
+> **这 9 张对「墙」的贡献是零，而且是结构性的零。** 墙现在有了一张钉住的快照
+> （`src/core/depth.test.ts`，bot 在 `src/core/fixtures/greedy-bot.ts`）：
+> 八个 seed 平均 **2.625**，这一刀前后逐 seed 完全相同。八局里一张都没买到；
+> 就算买到也吃不上——它们要整副牌里有强化牌，而强化牌来自塔罗（要选手牌）
+> 与标准包，bot 两样都用不出来。
+>
+> **2.625 与上面那个 3.375 不可比**：那是一次性脚本量的，seed 与阈值都没留下来。
+> 从这里起以快照为准。**下一刀先写会挑牌的策略**，否则后面每一刀量出来都是零。
+
 > **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
 > 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
-> 逻辑层有 718 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
+> 逻辑层有 746 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
 > **版本与蜡封的贴图都没有移植**（原作每种版本一个 `.fs`、蜡封是四张叠图），
 > 这一版只用文字标出来（`✦多彩` / `▣红`）。
 
@@ -52,7 +65,7 @@ src/
 │   ├── blinds.generated.ts      30 条盲注定义（生成的，别手改）
 │   ├── economy.ts               回合收益与利息（evaluate_round）
 │   ├── shop.ts                  商店（get_current_pool / create_card_for_shop / 重掷）
-│   ├── fixtures/                对拍 fixture（12 条 Ante 1 Boss 外部真值）
+│   ├── fixtures/                12 条 Ante 1 Boss 外部真值 + 贪心 bot（depth.test.ts 用它量墙）
 │   ├── enhancements.ts          8 种强化牌（照抄原作那七个 getter，不收成表）
 │   ├── editions.ts              4 种版本（poll_edition / get_edition）
 │   ├── seals.ts                 4 种蜡封（四个钩子，四个小函数）

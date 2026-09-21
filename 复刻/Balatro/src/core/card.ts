@@ -87,6 +87,24 @@ export type Card = {
      * 只从标准包与几张幽灵牌来。
      */
     seal?: Seal;
+    /**
+     * `card.lucky_trigger`（`card.lua:990` / `:1078`）。
+     * **幸运牌这一次掷中了**——中倍率或中钱都置位。
+     *
+     * 生命周期极短：`eval_card` 跑牌面那一趟时置位，
+     * 同一张牌的小丑逐张循环跑完立刻清（`state_events.lua:721`）。
+     * 唯一的读者是 `Lucky Cat`。**清除不能漏**，漏了它会一路涨到回合结束。
+     */
+    lucky_trigger?: boolean;
+    /**
+     * `card.shattered`（`state_events.lua:988`）。
+     * **这张玻璃牌是在计分的销毁趟里碎的**，而不是被别的东西销毁的。
+     *
+     * 为什么要区分：`Glass Joker` 的 `remove_playing_cards` 分支只数 `shattered`，
+     * 而 `The Hanged Man` 毁掉的玻璃牌走的是它自己那条 `using_consumeable` 分支。
+     * 不区分会让同一张牌被数两遍。
+     */
+    shattered?: boolean;
     /** 目标变换的 x。**tile 单位，不是像素**——见 10 号票 */
     T: { x: number; y: number; w: number; h: number };
 };

@@ -24,7 +24,7 @@
  *    FIFO 下 The Fool 先跑。所以调用方要「先 apply、再记 lastTarotPlanet」。
  * 2. **`Death` 复制的是最右边那张**（`T.x` 最大），不是第一张。
  * 3. **`The Hanged Man` 销毁之后要跑小丑的 `remove_playing_cards`**
- *    （`card.lua:1370`）。那一组小丑还没实现，调用点先留着。
+ *    （`card.lua:1370`），调用点在 `Run`。`Glass Joker` 另走 `using_consumeable`。
  */
 
 import { type Card, type Suit, type Value, cardKey, makeBase } from '../card';
@@ -134,8 +134,7 @@ export const TAROT_SPECS: Record<string, ConsumableSpec> = {
 
     /**
      * `card.lua:1274`：销毁选中的牌（最多 2 张）。
-     * 销毁之后要跑小丑的 `remove_playing_cards`——那一组小丑还没实现，
-     * 调用点由 `Run` 留着。
+     * 销毁之后要跑小丑的 `remove_playing_cards`，调用点在 `Run`。
      */
     c_hanged_man: highlightSpec((_c, ctx) => {
         ctx.removeCards(selected(ctx));

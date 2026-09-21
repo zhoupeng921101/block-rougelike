@@ -39,6 +39,19 @@ export function refreshDerivedAbilities(
             case 'Cloud 9':
                 a.nine_tally = playingCards.filter((c) => getId(c) === 9).length;
                 break;
+            // `card.lua:4188` / `:4200`：整副牌里有几张钢铁 / 石头牌。
+            // **数的是整副牌（`G.playing_cards`），不是牌堆**——手里的、弃掉的都算
+            case 'Steel Joker':
+                a.steel_tally = playingCards.filter((c) => c.enhancement === 'm_steel').length;
+                break;
+            case 'Stone Joker':
+                a.stone_tally = playingCards.filter((c) => c.enhancement === 'm_stone').length;
+                break;
+            // `card.lua:4182`：`v.config.center.name ~= "Default Base"`——
+            // **任意一种强化都算**，不挑种类。没强化的 `enhancement` 是 null
+            case "Driver's License":
+                a.driver_tally = playingCards.filter((c) => c.enhancement !== null).length;
+                break;
             // `card.lua:4206`：空格子数，**再把小丑区里每张 Joker Stencil 自己也算一格**。
             // 那第二个循环不是笔误——Stencil 占着的格子也被当成「空的」算进去，
             // 所以两张 Stencil 在 5 格空 3 格时各给 ×5（3 + 2），不是 ×3

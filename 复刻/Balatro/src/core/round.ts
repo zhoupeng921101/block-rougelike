@@ -139,6 +139,12 @@ export type RoundOptions = {
      * 下一回合又会从 `fullDeck` 洗回来。
      */
     onRemoveFromDeck?(cards: Card[]): void;
+    /**
+     * `Marble Joker` 造一张扑克牌进整副牌。**不进这一局的牌堆**——
+     * 原文把它 `emplace` 进出牌区，所以这一关摸不到它。
+     * 由 `Run` 接上（它才持有 `fullDeck`）。
+     */
+    onCreatePlayingCard?(enhancement: string | null, key: string): void;
 };
 
 /**
@@ -229,6 +235,7 @@ export class Round {
     private readonly special: RoundSpecialCards;
     private readonly consumables: ConsumableHooks;
     private readonly onRemoveFromDeck?: (cards: Card[]) => void;
+    private readonly onCreatePlayingCard?: (enhancement: string | null, key: string) => void;
 
     constructor(seed: string, fullDeck: Card[], options: RoundOptions = {}) {
         this.ante = options.ante ?? 1;
@@ -239,6 +246,7 @@ export class Round {
         // `Four Fingers` 与 `Shortcut` 是小丑给的牌型判定松紧，
         // 与调用方传进来的（测试用）取并集
         this.onRemoveFromDeck = options.onRemoveFromDeck;
+        this.onCreatePlayingCard = options.onCreatePlayingCard;
         this.consumables = options.consumables ?? NO_CONSUMABLES;
         const passedFlags = options.jokerFlags ?? NO_JOKERS;
         const jokerMods = runModifiers(options.jokers ?? []);
@@ -336,6 +344,12 @@ export class Round {
                 return round.consumables.slots;
             },
             createConsumable: (set, keyAppend) => round.consumables.create(set, keyAppend),
+            createPlayingCard: (enhancement, key) => {
+                if (!round.onCreatePlayingCard) {
+                    throw new Error('这个 Round 没接 onCreatePlayingCard，但 Marble Joker 要造牌');
+                }
+                round.onCreatePlayingCard(enhancement, key);
+            },
             get consumableCards() {
                 return round.consumables.cards();
             },

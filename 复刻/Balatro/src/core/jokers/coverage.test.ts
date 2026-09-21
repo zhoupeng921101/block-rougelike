@@ -21,21 +21,13 @@ import { describe, expect, it } from 'vitest';
 import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, isJokerImplemented, unimplementedJokers } from './index';
 
 /**
- * 还没实现的 31 张，按**卡在哪个系统**分组。
+ * 还没实现的 17 张，按**卡在哪个系统**分组。
  *
  * 这份分组是这个文件真正的价值：一眼能看出「补哪个系统能一次解开多少张」。
  * 数字是当前的实际张数，实现一张就从下面删掉一行。
  */
 const BLOCKED: Readonly<Record<string, readonly string[]>> = {
 
-    /**
-     * 强化牌那 8 种已经落地（16 号票第 5 步），这 9 张**现在可以做了**，
-     * 只是还没做。下一刀最划算的就是它。
-     */
-    强化牌: [
-        'Marble Joker', 'Steel Joker', 'Vampire', 'Midas Mask', 'Stone Joker',
-        'Lucky Cat', 'Golden Ticket', 'Glass Joker', "Driver's License",
-    ],
     /** 生成 / 摧毁小丑与扑克牌。解开 8 张 */
     增删牌: [
         'Ceremonial Dagger', 'DNA', 'Madness', 'Riff-raff', 'Invisible Joker',
@@ -50,27 +42,26 @@ const BLOCKED: Readonly<Record<string, readonly string[]>> = {
 };
 
 describe('覆盖面', () => {
-    it('150 张里 124 张有行为', () => {
+    it('150 张里 133 张有行为', () => {
         const implemented = JOKER_KEYS_BY_ORDER.filter(isJokerImplemented);
         expect(implemented.length + unimplementedJokers().length).toBe(150);
-        expect(implemented).toHaveLength(124);
+        expect(implemented).toHaveLength(133);
     });
 
-    it('rarity 1 的 61 张里只剩 3 张没做', () => {
+    it('rarity 1 的 61 张里只剩 2 张没做', () => {
         const un = unimplementedJokers().filter((k) => JOKER_CENTERS[k].rarity === 1);
         expect(un.map((k) => JOKER_CENTERS[k].name)).toEqual([
             'Credit Card', // 负债上限 —— 钱要能扣到 -20
             'Riff-raff', // 生成小丑
-            'Golden Ticket', // 黄金牌（强化牌那一刀）
         ]);
     });
 
     /** 未实现的名单快照。**实现一张就来 `BLOCKED` 里删一行。** */
-    it('未实现的 26 张，与分组表逐条对得上', () => {
+    it('未实现的 17 张，与分组表逐条对得上', () => {
         const actual = unimplementedJokers().map((k) => JOKER_CENTERS[k].name).sort();
         const grouped = Object.values(BLOCKED).flat().slice().sort();
         expect(actual).toEqual(grouped);
-        expect(actual).toHaveLength(26);
+        expect(actual).toHaveLength(17);
     });
 
     it('分组表里没有重复，也没有拼错的名字', () => {
@@ -80,12 +71,12 @@ describe('覆盖面', () => {
         for (const name of all) expect(names.has(name), name).toBe(true);
     });
 
-    it('下一刀是强化牌那 9 张——它们的前置已经落地了', () => {
+    it('下一刀是增删牌那 8 张', () => {
         // 这条不是断言代码行为，是把「下一步做什么」的依据钉住：
         // 哪个分组最大，下一刀就先做它
         const sizes = Object.entries(BLOCKED).map(([k, v]) => [k, v.length] as const);
         const biggest = sizes.reduce((a, b) => (b[1] > a[1] ? b : a));
-        expect(biggest[0]).toBe('强化牌');
-        expect(biggest[1]).toBe(9);
+        expect(biggest[0]).toBe('增删牌');
+        expect(biggest[1]).toBe(8);
     });
 });

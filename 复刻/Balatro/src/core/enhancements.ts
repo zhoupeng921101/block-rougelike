@@ -97,6 +97,9 @@ export function getChipMult(card: Card, ctx: ProbContext): number {
 
     if (center.effect === 'Lucky Card') {
         if (ctx.pseudorandom('lucky_mult') < ctx.probabilities.normal / 5) {
+            // `card.lua:990`：中了就给 `Lucky Cat` 留个标记。
+            // **清除在小丑逐张循环之后**（`state_events.lua:721`），不在这里
+            card.lucky_trigger = true;
             return center.config.mult ?? 0;
         }
         return 0;
@@ -140,7 +143,11 @@ export function getPDollars(card: Card, ctx: ProbContext): number {
 
     if (center?.effect === 'Lucky Card') {
         // 掷点**无条件发生**，中不中都消耗
-        if (ctx.pseudorandom('lucky_money') < ctx.probabilities.normal / 15) ret += p;
+        if (ctx.pseudorandom('lucky_money') < ctx.probabilities.normal / 15) {
+            // `card.lua:1078`：中钱也置位，与中倍率共用一个标记
+            card.lucky_trigger = true;
+            ret += p;
+        }
         return ret;
     }
     return ret + p;
