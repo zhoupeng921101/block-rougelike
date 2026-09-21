@@ -13,6 +13,7 @@ import { makeCard, makeStandardDeck, resetCardCounters } from './card';
 import { packCardKey } from './booster-open';
 import { makeConsumable } from './consumables';
 import { makeJoker } from './jokers';
+import { PseudorandomState, pseudoshuffle } from './rng';
 import { Run } from './run';
 import { blindRequirement } from './scoring';
 
@@ -816,5 +817,90 @@ describe('赢（state_events.lua:113）', () => {
             if (i < 2) run.leaveShop();
         }
         expect(run.won).toBe(false);
+    });
+});
+
+/**
+ * 奥秘 / 幽灵包（22 号票）：开包先从牌堆顶发一手牌（`draw_from_deck_to_hand`），包里的消耗品**当场用**
+ * （`use_card`），不进消耗品区。商店里的牌堆是 Cash Out 时 `shuffle('cashout'..ante)` 洗出来的
+ */
+describe('奥秘包：发手牌、包里的塔罗当场用', () => {
+    /** ALEEB 第一个商店：第 2 格是 Arcana Pack */
+    function arcanaShop(): Run {
+        const run = new Run('ALEEB', makeStandardDeck());
+        const round = run.startRound();
+        (round as unknown as { phase: string }).phase = 'won';
+        run.finishRound();
+        run.dollars = 50;
+        expect(run.shop!.packs[1]!.center.kind).toBe('Arcana');
+        return run;
+    }
+    const nominalDesc = (cards: ReturnType<typeof makeCard>[]) => cards.map((c) => c.base.nominal);
+
+    it('手牌是 cashout1 洗出来的牌堆顶 8 张，按点数降序', () => {
+        const run = arcanaShop();
+        const deck = [...run.fullDeck];
+        pseudoshuffle(deck, new PseudorandomState('ALEEB').pseudoseed('cashout1'));
+        run.buyAndOpenPack(1);
+        const hand = run.packHand!;
+        expect(hand).toHaveLength(8);
+        expect(new Set(hand)).toEqual(new Set(deck.slice(-8)));
+        const n = nominalDesc(hand);
+        expect(n).toEqual([...n].sort((a, b) => b - a));
+    });
+
+    it('挑一张不用选牌的塔罗：当场生效、不进消耗品区，关包后手牌倒序压回牌堆底，再开一包摸的是接下来的 8 张', () => {
+        const run = arcanaShop();
+        const deck = [...run.fullDeck];
+        pseudoshuffle(deck, new PseudorandomState('ALEEB').pseudoseed('cashout1'));
+        const pack = run.buyAndOpenPack(1);
+        // 消耗品区塞满也不挡：包里的牌不进区
+        run.consumables.push(makeConsumable('c_pluto'), makeConsumable('c_pluto'));
+        const i = pack.cards.findIndex((_, j) => run.canTakeFromPack(j));
+        const hand = [...run.packHand!];
+        if (i >= 0) {
+            const card = pack.cards[i]!;
+            run.takeFromPack(i);
+            expect(run.consumables).toHaveLength(2);
+            expect(card.kind).toBe('consumable');
+            expect(run.lastTarotPlanet).toBe(card.kind === 'consumable' ? card.consumable.key : '');
+        } else {
+            run.skipPack();
+        }
+        expect(run.openPack).toBeNull();
+        expect(run.packHand).toBeNull();
+        const idle = (run as unknown as { idleDeck: unknown[] }).idleDeck;
+        expect(idle.slice(0, 8)).toEqual([...hand].reverse());
+        expect(new Set(idle.slice(-8))).toEqual(new Set(deck.slice(-16, -8)));
+    });
+
+    it('要选牌的塔罗：没选或选多了挑不走；选对了就对那几张手牌生效', () => {
+        const run = arcanaShop();
+        const pack = run.buyAndOpenPack(1);
+        const j = pack.cards.findIndex((c) => c.kind === 'consumable' && c.consumable.center.config.max_highlighted !== undefined
+            && ['c_magician', 'c_empress', 'c_heirophant', 'c_lovers', 'c_chariot', 'c_justice', 'c_devil', 'c_tower'].includes(c.consumable.key));
+        if (j < 0) return;
+        const c = pack.cards[j]!;
+        if (c.kind !== 'consumable') return;
+        expect(run.canTakeFromPack(j)).toBe(false);
+        expect(run.canTakeFromPack(j, run.packHand!.slice(0, 5))).toBe(false);
+        const target = run.packHand![0]!;
+        run.takeFromPack(j, [target]);
+        expect(target.enhancement).toBe(c.consumable.center.config.mod_conv);
+    });
+
+    it('负片小丑在小丑区满了也挑得走（can_select_card）', () => {
+        const run = new Run('ALEEB', makeStandardDeck());
+        const round = run.startRound();
+        (round as unknown as { phase: string }).phase = 'won';
+        run.finishRound();
+        run.dollars = 50;
+        for (const k of ['j_joker', 'j_jolly', 'j_sly', 'j_half', 'j_banner']) run.jokers.push(makeJoker(k));
+        const pack = run.buyAndOpenPack(0);
+        const c = pack.cards[0]!;
+        if (c.kind !== 'joker') throw new Error('第一格应是小丑包');
+        expect(run.canTakeFromPack(0)).toBe(false);
+        c.joker.edition = 'negative';
+        expect(run.canTakeFromPack(0)).toBe(true);
     });
 });

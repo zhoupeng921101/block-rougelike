@@ -40,17 +40,20 @@ const bySeed = (xs: Array<{ seed: string; ante: number }>) =>
 describe('贪心深度', () => {
     /**
      * 3.125 → 2.875（ZZZZZZ 5 → 3）：22 号票在模拟器上对出「赢下的那一手之后不补牌」（`game.lua:3558`）。
-     * 原先多补的牌会在 The Wheel 这类 Boss 下多掷 RNG、在回合结束时多算留手效果，后面全部分叉
+     * 原先多补的牌会在 The Wheel 这类 Boss 下多掷 RNG、在回合结束时多算留手效果，后面全部分叉。
+     *
+     * 包里的塔罗 / 星球 / 幽灵牌改成当场用（22 号票，`use_card`）之后均值不变、逐 seed 有进有退：
+     * JHZ7FPM 4 → 2、ZZZZZZ 3 → 5
      */
     it('八个 seed 各自死在第几个 Ante（平均 2.875）', () => {
         expect(bySeed(greedy)).toEqual({
             TUTORIAL: 2,
             ALEEB: 3,
             '7LB2WVPK': 4,
-            JHZ7FPM: 4,
+            JHZ7FPM: 2,
             QQQ777: 4,
             MNBVCXZ: 1,
-            ZZZZZZ: 3,
+            ZZZZZZ: 5,
             ABCDEF: 2,
         });
         expect(mean(greedy)).toBe(2.875);
@@ -78,14 +81,16 @@ describe('挑牌深度', () => {
      * 2.75 → 3.75 那次不是内容也不是策略，是 21 号票在模拟器上对出来的三处**原作行为**：
      * 开局造牌的规范序（同 seed 整副牌序全变）、红牌组 +1 弃牌、摸牌后手牌区按点数重排。
      * 这 8 局等于换了 8 局，新旧不可比。
+     *
+     * 包里的消耗品改成当场用（奥秘 / 幽灵包对发下来的手牌挑目标）：均值不变，TUTORIAL 4 → 5、JHZ7FPM 5 → 6、QQQ777 5 → 3
      */
     it('八个 seed 各自死在第几个 Ante（平均 3.75）', () => {
         expect(bySeed(picky)).toEqual({
-            TUTORIAL: 4,
+            TUTORIAL: 5,
             ALEEB: 3,
             '7LB2WVPK': 4,
-            JHZ7FPM: 5,
-            QQQ777: 5,
+            JHZ7FPM: 6,
+            QQQ777: 3,
             MNBVCXZ: 1,
             ZZZZZZ: 6,
             ABCDEF: 2,

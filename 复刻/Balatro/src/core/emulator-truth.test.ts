@@ -137,3 +137,38 @@ describe('TESTSEED 第二局：两对、弃五张、葫芦（2026-09-21 实机�
             .toEqual(['Raised Fist', 'Pareidolia']);
     });
 });
+
+/**
+ * ALEEB 第一个商店的 Arcana Pack（22 号票，2026-09-21 实机）。
+ *
+ * 奥秘包开包时从牌堆顶发一手牌。**牌堆在 Cash Out 时 `shuffle('cashout'..ante)` 过**（`button_callbacks.lua:3028`），
+ * 所以这手牌是确定的——复刻件以前根本没有这一步（包里的塔罗拿进消耗品区），这是它第一次被实机验证。
+ * 同一截图上：包里 Temperance / The Empress / The Soul，牌堆 44/52
+ */
+describe('ALEEB：Arcana Pack 发的手牌（2026-09-21 实机）', () => {
+    const run = new Run('ALEEB');
+
+    it('小盲注：弃 TC TD 2D → 顺子 260 → 一对 A，共 324；商店 Trading Card / Rocket、Buffoon / Arcana', () => {
+        run.startRound();
+        const round = run.round!;
+        expect(round.hand.map(cardId)).toEqual(['TC', 'TD', '9S', '7S', '6H', '5H', '4H', '2D']);
+        round.discard(pickCards(round.hand, 'TC,TD,2D'));
+        round.play(pickCards(round.hand, '9S,8D,7S,6H,5H'));
+        expect(round.chips).toBe(260);
+        round.play(pickCards(round.hand, 'AC,AD'));
+        expect(round.chips).toBe(324);
+        run.finishRound();
+        expect(run.dollars).toBe(9);
+        expect(run.shop!.items.map((i) => (i.kind === 'joker' ? i.joker.center.name : i.kind))).toEqual(['Trading Card', 'Rocket']);
+        expect(run.shop!.packs.map((p) => p?.center.kind)).toEqual(['Buffoon', 'Arcana']);
+    });
+
+    it('开 Arcana Pack：包里三张、发下来的手牌 QH TH TC 9D 8H 8D 7D 6C、牌堆剩 44', () => {
+        const pack = run.buyAndOpenPack(1);
+        expect(run.dollars).toBe(5);
+        expect(pack.cards.map((c) => (c.kind === 'consumable' ? c.consumable.center.name : c.kind)))
+            .toEqual(['Temperance', 'The Empress', 'The Soul']);
+        expect(run.packHand!.map(cardId)).toEqual(['QH', 'TH', 'TC', '9D', '8H', '8D', '7D', '6C']);
+        expect(run.fullDeck.length - run.packHand!.length).toBe(44);
+    });
+});

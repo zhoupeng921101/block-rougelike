@@ -720,21 +720,29 @@ function favouriteHand(run: Run): HandName {
     return best;
 }
 
-/** 包里这一张的分。负数 = 不要 */
-function packScore(run: Run, index: number): number {
+/**
+ * 包里这一张的分与（消耗品的）目标。负数 = 不要。
+ * 包里的消耗品**当场用**：奥秘 / 幽灵包对发下来的那手牌（`run.packHand`）挑目标，挑不出来就不要
+ */
+function packScore(run: Run, index: number): { score: number; targets: Card[] } {
     const card = run.openPack!.cards[index];
-    if (!run.canTakeFromPack(index)) return -1;
+    if (card.kind === 'consumable') {
+        const c = card.consumable;
+        if (!wantConsumable(run, c)) return { score: -1, targets: [] };
+        const targets = chooseTargets(c, run.packHand ?? [], mainSuit(run.fullDeck));
+        if (targets === null || !run.canTakeFromPack(index, targets)) return { score: -1, targets: [] };
+        if (c.center.set === 'Planet') {
+            return { score: c.center.config.hand_type === favouriteHand(run) ? 100 : 40, targets };
+        }
+        return { score: 30, targets };
+    }
+    if (!run.canTakeFromPack(index)) return { score: -1, targets: [] };
     if (card.kind === 'joker') {
         // 包里的小丑满了拿不了（`canTakeFromPack` 已经挡了），所以这里只按「加进去」算
         const gain = jokerGain(run, card.joker);
-        return gain > BUY_GAIN ? 50 + gain * 100 : -1;
+        return { score: gain > BUY_GAIN ? 50 + gain * 100 : -1, targets: [] };
     }
-    if (card.kind === 'card') return cardValue(card.card, mainSuit(run.fullDeck));
-    const c = card.consumable;
-    if (c.center.set === 'Planet') {
-        return c.center.config.hand_type === favouriteHand(run) ? 100 : 40;
-    }
-    return wantConsumable(run, c) ? 30 : -1;
+    return { score: cardValue(card.card, mainSuit(run.fullDeck)), targets: [] };
 }
 
 function openPack(run: Run, index: number): void {
@@ -748,15 +756,17 @@ function pickFromOpenPack(run: Run): void {
     while (run.openPack && guard++ < 10) {
         let bestIdx = -1;
         let best = -1;
+        let bestTargets: Card[] = [];
         for (let j = 0; j < run.openPack.cards.length; j++) {
-            const s = packScore(run, j);
-            if (s > best) {
-                best = s;
+            const { score, targets } = packScore(run, j);
+            if (score > best) {
+                best = score;
                 bestIdx = j;
+                bestTargets = targets;
             }
         }
         if (bestIdx < 0) break;
-        run.takeFromPack(bestIdx);
+        run.takeFromPack(bestIdx, bestTargets);
         // 星球拿到手就用，给下一张腾格子
         tidyConsumablesInShop(run);
     }

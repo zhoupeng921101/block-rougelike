@@ -46,7 +46,7 @@ import { type EvalRow, type EvalStep, RoundEval, evalTimeline } from '../../ui/d
 import { BLIND_TEXT, DICTIONARY } from '../../ui/lang.generated';
 import type { Rect, UIElement } from '../../ui/uibox';
 import { cardAreas } from '../areas';
-import { type Placed, alignConsumeable, alignHand, alignJokers, alignPlay } from '../align-cards';
+import { type Placed, alignConsumeable, alignHand, alignJokers, alignPackHand, alignPlay } from '../align-cards';
 import { type PackCardsObject, createBoosterPack, packCardsArea } from '../../ui/definitions/booster-pack';
 import { type CardAreaObject, createShop, createShopSign, priceTag, shopAreas } from '../../ui/definitions/shop';
 import { DeckSprite } from '../deck-sprite';
@@ -103,6 +103,8 @@ export class RunScene extends Scene {
     private packUi: { view: UIBoxView; area: PackCardsObject; rect: Rect } | null = null;
     /** 标准包里扑克牌的版本 / 蜡封文字标记（贴图没移植） */
     private packLabels: GameObjects.Text[] = [];
+    /** 奥秘 / 幽灵包发下来的那手牌（`run.packHand`）。点选进 `selected`，就是包里塔罗的目标 */
+    private packHandSprites: CardSprite[] = [];
     /** 商店里那些消耗品格。与 `shopSprites` 分开存，两者的类型不一样 */
     private shopConsumableSprites: ConsumableSprite[] = [];
     /** 商店格子下面那行价格／「未实现」标记 */
@@ -584,8 +586,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.run.useConsumable(index, highlighted);
         this.sound.play('tarot1', { volume: 0.6 });
         this.selected.clear();
-        // 塔罗会换点数 / 换花色 / 换强化 / 销毁手牌，**整个手牌区要重建**
+        // 塔罗会换点数 / 换花色 / 换强化 / 销毁手牌，**整个手牌区要重建**（开包时的手牌也是）
         this.rebuildHand();
+        if (this.run.openPack) this.rebuildPackCards();
         this.rebuildJokers();
         this.rebuildConsumables();
         this.refresh();
@@ -633,6 +636,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.packCardSprites = [];
         for (const t of this.packLabels) t.destroy();
         this.packLabels = [];
+        for (const s of this.packHandSprites) s.destroy();
+        this.packHandSprites = [];
         if (this.packUi) {
             this.packUi.view.destroy();
             this.packUi = null;
@@ -680,7 +685,18 @@ ${String(e instanceof Error ? e.message : e)}`)
                 this.packLabels.push(this.add.text(0, 0, tags, { fontFamily: 'monospace', fontSize: 15, color: '#9fd6ff' }).setDepth(40));
             }
         });
+        // 手牌区的开包分支（`cardarea.lua:441`）：发下来的牌抬到手牌区上方
+        this.packHandSprites = (this.run.packHand ?? []).map((c) => new CardSprite(this, c, (card) => this.togglePackHand(card)));
         this.layoutPackCards();
+    }
+
+    /** 点选开包时的手牌（`G.hand` 的 `highlight_limit` 是 5） */
+    private togglePackHand(card: Card): void {
+        if (this.animating || !this.run.packHand) return;
+        if (this.selected.has(card)) this.selected.delete(card);
+        else if (this.selected.size < 5) this.selected.add(card);
+        else return;
+        this.sound.play('cardSlide2', { volume: 0.3 });
     }
 
     /** `align_cards` 的 consumeable 分支，每帧摆（没选中的牌上下浮动） */
@@ -697,18 +713,29 @@ ${String(e instanceof Error ? e.message : e)}`)
                 s.place(p, i);
                 if (s instanceof CardSprite) this.packLabels[label++]?.setPosition(toPx(p.x), toPx(p.y + CARD_H + 0.1));
             });
+        const hand = this.packHandSprites;
+        for (const s of hand) s.highlighted = this.selected.has(s.card);
+        alignPackHand(this.areas.hand, hand.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX })), this.run.packHand?.length ?? 0, real)
+            .forEach((p, i) => hand[i]!.place(p, i));
     }
 
+    /**
+     * 挑走包里第 `index` 张。小丑进小丑区、扑克牌进牌组；塔罗 / 星球 / 幽灵牌**当场用**（`use_card`），
+     * 目标是开包时那手牌里选中的（与消耗品区的塔罗同一套 `selected`）
+     */
     private takeFromPack(index: number): void {
         if (this.animating || !this.run.openPack) return;
-        if (!this.run.canTakeFromPack(index)) {
+        const card = this.run.openPack.cards[index];
+        const highlighted = this.run.packHand ? this.selectedInOrder() : [];
+        if (!card || !this.run.canTakeFromPack(index, highlighted)) {
             this.sound.play('cancel', { volume: 0.4 });
-            this.message.setText('放不下了——先卖一张').setColor('#e5885f');
+            this.message.setText(card?.kind === 'consumable' ? this.whyCannotUse(card.consumable) : '放不下了——先卖一张').setColor('#e5885f');
             this.time.delayedCall(1400, () => this.message.setText(''));
             return;
         }
-        this.run.takeFromPack(index);
-        this.sound.play('card1', { volume: 0.5 });
+        this.run.takeFromPack(index, highlighted);
+        this.selected.clear();
+        this.sound.play(card.kind === 'consumable' ? 'tarot1' : 'card1', { volume: 0.5 });
         this.rebuildJokers();
         this.rebuildConsumables();
         if (!this.run.openPack) this.rebuildShop();
@@ -719,6 +746,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     private doSkipPack(): void {
         if (this.animating || !this.run.openPack) return;
         this.run.skipPack();
+        this.selected.clear();
         this.sound.play('cardSlide2', { volume: 0.4 });
         this.rebuildJokers();
         this.rebuildShop();
@@ -1363,7 +1391,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.roundEval?.cashView?.update(time / 1000);
         this.placeCards(time / 1000);
         // 牌堆：盲注里是剩余张数，盲注外整副牌都在牌堆里
-        this.deckSprite.update(this.areas.deck, this.round && this.run.state === 'playing' ? this.round.deck.length : this.run.fullDeck.length);
+        this.deckSprite.update(this.areas.deck, this.deckCount());
     }
 
     /**
@@ -1405,6 +1433,12 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     private hudBlindSig = '';
 
+    /** 牌堆里有几张：盲注里是剩余张数；盲注外整副牌都在牌堆里，开奥秘 / 幽灵包时扣掉发出去的那手 */
+    private deckCount(): number {
+        if (this.round && this.run.state === 'playing') return this.round.deck.length;
+        return this.run.fullDeck.length - (this.run.packHand?.length ?? 0);
+    }
+
     /**
      * 区域计数同步，以及 `cardarea.lua:283` 的隐藏规则：手牌区在商店、开包、回合结算、选盲注时不画框。
      * 牌堆的上限是整副牌的张数（原作 `G.deck.config.card_limit` 随加牌增长）。
@@ -1419,7 +1453,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             else if (a.key === 'hand') {
                 [c.card_count, c.card_limit] = [round?.hand.length ?? 0, round?.handLimit ?? 8];
                 a.view.setVisible(run.state === 'playing' && round?.phase === 'selecting' && !run.openPack);
-            } else [c.card_count, c.card_limit] = [round ? round.deck.length : run.fullDeck.length, run.fullDeck.length];
+            } else [c.card_count, c.card_limit] = [this.deckCount(), run.fullDeck.length];
         }
     }
 

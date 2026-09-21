@@ -7,8 +7,9 @@
 //   d:4C,5D,5C     弃这几张
 //   p:AC,QC,TC     出这几张
 //   cash           结算，进商店
+//   buy:<i>        买货架第 i 格（0 起）
 //   pack:<i>       买下并打开第 i 个补充包（0 起）
-//   take:<i>       从开着的包里拿第 i 张
+//   take:<i>[:牌]  从开着的包里拿第 i 张；包里的塔罗当场用，对发下来的手牌里这几张
 //   skip           跳过开着的包
 //   reroll         重掷商店
 //   next           离开商店，回到选盲注
@@ -80,8 +81,19 @@ for (const act of actions) {
                       : c.consumable.center.name;
             console.log(`  card   ${desc}`);
         }
+        // 奥秘 / 幽灵包从牌堆顶发的那手牌（按点数排好）
+        if (run.packHand) console.log(`  hand   ${line(run.packHand)}`);
     } else if (act.startsWith('take:')) {
-        run.takeFromPack(Number(act.slice(5)));
+        // `take:1` 或 `take:1:AS,KH`（包里的塔罗对发下来的这几张手牌用）
+        const [i, targets] = act.slice(5).split(':');
+        run.takeFromPack(Number(i), targets ? pickCards(run.packHand ?? [], targets) : []);
+        if (run.packHand) console.log(`  hand   ${line(run.packHand)}`);
+    } else if (act.startsWith('buy:')) {
+        const item = run.shop!.items[Number(act.slice(4))]!;
+        if (item.kind === 'joker') run.buyJoker(Number(act.slice(4)));
+        else if (item.kind === 'card') run.buyPlayingCard(Number(act.slice(4)));
+        else run.buyConsumable(Number(act.slice(4)));
+        console.log(`  $      ${run.dollars}`);
     } else if (act === 'skip') {
         run.skipPack();
     } else if (act === 'reroll') {

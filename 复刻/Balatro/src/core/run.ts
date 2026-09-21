@@ -28,7 +28,7 @@ import {
     getNewBoss,
     makeBlindState,
 } from './blinds';
-import { BOOSTER_CENTERS } from './boosters';
+import { BOOSTER_CENTERS, type BoosterKind } from './boosters';
 import {
     type OpenPack,
     type PackCard,
@@ -36,7 +36,7 @@ import {
     openBooster,
     releasePack,
 } from './booster-open';
-import { type Card, P_CARDS, type Suit, makeCard, makeStandardDeck } from './card';
+import { type Card, P_CARDS, type Suit, getNominal, makeCard, makeStandardDeck } from './card';
 import { negativeCount } from './editions';
 import { sealEndOfRoundPlanet } from './seals';
 import { getEndOfRoundDollars } from './enhancements';
@@ -58,7 +58,7 @@ import { calculateJoker, makeGameView, refreshDerivedAbilities, runModifiers, se
 import type { GameView, Joker } from './jokers';
 import { NO_JOKERS, type JokerFlags } from './poker-hands';
 import { PseudorandomState, pseudorandomElement, pseudoshuffle } from './rng';
-import { type JokerAreaHooks, Round, STARTING_PARAMS } from './round';
+import { type JokerAreaHooks, Round, STARTING_PARAMS, alignHand } from './round';
 import { type BlindType, type Tag, type TagTiming, isTagImplemented, makeTag, nextTagKey } from './tags';
 import { type HandInfo, type HandName, initialHands, levelUpHand } from './scoring';
 import {
@@ -126,6 +126,15 @@ export class Run {
      * **跨回合持续**，所以不能放在 `Round` 上。
      */
     handSizeDelta = 0;
+    /**
+     * 盲注之外的牌堆（`G.deck`），**末尾是牌堆顶**。开局 `deck:shuffle()`（key `'shuffle'`，`game.lua:2600`）、
+     * 每次 Cash Out `shuffle('cashout'..ante)`（`button_callbacks.lua:3028`）。奥秘 / 幽灵包从顶上发手牌，
+     * 关包时手牌逐张塞回底部。进盲注时 `Round` 按 `sort_id` 重洗，所以它只影响开包发的那手牌。
+     * 盲注之外新加 / 毁掉的牌由 `syncIdleDeck` 补齐（`G.deck:emplace` 插在最前）
+     */
+    private idleDeck: Card[] = [];
+    /** 奥秘 / 幽灵包发下来的手牌（开包时的 `G.hand`）。没开这类包时是 null */
+    packHand: Card[] | null = null;
     /** `G.GAME.ecto_minus`（`card.lua:1497`）。从 1 起，每用一张 Ectoplasm +1 */
     private ectoMinus = 1;
     /**
@@ -220,6 +229,9 @@ export class Run {
         this.seed = seed;
         this.rng = new PseudorandomState(seed);
         this.fullDeck = deck;
+        // `game.lua:2600`：开局那一洗（默认 key `'shuffle'`）。只有开局就开包（Charm Tag 之类）时看得到它
+        this.idleDeck = [...deck];
+        pseudoshuffle(this.idleDeck, this.rng.pseudoseed('shuffle'));
 
         // `game.lua:2394`：开局就抽定 Ante 1 的 Boss
         this.bossKey = getNewBoss(this.ante, this.rng, this.bossesUsed);
@@ -475,6 +487,7 @@ export class Run {
             calculateJoker(joker, { open_booster: true }, this.shopGameView());
         }
         this.openPack = openBooster(this.rng, center, key, this.poolContext());
+        this.drawPackHand(center.kind);
         return true;
     }
 
@@ -851,7 +864,56 @@ export class Run {
         if (this.blindKind === 'boss' && this.ante === WIN_ANTE) this.won = true;
 
         this.advanceBlind();
+
+        // `blind.lua:212`：回合结束 `set_blind(nil)` 对整副牌重跑 `debuff_card`，没有盲注就全部解除
+        for (const card of this.fullDeck) card.debuff = false;
+        // `button_callbacks.lua:3028` 的 Cash Out：整副牌回到牌堆后洗一次。**Ante 已经是新的**（打完 Boss 的 `ease_ante` 先落地）。
+        // 复刻件的 Cash Out 只是表现层的按钮，逻辑上在这里就进了商店，这一洗只消费 `cashout<ante>` 这一条流
+        this.idleDeck = [...this.fullDeck];
+        pseudoshuffle(this.idleDeck, this.rng.pseudoseed(`cashout${this.ante}`));
         return { payout, won };
+    }
+
+    /**
+     * 盲注之外加进 / 移出整副牌的牌，同步进 `idleDeck`：没了的删掉，新来的按加入先后逐张插到最前
+     * （`G.deck:emplace` 对 deck 是 `table.insert(cards, 1, card)`，所以后加的更靠前）。开包发在手里的不算
+     */
+    private syncIdleDeck(): void {
+        const inDeck = new Set(this.fullDeck);
+        this.idleDeck = this.idleDeck.filter((c) => inDeck.has(c));
+        const known = new Set([...this.idleDeck, ...(this.packHand ?? [])]);
+        for (const card of this.fullDeck) if (!known.has(card)) this.idleDeck.unshift(card);
+    }
+
+    /** 盲注之外的手牌上限（`G.hand.config.card_limit`）：基数 + 小丑 + Ouija / Ectoplasm + Paint Brush 一类优惠券 */
+    private get idleHandLimit(): number {
+        return Math.max(0, STARTING_PARAMS.hand_size + runModifiers(this.jokers).handSize + this.handSizeDelta + this.vouchers.handSize);
+    }
+
+    /**
+     * `update_arcana_pack` / `update_spectral_pack` 里的 `G.FUNCS.draw_from_deck_to_hand()`（`state_events.lua:376`）：
+     * 从牌堆顶摸满手牌上限，摸完按点数排（`draw_card` 的 `sort = true`）
+     */
+    private drawPackHand(kind: BoosterKind): void {
+        if (kind !== 'Arcana' && kind !== 'Spectral') return;
+        this.syncIdleDeck();
+        const hand: Card[] = [];
+        const n = Math.min(this.idleDeck.length, this.idleHandLimit);
+        for (let i = 0; i < n; i++) hand.push(this.idleDeck.pop()!);
+        hand.sort((a, b) => getNominal(b) - getNominal(a));
+        alignHand(hand);
+        this.packHand = hand;
+    }
+
+    /**
+     * `end_consumeable` 的 `draw_from_hand_to_deck`（`state_events.lua:1142`）：每次摸手牌最左那张、插到牌堆最前，
+     * 所以回到牌堆里是**倒序**压在底部
+     */
+    private returnPackHand(): void {
+        if (!this.packHand) return;
+        this.syncIdleDeck();
+        for (const card of this.packHand) this.idleDeck.unshift(card);
+        this.packHand = null;
     }
 
     /**
@@ -1154,6 +1216,7 @@ export class Run {
 
         // ② 造包里的 `extra` 张
         this.openPack = openBooster(this.rng, slot.center, slot.key, this.poolContext());
+        this.drawPackHand(slot.center.kind);
         return this.openPack;
     }
 
@@ -1172,19 +1235,29 @@ export class Run {
      * 挑走的那张**留着 `used_jokers` 标记**（它还活着），
      * 没挑走的在关包时还回池子。
      */
-    takeFromPack(index: number): PackCard {
+    takeFromPack(index: number, highlighted: Card[] = []): PackCard {
         const pack = this.openPack;
         if (!pack) throw new Error('没有开着的补充包');
         const card = pack.cards[index];
         if (!card) throw new Error(`包里没有第 ${index} 张`);
 
+        if (card.kind === 'consumable') {
+            // 包里的塔罗 / 星球 / 幽灵牌**当场用掉**（`use_card` 的 consumeable 分支），不进消耗品区。
+            // 奥秘 / 幽灵包对 `packHand` 里选中的牌用。用完才减次数、才关包——没挑走的那几张用的时候还占着池子
+            if (!this.canTakeFromPack(index, highlighted)) {
+                throw new Error(`${card.consumable.center.name} 现在用不了（选中 ${highlighted.length} 张）`);
+            }
+            pack.cards.splice(index, 1);
+            this.runConsumable(card.consumable, highlighted);
+            pack.choicesLeft--;
+            if (pack.choicesLeft <= 0) this.closePack();
+            return card;
+        }
+
         if (card.kind === 'joker') {
-            if (this.jokersFull) throw new Error(`小丑区满了（${this.jokerSlots} 格）`);
+            if (!this.canTakeFromPack(index)) throw new Error(`小丑区满了（${this.jokerSlots} 格）`);
             this.jokers.push(card.joker);
             refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
-        } else if (card.kind === 'consumable') {
-            if (this.consumablesFull) throw new Error(`消耗品区满了（${this.consumableSlots} 格）`);
-            this.consumables.push(card.consumable);
         } else {
             // 标准包的扑克牌：**进整副牌**，牌组变大一张。
             // 不进当前这一局的牌堆——原作也是 `G.deck` 加，本局的 `Round` 已经洗过了
@@ -1200,12 +1273,17 @@ export class Run {
         return card;
     }
 
-    /** 这一张现在挑得了吗（`button_callbacks.lua:2225` 的 `can_select_card`） */
-    canTakeFromPack(index: number): boolean {
+    /**
+     * 这一张现在挑得了吗。小丑与扑克牌是 `can_select_card`（`button_callbacks.lua:2225`：**负片小丑满了也能拿**）；
+     * 消耗品是当场用，所以看 `can_use_consumeable`——奥秘 / 幽灵包里要选手牌的，`highlighted` 是 `packHand` 里选中的
+     */
+    canTakeFromPack(index: number, highlighted: Card[] = []): boolean {
         const card = this.openPack?.cards[index];
         if (!card) return false;
-        if (card.kind === 'joker') return !this.jokersFull;
-        if (card.kind === 'consumable') return !this.consumablesFull;
+        if (card.kind === 'joker') return !this.jokersFull || card.joker.edition === 'negative';
+        if (card.kind === 'consumable') {
+            return isConsumableImplemented(card.consumable.key) && canUseConsumable(card.consumable, this.useContext(highlighted));
+        }
         // 扑克牌进牌组，没有格子限制
         return true;
     }
@@ -1229,6 +1307,7 @@ export class Run {
         if (!this.openPack) return;
         releasePack(this.openPack, this.poolContext());
         this.openPack = null;
+        this.returnPackHand();
         // `button_callbacks.lua:2728`：标签开的包关掉之后，**再轮一次** `new_blind_choice`
         if (this.state === 'blind-select') this.applyNewBlindChoice();
     }
@@ -1294,14 +1373,21 @@ export class Run {
             throw new Error(`${consumable.center.name} 现在用不了（选中 ${highlighted.length} 张）`);
         }
 
-        // `card.lua:1094`：**计数在效果之前**，而且是同步的
-        recordConsumableUsage(this.consumableUsage, consumable);
-
         // **先离开消耗品区、再跑效果**：`The Emperor` 要往区里造两张，
         // 而它自己那一格得先空出来（原作是 `remove_card` 在 `use_consumeable` 之后，
         // 但 `G.consumeables.config.card_limit > #cards` 那个判定里
         // 用掉的那张已经被 `G.GAME.consumeable_buffer` 抵掉了，等价）
         this.consumables.splice(index, 1);
+        this.runConsumable(consumable, highlighted);
+    }
+
+    /**
+     * `use_card` 里 `use_consumeable` 起的那一段：计数、效果、还池、`using_consumeable` 遍历、`last_tarot_planet`。
+     * 消耗品区的与包里的共用（包里的在 `use_card` 开头就 `remove_card` 离开了 `G.pack_cards`）
+     */
+    private runConsumable(consumable: Consumable, highlighted: Card[]): void {
+        // `card.lua:1094`：**计数在效果之前**，而且是同步的
+        recordConsumableUsage(this.consumableUsage, consumable);
 
         const ctx = this.useContext(highlighted);
         this.addedByConsumable = [];
@@ -1366,7 +1452,7 @@ export class Run {
             discountPercent: this.discountPercent,
             hands: this.hands,
             highlighted,
-            handCards: this.round?.hand ?? [],
+            handCards: this.round?.hand ?? this.packHand ?? [],
             jokers: this.jokers,
             consumables,
             consumableSlots: this.consumableSlots,
@@ -1376,6 +1462,7 @@ export class Run {
             removeCards: (cards) => {
                 this.removeFromDeck(cards);
                 this.round?.removeCards(cards);
+                if (this.packHand) this.packHand = this.packHand.filter((c) => !cards.includes(c));
                 // `card.lua:1370`：销毁之后跑小丑的 `remove_playing_cards`。
                 // 位置在销毁之后。`Glass Joker` 在这条上**数不到**——被 The Hanged Man
                 // 毁掉的牌没有 `shattered`，它走下面 `using_consumeable` 那一趟
@@ -1406,7 +1493,9 @@ export class Run {
             addPlayingCard: (card) => {
                 // `create_playing_card`：进整副牌**与当前这一局的手牌**
                 this.fullDeck.push(card);
-                this.round?.addToHand(card);
+                if (this.round) this.round.addToHand(card);
+                // 开包时（`create_playing_card` 进 `G.hand`，接在最右）
+                else if (this.packHand) this.packHand.push(card);
                 this.addedByConsumable.push(card);
             },
             changeHandSize: (delta) => { this.handSizeDelta += delta; },

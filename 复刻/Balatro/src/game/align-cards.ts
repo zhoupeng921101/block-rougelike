@@ -100,3 +100,22 @@ export function alignConsumeable(area: Rect, cards: CardIn[], real: number, card
         return { x, y, r: 0 };
     });
 }
+
+/**
+ * `cardarea.lua:441`：开奥秘 / 幽灵 / 天体包时的手牌区（`G.STATE` 是 `*_PACK`）。整排抬到手牌区之上
+ * `1.8·card.h`、扇形更开（±0.2 弧度）、两端按平方下沉，晃得也更大（0.1）。`limit` 是 `config.temp_limit`
+ */
+export function alignPackHand(area: Rect, cards: CardIn[], limit: number, real: number): Placed[] {
+    const n = cards.length;
+    return cards.map((c, i) => {
+        const k = i + 1;
+        const w = c.w ?? CARD_W;
+        const h = c.h ?? CARD_H;
+        const r = (0.4 * (-n / 2 - 0.5 + k)) / n + 0.02 * Math.sin(2 * real + c.prevX);
+        let x = spread(area, k, n, limit, w);
+        const lift = c.highlighted ? HIGHLIGHT_H : 0;
+        const y = area.y - 1.8 * h - lift + 0.1 * Math.sin(0.666 * real + x) + Math.abs((1.3 * (-n / 2 + k - 0.5)) / n) ** 2 - 0.3;
+        x += cardShadowParallaxX(c.prevX, w) / 30;
+        return { x, y, r };
+    });
+}
