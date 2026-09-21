@@ -89,6 +89,13 @@ Caino / Yorick / Hologram。**小丑覆盖面 141 / 150**，剩 9：负债 4 / �
 Director's Cut 后多一个「重掷 Boss」，Voucher Tag 也接上了——**24 个标签里抽得到的 19 个全部有效果**。
 挑牌 bot 学会了买，但**默认不买**：只用余钱买与不买打平，先买明显更差（见票）。
 
+**外观轴第一刀**（[20 号票](../../.scratch/balatro-复刻/issues/20-外观轴第一刀-版本与卡面叠层.md)）：
+版本（Foil / Holo / Polychrome / Negative）、蜡封、优惠券扫光、补充包与幽灵牌的 `booster` 层都画出来了——
+原作是同一张卡换 shader 再画几遍，复刻件是同一位置多叠几个 quad。7 个 `.fs` 由生成器转方言，
+**全部 shader 都有 GLSL ES 1.00 的离线编译测试**（`src/game/shaders/shaders.test.ts`，用 Khronos 的 `glslangValidator`）。
+文字标记（`✦多彩` / `▣红`）先留着，等人眼确认 shader 画对了再删。
+顺带修了一个老 bug：石头牌与被 Boss 盖住的牌**点不到**（点击区挂在隐藏的正面层上，Phaser 不给隐藏对象派发输入）。
+
 > **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
 > 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
 > 逻辑层有 830 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
@@ -148,16 +155,16 @@ src/
 │   ├── consumable-sprite.ts     消耗品（单层，没有尺寸特例）
 │   ├── booster-sprite.ts        补充包（单层，画得比卡大 ×1.27）
 │   ├── voucher-sprite.ts        优惠券（单层，`voucher` 扫光 shader 没移植）
-│   ├── shaders/                 background / CRT / dissolve
+│   ├── shaders/                 background / CRT / dissolve + 7 个叠加层（editions.generated.ts）
 │   └── scenes/RunScene.ts       整局：手牌 / 小丑区 / 商店 / 收益明细
-└── tools/                    七个生成器 + 共用的 Lua 表解析器
+└── tools/                    八个生成器 + 共用的 Lua 表解析器
 ```
 
 ## 命令
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 871 个测试，必须全绿
+npm test            # 884 个测试，必须全绿（含 13 条 shader 编译检查）
 npm run test:slow   # 60 个 seed 量墙（约 30 秒，改了内容或 bot 之后跑）
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
@@ -173,6 +180,7 @@ node tools/gen-enhancement-centers.mjs
 node tools/gen-booster-centers.mjs
 node tools/gen-tag-centers.mjs
 node tools/gen-voucher-centers.mjs
+node tools/gen-edition-shaders.mjs   # 这个读的是 资源/shaders/*.fs，不是 game.lua
 ```
 
 七个生成器共用 `tools/lua-table.mjs` 的 Lua 表解析器。

@@ -1,9 +1,8 @@
 /**
  * 一张优惠券的表现层。
  *
- * 与消耗品同一个形状：**单层**，`Vouchers.png` 里那一格就是完整卡面。
- * 原作给优惠券单独一个 `voucher` shader（`card.lua:4448`，一层扫光），没有移植——
- * 与版本 shader 同一个处理，先用普通卡面顶着。
+ * 与消耗品同一个形状：`Vouchers.png` 里那一格就是完整卡面，外加一层 `voucher` 扫光
+ * （`card.lua:4454`，20 号票）。
  */
 
 import type { GameObjects, Scene } from 'phaser';
@@ -11,11 +10,11 @@ import type { GameObjects, Scene } from 'phaser';
 import { VOUCHER_ATLAS } from '../core/atlas';
 import type { VoucherCenter } from '../core/vouchers';
 import { CARD_H, CARD_W, toPx } from './coords';
-import { cardTimeOf, makeClickable, makeShaderQuad } from './shader-quad';
+import { LayeredQuad, cardTimeOf, makeClickable } from './shader-quad';
 
 export class VoucherSprite {
     private hoverTilt = 0;
-    readonly shader: GameObjects.Shader;
+    private readonly layers: LayeredQuad;
     readonly w = toPx(CARD_W);
     readonly h = toPx(CARD_H);
 
@@ -24,7 +23,7 @@ export class VoucherSprite {
         readonly center: VoucherCenter,
         private readonly onClick: () => void,
     ) {
-        this.shader = makeShaderQuad(scene, {
+        this.layers = new LayeredQuad(scene, {
             name: `voucher_${center.order}_${Math.random().toString(36).slice(2, 7)}`,
             textureKey: 'vouchers',
             atlas: VOUCHER_ATLAS,
@@ -34,8 +33,7 @@ export class VoucherSprite {
             w: this.w,
             h: this.h,
             tilt: () => this.hoverTilt,
-        });
-        this.shader.setDepth(2);
+        }, 2, { set: 'Voucher' });
 
         makeClickable(this.shader, this.w, this.h, {
             onClick: () => this.onClick(),
@@ -46,10 +44,15 @@ export class VoucherSprite {
 
     /** `xTiles` / `yTiles` 是左上角，tile 单位。换算只发生在这一层（10 号票） */
     layout(xTiles: number, yTiles: number): void {
-        this.shader.setPosition(toPx(xTiles) + this.w / 2, toPx(yTiles) + this.h / 2);
+        this.layers.setPosition(toPx(xTiles) + this.w / 2, toPx(yTiles) + this.h / 2);
+    }
+
+    /** 底层（点击区挂在它上面） */
+    get shader(): GameObjects.Shader {
+        return this.layers.main;
     }
 
     destroy(): void {
-        this.shader.destroy();
+        this.layers.destroy();
     }
 }

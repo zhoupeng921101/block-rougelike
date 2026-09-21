@@ -13,7 +13,7 @@ import type { GameObjects, Scene } from 'phaser';
 
 import type { Joker } from '../core/jokers';
 import { CARD_H, CARD_W, toPx } from './coords';
-import { JOKER_ATLAS, cardTimeOf, makeClickable, makeShaderQuad } from './shader-quad';
+import { JOKER_ATLAS, LayeredQuad, cardTimeOf, makeClickable } from './shader-quad';
 
 /**
  * `card.lua:238-257` 的那四条尺寸特例。
@@ -44,7 +44,8 @@ function sizeOf(joker: Joker): { w: number; h: number } {
 
 export class JokerSprite {
     private hoverTilt = 0;
-    readonly shader: GameObjects.Shader;
+    /** 卡面 + 版本叠加层（20 号票） */
+    private readonly layers: LayeredQuad;
     readonly w: number;
     readonly h: number;
     /** 被选中（商店里待买／小丑区里待卖） */
@@ -59,7 +60,7 @@ export class JokerSprite {
         this.w = w;
         this.h = h;
 
-        this.shader = makeShaderQuad(scene, {
+        this.layers = new LayeredQuad(scene, {
             // 名字要唯一：同一张小丑可能同时在商店和小丑区
             name: `joker_${joker.key}_${joker.center.order}_${Math.random().toString(36).slice(2, 7)}`,
             textureKey: 'jokers',
@@ -68,8 +69,7 @@ export class JokerSprite {
             cardTime: cardTimeOf(joker.center.order),
             w, h,
             tilt: () => this.hoverTilt,
-        });
-        this.shader.setDepth(2);
+        }, 2, { edition: joker.edition });
 
         makeClickable(this.shader, w, h, {
             onClick: () => this.onClick(this.joker),
@@ -81,18 +81,23 @@ export class JokerSprite {
     /** `xTiles` / `yTiles` 是左上角，tile 单位。换算只发生在这一层（10 号票）。 */
     layout(xTiles: number, yTiles: number): void {
         const lift = this.highlighted ? 0.35 : 0;
-        this.shader.setPosition(toPx(xTiles) + this.w / 2, toPx(yTiles - lift) + this.h / 2);
+        this.layers.setPosition(toPx(xTiles) + this.w / 2, toPx(yTiles - lift) + this.h / 2);
+    }
+
+    /** 底层（点击区挂在它上面） */
+    get shader(): GameObjects.Shader {
+        return this.layers.main;
     }
 
     pop(): void {
         this.scene.tweens.add({
-            targets: this.shader,
+            targets: this.layers.quads,
             scaleX: 1.2, scaleY: 1.2,
             duration: 110, yoyo: true, ease: 'Quad.easeOut',
         });
     }
 
     destroy(): void {
-        this.shader.destroy();
+        this.layers.destroy();
     }
 }

@@ -15,6 +15,7 @@ import { CARD_H, CARD_W, toPx } from './coords';
 import {
     CENTERS_ATLAS,
     DECK_ATLAS,
+    LayeredQuad,
     cardTimeOf,
     makeClickable,
     makeShaderQuad,
@@ -39,6 +40,17 @@ const BASE_POS = { x: 1, y: 0 } as const;
  */
 const BACK_POS = { x: 0, y: 0 } as const;
 
+/**
+ * 蜡封：`game.lua:193` 的 `G.shared_seals`，也在 `centers` 图集（`Enhancers.png`）里，不用新素材。
+ * `card.lua:4480`：用 `dissolve` 画在卡上，**Gold 再叠一层 `voucher` 扫光**
+ */
+const SEAL_POS: Record<string, { x: number; y: number }> = {
+    Gold: { x: 2, y: 0 },
+    Purple: { x: 4, y: 4 },
+    Red: { x: 5, y: 4 },
+    Blue: { x: 6, y: 4 },
+};
+
 export function atlasPos(card: Card): { x: number; y: number } {
     return { x: VALUE_COL[card.base.value], y: SUIT_ROW[card.base.suit] };
 }
@@ -53,9 +65,14 @@ export class CardSprite {
      */
     private hoverTilt = 0;
 
-    /** 底板层，画在正面之下 */
-    readonly base: GameObjects.Shader;
-    readonly shader: GameObjects.Shader;
+    /**
+     * 底板层，画在正面之下。**版本叠加层两层都有**（`card.lua:4458` 起，
+     * center 与 front 各叠一遍；Negative 两层都换底层 shader）
+     */
+    private readonly baseLayers: LayeredQuad;
+    private readonly frontLayers: LayeredQuad;
+    /** 蜡封（没有就是 null） */
+    private readonly seal: LayeredQuad | null;
     /**
      * 牌背层。盖着的牌（`card.facing === 'back'`）只显示它。
      *
@@ -86,26 +103,33 @@ export class CardSprite {
             ? ENHANCEMENT_CENTERS[card.enhancement].pos
             : BASE_POS;
 
-        this.base = makeShaderQuad(scene, {
+        const look = { edition: card.edition };
+        this.baseLayers = new LayeredQuad(scene, {
             name: `base_${card.key}_${card.unique_val}`,
             textureKey: 'centers',
             atlas: CENTERS_ATLAS,
             pos: basePos,
             cardTime, w, h, tilt,
-        });
-        this.base.setDepth(0);
+        }, 0, look);
 
-        this.shader = makeShaderQuad(scene, {
+        this.frontLayers = new LayeredQuad(scene, {
             name: `card_${card.key}_${card.unique_val}`,
             textureKey: 'cards',
             atlas: DECK_ATLAS,
             pos,
             cardTime, w, h, tilt,
-        });
-        this.shader.setDepth(1);
-        // **石头牌不画正面**（`card.lua:4426` 那一串 `ability.effect ~= 'Stone Card'`）——
-        // 它没有点数也没有花色，画出来就是在骗人
+        }, 1, look);
 
+        this.seal = card.seal
+            ? new LayeredQuad(scene, {
+                name: `seal_${card.key}_${card.unique_val}`,
+                textureKey: 'centers',
+                atlas: CENTERS_ATLAS,
+                pos: SEAL_POS[card.seal],
+                cardTime, w, h, tilt,
+                shader: 'dissolve',
+            }, 1.5, { set: card.seal === 'Gold' ? 'Voucher' : undefined })
+            : null;
 
         this.back = makeShaderQuad(scene, {
             name: `back_${card.key}_${card.unique_val}`,
@@ -120,11 +144,16 @@ export class CardSprite {
         // `setVisible`——它来自 Visible 组件，是 Shader 混入的那 8 个之一
         this.applyFacing();
 
-        makeClickable(this.shader, w, h, {
-            onClick: () => this.onClick(this.card),
-            onOver: () => { this.hoverTilt = 1; },
-            onOut: () => { this.hoverTilt = 0; },
-        });
+        // **三层都挂点击区**：Phaser 的 `inputCandidate` 跳过不可见对象，只挂在正面层上的话，
+        // 石头牌（不画正面）和被 Boss 盖住的牌（只画牌背）就点不到——原先正是这样。
+        // 默认 `topOnly`，同一次点击只有最上面那个可见的会收到，不会触发两次
+        for (const target of [this.baseLayers.main, this.frontLayers.main, this.back]) {
+            makeClickable(target, w, h, {
+                onClick: () => this.onClick(this.card),
+                onOver: () => { this.hoverTilt = 1; },
+                onOut: () => { this.hoverTilt = 0; },
+            });
+        }
     }
 
     /**
@@ -137,8 +166,9 @@ export class CardSprite {
         const liftTiles = this.highlighted ? 0.6 : 0;
         const x = toPx(this.card.T.x + offsetXTiles) + toPx(CARD_W) / 2;
         const y = toPx(baseYTiles - liftTiles) + toPx(CARD_H) / 2;
-        this.base.setPosition(x, y);
-        this.shader.setPosition(x, y);
+        this.baseLayers.setPosition(x, y);
+        this.frontLayers.setPosition(x, y);
+        this.seal?.setPosition(x, y);
         this.back.setPosition(x, y);
         this.applyFacing();
     }
@@ -153,10 +183,11 @@ export class CardSprite {
     private applyFacing(): void {
         const faceDown = this.card.facing === 'back';
         this.back.setVisible(faceDown);
-        this.base.setVisible(!faceDown);
+        this.baseLayers.setVisible(!faceDown);
         // **石头牌不画正面**（`card.lua:4426` 那一串 `ability.effect ~= 'Stone Card'`）——
-        // 它没有点数也没有花色，画出来就是在骗人
-        this.shader.setVisible(!faceDown && !isStone(this.card));
+        // 它没有点数也没有花色，画出来就是在骗人。正面的版本叠加层也跟着不画（原文同一个条件）
+        this.frontLayers.setVisible(!faceDown && !isStone(this.card));
+        this.seal?.setVisible(!faceDown);
     }
 
     /** 被 debuff 的牌要看得出来。`Shader` 的 setAlpha 是 NOOP，所以缩一点当提示。 */
@@ -166,7 +197,7 @@ export class CardSprite {
 
     /** 计分时的弹一下。对应原作的 `juice_up`。 */
     pop(): void {
-        for (const layer of [this.base, this.shader, this.back]) {
+        for (const layer of this.allQuads()) {
             this.scene.tweens.add({
                 targets: layer,
                 scaleX: 1.18, scaleY: 1.18,
@@ -176,9 +207,16 @@ export class CardSprite {
     }
 
     destroy(): void {
-        this.base.destroy();
-        this.shader.destroy();
-        this.back.destroy();
+        for (const q of this.allQuads()) q.destroy();
+    }
+
+    /** 正面那一层的底（点击区挂在它上面） */
+    get shader(): GameObjects.Shader {
+        return this.frontLayers.main;
+    }
+
+    private allQuads(): GameObjects.Shader[] {
+        return [...this.baseLayers.quads, ...this.frontLayers.quads, ...(this.seal?.quads ?? []), this.back];
     }
 
     /** 让 `scene` 字段不被 noUnusedParameters 判死，同时留个取用口 */

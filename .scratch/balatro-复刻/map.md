@@ -113,6 +113,11 @@ Label: wayfinder:map
   **32 张全部进池，效果做可达的 16 张一级**。二级全是 `unlocked = false`，而局内解锁走的
   `check_for_unlock` **第二句就是 `if G.GAME.seeded then return end`**——指定 seed 下永远抽不到。
   Voucher Tag 顺带接上。`setCost` 的折扣参数写成必填，让编译器找出了全部 10 个既有调用点。
+- **往哪走**（2026-09-21 问过用户）：新档口径下机制已做全，**先走外观轴**。没选的三条：
+  「全解锁存档」口径、只做牌组与赌注、改 bot 估值——它们仍是候选，不是被否掉的。
+- [外观轴第一刀：版本与卡面叠层](issues/20-外观轴第一刀-版本与卡面叠层.md) ——
+  版本 / 蜡封 / 优惠券 / 补充包按原作的多遍绘制叠 quad；7 个 `.fs` 生成器转方言；
+  **shader 有了离线编译测试**（`glslangValidator` 按 GLSL ES 1.00），表现层第一次有自动可验的部分。
 
 > **优惠券已交付**（19 号票）：16 / 32 可达且全部有效果，商店第三排、兑换、Director's Cut、Voucher Tag。
 > 挑牌 bot 会买但**默认不买**——理由见票。
@@ -702,6 +707,12 @@ Label: wayfinder:map
   Invisible Joker 与 Ankh 复制 To Do List 时照样掷，结果丢掉。
 - **赢判的是结算时的 Ante**（`state_events.lua:113`，`ease_ante(1)` 还没落地）：打过 **Ante 8** 的 Boss。
   **局不结束**——原作弹胜利窗口后可以接着打（无尽模式），复刻件只置 `Run.won`。
+
+- **Phaser 不给隐藏对象派发输入**（`InputManager.inputCandidate` 查 `willRender`）。
+  扑克牌的点击区原先只挂在正面层上，石头牌（不画正面）与被 Boss 盖住的牌（只画牌背）因此**点不到**。
+  现在三层都挂，靠默认的 `topOnly` 保证一次点击只触发一次。
+- **LÖVE 的桌面 GLSL 会隐式 int → float，GLSL ES 1.00 不会**：`2*x` 在原作里合法、在浏览器里编译失败。
+  `gen-edition-shaders.mjs` 对整数字面量有断言，`shaders.test.ts` 再整体编译一遍。
 
 ## Out of scope
 
