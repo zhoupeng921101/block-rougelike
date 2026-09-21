@@ -12,7 +12,9 @@
 import type { GameObjects, Scene } from 'phaser';
 
 import type { Joker } from '../core/jokers';
+import type { Placed } from './align-cards';
 import { CARD_H, CARD_W, toPx } from './coords';
+import { PlacedLayers } from './placed-layers';
 import { JOKER_ATLAS, LayeredQuad, cardTimeOf, makeClickable } from './shader-quad';
 
 /**
@@ -46,6 +48,8 @@ export class JokerSprite {
     private hoverTilt = 0;
     /** 卡面 + 版本叠加层（20 号票） */
     private readonly layers: LayeredQuad;
+    /** 摆放、阴影、缩放（`align_cards` 的结果落在这里） */
+    private readonly placed: PlacedLayers;
     readonly w: number;
     readonly h: number;
     /** 被选中（商店里待买／小丑区里待卖） */
@@ -60,7 +64,7 @@ export class JokerSprite {
         this.w = w;
         this.h = h;
 
-        this.layers = new LayeredQuad(scene, {
+        const quad = {
             // 名字要唯一：同一张小丑可能同时在商店和小丑区
             name: `joker_${joker.key}_${joker.center.order}_${Math.random().toString(36).slice(2, 7)}`,
             textureKey: 'jokers',
@@ -69,7 +73,9 @@ export class JokerSprite {
             cardTime: cardTimeOf(joker.center.order),
             w, h,
             tilt: () => this.hoverTilt,
-        }, 2, { edition: joker.edition });
+        };
+        this.layers = new LayeredQuad(scene, quad, 2, { edition: joker.edition });
+        this.placed = new PlacedLayers(scene, this.layers, quad, w / toPx(1), h / toPx(1));
 
         makeClickable(this.shader, w, h, {
             onClick: () => this.onClick(this.joker),
@@ -78,10 +84,20 @@ export class JokerSprite {
         });
     }
 
-    /** `xTiles` / `yTiles` 是左上角，tile 单位。换算只发生在这一层（10 号票）。 */
+    /** `xTiles` / `yTiles` 是左上角，tile 单位。换算只发生在这一层（10 号票）。商店、开包里用 */
     layout(xTiles: number, yTiles: number): void {
         const lift = this.highlighted ? 0.35 : 0;
-        this.layers.setPosition(toPx(xTiles) + this.w / 2, toPx(yTiles - lift) + this.h / 2);
+        this.place({ x: xTiles, y: yTiles - lift, r: 0 }, 0);
+    }
+
+    /** 按 `align_cards` 算出的目标摆（小丑区 / 消耗品区），`index` 定深度 */
+    place(p: Placed, index: number): void {
+        this.placed.place(p, index);
+    }
+
+    /** 上一帧的 x（tile），`align_cards` 要 */
+    get prevX(): number {
+        return this.placed.prevX;
     }
 
     /** 底层（点击区挂在它上面） */
@@ -99,5 +115,6 @@ export class JokerSprite {
 
     destroy(): void {
         this.layers.destroy();
+        this.placed.destroy();
     }
 }

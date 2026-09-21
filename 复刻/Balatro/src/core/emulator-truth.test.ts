@@ -97,3 +97,43 @@ describe('TESTSEED（2026-09-21 实机）', () => {
         ]);
     });
 });
+
+/**
+ * 同一个 seed 的第二局（22 号票，2026-09-21 实机）：这回打的是两对 → 弃 5 张 → 葫芦。
+ * 实机截图上读的：每手之后的手牌区、Round score、Cash Out 的金额、商店两格。
+ */
+describe('TESTSEED 第二局：两对、弃五张、葫芦（2026-09-21 实机）', () => {
+    const run = new Run('TESTSEED');
+
+    it('两对 (20 + 28) × 2 = 96，补的牌与实机一致', () => {
+        run.startRound();
+        const round = run.round!;
+        round.play(pickCards(round.hand, '9S,9C,5C,5D'));
+        expect(round.chips).toBe(96);
+        expect(round.hand.map(cardId)).toEqual(['AS', 'AH', 'KH', 'QD', 'TC', '8C', '7H', '4C']);
+
+        round.discard(pickCards(round.hand, 'KH,QD,8C,7H,4C'));
+        expect(round.hand.map(cardId)).toEqual(['AS', 'AH', 'AD', 'KS', 'QC', 'TC', 'TD', '2D']);
+        expect(round.deck.length).toBe(35);
+    });
+
+    /**
+     * **赢下的那一手之后不补牌**（`game.lua:3558`：够分直接 `NEW_ROUND`，不进 `DRAW_TO_HAND`）。
+     * 复刻件曾经先补 5 张再判胜负——回合结束时留在手里的牌就多了 5 张
+     */
+    it('葫芦 (40 + 53) × 4 = 372，共 468 过关；不补牌；兑现 $5（盲注 $3 + 剩 2 手）', () => {
+        const round = run.round!;
+        round.play(pickCards(round.hand, 'AS,AH,AD,TC,TD'));
+        expect(round.chips).toBe(468);
+        expect(round.phase).toBe('won');
+        expect([round.handsLeft, round.discardsLeft]).toEqual([2, 3]);
+        expect(round.hand.map(cardId)).toEqual(['KS', 'QC', '2D']);
+        expect(round.deck.length).toBe(35);
+
+        const { payout } = run.finishRound();
+        expect(payout.total).toBe(5);
+        expect(run.dollars).toBe(9);
+        expect(run.shop!.items.map((i) => (i.kind === 'joker' ? i.joker.center.name : i.kind)))
+            .toEqual(['Raised Fist', 'Pareidolia']);
+    });
+});

@@ -699,8 +699,11 @@ export class Round {
             if (pressed.discard.length > 0) this.discardCards(pressed.discard, true);
         }
 
-        this.drawToHandLimit();
+        // `game.lua:3558` 的 `update_hand_played`：**够分或没手数了就直接 `NEW_ROUND`，不补牌**；
+        // 只有还要接着打才进 `DRAW_TO_HAND`。先补后判的话，回合结束时「留在手里」的效果
+        //（Gold Card、Blue Seal、Baron……）会把补进来的牌也算上
         this.settlePhase();
+        if (this.phase === 'selecting') this.drawToHandLimit();
 
         return {
             handName: result.handName,

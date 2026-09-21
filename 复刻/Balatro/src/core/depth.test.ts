@@ -38,7 +38,11 @@ const bySeed = (xs: Array<{ seed: string; ante: number }>) =>
     Object.fromEntries(xs.map((r) => [r.seed, r.ante]));
 
 describe('贪心深度', () => {
-    it('八个 seed 各自死在第几个 Ante（平均 3.125）', () => {
+    /**
+     * 3.125 → 2.875（ZZZZZZ 5 → 3）：22 号票在模拟器上对出「赢下的那一手之后不补牌」（`game.lua:3558`）。
+     * 原先多补的牌会在 The Wheel 这类 Boss 下多掷 RNG、在回合结束时多算留手效果，后面全部分叉
+     */
+    it('八个 seed 各自死在第几个 Ante（平均 2.875）', () => {
         expect(bySeed(greedy)).toEqual({
             TUTORIAL: 2,
             ALEEB: 3,
@@ -46,10 +50,10 @@ describe('贪心深度', () => {
             JHZ7FPM: 4,
             QQQ777: 4,
             MNBVCXZ: 1,
-            ZZZZZZ: 5,
+            ZZZZZZ: 3,
             ABCDEF: 2,
         });
-        expect(mean(greedy)).toBe(3.125);
+        expect(mean(greedy)).toBe(2.875);
     });
 
     /**

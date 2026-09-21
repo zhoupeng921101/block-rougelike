@@ -42,9 +42,9 @@ import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
 import { type BlindSelectState, createBlindPrompt, createBlindSelect } from '../../ui/definitions/blind-select';
 import { mostPlayedHand } from '../../core/round';
 import { BLIND_TEXT } from '../../ui/lang.generated';
-import type { UIElement } from '../../ui/uibox';
+import type { Rect, UIElement } from '../../ui/uibox';
 import { cardAreas } from '../areas';
-import { alignHand, alignPlay } from '../align-cards';
+import { alignHand, alignJokers, alignPlay } from '../align-cards';
 import { DeckSprite } from '../deck-sprite';
 import { numberFormat } from '../../ui/format';
 import { UIBox } from '../../ui/uibox';
@@ -55,12 +55,6 @@ import { VoucherSprite } from '../voucher-sprite';
 import { BACKGROUND_COLOURS, BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
 import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
 
-/** 小丑区，画在最上面一排 */
-const JOKER_Y_TILES = 0.5;
-const JOKER_X_TILES = 9.0;
-/** 消耗品区，接在小丑区右边。5 格小丑 + 2 格消耗品 */
-const CONSUMABLE_Y_TILES = 0.5;
-const CONSUMABLE_X_TILES = JOKER_X_TILES + 5 * (CARD_W + 0.15) + 0.6;
 /** 商店那两格 */
 const SHOP_Y_TILES = 4.0;
 const SHOP_X_TILES = 6.5;
@@ -441,10 +435,15 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.layoutJokers();
     }
 
-    private layoutJokers(): void {
-        this.jokerSprites.forEach((s, i) => {
-            s.layout(JOKER_X_TILES + i * (CARD_W + 0.15), JOKER_Y_TILES);
-        });
+    /** 小丑区与消耗品区：`align_cards` 的 joker 分支（两个区的 `type` 都是 `'joker'`），每帧摆 */
+    private layoutJokers(real = this.time.now / 1000): void {
+        const U = toPx(1);
+        const place = (sprites: Array<JokerSprite | ConsumableSprite>, area: Rect, isConsumeables: boolean) => {
+            alignJokers(area, sprites.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX, w: s.w / U, h: s.h / U })), isConsumeables, real)
+                .forEach((p, i) => sprites[i]!.place(p, i));
+        };
+        place(this.jokerSprites, this.areas.jokers, false);
+        place(this.consumableSprites, this.areas.consumeables, true);
     }
 
     /** 点小丑区里的小丑 = 卖掉它。只在商店里允许——原作里回合内也能卖，
@@ -468,9 +467,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.consumableSprites = this.run.consumables.map(
             (c) => new ConsumableSprite(this, c, (con) => this.onConsumableClick(con)),
         );
-        this.consumableSprites.forEach((s, i) => {
-            s.layout(CONSUMABLE_X_TILES + i * (CARD_W + 0.15), CONSUMABLE_Y_TILES);
-        });
+        this.layoutJokers();
     }
 
     private onConsumableClick(consumable: Consumable): void {
@@ -1040,6 +1037,7 @@ ${String(e instanceof Error ? e.message : e)}`)
      * 打出去的按出牌区分支。上限用手牌上限（`temp_limit` 缺省就是 `card_limit`）
      */
     private placeCards(real: number): void {
+        this.layoutJokers(real);
         const round = this.round;
         if (!round) return;
         const hand = this.sprites.filter((s) => !this.inPlay.has(s));

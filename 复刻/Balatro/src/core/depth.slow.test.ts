@@ -77,10 +77,12 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * 虽然很小：240 seed 放开 4.000、禁掉 3.992，2 局更深、0 局更浅。
      *
      * 21 号票那三处改完之后 → 3.8，对贪心仍差约 1.4 个 Ante。
+     *
+     * 22 号票对出「赢下的那一手之后不补牌」（`game.lua:3558`）之后 → 3.767，逐局分叉但均值在噪声里。
      */
-    it('挑牌：平均 3.8，40 个 seed 比贪心深、6 个更浅', () => {
-        expect(mean(picky)).toBe(3.8);
-        expect(histogram(picky)).toEqual([2, 15, 10, 12, 13, 5, 1, 2, 0, 0]);
+    it('挑牌：平均 3.767，40 个 seed 比贪心深、6 个更浅', () => {
+        expect(mean(picky)).toBe(3.767);
+        expect(histogram(picky)).toEqual([2, 15, 10, 12, 14, 4, 2, 1, 0, 0]);
         const deeper = picky.filter((r, i) => r.ante > greedy[i].ante).length;
         const shallower = picky.filter((r, i) => r.ante < greedy[i].ante).length;
         expect([deeper, shallower]).toEqual([40, 6]);
@@ -91,6 +93,7 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * 之后 **59 局相同、1 局反而深一级**（`S229651`：放开时买了 Marble Joker 死在 Ante 5，
      * 禁掉后那一格换成 Blue Joker / Photograph，到了 Ante 6）。死时手上有其中一张的仍是 2 局。
      * 中间一版（只改了牌序）是另一局浅一级——单局的正负是噪声，「几乎是零」才是结论。
+     * 22 号票「赢后不补牌」之后又回到 **60 局逐局相同**，死时手上有其中一张的是 1 局。
      *
      * 两个原因，都不是 bot 的锅：
      * - **3 张新档根本抽不到**：Golden Ticket / Glass Joker / Driver's License
@@ -103,13 +106,11 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * 而新牌组里没有强化牌，Steel / Stone / Lucky Cat / Vampire 的成长条件碰不到。
      * 要让它们有价值，得让估值看到「bot 自己以后会往牌组里加什么」，那是另一个量级的活。
      */
-    it('禁掉强化牌那 9 张：59 局逐局相同，只有 S229651 深一级', () => {
+    it('禁掉强化牌那 9 张：60 局逐局相同', () => {
         const differ = SEEDS.filter((_, i) => pickyBanned[i].ante !== picky[i].ante);
-        expect(differ).toEqual(['S229651']);
-        const i = SEEDS.indexOf('S229651');
-        expect([picky[i].ante, pickyBanned[i].ante]).toEqual([5, 6]);
+        expect(differ).toEqual([]);
         const held = picky.filter((r) => r.jokers.some((n) => NINE.has(n))).length;
-        expect(held).toBe(2);
+        expect(held).toBe(1);
     });
 
     /**
@@ -121,10 +122,10 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * 重跑过四次：出牌改好之后（2.867 / 4.017 对 4.133），
      * 估值学会看成长之后（2.950 / 4.133 对 4.333），增删牌那 8 张之后（3.0 / 4.167 对 4.267），
      * 补上版本加价之后（2.933 / 4.100 对 4.083），关掉 Boss 那一刀之后（2.933 / 4.100 对 4.100），
-     * 21 号票那三处改完之后（2.983 / 3.867 对 3.8）。
+     * 21 号票那三处改完之后（2.983 / 3.867 对 3.8），22 号票赢后不补牌之后（2.983 / 3.917 对 3.767）。
      * **全程存一直明显更差；后期存 + 重掷连着几次打平或高一点点**（+0.067 是 60 局里多深 4 级），不算赢。
      */
-    it('存利息：全程存 $25 掉到 2.983，后期才存 + 重掷 3.867，与不存（3.8）打平', () => {
+    it('存利息：全程存 $25 掉到 2.983，后期才存 + 重掷 3.917，与不存（3.767）打平', () => {
         const flat25 = SEEDS.map((s) =>
             pickyRun(fresh(s), { economy: { reserve: () => 25, breakReserveGain: 0.5 } }));
         const late25 = SEEDS.map((s) =>
@@ -137,7 +138,7 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
                 },
             }));
         expect(mean(flat25)).toBe(2.983);
-        expect(mean(late25)).toBe(3.867);
+        expect(mean(late25)).toBe(3.917);
     });
 
     /**
@@ -152,14 +153,14 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * **21 号票那三处改完之后，这 60 个 seed 上「只为开包标签跳」反而高 0.233**（4.033 对 3.8）。
      * 拿另外三批各 60 个复核（`H${i*104729+17}` / `K${i*15485863+3}` / `P${i*32452843+11}`）：
      * 3.75 对 3.967、3.55 对 3.533、3.733 对 3.833，**240 个合计 3.767 对 3.783，打平**。
-     * S 这一批是碰巧，结论不变。
+     * S 这一批是碰巧，结论不变。22 号票赢后不补牌之后这 60 个上是 3.967 对 3.767。
      */
-    it('跳过盲注：全跳 2.367；只为开包标签跳 4.033，这 60 个上高过不跳（3.8），但 240 个上打平', () => {
+    it('跳过盲注：全跳 2.367；只为开包标签跳 3.967，这 60 个上高过不跳（3.767），但 240 个上打平', () => {
         const PACKS = new Set(['tag_charm', 'tag_meteor', 'tag_buffoon', 'tag_ethereal', 'tag_standard']);
         const all = SEEDS.map((s) => pickyRun(fresh(s), { skip: () => true }));
         const packs = SEEDS.map((s) => pickyRun(fresh(s), { skip: (_run, k) => PACKS.has(k) }));
         expect(mean(all)).toBe(2.367);
-        expect(mean(packs)).toBe(4.033);
+        expect(mean(packs)).toBe(3.967);
     });
 
     /**
@@ -171,13 +172,13 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
      * 但那是因为平均每局只买到 0.19 张——bot 买完小丑和包几乎从不剩 $10。
      * To Do List 修好之后「先买」3.0 → 2.983（有一局碰到了它），别的几条没动。
      * 所以默认不买，这两条是代表。21 号票之前 60 seed 上余钱才买高出 0.067，之后是高 0.05（3.85 对 3.8）——
-     * 始终在 240 seed 打平的范围里。
+     * 始终在 240 seed 打平的范围里。22 号票赢后不补牌之后 3.817 对 3.767。
      */
-    it('优惠券：全买且先买掉到 3.017；余钱才买 3.85，与不买（3.8）打平', () => {
+    it('优惠券：全买且先买掉到 3.017；余钱才买 3.817，与不买（3.767）打平', () => {
         const all = (k: string) => k.startsWith('v_');
         const first = SEEDS.map((s) => pickyRun(fresh(s), { vouchers: { want: all, first: true } }));
         const after = SEEDS.map((s) => pickyRun(fresh(s), { vouchers: { want: all, first: false } }));
         expect(mean(first)).toBe(3.017);
-        expect(mean(after)).toBe(3.85);
+        expect(mean(after)).toBe(3.817);
     });
 });
