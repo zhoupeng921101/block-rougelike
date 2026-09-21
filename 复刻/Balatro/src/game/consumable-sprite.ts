@@ -30,7 +30,7 @@ export class ConsumableSprite {
     highlighted = false;
 
     constructor(
-        private readonly scene: Scene,
+        scene: Scene,
         readonly consumable: Consumable,
         private readonly onClick: (consumable: Consumable) => void,
     ) {
@@ -56,8 +56,8 @@ export class ConsumableSprite {
 
         makeClickable(this.shader, this.w, this.h, {
             onClick: () => this.onClick(this.consumable),
-            onOver: () => { this.hoverTilt = 1; },
-            onOut: () => { this.hoverTilt = 0; },
+            onOver: () => { this.hoverTilt = 1; this.placed.hovered = true; },
+            onOut: () => { this.hoverTilt = 0; this.placed.hovered = false; },
         });
     }
 
@@ -82,12 +82,9 @@ export class ConsumableSprite {
         return this.layers.main;
     }
 
+    /** 计分时弹一下：`card_eval_status_text` 的 `juice_up(0.6, 0.1)`（`common_events.lua:896`） */
     pop(): void {
-        this.scene.tweens.add({
-            targets: this.layers.quads,
-            scaleX: 1.2, scaleY: 1.2,
-            duration: 110, yoyo: true, ease: 'Quad.easeOut',
-        });
+        this.placed.juiceUp(0.6, 0.1);
     }
 
     destroy(): void {

@@ -13,6 +13,7 @@ import type { Card, Suit } from '../core/card';
 import { ENHANCEMENT_CENTERS, isStone } from '../core/enhancements';
 import { CARD_H, CARD_W, toPx } from './coords';
 import { type Placed, cardShadowParallaxX } from './align-cards';
+import { Motion } from './moveable';
 import {
     CENTERS_ATLAS,
     DECK_ATLAS,
@@ -164,7 +165,7 @@ export class CardSprite {
         this.shadow.setDepth(-1);
 
         // `card.lua:58`：**所有卡的 `T.scale` 都是 0.95**，以中心缩放。阴影再 × (1 − 0.2·shadow_height)。
-        // 在这里设一次，`place` 不碰缩放——计分时的弹一下是缩放补间，每帧覆盖会把它吃掉
+        // 之后每帧按 `VT.scale` 重设（悬停、`juice_up` 都在它上面）
         for (const q of this.allQuads()) q.setScale(CARD_SCALE);
         this.shadow.setScale(CARD_SCALE * (1 - 0.2 * SHADOW_HEIGHT));
 
@@ -178,11 +179,37 @@ export class CardSprite {
         for (const target of [this.baseLayers.main, this.frontLayers.main, this.back]) {
             makeClickable(target, w, h, {
                 onClick: () => this.onClick(this.card),
-                onOver: () => { this.hoverTilt = 1; },
-                onOut: () => { this.hoverTilt = 0; },
+                onOver: () => { this.hoverTilt = 1; if (this.motion) this.motion.hovered = true; },
+                onOut: () => { this.hoverTilt = 0; if (this.motion) this.motion.hovered = false; },
             });
         }
+        scene.events.on('postupdate', this.onPostUpdate);
     }
+
+    /** `T` → `VT` 的缓动（`moveable.lua`）。第一次摆放时落定，或从 `spawnFrom` 飞过来 */
+    private motion: Motion | null = null;
+    private depth = 10;
+    private readonly onPostUpdate = (time: number, delta: number) => this.render(time / 1000, delta / 1000);
+    /**
+     * 重建精灵（塔罗改了强化、换了花色……）时接着上一个精灵的缓动走，而不是瞬移。
+     * `from` 之后就不再用
+     */
+    adoptMotion(from: CardSprite): void {
+        const m = from.motion;
+        if (!m) return;
+        this.motion = new Motion(m.T);
+        Object.assign(this.motion.VT, m.VT);
+        Object.assign(this.motion.velocity, m.velocity);
+    }
+
+    /**
+     * 还在牌堆里、没轮到摸的牌：到这个时刻（秒，场景时间）之前不画、不开始缓动。
+     * `draw_from_deck_to_hand` 逐张 `draw_card`，每张是 `trigger = 'before', delay = 0.1` 的事件，所以隔 0.1 秒一张
+     */
+    holdUntil = 0;
+
+    /** 下一次（第一次）摆放时 VT 从这里出发：摸牌从牌堆飞进手牌（`draw_card` 的 `from:remove_card` 后 `to:emplace`） */
+    spawnFrom: { x: number; y: number } | null = null;
 
     /**
      * 逻辑层的 `T` 是 tile 量，这里换算到像素。换算只允许发生在这一层。
@@ -200,28 +227,52 @@ export class CardSprite {
      * 后面的牌压前面的牌，全部阴影压在全部卡牌之下（`CardArea:draw` 先画完 'shadow' 层再画 'card' 层）。
      */
     place(p: Placed, index: number): void {
-        const cx = toPx(p.x + CARD_W / 2);
-        const cy = toPx(p.y + CARD_H / 2);
-        const d = 10 + index;
+        if (!this.motion && this.scene.time.now / 1000 < this.holdUntil) {
+            for (const q of this.allQuads()) q.setVisible(false);
+            this.prevX = p.x;
+            return;
+        }
+        if (!this.motion) {
+            const from = this.spawnFrom ?? p;
+            this.motion = new Motion({ x: from.x, y: from.y, r: p.r, scale: CARD_SCALE });
+        }
+        const T = this.motion.T;
+        T.x = p.x;
+        T.y = p.y;
+        T.r = p.r;
+        this.depth = 10 + index;
+        const d = this.depth;
         this.baseLayers.setDepth(d);
         this.frontLayers.setDepth(d + 0.1);
         this.seal?.setDepth(d + 0.2);
         this.back.setDepth(d + 0.3);
-        for (const layer of [this.baseLayers, this.frontLayers]) {
-            layer.setPosition(cx, cy);
-            layer.setRotation(p.r);
-        }
-        this.seal?.setPosition(cx, cy);
-        this.seal?.setRotation(p.r);
-        this.back.setPosition(cx, cy).setRotation(p.r);
-        // `sprite.lua:76`：阴影 VT 挪 `-shadow_parrallax * shadow_height`（y 分量恒 -1.5）
-        const sh = SHADOW_HEIGHT;
-        const spx = cardShadowParallaxX(p.x, CARD_W);
-        this.shadow.setDepth(1 + index * 0.001)
-            .setPosition(toPx(p.x + CARD_W / 2 - spx * sh), toPx(p.y + CARD_H / 2 + 1.5 * sh))
-            .setRotation(p.r);
+        this.shadow.setDepth(1 + index * 0.001);
         this.prevX = p.x;
         this.applyFacing();
+        this.render(this.scene.time.now / 1000, 0);
+    }
+
+    /** 按缓动后的 `VT` 画。阴影从 VT 往视差反方向错开（视差按 `T.x` 算，`calculate_parrallax`） */
+    private render(now: number, dt: number): void {
+        const m = this.motion;
+        if (!m) return;
+        m.step(dt, now);
+        const VT = m.VT;
+        const cx = toPx(VT.x + CARD_W / 2);
+        const cy = toPx(VT.y + CARD_H / 2);
+        for (const layer of [this.baseLayers, this.frontLayers]) {
+            layer.setPosition(cx, cy);
+            layer.setRotation(VT.r);
+        }
+        this.seal?.setPosition(cx, cy);
+        this.seal?.setRotation(VT.r);
+        this.back.setPosition(cx, cy).setRotation(VT.r);
+        for (const q of this.allQuads()) if (q !== this.shadow) q.setScale(VT.scale);
+        const sh = SHADOW_HEIGHT;
+        const spx = cardShadowParallaxX(m.T.x, CARD_W);
+        this.shadow.setScale(VT.scale * (1 - 0.2 * sh))
+            .setPosition(cx - toPx(spx * sh), cy + toPx(1.5 * sh))
+            .setRotation(VT.r);
     }
 
     /**
@@ -246,18 +297,13 @@ export class CardSprite {
         return this.dimmed;
     }
 
-    /** 计分时的弹一下。对应原作的 `juice_up`。 */
+    /** 计分时弹一下：`card_eval_status_text` 的 `juice_up(0.6, 0.1)`（`common_events.lua:896`） */
     pop(): void {
-        for (const layer of this.allQuads()) {
-            this.scene.tweens.add({
-                targets: layer,
-                scaleX: CARD_SCALE * 1.18, scaleY: CARD_SCALE * 1.18,
-                duration: 90, yoyo: true, ease: 'Quad.easeOut',
-            });
-        }
+        this.motion?.juiceUp(this.scene.time.now / 1000, 0.6, 0.1);
     }
 
     destroy(): void {
+        this.scene.events.off('postupdate', this.onPostUpdate);
         for (const q of this.allQuads()) q.destroy();
     }
 

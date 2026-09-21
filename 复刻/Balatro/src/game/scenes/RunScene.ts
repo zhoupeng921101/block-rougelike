@@ -657,6 +657,9 @@ ${String(e instanceof Error ? e.message : e)}`)
      * 与「点不动的塔罗」同一条：不画出来等于把限制伪装成「这张不存在」。
      */
     private rebuildPackCards(): void {
+        // 发下来的手牌接着上一版精灵的缓动走（挑牌 / 用塔罗之后整个重建）
+        const oldPackHand = this.packHandSprites;
+        this.packHandSprites = [];
         this.clearPackCards();
         const pack = this.run.openPack;
         // `end_consumeable`：粒子淡出 1 秒后移除
@@ -664,7 +667,10 @@ ${String(e instanceof Error ? e.message : e)}`)
             for (const p of this.packFx.systems) p.fadeOutAndRemove(1);
             this.packFx = null;
         }
-        if (!pack) return;
+        if (!pack) {
+            for (const s of oldPackHand) s.destroy();
+            return;
+        }
         if (!this.packFx) this.packFx = { pack, systems: this.makePackParticles(pack.center.kind) };
 
         const area = packCardsArea(pack.center.kind, pack.center.extra);
@@ -697,7 +703,13 @@ ${String(e instanceof Error ? e.message : e)}`)
             }
         });
         // 手牌区的开包分支（`cardarea.lua:441`）：发下来的牌抬到手牌区上方
-        this.packHandSprites = (this.run.packHand ?? []).map((c) => new CardSprite(this, c, (card) => this.togglePackHand(card)));
+        let drawn = 0;
+        this.packHandSprites = (this.run.packHand ?? []).map((c) => {
+            const sprite = this.handSprite(c, oldPackHand, (card) => this.togglePackHand(card));
+            if (sprite.spawnFrom) sprite.holdUntil = this.time.now / 1000 + 0.1 * drawn++;
+            return sprite;
+        });
+        for (const s of oldPackHand) s.destroy();
         this.layoutPackCards();
     }
 
@@ -1080,22 +1092,35 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     /** 手牌变了就整体重建。8 张牌，重建比增量同步便宜也不容易错。 */
     private rebuildHand(): void {
-        for (const s of this.sprites) s.destroy();
+        const old = this.sprites;
         this.sprites = [];
         this.inPlay.clear();
 
         const round = this.round;
-        if (!round) {
-            this.layout();
-            return;
+        if (round) {
+            // 逻辑层已经给过 T.x（等距单调，tile 单位）。
+            // **不改它**——边距是表现层的事，在 layout 时叠加
+            let drawn = 0;
+            for (const card of round.hand) {
+                const sprite = this.handSprite(card, old, (c) => this.toggle(c));
+                if (sprite.spawnFrom) sprite.holdUntil = this.time.now / 1000 + 0.1 * drawn++;
+                this.sprites.push(sprite);
+            }
         }
-
-        // 逻辑层已经给过 T.x（等距单调，tile 单位）。
-        // **不改它**——边距是表现层的事，在 layout 时叠加。
-        for (const card of round.hand) {
-            this.sprites.push(new CardSprite(this, card, (c) => this.toggle(c)));
-        }
+        for (const s of old) s.destroy();
         this.layout();
+    }
+
+    /** 手牌的精灵：已经在屏幕上的接着它的缓动走，新摸进来的从牌堆顶飞过来（`draw_card`） */
+    private handSprite(card: Card, old: CardSprite[], onClick: (c: Card) => void): CardSprite {
+        const sprite = new CardSprite(this, card, onClick);
+        const prev = old.find((s) => s.card === card);
+        if (prev) sprite.adoptMotion(prev);
+        else {
+            const d = this.areas.deck;
+            sprite.spawnFrom = { x: d.x + (d.w - CARD_W) / 2, y: d.y + (d.h - CARD_H) / 2 };
+        }
+        return sprite;
     }
 
     private layout(): void {

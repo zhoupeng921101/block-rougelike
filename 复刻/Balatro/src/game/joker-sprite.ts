@@ -56,7 +56,7 @@ export class JokerSprite {
     highlighted = false;
 
     constructor(
-        private readonly scene: Scene,
+        scene: Scene,
         readonly joker: Joker,
         private readonly onClick: (joker: Joker) => void,
     ) {
@@ -81,8 +81,8 @@ export class JokerSprite {
 
         makeClickable(this.shader, w, h, {
             onClick: () => this.onClick(this.joker),
-            onOver: () => { this.hoverTilt = 1; },
-            onOut: () => { this.hoverTilt = 0; },
+            onOver: () => { this.hoverTilt = 1; this.placed.hovered = true; },
+            onOut: () => { this.hoverTilt = 0; this.placed.hovered = false; },
         });
     }
 
@@ -107,12 +107,9 @@ export class JokerSprite {
         return this.layers.main;
     }
 
+    /** 计分时弹一下：`card_eval_status_text` 的 `juice_up(0.6, 0.1)`（`common_events.lua:896`） */
     pop(): void {
-        this.scene.tweens.add({
-            targets: this.layers.quads,
-            scaleX: 1.2, scaleY: 1.2,
-            duration: 110, yoyo: true, ease: 'Quad.easeOut',
-        });
+        this.placed.juiceUp(0.6, 0.1);
     }
 
     destroy(): void {
