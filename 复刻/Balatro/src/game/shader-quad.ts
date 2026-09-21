@@ -48,7 +48,15 @@ export type QuadOptions = {
     shader?: 'dissolve' | OverlayShader;
     /** `dissolve.fs` 的阴影模式：黑色、三成透明度（`Card:draw` 的 `'shadow'` 层） */
     shadow?: boolean;
+    /**
+     * `Card.dissolve` 与 `dissolve_colours`（`sprite.lua:100`）：每帧读一次，所以传的是会被改的那张表。
+     * 不给就是 0 / 透明（绝大多数卡）
+     */
+    dissolve?: DissolveState;
 };
+
+/** `start_materialize` / `start_dissolve` 缓动的那两项：`amount` 1 = 全溶掉，`colours` 前两个是烧边的两色 */
+export type DissolveState = { amount: number; colours: ReadonlyArray<readonly number[]> };
 
 /**
  * 造一个 shader quad 并把纹理坐标钉到指定帧。
@@ -76,13 +84,14 @@ export function makeShaderQuad(scene: Scene, opts: QuadOptions): GameObjects.Sha
                     const real = scene.time.now / 1000;
                     setUniform(shader, [real / 28, real]);
                 }
-                setUniform('dissolve', 0);
+                const d = opts.dissolve;
+                setUniform('dissolve', Math.abs(d?.amount ?? 0));
                 setUniform('time', opts.cardTime);
                 setUniform('texture_details', [pos.x, pos.y, atlas.frameW, atlas.frameH]);
                 setUniform('image_details', [atlas.w, atlas.h]);
                 setUniform('shadow', opts.shadow ?? false);
-                setUniform('burn_colour_1', [0, 0, 0, 0]);
-                setUniform('burn_colour_2', [0, 0, 0, 0]);
+                setUniform('burn_colour_1', d?.colours[0] ?? [0, 0, 0, 0]);
+                setUniform('burn_colour_2', d?.colours[1] ?? [0, 0, 0, 0]);
                 if (shader === 'dissolve') {
                     // spike 留下的调试 uniform，只有 `dissolve` 的片元里声明了
                     setUniform('uProbe', [0, 0, 0]);

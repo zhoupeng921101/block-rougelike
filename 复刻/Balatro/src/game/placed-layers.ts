@@ -49,10 +49,12 @@ export class PlacedLayers {
         /** 卡面尺寸（tile），小丑有几张不是标准尺寸 */
         private readonly wTiles: number,
         private readonly hTiles: number,
+        /** 卡与阴影的基准深度（第 `index` 张在 `card + index` / `shadow + 0.001·index`）。结束界面的 Jimbo 要压在 overlay 之上 */
+        private readonly depthBase = { card: 10, shadow: 1 },
     ) {
         this.shadow = makeShaderQuad(scene, { ...quad, name: `${quad.name}_shadow`, tilt: () => 0, shadow: true, shader: 'dissolve' });
         for (const q of layers.quads) q.setScale(CARD_SCALE);
-        this.shadow.setScale(CARD_SCALE * (1 - 0.2 * SHADOW_HEIGHT)).setDepth(1);
+        this.shadow.setScale(CARD_SCALE * (1 - 0.2 * SHADOW_HEIGHT)).setDepth(depthBase.shadow);
         // 场景的 `update` 摆完 `T` 之后再推进、再画（`postupdate`），免得晚一帧
         scene.events.on('postupdate', this.onPostUpdate);
     }
@@ -73,8 +75,8 @@ export class PlacedLayers {
         T.x = p.x;
         T.y = p.y;
         T.r = p.r;
-        this.depth = 10 + index;
-        this.shadow.setDepth(1 + index * 0.001);
+        this.depth = this.depthBase.card + index;
+        this.shadow.setDepth(this.depthBase.shadow + index * 0.001);
         this.layers.setDepth(this.depth);
         this.prevX = p.x;
         this.render(this.scene.time.now / 1000, 0);

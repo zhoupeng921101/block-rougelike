@@ -24,6 +24,13 @@ export type ParticlesConfig = {
     fill?: boolean;
     max?: number;
     vel_variation?: number;
+    /**
+     * `attach`：跟着哪个东西走（`bond = 'Strong'`，以它的中心为原点）。返回它当前的矩形（tile）。
+     * 不给就是挂 `G.ROOM_ATTACH`（开包的全屏粒子）
+     */
+    attach?: () => { x: number; y: number; w: number; h: number };
+    /** 画在哪一层。缺省 −1（紧贴背景之上） */
+    depth?: number;
 };
 
 type Particle = {
@@ -46,11 +53,13 @@ export class Particles {
     private readonly lifespan: number;
     private readonly speed: number;
     private readonly scale: number;
-    private readonly max: number;
+    /** `max`：`start_materialize` 在半程把它置 0，不再出新的 */
+    max: number;
     private readonly velVariation: number;
     private readonly fill: boolean;
     private readonly w: number;
     private readonly h: number;
+    private readonly attach?: () => { x: number; y: number; w: number; h: number };
     private readonly colours: Colour[];
     /** `G.TIMERS.REAL` 的对应物：场景时间（秒） */
     private now: number;
@@ -74,11 +83,13 @@ export class Particles {
         this.fill = !!config.fill;
         this.colours = config.colours;
         const padding = config.padding ?? 0;
-        this.w = this.fill ? TILE_W - padding : 0;
-        this.h = this.fill ? TILE_H - padding : 0;
+        this.attach = config.attach;
+        const major = config.attach?.() ?? { x: 0, y: 0, w: TILE_W, h: TILE_H };
+        this.w = this.fill ? major.w - padding : 0;
+        this.h = this.fill ? major.h - padding : 0;
         this.now = scene.time.now / 1000;
         this.lastRealTime = this.now - this.timer;
-        this.g = scene.add.graphics().setDepth(-1);
+        this.g = scene.add.graphics().setDepth(config.depth ?? -1);
 
         // `initialize`：先空跑 60 步、每步 1/4 秒，开包那一刻屏幕上就已经铺满
         if (config.initialize) {
@@ -166,8 +177,9 @@ export class Particles {
     /** 每颗是一个绕自己中心转的实心方块，边长 = 当前 `scale`（tile） */
     private draw(): void {
         const g = this.g.clear();
-        const cx = TILE_W / 2;
-        const cy = TILE_H / 2;
+        const major = this.attach?.();
+        const cx = major ? major.x + major.w / 2 : TILE_W / 2;
+        const cy = major ? major.y + major.h / 2 : TILE_H / 2;
         for (const p of this.particles) {
             const a = p.colour[3] * (1 - this.fadeAlpha);
             if (a <= 0 || p.scale <= 0) continue;

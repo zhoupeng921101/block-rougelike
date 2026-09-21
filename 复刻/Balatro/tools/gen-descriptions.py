@@ -76,6 +76,8 @@ def main():
     misc = {}
     for cat in ['labels', 'poker_hands', 'suits_singular', 'suits_plural', 'ranks']:
         misc[cat] = dict(sorted((k, v) for k, v in loc['misc'][cat].items() if isinstance(v, str)))
+    # lq_* 输了、wq_* 赢了、dq_* 终局 Boss
+    quips = {k: plain(v) for k, v in sorted(loc['misc']['quips'].items())}
     body = (
         '// 由 tools/gen-descriptions.py 从 本地化/en-us.lua 生成，不要手改。\n'
         '/** `G.localization.descriptions`：`name` 是字符串或多行，`text` 按行（控制码原样） */\n'
@@ -84,12 +86,15 @@ def main():
         '/** `G.localization.misc` 里提示框会查的几张表（`localize(key, cat)`） */\n'
         'export const MISC: Readonly<Record<string, Readonly<Record<string, string>>>> = '
         + json.dumps(misc, ensure_ascii=False, indent=1) + ';\n\n'
+        "/** `G.localization.misc.quips`（`localize{type = 'quips'}`）：Jimbo 的俏皮话，每条按行 */\n"
+        'export const QUIPS: Readonly<Record<string, readonly string[]>> = '
+        + json.dumps(quips, ensure_ascii=False, indent=1) + ';\n\n'
         '/** `G.P_CENTERS`（`Game:init_item_prototypes` 原样跑出来的）：提示框读 name / set / effect / rarity / config */\n'
         'export const P_CENTERS: Readonly<Record<string, PCenter>> = '
-        + json.dumps(dict(sorted(centers.items())), ensure_ascii=False, separators=(',', ':')) + ';\n\n'
+        + json.dumps(dict(sorted(centers.items())), ensure_ascii=False, separators=(',', ':'), sort_keys=True) + ';\n\n'
         '/** `G.P_TAGS` */\n'
         'export const P_TAGS: Readonly<Record<string, PCenter>> = '
-        + json.dumps(dict(sorted(tags.items())), ensure_ascii=False, separators=(',', ':')) + ';\n'
+        + json.dumps(dict(sorted(tags.items())), ensure_ascii=False, separators=(',', ':'), sort_keys=True) + ';\n'
     )
     body = ('/* eslint-disable */\nexport type PCenter = { name: string; set: string; effect?: string; rarity?: number; order?: number; '
             '// eslint-disable-next-line @typescript-eslint/no-explicit-any\n'

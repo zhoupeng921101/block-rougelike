@@ -67,6 +67,7 @@ import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
 import { type GameOverState, createGameOver, createWin } from '../../ui/definitions/game-over';
 import { mostPlayedHandUsage } from '../../core/round-scores';
 import { Motion } from '../moveable';
+import { Jimbo } from '../jimbo';
 
 /**
  * 版本的文字标记。
@@ -193,6 +194,7 @@ export class RunScene extends Scene {
         bg: Colour;
         alpha: { from: number; to: number; start: number };
         blocker: GameObjects.Zone;
+        jimbo: Jimbo | null;
     } | null = null;
     private roundEval: {
         ev: RoundEval;
@@ -284,7 +286,9 @@ export class RunScene extends Scene {
         for (const key of [
             'cardSlide1', 'cardSlide2', 'chips1', 'chips2', 'card1', 'button', 'generic1',
             'coin1', 'coin2', 'coin3', 'coin6', 'other1', 'tarot1', 'cancel', 'multhit1', 'highlight1',
-            'negative', 'whoosh2', 'win',
+            'negative', 'whoosh2', 'win', 'whoosh1',
+            ...Array.from({ length: 11 }, (_, i) => `voice${i + 1}`),
+            ...Array.from({ length: 5 }, (_, i) => `crumple${i + 1}`),
         ]) {
             this.load.audio(key, `/assets/sounds/${key}.ogg`);
         }
@@ -1555,8 +1559,22 @@ ${String(e instanceof Error ? e.message : e)}`)
         // 原作 `G.SETTINGS.paused` + 光标上下文层：底下的东西点不到也悬停不到
         const blocker = this.add.zone(-toPx(TILE_W * 3), -toPx(TILE_H * 3), toPx(TILE_W * 7), toPx(TILE_H * 7))
             .setOrigin(0, 0).setInteractive().setDepth(199);
-        this.overlay = { view, motion, bg, alpha: { from: 0, to: kind === 'win' ? 0.5 : 0.8, start: this.time.now / 1000 }, blocker };
+        const overlay = { view, motion, bg, alpha: { from: 0, to: kind === 'win' ? 0.5 : 0.8, start: this.time.now / 1000 }, blocker, jimbo: null as Jimbo | null };
+        this.overlay = overlay;
         this.juice.jiggle += 1;
+        // 2.5 秒后 `jimbo_spot` 换成说俏皮话的 Jimbo（`game.lua:3966` / `state_events.lua:42`）。
+        // 输了只在没赢过时出（无尽模式里输了没有）；俏皮话 `lq_1..10` / `wq_1..7`，无种子的 `math.random`
+        if (kind === 'win' || run.ante <= WIN_ANTE) {
+            this.time.delayedCall(2500, () => {
+                if (this.overlay !== overlay) return;
+                const spot = box.getById('jimbo_spot');
+                if (!spot) return;
+                const quip = kind === 'win' ? `wq_${1 + Math.floor(Math.random() * 7)}` : `lq_${1 + Math.floor(Math.random() * 10)}`;
+                overlay.jimbo = new Jimbo(this, () => ({
+                    x: spot.x, y: spot.y + overlay.motion.VT.y - overlay.motion.T.y, w: spot.T.w, h: spot.T.h,
+                }), quip, LOOK.mobileUi, this.mapping.pxPerTile / toPx(1));
+            });
+        }
         this.hidePopup();
     }
 
@@ -1564,6 +1582,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (!this.overlay) return;
         this.overlay.view.destroy();
         this.overlay.blocker.destroy();
+        this.overlay.jimbo?.destroy();
         this.overlay = null;
     }
 
@@ -1576,6 +1595,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         const p = Math.min(1, (now - o.alpha.start) / 0.3);
         o.bg[3] = o.alpha.from + (o.alpha.to - o.alpha.from) * p;
         o.view.update(now);
+        o.jimbo?.update(now);
     }
 
     private onOverlayButton(name: string): void {
