@@ -819,15 +819,7 @@ export class Round {
      * 而那是从高牌型到低牌型，所以并列时偏向高牌型。原作靠 `>` 严格大于，同此。
      */
     mostPlayedHand(): HandName {
-        let best: HandName = 'High Card';
-        let most = 0;
-        for (const [name, info] of Object.entries(this.hands) as Array<[HandName, HandInfo]>) {
-            if (info.played > most) {
-                most = info.played;
-                best = name;
-            }
-        }
-        return best;
+        return mostPlayedHand(this.hands);
     }
 
     /**
@@ -901,4 +893,17 @@ export class Round {
             this.phase = 'lost';
         }
     }
+}
+
+/** `G.GAME.current_round.most_played_poker_hand`（见 `Round.mostPlayedHand`）。选盲注界面上 The Ox 的描述也要它 */
+export function mostPlayedHand(hands: Record<HandName, HandInfo>): HandName {
+    let best: HandName = 'High Card';
+    let most = 0;
+    for (const [name, info] of Object.entries(hands) as Array<[HandName, HandInfo]>) {
+        if (info.played > most) {
+            most = info.played;
+            best = name;
+        }
+    }
+    return best;
 }

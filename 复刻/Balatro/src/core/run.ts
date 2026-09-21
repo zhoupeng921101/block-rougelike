@@ -140,6 +140,8 @@ export class Run {
     state: RunState = 'blind-select';
     /** 本 Ante 打到第几关（0 = 小盲注） */
     blindIndex = 0;
+    /** 本 Ante 跳过了哪几格（`G.GAME.round_resets.blind_states` 的 `'Skipped'`），进新 Ante 清空 */
+    skippedThisAnte = new Set<BlindKind>();
     /** 整局累计出牌数。`Loyalty Card` 读它 */
     handsPlayed = 0;
     /**
@@ -340,6 +342,7 @@ export class Run {
         const key = this.blindTags[type];
         const tag = makeTag(key, key === 'tag_orbital' ? this.orbitalChoices.get(this.ante)?.[type] : undefined);
         this.addTag(tag);
+        this.skippedThisAnte.add(this.blindKind);
         this.blindIndex++;
         refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
 
@@ -695,6 +698,16 @@ export class Run {
         return BLIND_ORDER[this.blindIndex];
     }
 
+    /**
+     * `G.GAME.round_resets.blind_states`：选盲注界面三张卡各自的状态。
+     * 前面的格子打过是 `Defeated`、跳过是 `Skipped`，轮到的是 `Select`，后面的是 `Upcoming`
+     */
+    blindState(kind: BlindKind): 'Defeated' | 'Skipped' | 'Select' | 'Upcoming' {
+        const i = BLIND_ORDER.indexOf(kind);
+        if (i < this.blindIndex) return this.skippedThisAnte.has(kind) ? 'Skipped' : 'Defeated';
+        return i === this.blindIndex ? 'Select' : 'Upcoming';
+    }
+
     /** 当前这一关对应的盲注 key。 */
     get blindKey(): string {
         switch (this.blindKind) {
@@ -882,6 +895,7 @@ export class Run {
 
             this.ante++;
             this.blindIndex = 0;
+            this.skippedThisAnte.clear();
             // `state_events.lua:284`：打完 Boss 抽下一张优惠券。`ease_ante(1)` 的事件排在它前面，
             // 所以用的是**新 Ante** 的 key；商店已经关了，「正摆在商店里」那条不起作用
             this.currentVoucher = nextVoucherKey(this.rng, this.voucherPoolContext([]));

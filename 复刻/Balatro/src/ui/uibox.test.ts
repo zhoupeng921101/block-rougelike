@@ -8,6 +8,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { cardAreas } from '../game/areas';
+import { type BlindSelectState, createBlindPrompt, createBlindSelect } from './definitions/blind-select';
 import { createButtons } from './definitions/buttons';
 import { cardAreaBox } from './definitions/card-area';
 import { createHudBlind, makeHudBlindState } from './definitions/hud-blind';
@@ -106,5 +107,35 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
             major: { T: hand },
         });
         expectSame(dump(box), expected.elements);
+    });
+
+    /**
+     * 选盲注界面：外层挂在手牌区（`bmi`，offset 按 `game.lua:3649` 的终值），三张卡是 O 节点里的嵌套 UIBox；
+     * `blind_choice_handler` 跑过一遍之后，轮到的小盲注上提 0.9、其余 0.2
+     */
+    it('create_UIBox_blind_select：外层、三张卡与左侧提示框', () => {
+        const state: BlindSelectState = {
+            ante: 1,
+            choices: { Small: 'bl_small', Big: 'bl_big', Boss: 'bl_head' },
+            states: { Small: 'Select', Big: 'Upcoming', Boss: 'Upcoming' },
+            tags: { Small: 'tag_economy', Big: 'tag_investment' },
+            mostPlayedHand: 'High Card',
+            probabilities: 1,
+        };
+        const { def, opts } = createBlindSelect(state, areas.hand.w, { Small: 'Select', Big: 'Upcoming', Boss: 'Upcoming' });
+        const select = new UIBox(def, { align: 'bmi', offset: { x: 0, y: 29 }, major: { T: areas.hand } });
+        select.config.offset = { x: 0, y: 0.8 - (areas.hand.y - areas.jokers.y) + select.T.h };
+        select.realign();
+        for (const box of Object.values(opts)) box.runFuncs();
+        expectSame(dump(select), cases.find((c) => c.name === 'blind_select')!.elements);
+        expectSame(dump(opts.Small!), cases.find((c) => c.name === 'blind_choice_small')!.elements);
+        expectSame(dump(opts.Big!), cases.find((c) => c.name === 'blind_choice_big')!.elements);
+        expectSame(dump(opts.Boss!), cases.find((c) => c.name === 'blind_choice_boss')!.elements);
+
+        const hud = new UIBox(createHud(makeHudState()), {
+            align: 'cli', offset: { x: -0.7, y: 0 }, major: { T: { x: 0, y: 0, w: 21, h: 11.2 } },
+        });
+        const prompt = new UIBox(createBlindPrompt(), { align: 'cm', offset: { x: 0, y: 0 }, major: hud.getById('row_blind')!.asMajor });
+        expectSame(dump(prompt), cases.find((c) => c.name === 'blind_prompt')!.elements);
     });
 });

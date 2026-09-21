@@ -113,6 +113,16 @@ export class UIElement {
         readonly config: UIConfig,
     ) {}
 
+    /** 把自己当 major 用（O 节点里装的 UIBox 挂在它上面）：房间坐标的 T */
+    readonly asMajor: Major = ((el: UIElement) => ({
+        T: {
+            get x() { return el.x; },
+            get y() { return el.y; },
+            get w() { return el.T.w; },
+            get h() { return el.T.h; },
+        },
+    }))(this);
+
     /** 在房间里的位置（tile） */
     get x(): number {
         return this.box.T.x + this.offset.x;
@@ -249,6 +259,40 @@ export class UIBox implements Major {
         this.root.setAlignments();
         this.alignToMajor();
         if (config.lr_clamp) this.lrClamp();
+        this.placeObjects();
+    }
+
+    /**
+     * `ui.lua:506`（`initialize_VT` 里那段）：O 节点里装的是另一个 UIBox 时，把它以 O 元素为 major 重新对齐
+     * （它自己的 `align`，如选盲注卡的 `'bmi'`，再加它自己的 `offset`），**然后让它重排一次**。
+     * 这次重排不跑 `func`、用的是 `func` 已经改过的字号——The Wheel 前缀那种「先按 0.32 量、再缩成 0」的节点
+     * 就是在这里塌成 0 高的
+     */
+    private placeObjects(): void {
+        for (const el of this.root.walk()) {
+            const obj = el.config.object;
+            if (el.UIT === UIT.O && obj instanceof UIBox) {
+                obj.attachTo(el.asMajor);
+                obj.recalculate();
+            }
+        }
+    }
+
+    /**
+     * 挂到新的 major 上并对齐一次。按「盒子原点在 0」算偏移——与构造时同一口径：
+     * 原作这里读的 `- Mid.T.x + T.x` 在稳态下两者重合、互相抵掉
+     */
+    attachTo(major: Major): void {
+        this.config.major = major;
+        this.T.x = 0;
+        this.T.y = 0;
+        this.alignToMajor();
+        this.followMajor();
+    }
+
+    /** `alignment.offset` 改了之后重新对齐（`blind_choice_handler` 把选盲注卡往上提） */
+    realign(): void {
+        if (this.config.major) this.attachTo(this.config.major);
     }
 
     /** `ui.lua:118` */
@@ -364,6 +408,10 @@ export class UIBox implements Major {
         if (!major || !this.config.align || this.config.align === 'a') return;
         this.T.x = major.T.x + this.offset.x;
         this.T.y = major.T.y + this.offset.y;
+        for (const el of this.root.walk()) {
+            const obj = el.config.object;
+            if (el.UIT === UIT.O && obj instanceof UIBox) obj.followMajor();
+        }
     }
 
     /** `moveable.lua:322` */
@@ -380,6 +428,7 @@ export class UIBox implements Major {
         this.root.setAlignments();
         this.T.w = this.root.T.w;
         this.T.h = this.root.T.h;
+        this.placeObjects();
     }
 
     /**

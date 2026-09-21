@@ -12,8 +12,8 @@ import { TILESIZE, type Rect, type UIObject, luaToString, readRef } from './uibo
 /** `string` 里的一段：纯文字，或者绑定到某个表的某个字段 */
 export type DynaPart =
     | string
-    | { ref_table: object; ref_value: string; prefix?: string; suffix?: string; scale?: number }
-    | { string: string; prefix?: string; suffix?: string; scale?: number };
+    | { ref_table: object; ref_value: string; prefix?: string; suffix?: string; scale?: number; colour?: Colour }
+    | { string: string; prefix?: string; suffix?: string; scale?: number; colour?: Colour };
 
 export type DynaTextConfig = {
     string: DynaPart[];
@@ -35,6 +35,8 @@ export type DynaLetter = {
     /** 这个字占的宽高，**字体像素 × scale**（原作的 `letter.dims`） */
     dims: { x: number; y: number };
     partScale: number;
+    /** 这一段自己的颜色（`text.lua:122` 的 `let_tab.colour`），盖过 `colours` 的轮换 */
+    colour?: Colour;
 };
 
 export class DynaText implements UIObject {
@@ -68,11 +70,13 @@ export class DynaText implements UIObject {
         const part = this.config.string[0];
         let str: string;
         let partScale = 1;
+        let partColour: Colour | undefined;
         if (typeof part === 'string') str = part;
         else {
             const body = 'ref_table' in part ? luaToString(readRef(part.ref_table, part.ref_value)) : part.string;
             str = (part.prefix ?? '') + body + (part.suffix ?? '');
             partScale = part.scale ?? 1;
+            partColour = part.colour;
         }
         if (!firstPass && str === this.text) return false;
         this.text = str;
@@ -86,7 +90,7 @@ export class DynaText implements UIObject {
             // tx / (FONTSCALE*TILESCALE)：字体像素 × scale，再加 spacing 那一项
             const dx = fontWidth(char, this.font) * this.scale * partScale + 2.7 * spacing;
             const dy = fontHeight(this.font) * this.scale * partScale * this.font.TEXT_HEIGHT_SCALE;
-            this.letters.push({ char, dims: { x: dx, y: dy }, partScale });
+            this.letters.push({ char, dims: { x: dx, y: dy }, partScale, colour: partColour });
             w += (dx * fs) / TILESIZE;
             h = Math.max(h, (dy * fs) / TILESIZE);
         }

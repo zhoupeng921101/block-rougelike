@@ -218,6 +218,94 @@ def main():
     cases.append({'name': 'hud_blind_small', **to_py(lua.eval('DUMP(HUD_BLIND_SMALL)'))})
     cases.append({'name': 'hud_blind_head', **to_py(lua.eval('DUMP(HUD_BLIND_HEAD)'))})
 
+    # create_UIBox_blind_select（game.lua:3645）：TESTSEED 开局的选盲注界面，小盲注轮到、大盲与 Boss 待定。
+    # 三张卡各是一个嵌套 UIBox（O 节点里装 UIBox），另导出；左侧的「Choose your next Blind」提示框也导出。
+    # 桩：盲注表只留三条、动画精灵与标签精灵换成同尺寸的 Moveable、localize 的表形式按原文取描述。
+    # 动画落定后的状态：G.blind_select 的 offset 已改成终值、blind_choice_handler 跑过、三张卡按新 offset 重新对齐
+    lua.execute(r'''
+      G.C.L_BLACK = HEX("4f6367"); G.C.FILTER = HEX('ff9a00'); G.C.GREY = HEX("5f7377"); G.C.CHANCE = HEX("4BC292")
+      G.C.GOLD = HEX('eac058')
+      G.C.UI.TEXT_INACTIVE = HEX("88888899"); G.C.UI.BACKGROUND_INACTIVE = HEX("666666FF")
+      G.C.DYN_UI.BOSS_DARK = HEX('374244')
+      G.ANIMATION_ATLAS = { blind_chips = {} }
+      G.ASSET_ATLAS = { tags = {} }
+      G.P_BLINDS = {
+        bl_small = { key = 'bl_small', name = 'Small Blind', mult = 1, dollars = 3, pos = {x=0, y=0} },
+        bl_big = { key = 'bl_big', name = 'Big Blind', mult = 1.5, dollars = 4, pos = {x=0, y=1} },
+        bl_head = { key = 'bl_head', name = 'The Head', mult = 2, dollars = 5, pos = {x=0, y=7}, boss = {min = 1, max = 10}, boss_colour = HEX('ac9db4') },
+      }
+      AnimatedSprite = function(x, y, w, h) local s = Moveable(x, y, w, h); s.define_draw_steps = function() end; return s end
+      Tag = function(key)
+        local tag = { key = key }
+        function tag:generate_UI(_size)
+          _size = _size or 0.8
+          local s = Moveable(0, 0, _size, _size)
+          s.config = { tag = self, force_focus = true }
+          return {n=G.UIT.C, config={align = "cm", ref_table = self}, nodes={
+            {n=G.UIT.O, config={w=_size*1,h=_size*1, colour = G.C.BLUE, object = s, focus_with_object = true}},
+          }}, s
+        end
+        return tag
+      end
+      pseudoseed = function() return 0 end
+      pseudorandom_element = function(t) return t[1] end
+      local plain_localize = localize
+      local BLIND_TEXT = {
+        bl_small = { name = 'Small Blind', text = {} },
+        bl_big = { name = 'Big Blind', text = {} },
+        bl_head = { name = 'The Head', text = {'All Heart cards', 'are debuffed'} },
+      }
+      localize = function(args, misc_cat)
+        if type(args) ~= 'table' then return plain_localize(args) end
+        if args.type == 'raw_descriptions' then return BLIND_TEXT[args.key].text end
+        if args.type == 'name_text' then return BLIND_TEXT[args.key].name end
+        return 'ERROR'
+      end
+      G.SETTINGS.tutorial_complete = true
+      G.SETTINGS.tutorial_progress = { completed_parts = {} }
+      G.GAME.used_vouchers = {}
+      G.GAME.hands = { ['High Card'] = { visible = true } }
+      G.GAME.current_round.most_played_poker_hand = 'High Card'
+      G.GAME.starting_params = { ante_scaling = 1 }
+      G.GAME.round_resets.blind_states = { Small = 'Select', Big = 'Upcoming', Boss = 'Upcoming' }
+      G.GAME.round_resets.loc_blind_states = { Small = 'Select', Big = 'Upcoming', Boss = 'Upcoming' }
+      G.GAME.round_resets.blind_choices = { Small = 'bl_small', Big = 'bl_big', Boss = 'bl_head' }
+      G.GAME.round_resets.blind_tags = { Small = 'tag_economy', Big = 'tag_investment' }
+      G.GAME.blind_on_deck = nil
+      G.ROOM = { T = { x = 0, y = 0, w = 21, h = 11.2 } }
+      G.HUD = HUD
+      G.E_MANAGER = { add_event = function() end }
+      Event = function(t) return t end
+
+      local CW, CH = 2.4*35/41, 2.4*47/41
+      local hw, hh = 6*CW, 0.95*CH
+      G.hand = Moveable{T = {x = 21 - hw - 3.55, y = 11.2 - hh, w = hw, h = hh}}
+      G.jokers = Moveable{T = {x = 21 - hw - 3.55 - 0.1, y = 0, w = 4.9*CW, h = 0.95*CH}}
+
+      G.blind_select = UIBox{ definition = create_UIBox_blind_select(),
+        config = {align="bmi", offset = {x=0,y=G.ROOM.T.y + 29}, major = G.hand, bond = 'Weak'} }
+      G.blind_select.alignment.offset.y = 0.8-(G.hand.T.y - G.jokers.T.y) + G.blind_select.T.h
+      G.blind_select.alignment.offset.x = 0
+      local function settle(box)
+        box.alignment.prev_type = ''
+        box:align_to_major()
+        box.T.x = box.role.major.T.x + box.role.offset.x
+        box.T.y = box.role.major.T.y + box.role.offset.y
+        box.UIRoot:initialize_VT()
+      end
+      settle(G.blind_select)
+      local function run_funcs(e) if e.config.func then G.FUNCS[e.config.func](e) end; for _, c in ipairs(e.children) do run_funcs(c) end end
+      for _, k in ipairs({'small', 'big', 'boss'}) do run_funcs(G.blind_select_opts[k].UIRoot) end
+      for _, k in ipairs({'small', 'big', 'boss'}) do settle(G.blind_select_opts[k]) end
+
+      G.blind_prompt_box.alignment.offset.y = 0
+      settle(G.blind_prompt_box)
+    ''')
+    cases.append({'name': 'blind_select', **to_py(lua.eval('DUMP(G.blind_select)'))})
+    for k in ['small', 'big', 'boss']:
+        cases.append({'name': f'blind_choice_{k}', **to_py(lua.eval(f'DUMP(G.blind_select_opts.{k})'))})
+    cases.append({'name': 'blind_prompt', **to_py(lua.eval('DUMP(G.blind_prompt_box)'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 

@@ -59,7 +59,7 @@ const loc = (key: string) => DICTIONARY[key] ?? `ERROR`;
  * `misc_functions.lua:1801` 的 `get_stake_sprite`：`chips` 图集里赌注那一格，尺寸 `scale × 1`。
  * 复刻件只有白注（`game.lua:256`，`pos = {x=0, y=0}`），别的赌注要从 `P_STAKES` 抄 `pos`。
  */
-function stakeSprite(stake: number, scale: number): SpriteObject {
+export function stakeSprite(stake: number, scale: number): SpriteObject {
     if (stake !== 1) throw new Error(`赌注 ${stake} 的图标位置还没抄`);
     return { kind: 'sprite', atlas: 'chips', pos: { x: 0, y: 0 }, T: { x: 0, y: 0, w: scale, h: scale } };
 }

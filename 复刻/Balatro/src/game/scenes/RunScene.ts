@@ -26,7 +26,6 @@ import type { Round } from '../../core/round';
 import { Run } from '../../core/run';
 import { TAG_CENTERS, isTagImplemented } from '../../core/tags';
 import { VOUCHER_CENTERS } from '../../core/vouchers';
-import { getBlindAmount } from '../../core/scoring';
 import { CardSprite } from '../card-sprite';
 import { BoosterSprite } from '../booster-sprite';
 import { ConsumableSprite } from '../consumable-sprite';
@@ -40,6 +39,8 @@ import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
 import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/definitions/hud-blind';
 import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
+import { type BlindSelectState, createBlindPrompt, createBlindSelect } from '../../ui/definitions/blind-select';
+import { mostPlayedHand } from '../../core/round';
 import { BLIND_TEXT } from '../../ui/lang.generated';
 import type { UIElement } from '../../ui/uibox';
 import { cardAreas } from '../areas';
@@ -133,6 +134,11 @@ export class RunScene extends Scene {
     /** 四个 CardArea 身后的底框与计数（`cardarea.lua:288`） */
     /** 手牌下面的出牌 / 排序 / 弃牌（`G.buttons`）。只在选牌时存在，出牌或弃牌之后重建（`one_press` 复位） */
     private buttonsView: UIBoxView | null = null;
+    /**
+     * 选盲注界面（`G.blind_select` 与左侧的 `G.blind_prompt_box`）。进选盲注时建、开打时拆；
+     * 跳过或重掷 Boss 之后整个重建（原作也是重建）
+     */
+    private blindSelectViews: { select: UIBoxView; prompt: UIBoxView } | null = null;
     private deckSprite!: DeckSprite;
     /** 已经打到出牌区的牌（`G.play`），逐帧按 `alignPlay` 摆；其余手牌按 `alignHand` */
     private readonly inPlay = new Set<CardSprite>();
@@ -169,6 +175,8 @@ export class RunScene extends Scene {
         this.load.font(UI_FONT_FAMILY, '/assets/fonts/m6x11plus.ttf');
         // `game.lua:996`：赌注筹码，29×29 一格
         this.load.spritesheet('chips', '/assets/textures/chips.png', { frameWidth: 29, frameHeight: 29 });
+        // `game.lua:994`：标签，34×34 一格
+        this.load.spritesheet('tags', '/assets/textures/tags.png', { frameWidth: 34, frameHeight: 34 });
         // `game.lua:978`：盲注筹码，34×34 一格，每行 21 帧动画
         this.load.spritesheet('blind_chips', '/assets/textures/BlindChips.png', { frameWidth: 34, frameHeight: 34 });
         this.load.spritesheet('cards', '/assets/textures/8BitDeck.png', {
@@ -295,6 +303,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.refresh();
             return;
         }
+        this.destroyBlindSelect();
         this.selected.clear();
         this.rebuildHand();
         this.rebuildJokers();
@@ -309,6 +318,7 @@ ${String(e instanceof Error ? e.message : e)}`)
      * 手牌区空着；标签开的包（Charm / Meteor …）在这一屏上挑，挑完或跳过才能开打。
      */
     private showBlindSelect(): void {
+        this.buildBlindSelect();
         this.selected.clear();
         this.clearShop();
         this.rebuildHand();
@@ -947,9 +957,57 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.buttonsView.setResolution(this.mapping.pxPerTile / toPx(1));
     }
 
+    /**
+     * `game.lua:3645`：外层挂在手牌区上（`bmi`），offset 落定在 `0.8 − (hand.y − jokers.y) + 自身高`；
+     * 三张卡的状态照 `G.GAME.round_resets.blind_states`。滑入动画还没做，直接落在终点
+     */
+    private buildBlindSelect(): void {
+        this.destroyBlindSelect();
+        const run = this.run;
+        if (run.state !== 'blind-select') return;
+        const state: BlindSelectState = {
+            ante: run.ante,
+            choices: { Small: 'bl_small', Big: 'bl_big', Boss: run.bossKey },
+            states: { Small: run.blindState('small'), Big: run.blindState('big'), Boss: run.blindState('boss') },
+            tags: run.blindTags,
+            mostPlayedHand: mostPlayedHand(run.hands),
+            probabilities: 1,
+        };
+        // `loc_blind_states`：英文里各状态的显示名与键同名
+        const { def } = createBlindSelect(state, this.areas.hand.w, { ...state.states });
+        const hand = this.areas.hand;
+        const select = new UIBox(def, { align: 'bmi', offset: { x: 0, y: 29 }, major: { T: hand } });
+        select.config.offset = { x: 0, y: 0.8 - (hand.y - this.areas.jokers.y) + select.T.h };
+        select.realign();
+        const prompt = new UIBox(createBlindPrompt(), {
+            align: 'cm', offset: { x: 0, y: 0 }, major: this.hudView.box.getById('row_blind')!.asMajor,
+        });
+        const onButton = (name: string) => this.onUIButton(name);
+        this.blindSelectViews = {
+            select: new UIBoxView(this, select, 30, onButton),
+            prompt: new UIBoxView(this, prompt, 41),
+        };
+        for (const v of Object.values(this.blindSelectViews)) v.setResolution(this.mapping.pxPerTile / toPx(1));
+    }
+
+    private destroyBlindSelect(): void {
+        if (!this.blindSelectViews) return;
+        this.blindSelectViews.select.destroy();
+        this.blindSelectViews.prompt.destroy();
+        this.blindSelectViews = null;
+    }
+
     /** `G.FUNCS[button]`：UI 按钮名接到场景的操作上 */
     private onUIButton(name: string): void {
         const round = this.round;
+        if (name === 'select_blind') {
+            this.doNext();
+            return;
+        }
+        if (name === 'skip_blind') {
+            this.doSkipBlind();
+            return;
+        }
         if (name === 'play_cards_from_highlighted') this.doPlay();
         else if (name === 'discard_cards_from_highlighted') {
             this.doDiscard();
@@ -1027,19 +1085,14 @@ ${String(e instanceof Error ? e.message : e)}`)
             : '';
 
         if (run.state === 'blind-select') {
-            const center = BLIND_CENTERS[run.blindKey];
-            const need = getBlindAmount(run.ante) * center.mult;
+            // 盲注名、目标分、奖励、跳过标签都在卡片上了；这里只剩还没有 UI 的已有标签、优惠券、
+            // 开包提示，以及跳过标签没实现时的警告
             const skipKey = run.blindKind === 'small' ? run.blindTags.Small : run.blindKind === 'big' ? run.blindTags.Big : '';
-            const skipText = skipKey
-                ? `跳过可得：${TAG_CENTERS[skipKey].name}${isTagImplemented(skipKey) ? '' : ' ⚠未实现'}`
-                : 'Boss 盲注不能跳过';
             this.hud.setText([
-                `选择盲注 — Ante ${run.ante}   ${blindName}   需要 ${need}    本 Ante 的 Boss：${BLIND_CENTERS[run.bossKey].name}`,
-                `$${run.dollars}    ${skipText}    ${tagsLine}`,
-                run.openPack
-                    ? `${run.openPack.center.name}（标签送的）—— 还能挑 ${run.openPack.choicesLeft} 张`
-                    : `「下一关」开打，「跳过盲注」拿标签    ${vouchersLine}`,
-            ].join('\n'));
+                skipKey && !isTagImplemented(skipKey) ? `⚠ 跳过可得的 ${TAG_CENTERS[skipKey].name} 还没实现` : '',
+                [tagsLine, vouchersLine].filter(Boolean).join('    '),
+                run.openPack ? `${run.openPack.center.name}（标签送的）—— 还能挑 ${run.openPack.choicesLeft} 张` : '',
+            ].filter(Boolean).join('\n'));
         } else if (run.state === 'shop') {
             this.hud.setText([
                 `商店 — Ante ${run.ante}${run.won ? '（无尽）' : ''}   下一关：${blindName}`,
@@ -1086,6 +1139,15 @@ ${String(e instanceof Error ? e.message : e)}`)
         // 选牌时这排调试按钮全藏起来：原作的出牌 / 排序 / 弃牌已经在手牌下面了（`G.buttons`）
         const choosing = run.state === 'playing' && round?.phase === 'selecting';
         for (const b of [this.nextBtn, this.rerollBtn, this.skipBtn, this.skipBlindBtn]) b.setVisible(!choosing);
+        // 选盲注界面上「下一关」「跳过盲注」由卡片上的 Select / Skip Blind 代替；标签开的包挑完之前卡片收起
+        // （`button_callbacks.lua:2306` 把 `G.blind_select` 挪到屏幕外），那时调试按钮还在
+        if (inSelect && !run.openPack) {
+            this.nextBtn.setVisible(false);
+            this.skipBlindBtn.setVisible(false);
+            this.skipBtn.setVisible(false);
+            this.rerollBtn.setVisible(false);
+        }
+        this.blindSelectViews?.select.setVisible(!run.openPack);
 
         if (run.state === 'game-over') {
             this.message.setText('失败').setColor('#e5585f');
@@ -1153,6 +1215,10 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.slideHand(delta / 1000);
         this.syncButtons();
         this.buttonsView?.update(time / 1000);
+        if (this.blindSelectViews) {
+            this.blindSelectViews.select.update(time / 1000);
+            this.blindSelectViews.prompt.update(time / 1000);
+        }
         this.placeCards(time / 1000);
         // 牌堆：盲注里是剩余张数，盲注外整副牌都在牌堆里
         this.deckSprite.update(this.areas.deck, this.round && this.run.state === 'playing' ? this.round.deck.length : this.run.fullDeck.length);
@@ -1296,6 +1362,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.mapping = roomMapping(width, height);
         this.hudView?.setResolution(this.mapping.pxPerTile / toPx(1));
         this.hudBlindView?.setResolution(this.mapping.pxPerTile / toPx(1));
+        this.blindSelectViews?.select.setResolution(this.mapping.pxPerTile / toPx(1));
+        this.blindSelectViews?.prompt.setResolution(this.mapping.pxPerTile / toPx(1));
         for (const a of this.areaViews) a.view.setResolution(this.mapping.pxPerTile / toPx(1));
         this.placeRoom({ x: this.mapping.roomX, y: this.mapping.roomY, r: 0 });
     }
