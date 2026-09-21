@@ -48,3 +48,52 @@ export const CARD_MOUSE_DAMPING = 1.5;
 /** 整个游戏区域的像素尺寸。 */
 export const CANVAS_W = toPx(TILE_W);
 export const CANVAS_H = toPx(TILE_H);
+
+/**
+ * `game.lua:1092` 的房间留白：窗口 = 房间 + 左右各 0.8、上下共 3×0.4 tile。
+ */
+export const ROOM_PADDING_W = 0.8;
+export const ROOM_PADDING_H = 0.4;
+/** `globals.lua:309` 的初始 `G.TILESCALE`。`love.resize` 拿它当基准比例，约掉之后不影响结果 */
+const ORIG_TILESCALE = 3.65;
+
+export type RoomMapping = {
+    /** 窗口下的 `G.TILESCALE` */
+    tileScale: number;
+    /** 每 tile 多少**窗口**像素（`TILESIZE * tileScale`） */
+    pxPerTile: number;
+    /** `G.ROOM.T.x` / `.y`：房间原点在窗口里的位置，单位 tile */
+    roomX: number;
+    roomY: number;
+};
+
+/**
+ * `main.lua:436` 的 `love.resize`：按窗口算 `G.TILESCALE` 与房间位置。
+ *
+ * 窗口比 22.6:12.4 窄就按宽缩、房间上下居中，否则按高缩、左右居中。
+ * 这是复刻件与原作「同一个窗口里东西摆在同一个像素」的前提（22 号票）：
+ * 2560×1440 时每 tile 113.3 像素、房间原点 (0.8, 0.757) tile，
+ * 用它算出的牌堆左上角 (2180, 1043) 与模拟器实机截图一致。
+ */
+export function roomMapping(w: number, h: number): RoomMapping {
+    // 原文：窗口太方（宽 < 高）时把 h 当成 w 算，免得上下出现空白里的弹入
+    if (w / h < 1) h = w;
+    const winW = TILE_W + 2 * ROOM_PADDING_W;
+    const winH = TILE_H + 3 * ROOM_PADDING_H;
+    const prevW = winW * TILESIZE * ORIG_TILESCALE;
+    const prevH = winH * TILESIZE * ORIG_TILESCALE;
+    const narrow = w / h < prevW / prevH;
+    const tileScale = narrow ? (ORIG_TILESCALE * w) / prevW : (ORIG_TILESCALE * h) / prevH;
+    const pxPerTile = TILESIZE * tileScale;
+    return narrow
+        ? {
+            tileScale, pxPerTile,
+            roomX: ROOM_PADDING_W,
+            roomY: (h / pxPerTile - (TILE_H + ROOM_PADDING_H)) / 2 + ROOM_PADDING_H / 2,
+        }
+        : {
+            tileScale, pxPerTile,
+            roomX: (w / pxPerTile - (TILE_W + ROOM_PADDING_W)) / 2 + ROOM_PADDING_W / 2,
+            roomY: ROOM_PADDING_H,
+        };
+}

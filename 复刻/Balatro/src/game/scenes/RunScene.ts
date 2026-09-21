@@ -30,7 +30,7 @@ import { getBlindAmount } from '../../core/scoring';
 import { CardSprite } from '../card-sprite';
 import { BoosterSprite } from '../booster-sprite';
 import { ConsumableSprite } from '../consumable-sprite';
-import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, toPx } from '../coords';
+import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, roomMapping, toPx } from '../coords';
 import { JokerSprite } from '../joker-sprite';
 import { LOOK } from '../look';
 import { VoucherSprite } from '../voucher-sprite';
@@ -113,6 +113,8 @@ export class RunScene extends Scene {
     /** 事件队列。动画的节奏全靠它，语义直译自 engine/event.lua（09 号票）。
      *  刻意不叫 `events`——那是 Phaser Scene 自己的字段。 */
     private readonly queue = new EventManager();
+    /** 背景与 CRT：铺满可视区，窗口变了跟着相机重摆（`applyRoomCamera`） */
+    private readonly fullscreenQuads: GameObjects.Shader[] = [];
     /** 正在播放出牌动画时不接受输入 */
     private animating = false;
     /** 计分过程中的实时累加器，只用于显示 */
@@ -214,6 +216,8 @@ export class RunScene extends Scene {
         // 开局先进盲注选择（原作如此）：能看到这一格跳过给什么标签，再决定打还是跳
         this.showBlindSelect();
         this.setupCrt();
+        this.applyRoomCamera();
+        this.scale.on('resize', () => this.applyRoomCamera());
     }
 
     // ————————————————————————————————————————————————————————————————
@@ -1014,7 +1018,6 @@ ${String(e instanceof Error ? e.message : e)}`)
      * 纯色底会让 CRT 把白卡推成死白（14 号票记过这条）。
      */
     private setupBackground(): void {
-        const { width, height } = this.scale;
         const bg = this.add.shader(
             {
                 name: 'background',
@@ -1030,13 +1033,37 @@ ${String(e instanceof Error ? e.message : e)}`)
                     setUniform('contrast', BACKGROUND_COLOURS.contrast);
                     // G.ARGS.spin.amount，game.lua:2494 起手是 0
                     setUniform('spin_amount', 0);
-                    setUniform('uScreenSize', [width, height]);
+                    // 原作用片元的屏幕像素坐标（`screen_coords`）与 `love_ScreenSize`，
+                    // quad 铺满可视区时 `outTexCoord * 画布像素` 与之同义
+                    setUniform('uScreenSize', [this.scale.width, this.scale.height]);
                 },
             },
-            width / 2, height / 2, width, height,
+            0, 0, 1, 1,
             [],
         );
         bg.setDepth(-1000);
+        this.fullscreenQuads.push(bg);
+    }
+
+    /**
+     * 按 `love.resize` 摆相机（22 号票）。世界坐标固定 72 像素 / tile（`toPx`），
+     * 相机把它缩放到窗口的每 tile 像素、再平移到房间原点。背景与 CRT 两个全屏 quad 跟着可视区走。
+     */
+    private applyRoomCamera(): void {
+        const { width, height } = this.scale;
+        const m = roomMapping(width, height);
+        const zoom = m.pxPerTile / toPx(1);
+        const cam = this.cameras.main;
+        cam.setOrigin(0, 0);
+        cam.setZoom(zoom);
+        cam.setScroll(-toPx(m.roomX), -toPx(m.roomY));
+        const vw = width / zoom;
+        const vh = height / zoom;
+        for (const quad of this.fullscreenQuads) {
+            quad.setPosition(cam.scrollX + vw / 2, cam.scrollY + vh / 2);
+            // `setSize` 不刷新 `displayOrigin`：不补这句，quad 仍按创建时 1×1 的原点、从中心往右下画
+            quad.setSize(vw, vh).updateDisplayOrigin();
+        }
     }
 
     /**
@@ -1047,6 +1074,7 @@ ${String(e instanceof Error ? e.message : e)}`)
      */
     private setupCrt(): void {
         this.cameras.main.setForceComposite(true);
+        // 画布就是物理像素（`main.ts`），与原作「画布 = 屏幕分辨率」一致
 
         // **depth 很关键。** captureFrame 捕获的是显示列表里排在它之前的东西，
         // 而 Phaser 按 depth 排序——默认 depth 0 会与卡牌底板同级，
@@ -1054,19 +1082,15 @@ ${String(e instanceof Error ? e.message : e)}`)
         // 放在所有游戏内容之上、CRT 之下。
         this.add.captureFrame('scene').setDepth(500);
 
-        const { width, height } = this.scale;
         const crt = this.add.shader(
             {
                 name: 'crt',
                 fragmentSource: CRT_FRAG,
                 vertexSource: CRT_VERT,
                 setupUniforms: (setUniform: (n: string, v: unknown) => void) => {
-                    // 扫描线密度与色散都按**显示出来的物理像素**算：原作的画布就是屏幕分辨率
-                    // （`G.CANVAS:getPixelHeight()`、`love_ScreenSize`），复刻件的画布只有 CANVAS_W×CANVAS_H、
-                    // 再被 CSS 放大，按画布尺寸算会让线粗一倍多（21 号票在模拟器上与正版并排看出来的）
-                    const dpr = window.devicePixelRatio;
-                    const shown = this.scale.displaySize;
-                    const u = crtUniforms(LOOK.crt, shown.width * dpr, shown.height * dpr, this.time.now / 1000);
+                    // 扫描线密度与色散都按画布像素算（`G.CANVAS:getPixelHeight()`、`love_ScreenSize`）。
+                    // 画布曾经只有 1512×806 再被 CSS 放大，线粗一倍多（21 号票在模拟器上并排看出来的）
+                    const u = crtUniforms(LOOK.crt, this.scale.width, this.scale.height, this.time.now / 1000);
                     setUniform('uMainSampler', 0);
                     setUniform('distortion_fac', u.distortion_fac);
                     setUniform('scale_fac', u.scale_fac);
@@ -1077,10 +1101,11 @@ ${String(e instanceof Error ? e.message : e)}`)
                     setUniform('uScreenSize', u.uScreenSize);
                 },
             },
-            width / 2, height / 2, width, height,
+            0, 0, 1, 1,
             ['scene'],
         );
         crt.setDepth(1000);
+        this.fullscreenQuads.push(crt);
     }
 }
 
