@@ -157,7 +157,7 @@ src/
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 863 个测试，必须全绿
+npm test            # 871 个测试，必须全绿
 npm run test:slow   # 60 个 seed 量墙（约 30 秒，改了内容或 bot 之后跑）
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build

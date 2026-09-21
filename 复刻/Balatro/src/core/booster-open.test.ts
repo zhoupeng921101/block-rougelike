@@ -13,7 +13,7 @@ import { isBoosterImplemented, openBooster, packCardKey, releasePack } from './b
 import { P_CARDS, resetCardCounters } from './card';
 import { PseudorandomState } from './rng';
 import { initialHands } from './scoring';
-import { NO_VOUCHER_POOL_FIELDS, type PoolContext } from './shop';
+import { DEFAULT_POOL_FIELDS, type PoolContext } from './shop';
 import type { HandName } from './poker-hands';
 
 function ctx(overrides: Partial<PoolContext> = {}): PoolContext {
@@ -27,7 +27,7 @@ function ctx(overrides: Partial<PoolContext> = {}): PoolContext {
             Object.keys(initialHands()).map((name) => [name, 0]),
         ) as Record<HandName, number>,
         firstShopBuffoon: true,
-        ...NO_VOUCHER_POOL_FIELDS,
+        ...DEFAULT_POOL_FIELDS,
         ...overrides,
     };
 }

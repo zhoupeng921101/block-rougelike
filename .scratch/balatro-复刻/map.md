@@ -678,8 +678,7 @@ Label: wayfinder:map
 
 - **Orbital Tag 的候选牌型顺序没核实**：原文 `pairs(G.GAME.hands)` 是 LuaJIT 哈希序，
   复刻件按牌型声明序。掷点次数对（每个 Ante 三次），「掷出的数对应哪个牌型」要跑实机才知道。
-  **To Do List 同一个坑**，而且复刻件造它时根本没掷 `to_do`——`makeJoker` 留了 `pickToDoHand`
-  口子，`Run` 从来没传。
+  **To Do List 同一个坑**（候选牌型的顺序）。它原先还**完全没掷过点**、永远不给钱，已修：造卡时（含商店摆出、复制品）掷 `to_do`，回合末从「可见且不是当前那个」里重掷。
 - **标签开的包**：Charm / Meteor 原文是 `'p_..._mega_'..math.random(1, 2)`（全局流），两张只差美术，
   复刻件固定取 1。包在盲注选择界面打开，关掉之后**再轮一次** `new_blind_choice`（下一个开包标签接着开）。
 
@@ -698,6 +697,11 @@ Label: wayfinder:map
   与 D6 Tag 同场时当前价是 0、重掷后是 1。
 - **Telescope 那张走 `forced_key`**：不掷 soul、不抽池子，后面几张的 soul / 池子流因此比普通包少消费一次。
   一手都没打过就退回普通那条。
+
+- **复制品也消费一次 `to_do`**：`copy_card` 先 `set_ability`（掷一次）、再把原卡 ability 整张抄过来盖掉。
+  Invisible Joker 与 Ankh 复制 To Do List 时照样掷，结果丢掉。
+- **赢判的是结算时的 Ante**（`state_events.lua:113`，`ease_ante(1)` 还没落地）：打过 **Ante 8** 的 Boss。
+  **局不结束**——原作弹胜利窗口后可以接着打（无尽模式），复刻件只置 `Run.won`。
 
 ## Out of scope
 

@@ -247,6 +247,11 @@ export const SPECTRAL_SPECS: Record<string, ConsumableSpec> = {
             for (const joker of [...ctx.jokers]) {
                 if (joker !== chosen) ctx.removeJoker(joker);
             }
+            // `copy_card` 的 `set_ability`：复制 To Do List 时**照样掷一次 `to_do`**，结果被原卡的 ability 盖掉
+            if (chosen.ability.name === 'To Do List') {
+                const visible = (Object.keys(ctx.hands) as HandName[]).filter((h) => ctx.hands[h].visible);
+                ctx.pickRandom(visible, 'to_do');
+            }
             // `copy_card`：复制一份，**Negative 版本要剥掉**（原文 `strip_edition`），
             // 末尾的 `set_seal` 会重算价格——剥掉 Negative 的那张便宜 5 块
             const copy = {

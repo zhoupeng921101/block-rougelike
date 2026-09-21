@@ -698,6 +698,20 @@ const END_OF_ROUND: Record<string, Handler> = {
         return { message: `-${self.ability.extra.h_mod}`, card: self };
     },
 
+    /**
+     * `card.lua:2978`：回合末**换一个牌型**——候选是可见的、**除了当前那个**，掷 `to_do`。
+     * 原文 `pairs(G.GAME.hands)` 是哈希序，复刻件按声明序（与 Orbital 同一个已知偏差）
+     */
+    'To Do List': (self, context, game) => {
+        if (context.blueprint) return null;
+        const pool = (Object.keys(game.hands) as HandName[]).filter(
+            (h) => game.hands[h].visible && h !== self.ability.to_do_poker_hand,
+        );
+        // `pseudorandom_element` 对数组就是 `math.random(#t)`，与 `pseudorandom(key, 1, n)` 同一次掷点
+        self.ability.to_do_poker_hand = pool[game.pseudorandom('to_do', 1, pool.length) - 1];
+        return { message: 'reset' };
+    },
+
     // `card.lua:2948`。**先判会不会掉到 0、再减**——顺序反了会多活一个回合
     Popcorn: (self, context) => {
         if (context.blueprint) return null;

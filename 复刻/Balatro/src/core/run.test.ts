@@ -786,3 +786,35 @@ describe('回归：Blue 蜡封造出来的星球要退出池子', () => {
         expect(run.usedJokers.has(made.key)).toBe(true);
     });
 });
+
+describe('赢（state_events.lua:113）', () => {
+    const win = (run: Run) => {
+        const round = run.startRound();
+        (round as unknown as { phase: string }).phase = 'won';
+        run.finishRound();
+    };
+
+    it('打过 Ante 8 的 Boss 置 won，局不结束，接着进商店（无尽模式）', () => {
+        const run = new Run('WIN', makeStandardDeck());
+        run.ante = 8;
+        win(run);
+        run.leaveShop();
+        win(run);
+        run.leaveShop();
+        expect(run.won).toBe(false);
+        win(run);
+        expect(run.won).toBe(true);
+        expect(run.ante).toBe(9);
+        expect(run.state).toBe('shop');
+    });
+
+    it('Ante 7 的 Boss 不算', () => {
+        const run = new Run('WIN', makeStandardDeck());
+        run.ante = 7;
+        for (let i = 0; i < 3; i++) {
+            win(run);
+            if (i < 2) run.leaveShop();
+        }
+        expect(run.won).toBe(false);
+    });
+});

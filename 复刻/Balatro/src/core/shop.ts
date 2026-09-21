@@ -125,15 +125,25 @@ export type PoolContext = {
     rates: ShopRates;
     /** Telescope：天体包的第一张固定成打得最多的牌型的星球 */
     telescope: boolean;
+    /**
+     * 可见的牌型（`G.GAME.hands[k].visible`）。**To Do List 被造出来的那一刻就要掷一个**
+     * （`card.lua:311` 的 `set_ability`），商店摆出来、包里开出来都算。
+     * 原文遍历的是 `pairs(G.GAME.hands)`（LuaJIT 哈希序），复刻件按牌型声明序——与 Orbital 同一个已知偏差
+     */
+    visibleHands: HandName[];
 };
 
-/** 测试与 bot 沙盒用的「什么优惠券都没有」的那几个字段 */
-export const NO_VOUCHER_POOL_FIELDS = {
+/** 测试用的「新局、什么优惠券都没有」那几个字段。可见牌型是开局那 9 个（`initialHands` 的 visible 列） */
+export const DEFAULT_POOL_FIELDS: Pick<PoolContext, 'discountPercent' | 'editionRate' | 'rates' | 'telescope' | 'visibleHands'> = {
     discountPercent: 0,
     editionRate: 1,
     rates: SHOP_RATES,
     telescope: false,
-} as const;
+    visibleHands: [
+        'Straight Flush', 'Four of a Kind', 'Full House', 'Flush', 'Straight',
+        'Three of a Kind', 'Two Pair', 'Pair', 'High Card',
+    ],
+};
 
 /**
  * `card.lua:4829` 的那条清除：小丑区与消耗品区里都没有它了，就解除 used 标记。
@@ -349,6 +359,15 @@ export function createCardForShop(rng: PseudorandomState, context: PoolContext):
     throw new Error(`商店档位判定一个都没命中：polled = ${polled}`);
 }
 
+/**
+ * `card.lua:311`：To Do List 的 `set_ability` 掷 `to_do`。新造的卡 `old_hand` 是 nil，
+ * 所以那个「不能和旧的一样」的循环一次就出来。**复制品（`copy_card`）也走这里**——
+ * 它先 `set_ability` 掷一次、再把原卡的 ability 整张抄过来盖掉，所以掷点消费了、结果被丢掉
+ */
+export function pickToDoHand(rng: PseudorandomState, visible: readonly HandName[]): HandName {
+    return pseudorandomElement([...visible], rng.pseudoseed('to_do'))[0]!;
+}
+
 /** `common_events.lua:2156` 的抽取 + resample 循环。三处都走它 */
 function drawFromPool(rng: PseudorandomState, pool: string[], poolKey: string): string {
     let [key] = pseudorandomElement(pool, rng.pseudoseed(poolKey));
@@ -391,7 +410,11 @@ export function createJokerCard(
 ): Joker {
     const [pool, poolKey] = getCurrentJokerPool(rng, context, keyAppend, options);
     const key = drawFromPool(rng, pool, poolKey);
-    const joker = makeJoker(key, { discountPercent: context.discountPercent });
+    // `set_ability` 在 `Card()` 构造里：**排在池子抽取之后、`etperpoll` 与版本之前**
+    const joker = makeJoker(key, {
+        discountPercent: context.discountPercent,
+        pickToDoHand: () => pickToDoHand(rng, context.visibleHands),
+    });
 
     // `card.lua:350`：**任何一张牌被 `set_ability` 就标记 used**，包括商店里摆出来的
     context.usedJokers.add(key);

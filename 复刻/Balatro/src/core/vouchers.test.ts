@@ -15,7 +15,7 @@ import { PseudorandomState, pseudorandomElement } from './rng';
 import { Run } from './run';
 import { initialHands } from './scoring';
 import type { HandName } from './poker-hands';
-import { NO_VOUCHER_POOL_FIELDS, type PoolContext, createCardForShop } from './shop';
+import { DEFAULT_POOL_FIELDS, type PoolContext, createCardForShop } from './shop';
 import { makeTag } from './tags';
 import { VOUCHER_CENTERS, VOUCHER_KEYS_BY_ORDER, nextVoucherKey, voucherPool } from './vouchers';
 
@@ -49,7 +49,7 @@ function ctx(overrides: Partial<PoolContext> = {}): PoolContext {
         consumables: [],
         handsPlayed: Object.fromEntries(Object.keys(initialHands()).map((n) => [n, 0])) as Record<HandName, number>,
         firstShopBuffoon: true,
-        ...NO_VOUCHER_POOL_FIELDS,
+        ...DEFAULT_POOL_FIELDS,
         ...overrides,
     };
 }

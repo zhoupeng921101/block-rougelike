@@ -77,8 +77,12 @@ import {
     Shop,
     createConsumableCard,
     createJokerCard,
+    pickToDoHand,
     releaseUsed,
 } from './shop';
+
+/** `game.lua:2094` 的 `win_ante`。打过这个 Ante 的 Boss 就赢了 */
+export const WIN_ANTE = 8;
 
 /** `game.lua:2186`：`blind_choices = {Small = 'bl_small', Big = 'bl_big'}`。 */
 const BLIND_ORDER: readonly BlindKind[] = ['small', 'big', 'boss'];
@@ -158,6 +162,11 @@ export class Run {
 
     /** `G.GAME.tags`：手上还没触发的标签，按拿到的先后排 */
     tags: Tag[] = [];
+    /**
+     * `G.GAME.won`：打过了第 `win_ante`（8）个 Ante 的 Boss（`state_events.lua:113`）。
+     * **赢了局不结束**——原作弹出胜利窗口，可以接着打（无尽模式），所以这里只是一个标记
+     */
+    won = false;
     /** `G.GAME.skips`：本局跳过了几个盲注。Throwback 与 Skip Tag 读它 */
     skips = 0;
     /**
@@ -543,6 +552,8 @@ export class Run {
         if (this.jokers.length > this.jokerSlots) return;
         const [chosen] = pseudorandomElement(others, this.rng.pseudoseed(key));
         if (!chosen) return;
+        // `copy_card` 的 `set_ability`：复制的是 To Do List 就**照样掷一次 `to_do`**，结果被抄过来的 ability 盖掉
+        if (chosen.ability.name === 'To Do List') pickToDoHand(this.rng, this.visibleHands());
         const copy: Joker = {
             ...chosen,
             ability: structuredClone(chosen.ability),
@@ -642,7 +653,13 @@ export class Run {
             editionRate: this.vouchers.editionRate,
             rates: this.vouchers.rates,
             telescope: this.vouchers.telescope,
+            visibleHands: this.visibleHands(),
         };
+    }
+
+    /** 可见的牌型，按声明序。To Do List 从这里掷 */
+    private visibleHands(): HandName[] {
+        return (Object.keys(this.hands) as HandName[]).filter((h) => this.hands[h].visible);
     }
 
     /** 兑换了哪些优惠券 → 整局参数。**每次现算**，理由见 `vouchers.ts` 文件头 */
@@ -800,6 +817,9 @@ export class Run {
             this.state = 'game-over';
             return { payout, won };
         }
+
+        // `state_events.lua:113`：**判的是结算时的 Ante**（`ease_ante(1)` 还没落地），所以是 8 不是 9
+        if (this.blindKind === 'boss' && this.ante === WIN_ANTE) this.won = true;
 
         this.advanceBlind();
         return { payout, won };

@@ -321,6 +321,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             return;
         }
 
+        const wasWon = this.run.won;
         const { payout } = this.run.finishRound();
         this.sound.play('coin1', { volume: 0.5 });
 
@@ -332,7 +333,9 @@ ${String(e instanceof Error ? e.message : e)}`)
             }[r.kind];
             return `${label}  +$${r.dollars}`;
         });
-        this.message.setText([`本关收益 $${payout.total}`, ...lines].join('\n')).setColor('#ffd76e');
+        // 打过 Ante 8 的 Boss：原作弹胜利窗口、可以接着打（无尽模式）。这里只给一行字，局照常往下走
+        const title = !wasWon && this.run.won ? ['赢了！接着打就是无尽模式', ''] : [];
+        this.message.setText([...title, `本关收益 $${payout.total}`, ...lines].join('\n')).setColor('#ffd76e');
 
         // 进商店之前把上一关的牌收掉。`finishRound` 已经把 `run.round` 置空，
         // 不清的话那 8 张会一直挂在商店界面上
@@ -904,7 +907,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             ].join('\n'));
         } else if (run.state === 'shop') {
             this.hud.setText([
-                `商店 — Ante ${run.ante}   下一关：${blindName}`,
+                `商店 — Ante ${run.ante}${run.won ? '（无尽）' : ''}   下一关：${blindName}`,
                 `$${run.dollars}    重掷 $${run.shop?.rerollCost ?? 0}    小丑 ${run.jokers.length}/${run.jokerSlots}    消耗品 ${run.consumables.length}/${run.consumableSlots}    ${tagsLine}`,
                 run.openPack
                     ? `${run.openPack.center.name} —— 还能挑 ${run.openPack.choicesLeft} 张`
