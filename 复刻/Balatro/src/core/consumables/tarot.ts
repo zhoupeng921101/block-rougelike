@@ -215,7 +215,7 @@ export const TAROT_SPECS: Record<string, ConsumableSpec> = {
             const edition = pollEdition(ctx, 'wheel_of_fortune', { noNeg: true, guaranteed: true });
             if (edition) {
                 target.edition = edition;
-                setCost(target); // `set_edition` 末尾的 `set_cost`
+                setCost(target, ctx.discountPercent); // `set_edition` 末尾的 `set_cost`
             }
         },
         canUse: (_c, ctx) => eligibleForEdition(ctx).length > 0,

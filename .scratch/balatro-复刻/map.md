@@ -109,7 +109,14 @@ Label: wayfinder:map
   `if G.GAME.seeded then return end`，指定 seed 的对局里**什么都不会被发现**，
   所以 Rare 与四个版本标签（`requires` 已发现）**永远抽不到**，只占位。Voucher Tag 拿得到、
   效果不做（优惠券系统不在）。`orbital` 每个 Ante 在盲注选择界面对三格各掷一次，不管标签是什么。
+- [优惠券的切片边界](issues/19-优惠券的切片边界.md) ——
+  **32 张全部进池，效果做可达的 16 张一级**。二级全是 `unlocked = false`，而局内解锁走的
+  `check_for_unlock` **第二句就是 `if G.GAME.seeded then return end`**——指定 seed 下永远抽不到。
+  Voucher Tag 顺带接上。`setCost` 的折扣参数写成必填，让编译器找出了全部 10 个既有调用点。
 
+> **优惠券已交付**（19 号票）：16 / 32 可达且全部有效果，商店第三排、兑换、Director's Cut、Voucher Tag。
+> 挑牌 bot 会买但**默认不买**——理由见票。
+>
 > **第一个里程碑已交付**（红牌组打小盲注，可玩，带动画/shader/音效）。
 >
 > **第二个里程碑的逻辑层已交付**：小丑结算管线、经济层、`Run` 状态机、商店、
@@ -675,6 +682,22 @@ Label: wayfinder:map
   口子，`Run` 从来没传。
 - **标签开的包**：Charm / Meteor 原文是 `'p_..._mega_'..math.random(1, 2)`（全局流），两张只差美术，
   复刻件固定取 1。包在盲注选择界面打开，关掉之后**再轮一次** `new_blind_choice`（下一个开包标签接着开）。
+
+- **`Voucher_fromtag` 不带 ante**：`get_current_pool` 返回的 key 已经拼好 ante，
+  `get_next_voucher_key(true)` 把**整串**换成 `'Voucher_fromtag'`。这条流跨 Ante 共用。
+- **`redeem` 无条件清 `current_round.voucher`**（`card.lua:1852`）：买掉 Voucher Tag 给的那张，
+  本 Ante 的主优惠券虽然还摆在这个商店里，**之后的商店就不再摆**。
+- **Boss Tag 也置 `boss_rerolled`**（与 Director's Cut 共用 `reroll_boss`）：拿过 Boss Tag 的 Ante
+  不能再用 Director's Cut。
+- **Clearance Sale 之后每一次 `set_cost` 都打折**，包括新造的卡、改版本、Egg / Gift Card、
+  优惠券自己（$10 → $7）。复刻件的 `setCost(card, discountPercent)` 第二参数**必填**；
+  只有 `makeConsumable` / `makeJoker` 为测试方便留了默认 0，生产代码的调用点都显式传了。
+- **Hieroglyph 在商店里就把 Ante 减 1**，同一个商店之后的重掷用新 Ante 的 key。
+  `Shop` 因此改成**现取**池子上下文（构造时传函数），不再在开张时拍快照。
+- **Reroll Surplus 的当前价另算**：`max(0, 当前价 − 2)`，下一次重掷才按「基价 + 涨幅」重算。
+  与 D6 Tag 同场时当前价是 0、重掷后是 1。
+- **Telescope 那张走 `forced_key`**：不掷 soul、不抽池子，后面几张的 soul / 池子流因此比普通包少消费一次。
+  一手都没打过就退回普通那条。
 
 ## Out of scope
 

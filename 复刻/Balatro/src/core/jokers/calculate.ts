@@ -710,9 +710,9 @@ const END_OF_ROUND: Record<string, Handler> = {
 
     // `card.lua:2988`。卖价 +3：攒进 `extra_value` 再 `set_cost`。
     // **不能直接改 sell_cost**——之后任何一次 `set_cost`（比如被 Wheel 加上版本）会把它冲掉
-    Egg: (self) => {
+    Egg: (self, _context, game) => {
         self.extra_value = (self.extra_value ?? 0) + self.ability.extra;
-        setCost(self);
+        setCost(self, game.discount_percent);
         return { message: 'val_up', card: self };
     },
 
@@ -724,7 +724,7 @@ const END_OF_ROUND: Record<string, Handler> = {
         const cards: Priced[] = [...game.jokers, ...(game.consumableCards as Priced[])];
         for (const card of cards) {
             card.extra_value = (card.extra_value ?? 0) + self.ability.extra;
-            setCost(card);
+            setCost(card, game.discount_percent);
         }
         return { message: 'val_up', card: self };
     },

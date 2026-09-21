@@ -144,4 +144,21 @@ describe('60 个 seed 的墙', { timeout: 60_000 }, () => {
         expect(mean(all)).toBe(2.233);
         expect(mean(packs)).toBe(4.083);
     });
+
+    /**
+     * **优惠券对挑牌 bot 也不划算**（19 号票第 3 步），还是同一个原因：瓶颈是战力，$10 换不成战力。
+     *
+     * 240 seed：不买 4.025；全买、先买 3.196；精选 10 张先买 3.567（去掉 Hieroglyph 3.638）；
+     * 只买出牌 / 弃牌 / 手牌上限那 3 张先买 3.929；小丑 ≥ 3 / 4 / 5 张后才先买精选 3.913 / 3.921 / 3.942。
+     * **「余钱才买」与不买打平**（全买 4.046、换一批 seed 4.071 对 4.067），
+     * 但那是因为平均每局只买到 0.19 张——bot 买完小丑和包几乎从不剩 $10。
+     * 所以默认不买，这两条是代表。60 seed 上余钱才买高出 0.067，是这 60 个里碰巧赢的几局，不是信号。
+     */
+    it('优惠券：全买且先买掉到 3.0；余钱才买 4.167，高过不买（4.1）但 240 seed 上打平', () => {
+        const all = (k: string) => k.startsWith('v_');
+        const first = SEEDS.map((s) => pickyRun(fresh(s), { vouchers: { want: all, first: true } }));
+        const after = SEEDS.map((s) => pickyRun(fresh(s), { vouchers: { want: all, first: false } }));
+        expect(mean(first)).toBe(3);
+        expect(mean(after)).toBe(4.167);
+    });
 });

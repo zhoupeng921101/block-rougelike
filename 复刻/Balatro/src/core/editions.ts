@@ -58,7 +58,7 @@ export function editionExtraCost(edition: Edition | undefined): number {
     }
 }
 
-/** `G.GAME.edition_rate`（`game.lua:2110`）。基线 1，优惠券能改 */
+/** `G.GAME.edition_rate`（`game.lua:2110`）。基线 1，Hone 改成 2 */
 export const EDITION_RATE = 1;
 
 export type PollEditionOptions = {
@@ -68,6 +68,8 @@ export type PollEditionOptions = {
     noNeg?: boolean;
     /** `_guaranteed`。真值时四档的门槛全部 ×25，几乎必出 */
     guaranteed?: boolean;
+    /** `G.GAME.edition_rate`。Hone 之后是 2。**只有非保底那一支的后三档乘它** */
+    rate?: number;
 };
 
 /**
@@ -87,6 +89,7 @@ export function pollEdition(
     options: PollEditionOptions = {},
 ): Edition | null {
     const mod = options.mod ?? 1;
+    const rate = options.rate ?? EDITION_RATE;
     const poll = rng.pseudorandom(key);
 
     if (options.guaranteed) {
@@ -99,9 +102,9 @@ export function pollEdition(
 
     // **negative 那一档不乘 `edition_rate`**（原文只有后三档乘），照抄
     if (poll > 1 - 0.003 * mod && !options.noNeg) return 'negative';
-    if (poll > 1 - 0.006 * EDITION_RATE * mod) return 'polychrome';
-    if (poll > 1 - 0.02 * EDITION_RATE * mod) return 'holo';
-    if (poll > 1 - 0.04 * EDITION_RATE * mod) return 'foil';
+    if (poll > 1 - 0.006 * rate * mod) return 'polychrome';
+    if (poll > 1 - 0.02 * rate * mod) return 'holo';
+    if (poll > 1 - 0.04 * rate * mod) return 'foil';
     return null;
 }
 

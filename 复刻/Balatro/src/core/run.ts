@@ -62,9 +62,18 @@ import { type JokerAreaHooks, Round, STARTING_PARAMS } from './round';
 import { type BlindType, type Tag, type TagTiming, isTagImplemented, makeTag, nextTagKey } from './tags';
 import { type HandInfo, type HandName, initialHands, levelUpHand } from './scoring';
 import {
+    type ShopVoucher,
+    type VoucherParams,
+    isVoucherImplemented,
+    nextVoucherKey,
+    voucherParams,
+} from './vouchers';
+import {
     type ShopTagHooks,
     type PoolContext,
     type ShopItem,
+    BASE_REROLL_COST,
+    SHOP_JOKER_MAX,
     Shop,
     createConsumableCard,
     createJokerCard,
@@ -164,6 +173,18 @@ export class Run {
      * 不管标签是不是 Orbital（掷点在界面代码里，`UI_definitions.lua:1622`）
      */
     private orbitalChoices = new Map<number, Record<BlindType, HandName>>();
+    /** `G.GAME.used_vouchers`：已兑换的优惠券 */
+    readonly usedVouchers = new Set<string>();
+    /**
+     * `G.GAME.current_round.voucher`：本 Ante 商店里摆的那张。开局抽一次、每打完 Boss 抽一次；
+     * **兑换任何一张优惠券都会把它清掉**（`card.lua:1852`），这个 Ante 后面的商店就不再摆
+     */
+    currentVoucher: string | null = null;
+    /**
+     * `G.GAME.round_resets.boss_rerolled`。Director's Cut 每个 Ante 只能重掷一次 Boss；
+     * **Boss Tag 也会置它**（两条路共用 `reroll_boss`）。进新 Ante 时清（`common_events.lua:2383`）
+     */
+    bossRerolled = false;
     /** `The Idol` / `Ancient Joker` / `Castle` 的每回合随机项 */
     idolCard?: { id: number; suit: Suit };
     ancientSuit: Suit = 'Spades';
@@ -176,6 +197,9 @@ export class Run {
 
         // `game.lua:2394`：开局就抽定 Ante 1 的 Boss
         this.bossKey = getNewBoss(this.ante, this.rng, this.bossesUsed);
+
+        // `game.lua:2395`：开局抽定 Ante 1 的优惠券
+        this.currentVoucher = nextVoucherKey(this.rng, this.voucherPoolContext([]));
 
         // `game.lua:2396`：开局抽定 Ante 1 的两个跳过标签
         this.rollBlindTags();
@@ -230,6 +254,16 @@ export class Run {
                 take('tag_uncommon')
                     ? createJokerCard(this.rng, this.poolContext(), 'uta', 'shop', { rarity: 0.9 })
                     : null,
+            // `tag.lua:302`：**每张** Voucher Tag 各加一张（循环不 break），
+            // 用 `Voucher_fromtag`，依次排除已经摆出来的
+            voucherAdd: (inShop) => {
+                const added: string[] = [];
+                while (take('tag_voucher')) {
+                    const key = nextVoucherKey(this.rng, this.voucherPoolContext([...inShop, ...added]), true);
+                    added.push(key);
+                }
+                return added;
+            },
             // `tag.lua:448`：`shop_free` 每个商店只生效一张
             shopFinalPass: () => take('tag_coupon'),
         };
@@ -373,8 +407,10 @@ export class Run {
 
             // ———— new_blind_choice ————
             case 'tag_boss':
-                // `button_callbacks.lua:2910` 的 `reroll_boss`，从标签来的不花 $10
+                // `button_callbacks.lua:2910` 的 `reroll_boss`，从标签来的不花 $10。
+                // **同样置 `boss_rerolled`**——这个 Ante 就不能再用 Director's Cut
                 this.bossKey = getNewBoss(this.ante, this.rng, this.bossesUsed);
+                this.bossRerolled = true;
                 return true;
             case 'tag_charm':
                 return this.openFreePack('p_arcana_mega_1');
@@ -387,7 +423,7 @@ export class Run {
             case 'tag_buffoon':
                 return this.openFreePack('p_buffoon_mega_1');
 
-            // Voucher Tag：优惠券系统不在，拿得到、什么也不发生（UI 标 ⚠未实现）
+            // Voucher Tag 的时机是 `voucher_add`，在商店里（`shopTagHooks`），不走这里
             case 'tag_voucher':
                 return false;
             default:
@@ -516,7 +552,7 @@ export class Run {
         };
         if (copy.ability.invis_rounds !== undefined) copy.ability.invis_rounds = 0;
         // `copy_card` 末尾的 `set_seal` → `set_cost`：剥掉 Negative 的那张便宜 5 块
-        setCost(copy);
+        setCost(copy, this.discountPercent);
         this.jokers.push(copy);
         this.usedJokers.add(copy.key);
         this.onJokerAdded(copy);
@@ -586,7 +622,7 @@ export class Run {
         if (!source) return;
         // `copy_card` 之后 `set_edition({negative = true})` → `set_cost`：**贵 5 块**
         const copy = { ...source, edition: 'negative' as const };
-        setCost(copy);
+        setCost(copy, this.discountPercent);
         this.consumables.push(copy);
     }
 
@@ -602,7 +638,25 @@ export class Run {
                 Object.entries(this.hands).map(([name, info]) => [name, info.played]),
             ) as Record<HandName, number>,
             firstShopBuffoon: this.firstShopBuffoon,
+            discountPercent: this.vouchers.discountPercent,
+            editionRate: this.vouchers.editionRate,
+            rates: this.vouchers.rates,
+            telescope: this.vouchers.telescope,
         };
+    }
+
+    /** 兑换了哪些优惠券 → 整局参数。**每次现算**，理由见 `vouchers.ts` 文件头 */
+    get vouchers(): VoucherParams {
+        return voucherParams(this.usedVouchers);
+    }
+
+    /** `G.GAME.discount_percent`。Clearance Sale 之后是 25，所有 `set_cost` 都要带 */
+    get discountPercent(): number {
+        return this.vouchers.discountPercent;
+    }
+
+    private voucherPoolContext(inShop: string[]) {
+        return { ante: this.ante, usedVouchers: this.usedVouchers, inShop };
     }
 
     get blindKind(): BlindKind {
@@ -652,7 +706,10 @@ export class Run {
             consumables: this.consumableHooks(),
             // `tag.lua:337` 的 Juggle Tag（`round_start_bonus`）：**只加这一回合**
             // （`temp_handsize` 在回合结束时减回去，`state_events.lua:291`）
-            handSizeDelta: this.handSizeDelta + this.takeRoundStartBonus(),
+            handSizeDelta: this.handSizeDelta + this.vouchers.handSize + this.takeRoundStartBonus(),
+            handsDelta: this.vouchers.hands,
+            discardsDelta: this.vouchers.discards,
+            discountPercent: this.discountPercent,
             jokerSlots: this.jokerSlots,
             jokerArea: this.jokerAreaHooks(),
             onSettingBlind: (round) => this.settingBlind(round),
@@ -711,7 +768,7 @@ export class Run {
             if (planetHand && this.consumables.length < this.consumableSlots) {
                 const key = planetKeyFor(planetHand);
                 if (key) {
-                    this.consumables.push(makeConsumable(key));
+                    this.consumables.push(makeConsumable(key, this.discountPercent));
                     // `card.lua:350`：造出来那一刻就标 used，**别漏**——
                     // 漏了这一张就不会退出星球池，下一个商店的 `_resample` 次数跟着偏
                     this.usedJokers.add(key);
@@ -732,6 +789,8 @@ export class Run {
             distinctPlanets: distinctPlanetsUsed(this.consumableUsage),
             // `To the Moon` 每张 +1。由 `runModifiers` 从小丑区重算
             interestAmount: runModifiers(this.jokers).interestAmount,
+            // Seed Money
+            interestCap: this.vouchers.interestCap,
             // `state_events.lua:1204`：`eval` 标签。Investment 只在**打完 Boss** 时兑现
             tagDollars: won ? this.takeEvalTags() : [],
         });
@@ -787,8 +846,12 @@ export class Run {
 
             this.ante++;
             this.blindIndex = 0;
-            // `common_events.lua:2382`：进新 Ante 时抽新 Boss
+            // `state_events.lua:284`：打完 Boss 抽下一张优惠券。`ease_ante(1)` 的事件排在它前面，
+            // 所以用的是**新 Ante** 的 key；商店已经关了，「正摆在商店里」那条不起作用
+            this.currentVoucher = nextVoucherKey(this.rng, this.voucherPoolContext([]));
+            // `common_events.lua:2382`：进新 Ante 时抽新 Boss，并清 `boss_rerolled`
             this.bossKey = getNewBoss(this.ante, this.rng, this.bossesUsed);
+            this.bossRerolled = false;
             // `button_callbacks.lua:3062`：兑现收益时抽下一个 Ante 的两个跳过标签
             this.rollBlindTags();
         } else {
@@ -802,7 +865,12 @@ export class Run {
         // **商店在 `advanceBlind` 之后开**，所以它读的 ante 已经是新的那个——
         // 商店的所有 seed key 都带 ante（`cdt`/`rarity`/`Joker<r>sho`），
         // 在 `ante++` 之前开会用上一个 ante 的 key
-        this.shop = new Shop(this.rng, this.poolContext(), this.shopTagHooks());
+        this.shop = new Shop(this.rng, () => this.poolContext(), {
+            tags: this.shopTagHooks(),
+            jokerMax: SHOP_JOKER_MAX + this.vouchers.shopJokerSlots,
+            rerollBase: BASE_REROLL_COST - this.vouchers.rerollDiscount,
+            voucher: this.currentVoucher,
+        });
         // 保底那一格只可能在第一个商店被用掉，开完就置真
         this.firstShopBuffoon = true;
         this.state = 'shop';
@@ -836,14 +904,21 @@ export class Run {
      */
     buyJoker(index: number): Joker {
         const bought = this.buy(index);
-        if (bought.kind !== 'joker') throw new Error('这一格是消耗品，用 buyConsumable');
+        if (bought.kind !== 'joker') throw new Error('这一格不是小丑');
         return bought.joker;
+    }
+
+    /** 买 Magic Trick 摆出来的扑克牌 */
+    buyPlayingCard(index: number): Card {
+        const bought = this.buy(index);
+        if (bought.kind !== 'card') throw new Error('这一格不是扑克牌');
+        return bought.card;
     }
 
     /** 买消耗品。**买得到不等于用得了**——没实现行为的塔罗照样能买，见 `useConsumable` */
     buyConsumable(index: number): Consumable {
         const bought = this.buy(index);
-        if (bought.kind !== 'consumable') throw new Error('这一格是小丑，用 buyJoker');
+        if (bought.kind !== 'consumable') throw new Error('这一格不是消耗品');
         return bought.consumable;
     }
 
@@ -868,6 +943,13 @@ export class Run {
             this.consumables.push(item.consumable);
             return item;
         }
+        if (item.kind === 'card') {
+            // `button_callbacks.lua:2331`：Magic Trick 的扑克牌**进整副牌**，然后 `playing_card_joker_effects`
+            this.fullDeck.push(item.card);
+            refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
+            this.playingCardsAdded([item.card]);
+            return item;
+        }
 
         const joker = item.joker;
         this.jokers.push(joker);
@@ -879,6 +961,114 @@ export class Run {
             calculateJoker(other, { buying_card: true }, this.round?.gameView() ?? this.shopGameView());
         }
         return item;
+    }
+
+    /** 第 `index` 张优惠券现在兑换得了吗（钱够、效果实现了） */
+    canRedeemVoucher(index: number): boolean {
+        const v = this.shop?.vouchers[index];
+        if (!v || !this.shop || this.openPack) return false;
+        return this.canAfford(this.shop.voucherCost(index)) && isVoucherImplemented(v.key);
+    }
+
+    /**
+     * 兑换商店里第 `index` 张优惠券。`card.lua:1814` 的 `Card:redeem`。
+     *
+     * 顺序照原文：记进 `used_vouchers` → 扣钱 → **无条件**清 `current_round.voucher` →
+     * `apply_to_run` → 小丑的 `buying_card`。
+     *
+     * 大半效果是从 `usedVouchers` 现算的（`vouchers` getter），这里只做那几件一次性的事。
+     */
+    redeemVoucher(index: number): ShopVoucher {
+        const shop = this.shop;
+        if (!shop) throw new Error('不在商店里');
+        if (this.openPack) throw new Error('还有补充包开着');
+        const v = shop.vouchers[index];
+        if (!v) throw new Error(`商店没有第 ${index} 张优惠券`);
+        if (!isVoucherImplemented(v.key)) {
+            throw new Error(`${v.center.name} 在「新档 + 指定 seed」口径下不该出现`);
+        }
+        const cost = shop.voucherCost(index);
+        if (!this.canAfford(cost)) throw new Error(`买不起：要 $${cost}，只有 $${this.dollars}`);
+
+        shop.takeVoucher(index);
+        this.usedVouchers.add(v.key);
+        this.dollars -= cost;
+        // `card.lua:1852`：**不管买的是不是本 Ante 那张**。买掉 Voucher Tag 给的那张，
+        // 主优惠券虽然还摆在这个商店里，这个 Ante 后面的商店也不再摆
+        this.currentVoucher = null;
+
+        this.applyVoucher(v.key);
+
+        for (const joker of this.jokers) {
+            calculateJoker(joker, { buying_card: true }, this.shopGameView());
+        }
+        return v;
+    }
+
+    /**
+     * `card.lua:1882` 的 `apply_to_run` 里**一次性**的那几条。其余（权重、版本率、
+     * 出牌 / 弃牌 / 手牌上限、消耗品格、利息上限、Telescope、Director's Cut）从 `usedVouchers` 现算
+     */
+    private applyVoucher(key: string): void {
+        const shop = this.shop!;
+        switch (key) {
+            case 'v_overstock_norm':
+                // `change_shop_size(1)`：当场补一格
+                shop.growJokerSlots(1);
+                break;
+            case 'v_clearance_sale':
+                // `for k, v in pairs(G.I.CARD) do v:set_cost() end`：**全场重新定价**，
+                // 手上的小丑与消耗品的卖价也跟着掉
+                this.repriceAll();
+                break;
+            case 'v_reroll_surplus':
+                shop.applyRerollDiscount(this.vouchers.rerollDiscount);
+                break;
+            case 'v_hieroglyph':
+                // `ease_ante(-1)`：**当场**就是上一个 Ante，这个商店之后的重掷用新 Ante 的 key
+                this.ante -= 1;
+                break;
+        }
+    }
+
+    /** Clearance Sale 的 `set_cost` 全场重算 */
+    private repriceAll(): void {
+        const d = this.discountPercent;
+        for (const j of this.jokers) setCost(j, d);
+        for (const c of this.consumables) setCost(c, d);
+        for (const item of this.shop?.items ?? []) {
+            if (item.kind === 'joker') {
+                setCost(item.joker, d);
+                item.cost = item.joker.cost;
+            } else if (item.kind === 'consumable') {
+                setCost(item.consumable, d);
+                item.cost = item.consumable.cost;
+            }
+        }
+        refreshDerivedAbilities(this.jokers, this.jokerSlots, this.fullDeck, this.skips);
+    }
+
+    /** Director's Cut 的重掷 Boss 现在按得了吗（`button_callbacks.lua:2895`） */
+    get canRerollBoss(): boolean {
+        return (
+            this.state === 'blind-select' &&
+            !this.openPack &&
+            this.vouchers.directorsCut &&
+            !this.bossRerolled &&
+            this.spendable - 10 >= 0
+        );
+    }
+
+    /**
+     * `button_callbacks.lua:2910` 的 `reroll_boss`：花 $10 重掷这个 Ante 的 Boss，
+     * 然后**再轮一次** `new_blind_choice`（`:2885`）
+     */
+    rerollBoss(): void {
+        if (!this.canRerollBoss) throw new Error('现在不能重掷 Boss');
+        this.bossRerolled = true;
+        this.dollars -= 10;
+        this.bossKey = getNewBoss(this.ante, this.rng, this.bossesUsed);
+        this.applyNewBlindChoice();
     }
 
     /**
@@ -1123,6 +1313,7 @@ export class Run {
             : this.consumables;
 
         return {
+            discountPercent: this.discountPercent,
             hands: this.hands,
             highlighted,
             handCards: this.round?.hand ?? [],
@@ -1173,7 +1364,7 @@ export class Run {
                 createConsumableCard(this.rng, set, this.poolContext(), keyAppend),
             createJoker: (keyAppend, options) =>
                 createJokerCard(this.rng, this.poolContext(), keyAppend, 'none', options),
-            makeConsumable,
+            makeConsumable: (key) => makeConsumable(key, this.discountPercent),
             lastTarotPlanet: this.lastTarotPlanet,
             probabilities: { normal: runModifiers(this.jokers).probabilityNormal },
             pseudorandom: (key) => this.rng.pseudorandom(key),
@@ -1257,6 +1448,7 @@ export class Run {
             playingCardCount: this.fullDeck.length,
             smeared: runModifiers(this.jokers).smeared,
             ante: this.ante,
+            discount_percent: this.discountPercent,
             pseudorandom: (key, min, max) => this.rng.pseudorandom(key, min, max),
         });
     }
@@ -1325,7 +1517,7 @@ export class Run {
      * **每张 Negative 消耗品 +1 格**（`card.lua:410`）。
      */
     get consumableSlots(): number {
-        return STARTING_PARAMS.consumable_slots + negativeCount(this.consumables);
+        return STARTING_PARAMS.consumable_slots + this.vouchers.consumableSlots + negativeCount(this.consumables);
     }
 
     get consumablesFull(): boolean {

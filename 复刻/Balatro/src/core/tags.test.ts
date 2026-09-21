@@ -81,7 +81,7 @@ describe('标签池', () => {
 describe('跳过盲注', () => {
     it('跳过小盲注：skips 1、直接到大盲注（不进商店）、拿到那个标签', () => {
         const run = fresh();
-        run.blindTags.Small = 'tag_voucher'; // 什么也不做的那个，免得效果干扰
+        run.blindTags.Small = 'tag_voucher'; // 进商店之前什么也不做，免得效果干扰
         const tag = run.skipBlind();
         expect(tag.key).toBe('tag_voucher');
         expect(run.skips).toBe(1);
@@ -318,11 +318,16 @@ describe('商店里的三个', () => {
         expect(shop.itemCost(0)).toBeGreaterThan(0);
     });
 
-    it('Voucher Tag：优惠券系统不在，拿着什么也不发生', () => {
+    it('Voucher Tag：进商店时多摆一张优惠券，与主优惠券不重复；标签用掉', () => {
         const run = fresh();
         run.blindTags.Small = 'tag_voucher';
         run.skipBlind();
         winRound(run);
-        expect(run.tags.map((t) => t.key)).toEqual(['tag_voucher']);
+        expect(run.tags).toEqual([]);
+        const keys = run.shop!.vouchers.map((v) => v.key);
+        expect(keys).toHaveLength(2);
+        expect(keys[0]).toBe(run.currentVoucher);
+        expect(new Set(keys).size).toBe(2);
+        expect(run.shop!.vouchers.map((v) => v.main)).toEqual([true, false]);
     });
 });

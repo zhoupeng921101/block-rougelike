@@ -80,6 +80,18 @@ export const BOOSTER_ATLAS: AtlasSpec = {
     w: 284, h: 855, frameW: 71, frameH: 95,
 };
 
+/**
+ * 优惠券（`game.lua:987` 的 `Voucher`）。639×380 = 9 列 × 4 行。
+ *
+ * 一级在 y=0 / y=2、二级在 y=1 / y=3（`v_overstock_norm` 是 {0,0}、`v_overstock_plus` 是 {0,1}）。
+ * 第 9 列（x=8）是锁住与未发现的占位（`game.lua:358` / `:364`）。
+ */
+export const VOUCHER_ATLAS: AtlasSpec = {
+    key: 'vouchers',
+    path: 'assets/textures/Vouchers.png',
+    w: 639, h: 380, frameW: 71, frameH: 95,
+};
+
 export function columnsOf(atlas: AtlasSpec): number {
     return Math.floor(atlas.w / atlas.frameW);
 }

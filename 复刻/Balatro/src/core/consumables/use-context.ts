@@ -49,6 +49,8 @@ export type UseContext = {
     createJoker(keyAppend: string, options?: CreateJokerOptions): Joker;
     /** 按 key 造一张（`forced_key` 那条路，**不消费 RNG**）。`The Fool` 用 */
     makeConsumable(key: string): Consumable;
+    /** `G.GAME.discount_percent`（Clearance Sale）。改版本之后的 `set_cost` 要用 */
+    discountPercent: number;
 
     /** `G.GAME.last_tarot_planet`。`The Fool` 读它，**读的是上一张、不是自己** */
     lastTarotPlanet?: string;
@@ -101,6 +103,7 @@ export function makeUseContext(overrides: Partial<UseContext> = {}): UseContext 
     };
 
     return {
+        discountPercent: 0,
         hands: initialHands(),
         highlighted: [],
         handCards: [],

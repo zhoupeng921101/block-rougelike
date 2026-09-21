@@ -59,13 +59,12 @@ export type Tag = {
 /**
  * 效果**实现了**的标签。
  *
- * 不在这里的有两类（18 号票）：
- * - **Rare / Negative / Foil / Holographic / Polychrome**：`requires` 永远不满足，**抽不到**。
- *   效果不写，真被调到就抛
- * - **Voucher Tag**：要优惠券系统，整个不在。拿得到、什么也不发生，UI 标 `⚠未实现`
+ * 不在这里的只有一类（18 号票）：**Rare / Negative / Foil / Holographic / Polychrome**，
+ * `requires` 永远不满足，**抽不到**。效果不写，真被调到就抛。
+ * Voucher Tag 在 19 号票接上了（效果在 `Run.shopTagHooks` 的 `voucherAdd`）。
  */
 const IMPLEMENTED = new Set([
-    'tag_uncommon', 'tag_investment', 'tag_boss', 'tag_standard', 'tag_charm', 'tag_meteor',
+    'tag_voucher', 'tag_uncommon', 'tag_investment', 'tag_boss', 'tag_standard', 'tag_charm', 'tag_meteor',
     'tag_buffoon', 'tag_handy', 'tag_garbage', 'tag_ethereal', 'tag_coupon', 'tag_double',
     'tag_juggle', 'tag_d_six', 'tag_top_up', 'tag_skip', 'tag_orbital', 'tag_economy',
 ]);

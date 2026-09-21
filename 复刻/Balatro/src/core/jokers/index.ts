@@ -14,7 +14,7 @@ export {
     smearedMatches,
 } from './modifiers';
 export { type EvalResult, evalCard, findJoker, getChipBonus } from './eval-card';
-export { buyCost, makeAbility, makeJoker, sellCost, setCost } from './instance';
+export { discountedCost, makeAbility, makeJoker, sellCost, setCost } from './instance';
 export type {
     GameView,
     Joker,

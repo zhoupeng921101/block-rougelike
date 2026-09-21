@@ -83,6 +83,12 @@ Caino / Yorick / Hologram。**小丑覆盖面 141 / 150**，剩 9：负债 4 / �
 所以 Rare 与四个版本标签抽不到；Voucher Tag 拿得到但不生效（优惠券不在）。其余 18 个效果全做了。
 界面加了盲注选择这一屏：能看到跳过这一格给什么标签，按「跳过盲注」拿走它。
 
+**优惠券已交付**（[19 号票](../../.scratch/balatro-复刻/issues/19-优惠券的切片边界.md)）：
+32 张全部进池，**二级那 16 张在指定 seed 下永远抽不到**（新档没解锁，而 `check_for_unlock`
+对 seeded 直接 return），一级 16 张全部有效果。商店多了优惠券格，盲注选择界面在兑换
+Director's Cut 后多一个「重掷 Boss」，Voucher Tag 也接上了——**24 个标签里抽得到的 19 个全部有效果**。
+挑牌 bot 学会了买，但**默认不买**：只用余钱买与不买打平，先买明显更差（见票）。
+
 > **表现层这一版没有人眼验收过。** 本机的无头 Edge 截不到图，
 > 而「像素级外观」与「音效」这两条轴只能人工验（见 07 号票的验收表）。
 > 逻辑层有 830 个测试兜底，渲染层只有 `core/atlas.test.ts` 那组图集坐标测试。
@@ -110,6 +116,8 @@ src/
 │   ├── booster-open.ts          开包（Card:open），五种口味各一套 RNG 账
 │   ├── tags.ts                  标签的池子与抽取（效果在 run.ts / shop.ts 的触发点上）
 │   ├── tags.generated.ts        24 个标签（生成的，别手改）
+│   ├── vouchers.ts              优惠券的池子、抽取、「兑换了哪些 → 整局参数」
+│   ├── vouchers.generated.ts    32 张优惠券（生成的，别手改）
 │   ├── consumables/             ← 消耗品。52 / 52 全有行为
 │   │   ├── centers.generated.ts     塔罗 22 + 星球 12 + 幽灵 18（生成的）
 │   │   ├── instance.ts              makeConsumable / planetKeyFor
@@ -139,16 +147,17 @@ src/
 │   ├── joker-sprite.ts          小丑（单层，含四条尺寸特例）
 │   ├── consumable-sprite.ts     消耗品（单层，没有尺寸特例）
 │   ├── booster-sprite.ts        补充包（单层，画得比卡大 ×1.27）
+│   ├── voucher-sprite.ts        优惠券（单层，`voucher` 扫光 shader 没移植）
 │   ├── shaders/                 background / CRT / dissolve
 │   └── scenes/RunScene.ts       整局：手牌 / 小丑区 / 商店 / 收益明细
-└── tools/                    四个生成器 + 共用的 Lua 表解析器
+└── tools/                    七个生成器 + 共用的 Lua 表解析器
 ```
 
 ## 命令
 
 ```bash
 npm run dev         # localhost:8080
-npm test            # 830 个测试，必须全绿
+npm test            # 863 个测试，必须全绿
 npm run test:slow   # 60 个 seed 量墙（约 30 秒，改了内容或 bot 之后跑）
 npm run typecheck   # tsc --noEmit
 npm run build       # 先 typecheck 再 vite build
@@ -163,9 +172,10 @@ node tools/gen-consumable-centers.mjs
 node tools/gen-enhancement-centers.mjs
 node tools/gen-booster-centers.mjs
 node tools/gen-tag-centers.mjs
+node tools/gen-voucher-centers.mjs
 ```
 
-五个生成器共用 `tools/lua-table.mjs` 的 Lua 表解析器。
+七个生成器共用 `tools/lua-table.mjs` 的 Lua 表解析器。
 
 **用 npm，不要用 pnpm。** pnpm 在本机装 `esbuild` 时稳定复现 `ERR_PNPM_EPERM`
 （硬链接 rename 被拒），换 npm 即可。

@@ -28,10 +28,11 @@
 
 import { type BoosterCenter, type BoosterKind } from './boosters';
 import { type Card, P_CARDS, makeCard } from './card';
-import { type Consumable, type ConsumableSet, makeConsumable } from './consumables';
+import { type Consumable, type ConsumableSet, makeConsumable, planetKeyFor } from './consumables';
 import { pollEdition } from './editions';
 import { ENHANCEMENT_KEYS_BY_ORDER } from './enhancements';
 import type { Joker } from './jokers';
+import type { HandName } from './poker-hands';
 import { type PseudorandomState, pseudorandomElement } from './rng';
 import {
     type PoolContext,
@@ -144,7 +145,7 @@ function createPlayingCard(
     card.enhancement = enhancement;
 
     // `card.lua:1763`：**mod = 2、no_neg**（扑克牌拿不到 Negative）
-    const edition = pollEdition(rng, `standard_edition${ante}`, { mod: 2, noNeg: true });
+    const edition = pollEdition(rng, `standard_edition${ante}`, { mod: 2, noNeg: true, rate: context.editionRate });
     if (edition) card.edition = edition;
 
     // `card.lua:1766`：`seal_rate = 10`，判据 `> 1 - 0.02*10 = 0.8`。
@@ -155,6 +156,22 @@ function createPlayingCard(
     }
 
     return card;
+}
+
+/**
+ * Telescope 的那张：`G.handlist` 顺序里 `played` **严格最大**的那个牌型（并列取靠前的）。
+ * 原文还要求 `visible`，但打出过的牌型一定可见，所以只看 `played`
+ */
+function telescopePlanet(context: PoolContext): string | null {
+    let best: HandName | null = null;
+    let tally = 0;
+    for (const [hand, played] of Object.entries(context.handsPlayed) as Array<[HandName, number]>) {
+        if (played > tally) {
+            best = hand;
+            tally = played;
+        }
+    }
+    return best ? planetKeyFor(best) : null;
 }
 
 /**
@@ -185,12 +202,20 @@ export function openBooster(
     if (!spec) throw new Error(`${center.name} 的 PACK_SPECS 缺了一条`);
 
     for (let i = 0; i < center.extra; i++) {
+        // `card.lua:1739`：Telescope 让天体包的**第一张**固定成打得最多的牌型的星球。
+        // 走 `forced_key`，所以**不掷 soul、不抽池子**；一手都没打过就退回普通那条
+        const telescoped = center.kind === 'Celestial' && i === 0 && context.telescope ? telescopePlanet(context) : null;
+        if (telescoped) {
+            context.usedJokers.add(telescoped);
+            cards.push({ kind: 'consumable', consumable: makeConsumable(telescoped, context.discountPercent) });
+            continue;
+        }
         if (spec.type === 'consumable') {
             // `soulable` 的那次（幽灵包是两次）掷点排在池子抽取**之前**。
             // 中了就 `forced_key`，**那条路不抽池子**（`create_card` 的 if/else）
             const forced = rollSoulable(rng, spec.set, context.ante);
             if (forced) {
-                const soul = makeConsumable(forced);
+                const soul = makeConsumable(forced, context.discountPercent);
                 context.usedJokers.add(forced);
                 cards.push({ kind: 'consumable', consumable: soul });
             } else {

@@ -63,6 +63,7 @@ export function makeGameView(overrides: Partial<GameView> = {}): GameView {
         },
         smeared: false,
         ante: 1,
+        discount_percent: 0,
         startingDeckSize: 52,
         playingCardCount: 52,
         blindTriggered: false,

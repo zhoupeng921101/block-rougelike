@@ -34,23 +34,19 @@
  */
 
 import { type BoosterCenter, BOOSTER_CENTERS, SHOP_BOOSTER_MAX, getPack } from './boosters';
+import { type Card, P_CARDS, makeCard } from './card';
 import { pollEdition } from './editions';
 import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET, makeConsumable } from './consumables';
 import type { Consumable, ConsumableSet, PlanetConfig } from './consumables';
-import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, findJoker, makeJoker, setCost } from './jokers';
+import { JOKER_CENTERS, JOKER_KEYS_BY_ORDER, discountedCost, findJoker, makeJoker, setCost } from './jokers';
 import type { Joker } from './jokers';
 import type { HandName } from './poker-hands';
 import type { PseudorandomState } from './rng';
 import { pseudorandomElement } from './rng';
+import { BASE_RATES, type ShopRates, type ShopVoucher, makeShopVoucher } from './vouchers';
 
-/** `game.lua:2111-2115`。权重不是概率——要过总和。 */
-export const SHOP_RATES = {
-    joker: 20,
-    tarot: 4,
-    planet: 4,
-    playing_card: 0,
-    spectral: 0,
-} as const;
+/** `game.lua:2111-2115`。权重不是概率——要过总和。优惠券会改其中三个（`PoolContext.rates`） */
+export const SHOP_RATES: ShopRates = BASE_RATES;
 
 /** `game.lua:2194`。 */
 export const SHOP_JOKER_MAX = 2;
@@ -121,7 +117,23 @@ export type PoolContext = {
      * 保底那一格只可能在第一个商店被用掉。
      */
     firstShopBuffoon: boolean;
+    /** `G.GAME.discount_percent`（Clearance Sale）。造出来的每张卡的 `set_cost` 都要带 */
+    discountPercent: number;
+    /** `G.GAME.edition_rate`（Hone）。**所有非保底的 `poll_edition`** 都乘它 */
+    editionRate: number;
+    /** 商店五档权重（Tarot / Planet Merchant、Magic Trick 改） */
+    rates: ShopRates;
+    /** Telescope：天体包的第一张固定成打得最多的牌型的星球 */
+    telescope: boolean;
 };
+
+/** 测试与 bot 沙盒用的「什么优惠券都没有」的那几个字段 */
+export const NO_VOUCHER_POOL_FIELDS = {
+    discountPercent: 0,
+    editionRate: 1,
+    rates: SHOP_RATES,
+    telescope: false,
+} as const;
 
 /**
  * `card.lua:4829` 的那条清除：小丑区与消耗品区里都没有它了，就解除 used 标记。
@@ -259,7 +271,9 @@ export function getCurrentConsumablePool(
 /** 商店里的一格。 */
 export type ShopItem =
     | { kind: 'joker'; joker: Joker; cost: number; couponed?: boolean }
-    | { kind: 'consumable'; consumable: Consumable; cost: number; couponed?: boolean };
+    | { kind: 'consumable'; consumable: Consumable; cost: number; couponed?: boolean }
+    /** Magic Trick 之后商店卖的扑克牌。`c_base` 没有 `cost` → `base_cost = 1`（`card.lua:335`） */
+    | { kind: 'card'; card: Card; cost: number; couponed?: boolean };
 
 /**
  * 商店要问标签的那三个时机（`game.lua:3455` 起），由 `Run` 接上。
@@ -273,42 +287,46 @@ export type ShopTagHooks = {
      * 免费的罕见小丑，**那一格就不再掷 `cdt`**（`UI_definitions.lua:805` 提前 return）
      */
     storeJokerCreate(): Joker | null;
+    /**
+     * `voucher_add`：**每张** Voucher Tag 各加一张优惠券（`Voucher_fromtag`）。
+     * 传进来的是已经摆在优惠券格里的 key（池子要排除它们），返回要加的那几张
+     */
+    voucherAdd(inShop: string[]): string[];
     /** `shop_final_pass`：Coupon Tag → 开张时货架与补充包全部免费 */
     shopFinalPass(): boolean;
 };
 
 /** 这一格占着的 center key。释放 used 标记要用 */
 export function shopItemKey(item: ShopItem): string {
-    return item.kind === 'joker' ? item.joker.key : item.consumable.key;
+    if (item.kind === 'joker') return item.joker.key;
+    if (item.kind === 'consumable') return item.consumable.key;
+    return 'c_base';
 }
 
 /**
  * `UI_definitions.lua:791` 的 `create_card_for_shop`。
  *
- * 省掉的：教学关的 `forced_shop`、标签的 `store_joker_create` 钩子
- * （标签不在本里程碑）、`v_illusion` 优惠券让 `Base` 变 `Enhanced` 的那次掷点
- * （优惠券不在范围，而那次掷点在 `and` 右边、默认短路，不消费 RNG）。
+ * 省掉的：教学关的 `forced_shop`；`v_illusion` 让 `Base` 变 `Enhanced` 的那两次掷点
+ * （Illusion 是二级优惠券，新档 + 指定 seed 下不可达；那次掷点在 `and` 右边、短路，不消费 RNG）。
+ * 标签的 `store_joker_create` 钩子在 `Shop.refill` 里。
  */
 export function createCardForShop(rng: PseudorandomState, context: PoolContext): ShopItem {
-    const total =
-        SHOP_RATES.joker +
-        SHOP_RATES.tarot +
-        SHOP_RATES.planet +
-        SHOP_RATES.playing_card +
-        SHOP_RATES.spectral;
+    const rates = context.rates;
+    // **求和顺序照抄**：Merchant 的 9.6 是浮点，换序可能差一个 ulp
+    const total = rates.joker + rates.tarot + rates.planet + rates.playing_card + rates.spectral;
 
     // `UI_definitions.lua:814`
     const polled = rng.pseudorandom(`cdt${context.ante}`) * total;
 
     // `UI_definitions.lua:816` 的那张表，**顺序就是判定顺序**。
-    // `Base` 与 `Spectral` 的权重是 0，`polled > check && polled <= check + 0`
-    // 永远不成立，所以本牌组下它们进不来——列出来只为让这张表与原文逐行对齐
+    // `Spectral` 的权重恒为 0（红牌组），`Base` 要 Magic Trick 才有 4——
+    // 权重 0 的档 `polled > check && polled <= check + 0` 永远不成立
     const buckets: Array<{ type: 'Joker' | 'Tarot' | 'Planet' | 'Base' | 'Spectral'; val: number }> = [
-        { type: 'Joker', val: SHOP_RATES.joker },
-        { type: 'Tarot', val: SHOP_RATES.tarot },
-        { type: 'Planet', val: SHOP_RATES.planet },
-        { type: 'Base', val: SHOP_RATES.playing_card },
-        { type: 'Spectral', val: SHOP_RATES.spectral },
+        { type: 'Joker', val: rates.joker },
+        { type: 'Tarot', val: rates.tarot },
+        { type: 'Planet', val: rates.planet },
+        { type: 'Base', val: rates.playing_card },
+        { type: 'Spectral', val: rates.spectral },
     ];
 
     let check = 0;
@@ -318,6 +336,7 @@ export function createCardForShop(rng: PseudorandomState, context: PoolContext):
             if (bucket.type === 'Tarot' || bucket.type === 'Planet') {
                 return createConsumableForShop(rng, bucket.type, context);
             }
+            if (bucket.type === 'Base') return createPlayingCardForShop(rng, context);
             throw new Error(`权重为 0 的档位被命中了：${bucket.type}`);
         }
         check += bucket.val;
@@ -372,7 +391,7 @@ export function createJokerCard(
 ): Joker {
     const [pool, poolKey] = getCurrentJokerPool(rng, context, keyAppend, options);
     const key = drawFromPool(rng, pool, poolKey);
-    const joker = makeJoker(key);
+    const joker = makeJoker(key, { discountPercent: context.discountPercent });
 
     // `card.lua:350`：**任何一张牌被 `set_ability` 就标记 used**，包括商店里摆出来的
     context.usedJokers.add(key);
@@ -386,11 +405,11 @@ export function createJokerCard(
 
     // `common_events.lua:2192` 的 `poll_edition('edi'+append+ante)`。
     // **掷点与落地是同一次**——16 号票时只掷不用，现在把结果接上了
-    const edition = pollEdition(rng, `edi${keyAppend}${context.ante}`);
+    const edition = pollEdition(rng, `edi${keyAppend}${context.ante}`, { rate: context.editionRate });
     if (edition) {
         joker.edition = edition;
         // `set_edition` 末尾的 `set_cost`：带版本的小丑**更贵**（Negative / Polychrome +5）
-        setCost(joker);
+        setCost(joker, context.discountPercent);
     }
 
     return joker;
@@ -413,7 +432,7 @@ export function createConsumableCard(
     const key = drawFromPool(rng, pool, poolKey);
     // `card.lua:350` 对消耗品同样标记——那个循环按 name 匹配全体 P_CENTERS
     context.usedJokers.add(key);
-    return makeConsumable(key);
+    return makeConsumable(key, context.discountPercent);
 }
 
 function createJokerForShop(rng: PseudorandomState, context: PoolContext): ShopItem {
@@ -443,6 +462,21 @@ function createConsumableForShop(
 }
 
 /**
+ * Magic Trick 的扑克牌格：`create_card('Base', G.shop_jokers, …, 'sho')`。
+ *
+ * `forced_key = 'c_base'`，**不抽池子**；只掷一次 `frontsho<ante>`（`common_events.lua:2166`）。
+ * 不掷版本（`poll_edition` 在 `if _type == 'Joker'` 里），也不掷蜡封——那是标准包的账。
+ * Illusion 的强化 / 版本那三次掷点不可达（19 号票）。
+ */
+function createPlayingCardForShop(rng: PseudorandomState, context: PoolContext): ShopItem {
+    const [, frontKey] = pseudorandomElement(P_CARDS, rng.pseudoseed(`frontsho${context.ante}`));
+    const front = P_CARDS[String(frontKey)];
+    const card = makeCard(String(frontKey), front.suit, front.value);
+    // `c_base` 没有 `cost` 字段 → `base_cost = 1`，打折后 `max(1, …)` 仍是 1
+    return { kind: 'card', card, cost: discountedCost(1, context.discountPercent) };
+}
+
+/**
  * `card.lua:380`：**`Astronomer` 让星球牌与天体补充包免费**。
  *
  * ```lua
@@ -462,12 +496,26 @@ export function shopCost(
     return baseCost;
 }
 
+/** `new Shop` 的可选项。`Run` 全给；测试只给用得上的 */
+export type ShopOptions = {
+    tags?: ShopTagHooks;
+    /** `G.GAME.shop.joker_max`。基线 2，Overstock +1 */
+    jokerMax?: number;
+    /** `G.GAME.round_resets.reroll_cost`。基线 5，Reroll Surplus −2 */
+    rerollBase?: number;
+    /** `G.GAME.current_round.voucher`：本 Ante 的主优惠券。买掉了就是 `null`，商店不摆 */
+    voucher?: string | null;
+};
+
 /**
  * 一次商店的状态。
  *
  * 重掷价格**跨重掷累进、每回合归零**：
  * `reroll_cost = round_resets.reroll_cost(5) + reroll_cost_increase`，
  * 而 `reroll_cost_increase` 在回合开始时置 0（`state_events.lua:321`）。
+ *
+ * **池子上下文是现取的**（可以传函数），不在开张时拍快照：Hieroglyph 在商店里就把 Ante 减 1，
+ * 之后的重掷用新 Ante 的 `cdt` key；Clearance Sale 之后新造的卡要带折扣。
  */
 export class Shop {
     items: ShopItem[] = [];
@@ -480,31 +528,66 @@ export class Shop {
      * （原作是把 `used_packs[i]` 写成 `'USED'`）。
      */
     packs: PackSlot[] = [];
+    /**
+     * 优惠券格（`G.shop_vouchers`）。主优惠券一张，**外加每张 Voucher Tag 一张**。
+     * 不参与重掷。兑换掉的直接从数组里拿掉
+     */
+    vouchers: ShopVoucher[] = [];
     /** `G.GAME.current_round.reroll_cost_increase` */
     rerollCostIncrease = 0;
     /** `G.GAME.current_round.free_rerolls`。`Chaos the Clown` 每张给 1 次 */
     freeRerolls: number;
+    /** `G.GAME.shop.joker_max`：货架上几格 */
+    jokerMax: number;
+    /** `G.GAME.round_resets.reroll_cost`：重掷基价 */
+    rerollBase: number;
     /** `G.GAME.round_resets.temp_reroll_cost`。D6 Tag 把它设成 0：重掷从 $0 起涨 */
     private tempRerollCost: number | null = null;
+    /**
+     * Reroll Surplus 在商店里兑换时直接改的 `current_round.reroll_cost`（`max(0, cur − 2)`）。
+     * **下一次重掷才按「基价 + 涨幅」重算**，所以要单独记着，重掷时清掉
+     */
+    private rerollCostOverride: number | null = null;
     /** Coupon Tag：开张时的补充包免费（`couponed`）。重掷换不到补充包，所以一直有效 */
     private packsCouponed = false;
+    private readonly getContext: () => PoolContext;
+    private readonly tags?: ShopTagHooks;
 
     constructor(
         private readonly rng: PseudorandomState,
-        readonly context: PoolContext,
-        private readonly tags?: ShopTagHooks,
+        context: PoolContext | (() => PoolContext),
+        tagsOrOptions?: ShopTagHooks | ShopOptions,
     ) {
+        this.getContext = typeof context === 'function' ? context : () => context;
+        const options: ShopOptions =
+            tagsOrOptions && 'shopStart' in tagsOrOptions ? { tags: tagsOrOptions } : (tagsOrOptions ?? {});
+        this.tags = options.tags;
+        this.jokerMax = options.jokerMax ?? SHOP_JOKER_MAX;
+        this.rerollBase = options.rerollBase ?? BASE_REROLL_COST;
+
         // `state_events.lua:332`：回合开始时按 Chaos the Clown 的张数给免费重掷
-        this.freeRerolls = findJoker(context.jokers, 'Chaos the Clown').length;
+        this.freeRerolls = findJoker(this.context.jokers, 'Chaos the Clown').length;
         // `game.lua:3455`：`shop_start` **排在造货架之前**
-        if (tags?.shopStart()) this.tempRerollCost = 0;
+        if (this.tags?.shopStart()) this.tempRerollCost = 0;
         this.refill();
+        // `game.lua:3488`：小丑那几格 → 优惠券 → 补充包
+        if (options.voucher) this.vouchers.push(makeShopVoucher(options.voucher, true));
         this.fillPacks();
-        // `game.lua:3528`：`shop_final_pass` 在最后。**只管开张时这一批**，之后重掷出来的照常收钱
-        if (tags?.shopFinalPass()) {
+        // `game.lua:3525`：`voucher_add` 在补充包之后、`shop_final_pass` 之前
+        for (const key of this.tags?.voucherAdd(this.vouchers.map((v) => v.key)) ?? []) {
+            this.vouchers.push(makeShopVoucher(key, false));
+        }
+        // `game.lua:3528`：`shop_final_pass` 在最后。**只管开张时这一批**，之后重掷出来的照常收钱。
+        // 优惠券格不在它管的两个区里（`G.shop_jokers` / `G.shop_booster`）
+        if (this.tags?.shopFinalPass()) {
             for (const item of this.items) item.couponed = true;
             this.packsCouponed = true;
         }
+    }
+
+    /** 现在的池子上下文。**每次现取**，理由见类注释 */
+    get context(): PoolContext {
+        return this.getContext();
     }
 
     /**
@@ -530,14 +613,14 @@ export class Shop {
      * **必须现算，不能在建格子的时候算死**：`Astronomer` 让星球牌与天体包免费
      * （`card.lua:380`），而原作在它进小丑区时会把**所有卡重新定价一遍**
      * （`card.lua:616` 的 `for k, v in pairs(G.I.CARD) do v:set_cost() end`）。
-     * 算死的话「先买 Astronomer 再买天体包」就还是收全价。
+     * 算死的话「先买 Astronomer 再买天体包」就还是收全价。Clearance Sale 同理（`card.lua:1921`）。
      */
     packCost(index: number): number {
         const slot = this.packs[index];
         if (!slot) return 0;
         if (this.packsCouponed) return 0;
         const kind = slot.center.kind === 'Celestial' ? 'Celestial' : 'other';
-        return shopCost(slot.center.cost, kind, this.context);
+        return shopCost(discountedCost(slot.center.cost, this.context.discountPercent), kind, this.context);
     }
 
     /** 第 `index` 格商品现在要多少钱。同样现算，理由见 `packCost` */
@@ -546,9 +629,17 @@ export class Shop {
         if (!item) return 0;
         // `card.lua:383`：`couponed` 的货架上的卡买价 0（卖价不受影响）
         if (item.couponed) return 0;
-        // **含版本加价**（`setCost` 算好的），不是 center 上的基础价
+        // **含版本加价与折扣**（`setCost` 算好的），不是 center 上的基础价
         if (item.kind === 'joker') return item.joker.cost;
+        if (item.kind === 'card') return item.cost;
         return shopCost(item.consumable.cost, item.consumable.center.set, this.context);
+    }
+
+    /** 第 `index` 张优惠券现在要多少钱。`set_cost` 那条，**也打折**：$10 → $7 */
+    voucherCost(index: number): number {
+        const v = this.vouchers[index];
+        if (!v) return 0;
+        return discountedCost(v.center.cost, this.context.discountPercent);
     }
 
     /** 买掉第 `index` 个补充包格子。返回那一格，并把它置空 */
@@ -559,14 +650,42 @@ export class Shop {
         return slot;
     }
 
+    /** 拿走第 `index` 张优惠券 */
+    takeVoucher(index: number): ShopVoucher {
+        const v = this.vouchers[index];
+        if (!v) throw new Error(`商店没有第 ${index} 张优惠券`);
+        this.vouchers.splice(index, 1);
+        return v;
+    }
+
     /** `common_events.lua:2312` 的 `calculate_reroll_cost`。 */
     get rerollCost(): number {
+        if (this.rerollCostOverride !== null) return this.rerollCostOverride;
         if (this.freeRerolls > 0) return 0;
-        return (this.tempRerollCost ?? BASE_REROLL_COST) + this.rerollCostIncrease;
+        return (this.tempRerollCost ?? this.rerollBase) + this.rerollCostIncrease;
+    }
+
+    /**
+     * Reroll Surplus（`card.lua:1928`）：基价 −n，**当前价 `max(0, 当前价 − n)`**。
+     * 当前价在下一次重掷时才按新基价重算
+     */
+    applyRerollDiscount(n: number): void {
+        const current = this.rerollCost;
+        this.rerollBase -= n;
+        this.rerollCostOverride = Math.max(0, current - n);
+    }
+
+    /**
+     * Overstock（`common_events.lua:1112` 的 `change_shop_size(1)`）：货架多一格，**当场补上**。
+     * 补的那一格走 `create_card_for_shop`，所以标签的 `store_joker_create` 照样会问
+     */
+    growJokerSlots(n: number): void {
+        this.jokerMax += n;
+        this.refill();
     }
 
     private refill(): void {
-        while (this.items.length < SHOP_JOKER_MAX) {
+        while (this.items.length < this.jokerMax) {
             const forced = this.tags?.storeJokerCreate() ?? null;
             if (forced) {
                 // Uncommon Tag 给的那张：`couponed` → 买价 0
@@ -587,6 +706,7 @@ export class Shop {
         const finalFree = this.freeRerolls > 0;
         this.freeRerolls = Math.max(this.freeRerolls - 1, 0);
         if (!finalFree) this.rerollCostIncrease++;
+        this.rerollCostOverride = null;
         // `button_callbacks.lua:2983`：旧的那几张是 `c:remove()` 掉的，
         // 而 `remove` 会解除 used 标记 —— 它们**回到池子里**。
         // 只清 `items` 不放回去，池子内容会一次比一次窄，`_resample` 的次数跟着偏

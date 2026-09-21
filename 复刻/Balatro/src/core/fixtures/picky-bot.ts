@@ -821,6 +821,8 @@ function shop(run: Run): void {
     if (run.state !== 'shop') throw new Error(`现在是 ${run.state}，不在商店`);
     tidyConsumablesInShop(run);
 
+    if (voucherPolicy.first) buyVouchers(run);
+
     // **小丑优先**：小丑是唯一的乘法来源，星球只是加法。
     // 贪心把钱先花在包上，死的时候小丑区常常只有一两张
     buyJokers(run);
@@ -837,6 +839,8 @@ function shop(run: Run): void {
 
     buyConsumables(run);
 
+    if (!voucherPolicy.first) buyVouchers(run);
+
     // 存钱线以上的余钱拿去重掷，刷小丑。**重掷只换货架，不换包**
     for (let r = 0; r < policy.maxRerolls; r++) {
         if (spendable(run) < run.shop!.rerollCost) break;
@@ -847,6 +851,17 @@ function shop(run: Run): void {
 
     run.leaveShop();
     tidyConsumablesInShop(run);
+}
+
+/** 按 `voucherPolicy` 兑换优惠券。Overstock 会当场多一格货架，所以兑换完再看一遍小丑 */
+function buyVouchers(run: Run): void {
+    for (let i = run.shop!.vouchers.length - 1; i >= 0; i--) {
+        const v = run.shop!.vouchers[i];
+        if (!voucherPolicy.want(v.key)) continue;
+        if (!run.canRedeemVoucher(i) || run.shop!.voucherCost(i) > spendable(run)) continue;
+        run.redeemVoucher(i);
+        if (v.key === 'v_overstock_norm') buyJokers(run);
+    }
 }
 
 function buyConsumables(run: Run): void {
@@ -902,6 +917,7 @@ export function pickyRun(run: Run, options: PickyOptions = {}): GreedyRun {
     banned = options.bannedJokers ?? NONE;
     policy = { ...DEFAULT_ECONOMY, ...options.economy };
     skipPolicy = options.skip ?? NEVER_SKIP;
+    voucherPolicy = { ...NO_VOUCHERS, ...options.vouchers };
     try {
         let guard = 0;
         while (guard++ < 60) {
@@ -916,6 +932,7 @@ export function pickyRun(run: Run, options: PickyOptions = {}): GreedyRun {
         banned = NONE;
         policy = DEFAULT_ECONOMY;
         skipPolicy = NEVER_SKIP;
+        voucherPolicy = NO_VOUCHERS;
     }
     return {
         ante: run.ante,
@@ -936,7 +953,20 @@ export type PickyOptions = {
     economy?: Partial<Economy>;
     /** 这一格（小 / 大盲注）跳不跳：看它给的标签。不给就不跳 */
     skip?: SkipPolicy;
+    /** 买哪些优惠券、先买还是后买。不给就不买（实测不划算，见 19 号票） */
+    vouchers?: Partial<VoucherPolicy>;
 };
+
+/** 优惠券策略 */
+export type VoucherPolicy = {
+    /** 这张要不要 */
+    want(key: string): boolean;
+    /** 进商店先兑换优惠券（true），还是小丑、包、消耗品都买完再用余钱兑换（false） */
+    first: boolean;
+};
+const NO_VOUCHERS: VoucherPolicy = { want: () => false, first: false };
+/** 当前这一局的优惠券策略。与 `banned` / `policy` 同一个理由做成模块级变量 */
+let voucherPolicy: VoucherPolicy = NO_VOUCHERS;
 
 /** 跳过策略：看这一格给的标签决定跳不跳 */
 export type SkipPolicy = (run: Run, tagKey: string) => boolean;

@@ -54,15 +54,6 @@ export function sellCost(cost: number): number {
     return Math.max(1, Math.floor(cost / 2));
 }
 
-/**
- * `card.lua:370` 那条 `math.floor((base_cost + extra_cost + 0.5) * ...)`。
- * 本里程碑 `extra_cost = 0`、`discount_percent = 0`，化简后就是 `base_cost`
- * （`floor(cost + 0.5)` 对整数 cost 恒等于 cost）。留成函数是为了接优惠券时只改这里。
- */
-export function buyCost(center: { cost: number }): number {
-    return Math.max(1, Math.floor(center.cost + 0.5));
-}
-
 /** `setCost` 要读写的那几个字段。小丑与消耗品都有 */
 export type Priced = {
     center: { cost: number };
@@ -85,15 +76,25 @@ export type Priced = {
  * Egg / Gift Card 加 `extra_value` 之后。复刻件在同样的位置调——
  * **漏调一处，那张卡的价格就停在旧版本上**（带 Negative 的小丑少卖 $2 这类）。
  *
- * 省掉的：`inflation`（只有挑战模式有）、`discount_percent`（优惠券）、`rental`、`couponed`。
+ * **`discountPercent` 是必填的**：Clearance Sale 之后每一次 `set_cost` 都带折扣（新造的卡、
+ * 改版本、Egg / Gift Card 攒卖价），给它默认值 0 就会有某个调用点静默按原价算。
+ *
+ * 省掉的：`inflation`（只有挑战模式有）、`rental`、`couponed`。
  * Astronomer 的免费在 `shop.ts` 的 `shopCost` 里。
  */
-export function setCost(card: Priced): void {
-    card.cost = Math.max(1, Math.floor(card.center.cost + editionExtraCost(card.edition) + 0.5));
+export function setCost(card: Priced, discountPercent: number): void {
+    card.cost = discountedCost(card.center.cost + editionExtraCost(card.edition), discountPercent);
     card.sell_cost = sellCost(card.cost) + (card.extra_value ?? 0);
 }
 
+/** `card.lua:375`：`max(1, floor((base_cost + extra_cost + 0.5) * (100 - discount_percent) / 100))` */
+export function discountedCost(baseCost: number, discountPercent: number): number {
+    return Math.max(1, Math.floor(((baseCost + 0.5) * (100 - discountPercent)) / 100));
+}
+
 export type MakeJokerOptions = {
+    /** `G.GAME.discount_percent`（Clearance Sale）。造卡时的 `set_cost` 要用 */
+    discountPercent?: number;
     /** `To Do List` 在 `set_ability` 里就要抽一个牌型，抽取消费 RNG，所以得传进来 */
     pickToDoHand?: () => HandName;
     /** `Loyalty Card` 要记下创建时的累计出牌数 */
@@ -133,6 +134,6 @@ export function makeJoker(key: string, options: MakeJokerOptions = {}): Joker {
         sell_cost: 0,
         T: { x: 0, y: 0, w: 0, h: 0 },
     };
-    setCost(joker);
+    setCost(joker, options.discountPercent ?? 0);
     return joker;
 }

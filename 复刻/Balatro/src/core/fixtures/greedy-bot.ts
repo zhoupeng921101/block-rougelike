@@ -199,6 +199,8 @@ export function shopAndLeave(run: Run, policy: ShopPolicy = {}): string[] {
             continue;
         }
 
+        // Magic Trick 的扑克牌。贪心 bot 不买优惠券，所以碰不到
+        if (item.kind === 'card') continue;
         if (!policy.consumables || run.consumablesFull) continue;
         // 还没实现行为的消耗品不买——买了占格子、用不了
         if (!isConsumableImplemented(item.consumable.key)) continue;

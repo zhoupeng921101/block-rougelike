@@ -25,12 +25,14 @@ import { evaluatePokerHand } from '../../core/poker-hands';
 import type { Round } from '../../core/round';
 import { Run } from '../../core/run';
 import { TAG_CENTERS, isTagImplemented } from '../../core/tags';
+import { VOUCHER_CENTERS } from '../../core/vouchers';
 import { getBlindAmount } from '../../core/scoring';
 import { CardSprite } from '../card-sprite';
 import { BoosterSprite } from '../booster-sprite';
 import { ConsumableSprite } from '../consumable-sprite';
 import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, toPx } from '../coords';
 import { JokerSprite } from '../joker-sprite';
+import { VoucherSprite } from '../voucher-sprite';
 import { BACKGROUND_COLOURS, BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
 import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
 
@@ -107,6 +109,10 @@ export class RunScene extends Scene {
     private shopConsumableSprites: ConsumableSprite[] = [];
     /** 商店格子下面那行价格／「未实现」标记 */
     private shopLabels: GameObjects.Text[] = [];
+    /** 优惠券格（主优惠券 + Voucher Tag 给的） */
+    private voucherSprites: VoucherSprite[] = [];
+    /** Magic Trick 之后商店里卖的扑克牌 */
+    private shopCardSprites: CardSprite[] = [];
     private selected = new Set<Card>();
 
     /** 事件队列。动画的节奏全靠它，语义直译自 engine/event.lua（09 号票）。
@@ -128,6 +134,8 @@ export class RunScene extends Scene {
     private rerollBtn!: GameObjects.Text;
     /** 盲注选择界面上的「跳过盲注」。与开包界面的「跳过」（`skipBtn`）不是一回事 */
     private skipBlindBtn!: GameObjects.Text;
+    /** Director's Cut：盲注选择界面上花 $10 重掷 Boss */
+    private rerollBossBtn!: GameObjects.Text;
 
     constructor() {
         super('Run');
@@ -159,6 +167,11 @@ export class RunScene extends Scene {
         });
         // 补充包。原作把它画得比卡大一圈（×1.27），但图集格子是同一个尺寸
         this.load.spritesheet('boosters', '/assets/textures/boosters.png', {
+            frameWidth: 71,
+            frameHeight: 95,
+        });
+        // 优惠券（19 号票）。单层
+        this.load.spritesheet('vouchers', '/assets/textures/Vouchers.png', {
             frameWidth: 71,
             frameHeight: 95,
         });
@@ -201,6 +214,7 @@ export class RunScene extends Scene {
         this.rerollBtn = this.makeButton(toPx(12.0), toPx(10.2), '重掷', '#8a5fb0', () => this.doReroll());
         this.skipBtn = this.makeButton(toPx(15.2), toPx(10.2), '跳过', '#6b7280', () => this.doSkipPack());
         this.skipBlindBtn = this.makeButton(toPx(18.4), toPx(10.2), '跳过盲注', '#a07a2c', () => this.doSkipBlind());
+        this.rerollBossBtn = this.makeButton(toPx(18.4), toPx(9.2), '重掷 Boss $10', '#b5462f', () => this.doRerollBoss());
 
         // 开局先进盲注选择（原作如此）：能看到这一格跳过给什么标签，再决定打还是跳
         this.showBlindSelect();
@@ -253,6 +267,18 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.sound.play('generic1', { volume: 0.5 });
         this.message.setText(`拿到 ${tag.center.name}`).setColor('#ffd76e');
         this.time.delayedCall(1400, () => this.message.setText(''));
+        this.showBlindSelect();
+    }
+
+    /** Director's Cut：花 $10 重掷这个 Ante 的 Boss（每个 Ante 一次） */
+    private doRerollBoss(): void {
+        if (this.animating || !this.run.canRerollBoss) {
+            this.sound.play('cancel', { volume: 0.4 });
+            return;
+        }
+        this.run.rerollBoss();
+        this.sound.play('other1', { volume: 0.5 });
+        // 重掷之后会再轮一次 `new_blind_choice`，标签可能开出一个包
         this.showBlindSelect();
     }
 
@@ -431,6 +457,10 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.shopConsumableSprites = [];
         for (const t of this.shopLabels) t.destroy();
         this.shopLabels = [];
+        for (const s of this.voucherSprites) s.destroy();
+        this.voucherSprites = [];
+        for (const s of this.shopCardSprites) s.destroy();
+        this.shopCardSprites = [];
     }
 
     private clearPackCards(): void {
@@ -531,6 +561,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.clearShop();
         const shop = this.run.shop;
         if (!shop) return;
+        this.rebuildVouchers();
 
         // 补充包那两格。买掉的那一格是 null，不画——原作也是让它空着
         shop.packs.forEach((slot, i) => {
@@ -557,7 +588,21 @@ ${String(e instanceof Error ? e.message : e)}`)
         shop.items.forEach((item, i) => {
             const x = SHOP_X_TILES + i * (CARD_W + 1.4);
 
-            if (item.kind !== 'joker') {
+            if (item.kind === 'card') {
+                // Magic Trick 的扑克牌。`CardSprite` 按 `T.x` 排版，所以先把它摆好
+                item.card.T.x = x - SHOP_X_TILES;
+                const sprite = new CardSprite(this, item.card, () => this.buy(i));
+                sprite.layout(SHOP_X_TILES, SHOP_Y_TILES);
+                this.shopCardSprites.push(sprite);
+                this.shopLabels.push(
+                    this.add.text(toPx(x), toPx(SHOP_Y_TILES + CARD_H + 0.1), `$${shop.itemCost(i)}`, {
+                        fontFamily: 'monospace', fontSize: 18, color: '#ffd76e',
+                    }).setDepth(40),
+                );
+                return;
+            }
+
+            if (item.kind === 'consumable') {
                 const c = item.consumable;
                 const sprite = new ConsumableSprite(this, c, () => this.buy(i));
                 sprite.layout(x, SHOP_Y_TILES);
@@ -603,12 +648,54 @@ ${String(e instanceof Error ? e.message : e)}`)
         });
     }
 
+    /**
+     * 优惠券格，排在货架右边。**已兑换的列在 HUD 里**（原作在「本局信息」里），
+     * 这里只画还摆着的
+     */
+    private rebuildVouchers(): void {
+        const shop = this.run.shop;
+        if (!shop) return;
+        const x0 = SHOP_X_TILES + shop.jokerMax * (CARD_W + 1.4) + 0.4;
+        shop.vouchers.forEach((v, i) => {
+            const x = x0 + i * (CARD_W + 0.6);
+            const sprite = new VoucherSprite(this, v.center, () => this.redeem(i));
+            sprite.layout(x, SHOP_Y_TILES);
+            this.voucherSprites.push(sprite);
+            this.shopLabels.push(
+                this.add.text(toPx(x), toPx(SHOP_Y_TILES + CARD_H + 0.1), `$${shop.voucherCost(i)}\n${v.center.name}`, {
+                    fontFamily: 'monospace', fontSize: 15, color: '#ffd76e',
+                }).setDepth(40),
+            );
+        });
+    }
+
+    private redeem(index: number): void {
+        if (this.animating || this.run.state !== 'shop') return;
+        if (!this.run.canRedeemVoucher(index)) {
+            this.sound.play('cancel', { volume: 0.4 });
+            this.message.setText(this.run.openPack ? '先把包挑完' : '买不起').setColor('#e5885f');
+            this.time.delayedCall(1400, () => this.message.setText(''));
+            return;
+        }
+        const v = this.run.redeemVoucher(index);
+        this.sound.play('coin1', { volume: 0.5 });
+        this.sound.play('card1', { volume: 0.5 });
+        this.message.setText(`兑换 ${v.center.name}`).setColor('#ffd76e');
+        this.time.delayedCall(1400, () => this.message.setText(''));
+        // Clearance Sale 改卖价、Overstock 多一格、Crystal Ball 多一个消耗品格
+        this.rebuildJokers();
+        this.rebuildConsumables();
+        this.rebuildShop();
+        this.refresh();
+    }
+
     private buy(index: number): void {
         if (this.animating || this.run.state !== 'shop') return;
         const item = this.run.shop?.items[index];
         if (!item) return;
         try {
             if (item.kind === 'joker') this.run.buyJoker(index);
+            else if (item.kind === 'card') this.run.buyPlayingCard(index);
             else this.run.buyConsumable(index);
         } catch {
             // 买不起 / 区满了。逻辑层抛，表现层只给个反馈
@@ -794,6 +881,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         const round = this.round;
         const blindName = BLIND_CENTERS[run.blindKey].name;
 
+        const vouchersLine = run.usedVouchers.size > 0
+            ? `优惠券：${[...run.usedVouchers].map((k) => VOUCHER_CENTERS[k].name).join('、')}`
+            : '';
         const tagsLine = run.tags.length > 0
             ? `标签：${run.tags.map((t) => t.center.name + (isTagImplemented(t.key) ? '' : ' ⚠未实现')).join('、')}`
             : '';
@@ -806,11 +896,11 @@ ${String(e instanceof Error ? e.message : e)}`)
                 ? `跳过可得：${TAG_CENTERS[skipKey].name}${isTagImplemented(skipKey) ? '' : ' ⚠未实现'}`
                 : 'Boss 盲注不能跳过';
             this.hud.setText([
-                `选择盲注 — Ante ${run.ante}   ${blindName}   需要 ${need}`,
+                `选择盲注 — Ante ${run.ante}   ${blindName}   需要 ${need}    本 Ante 的 Boss：${BLIND_CENTERS[run.bossKey].name}`,
                 `$${run.dollars}    ${skipText}    ${tagsLine}`,
                 run.openPack
                     ? `${run.openPack.center.name}（标签送的）—— 还能挑 ${run.openPack.choicesLeft} 张`
-                    : '「下一关」开打，「跳过盲注」拿标签',
+                    : `「下一关」开打，「跳过盲注」拿标签    ${vouchersLine}`,
             ].join('\n'));
         } else if (run.state === 'shop') {
             this.hud.setText([
@@ -818,7 +908,7 @@ ${String(e instanceof Error ? e.message : e)}`)
                 `$${run.dollars}    重掷 $${run.shop?.rerollCost ?? 0}    小丑 ${run.jokers.length}/${run.jokerSlots}    消耗品 ${run.consumables.length}/${run.consumableSlots}    ${tagsLine}`,
                 run.openPack
                     ? `${run.openPack.center.name} —— 还能挑 ${run.openPack.choicesLeft} 张`
-                    : '点商店的牌买入，点小丑区的牌卖出，点消耗品用掉它',
+                    : `点商店的牌买入，点小丑区的牌卖出，点消耗品用掉它    ${vouchersLine}`,
             ].join('\n'));
         } else if (round) {
             this.hud.setText([
@@ -854,6 +944,9 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.animating || run.openPack || (!inShop && !inSelect && !done) ? 0.3 : 1,
         );
         this.skipBlindBtn.setAlpha(run.canSkipBlind && !this.animating ? 1 : 0.3);
+        // 没兑换 Director's Cut 就整个藏起来，免得多一个永远灰着的按钮
+        this.rerollBossBtn.setVisible(run.vouchers.directorsCut && run.state === 'blind-select');
+        this.rerollBossBtn.setAlpha(run.canRerollBoss && !this.animating ? 1 : 0.3);
         this.rerollBtn.setAlpha(inShop && !this.animating && !this.run.openPack ? 1 : 0.3);
         // 「跳过」只在开着包的时候能按
         this.skipBtn.setAlpha(this.run.openPack && !this.animating ? 1 : 0.3);

@@ -134,6 +134,14 @@ export type RoundOptions = {
      */
     handSizeDelta?: number;
     /**
+     * 优惠券给的每回合出牌 / 弃牌增量（Grabber +1、Hieroglyph −1、Wasteful +1）。
+     * 原作写的是 `round_resets.hands` / `discards`，所以它们**算进** The Needle 的「砍到只剩 1」
+     */
+    handsDelta?: number;
+    discardsDelta?: number;
+    /** `G.GAME.discount_percent`（Clearance Sale）。结算里 Egg / Gift Card 重新定价要用 */
+    discountPercent?: number;
+    /**
      * 牌被永久销毁时（碎掉的玻璃牌）通知上层，好让 `Run.fullDeck` 也删掉。
      * **`Run` 跨回合持有同一批 `Card` 对象**，只从这一局的三个堆里删不够——
      * 下一回合又会从 `fullDeck` 洗回来。
@@ -298,6 +306,7 @@ export class Round {
     private readonly onCreatePlayingCard?: (enhancement: string | null, key: string) => void;
     readonly jokerSlots: number;
     private readonly jokerArea: JokerAreaHooks;
+    private readonly discountPercent: number;
 
     constructor(seed: string, fullDeck: Card[], options: RoundOptions = {}) {
         this.ante = options.ante ?? 1;
@@ -310,6 +319,7 @@ export class Round {
         this.onRemoveFromDeck = options.onRemoveFromDeck;
         this.onCreatePlayingCard = options.onCreatePlayingCard;
         this.jokerSlots = options.jokerSlots ?? STARTING_PARAMS.joker_slots;
+        this.discountPercent = options.discountPercent ?? 0;
         this.jokerArea = options.jokerArea ?? NO_JOKER_AREA;
         this.consumables = options.consumables ?? NO_CONSUMABLES;
         this.blind = options.blind ?? null;
@@ -377,10 +387,10 @@ export class Round {
         // `The Needle` 的 `hands_sub = round_resets.hands - 1`——`round_resets.hands` **含小丑给的**
         // （Troubadour -1），所以是「砍到只剩 1」，不是「减 3」。原先写成减 3，
         // Troubadour + The Needle 会得到 0 次出牌
-        const handsBase = STARTING_PARAMS.hands + this.mods.hands;
+        const handsBase = STARTING_PARAMS.hands + (options.handsDelta ?? 0) + this.mods.hands;
         this.needleHands = boss && boss.handsSub > 0 ? handsBase - 1 : 0;
         this.handsLeft = handsBase - this.needleHands + this.mods.burglarHands;
-        const discardsBase = STARTING_PARAMS.discards + this.mods.discards;
+        const discardsBase = STARTING_PARAMS.discards + (options.discardsDelta ?? 0) + this.mods.discards;
         this.waterDiscards = boss?.discardsSub === ALL_DISCARDS ? discardsBase : (boss?.discardsSub ?? 0);
         this.discardsLeft =
             this.mods.burglarHands > 0 ? 0 : discardsBase - this.waterDiscards;
@@ -573,6 +583,7 @@ export class Round {
             },
             smeared: this.mods.smeared,
             ante: this.ante,
+            discount_percent: this.discountPercent,
             startingDeckSize: this.startingDeckSize,
             get playingCardCount() {
                 // `#G.playing_cards`——整副牌现在剩几张（牌堆 + 手牌 + 弃牌堆）

@@ -35,7 +35,7 @@ describe('set_cost：版本加价', () => {
         for (const [edition, cost, sell] of cases) {
             const j = makeJoker('j_joker');
             j.edition = edition;
-            setCost(j);
+            setCost(j, 0);
             expect([j.cost, j.sell_cost], edition).toEqual([cost, sell]);
         }
     });
@@ -45,7 +45,7 @@ describe('set_cost：版本加价', () => {
         toShop(run);
         const joker = makeJoker('j_joker');
         joker.edition = 'negative';
-        setCost(joker);
+        setCost(joker, 0);
         run.shop!.items[0] = { kind: 'joker', joker, cost: joker.cost };
         expect(run.shop!.itemCost(0)).toBe(7);
 
@@ -60,7 +60,7 @@ describe('set_cost：版本加价', () => {
         inv.ability.invis_rounds = 2;
         const neg = makeJoker('j_joker');
         neg.edition = 'negative';
-        setCost(neg);
+        setCost(neg, 0);
         run.jokers.push(inv, neg);
         run.sellJoker(0);
         const copy = run.jokers[1];
@@ -73,7 +73,7 @@ describe('set_cost：版本加价', () => {
         calculateJoker(egg, { end_of_round: true }, makeGameView({ jokers: [egg] }));
         expect(egg.sell_cost).toBe(2 + 3);
         egg.edition = 'polychrome';
-        setCost(egg);
+        setCost(egg, 0);
         expect(egg.sell_cost).toBe(7);
     });
 });
@@ -133,7 +133,7 @@ describe('Credit Card：负债下限 -$20', () => {
 
         const joker = makeJoker('j_joker');
         joker.edition = 'negative';
-        setCost(joker);
+        setCost(joker, 0);
         run.shop!.items[0] = { kind: 'joker', joker, cost: joker.cost };
         run.dollars = 5;
         expect(run.canAfford(7)).toBe(true);

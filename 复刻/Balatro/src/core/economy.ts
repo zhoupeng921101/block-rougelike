@@ -109,6 +109,8 @@ export type RoundResult = {
      * 上限也跟着变：`interest_amount * (interest_cap / 5)`。
      */
     interestAmount?: number;
+    /** `G.GAME.interest_cap`。基线 25，Seed Money 改成 50 */
+    interestCap?: number;
     /** 本局用过**几种**星球（不算重复）。`Satellite` 读它 */
     distinctPlanets?: number;
     /** 这一关兑现的 `eval` 标签（Investment），按手上的顺序 */
@@ -156,7 +158,7 @@ export function evaluateRound(result: RoundResult): Payout {
     // `state_events.lua:1211`：**最后一行，且读的是结算前的余额**
     if (result.dollars >= 5) {
         const amount = result.interestAmount ?? INTEREST_AMOUNT;
-        const interest = amount * Math.min(Math.floor(result.dollars / 5), INTEREST_CAP / 5);
+        const interest = amount * Math.min(Math.floor(result.dollars / 5), (result.interestCap ?? INTEREST_CAP) / 5);
         rows.push({ kind: 'interest', dollars: interest });
         total += interest;
     }

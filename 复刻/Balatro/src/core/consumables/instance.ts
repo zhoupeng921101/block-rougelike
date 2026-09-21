@@ -13,12 +13,16 @@ import type { HandName } from '../poker-hands';
 import { CONSUMABLE_CENTERS, CONSUMABLE_KEYS_BY_SET } from './centers.generated';
 import type { Consumable, PlanetConfig } from './types';
 
-export function makeConsumable(key: string): Consumable {
+/**
+ * `discountPercent` 给了默认值 0 只是为了测试方便；**生产代码的每个调用点都要显式传**
+ * （`Run.discountPercent` / `PoolContext.discountPercent`），理由见 `setCost`。
+ */
+export function makeConsumable(key: string, discountPercent = 0): Consumable {
     const center = CONSUMABLE_CENTERS[key];
     if (!center) throw new Error(`没有这张消耗品：${key}`);
 
     const consumable: Consumable = { key, center, cost: 0, sell_cost: 0 };
-    setCost(consumable);
+    setCost(consumable, discountPercent);
     return consumable;
 }
 

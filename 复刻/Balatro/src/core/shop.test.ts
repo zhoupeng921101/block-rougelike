@@ -31,7 +31,7 @@ import {
     getCurrentJokerPool,
     shopItemKey,
 } from './shop';
-import type { PoolContext } from './shop';
+import { NO_VOUCHER_POOL_FIELDS, type PoolContext } from './shop';
 import type { HandName } from './poker-hands';
 import { initialHands } from './scoring';
 
@@ -46,6 +46,7 @@ function ctx(overrides: Partial<PoolContext> = {}): PoolContext {
             Object.keys(initialHands()).map((name) => [name, 0]),
         ) as Record<HandName, number>,
         firstShopBuffoon: true,
+        ...NO_VOUCHER_POOL_FIELDS,
         ...overrides,
     };
 }

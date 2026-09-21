@@ -16,6 +16,7 @@ import {
     DECK_ATLAS,
     JOKER_ATLAS,
     TAROT_ATLAS,
+    VOUCHER_ATLAS,
     columnsOf,
     frameIndex,
     inBounds,
@@ -25,6 +26,7 @@ import { makeStandardDeck } from './card';
 import { BOOSTER_CENTERS } from './boosters';
 import { CONSUMABLE_CENTERS } from './consumables';
 import { JOKER_CENTERS } from './jokers';
+import { VOUCHER_CENTERS } from './vouchers';
 
 describe('网格尺寸', () => {
     it('8BitDeck 923×380 = 13 列 × 4 行，正好装 52 张', () => {
@@ -166,6 +168,22 @@ describe('补充包的图集坐标', () => {
 
     it('32 个包两两不共格', () => {
         const frames = Object.values(BOOSTER_CENTERS).map((c) => frameIndex(BOOSTER_ATLAS, c.pos));
+        expect(new Set(frames).size).toBe(32);
+    });
+});
+
+describe('优惠券', () => {
+    it('Vouchers 639×380 = 9 列 × 4 行', () => {
+        expect(columnsOf(VOUCHER_ATLAS)).toBe(9);
+        expect(rowsOf(VOUCHER_ATLAS)).toBe(4);
+    });
+
+    it('32 张的 pos 全部在网格内、两两不共格，而且不占第 9 列的锁定占位', () => {
+        const frames = Object.entries(VOUCHER_CENTERS).map(([key, c]) => {
+            expect(inBounds(VOUCHER_ATLAS, c.pos), `${key} 的 pos 越界`).toBe(true);
+            expect(c.pos.x, key).toBeLessThan(8);
+            return frameIndex(VOUCHER_ATLAS, c.pos);
+        });
         expect(new Set(frames).size).toBe(32);
     });
 });

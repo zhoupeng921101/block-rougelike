@@ -370,6 +370,8 @@ export type GameView = {
     smeared: boolean;
     /** `G.GAME.round_resets.ante`。带 ante 的 seed key（`halu<ante>`）要用 */
     ante: number;
+    /** `G.GAME.discount_percent`（Clearance Sale）。Egg / Gift Card 重新定价要用 */
+    discount_percent: number;
     /** `G.GAME.starting_deck_size`。`Erosion` 读它 */
     startingDeckSize: number;
     /** `#G.playing_cards`——整副牌现在剩几张。`Erosion` 读它 */

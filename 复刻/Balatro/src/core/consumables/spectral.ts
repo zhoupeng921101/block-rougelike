@@ -212,7 +212,7 @@ export const SPECTRAL_SPECS: Record<string, ConsumableSpec> = {
             const target = ctx.pickRandom(editionless(ctx), 'ectoplasm');
             if (target) {
                 target.edition = 'negative';
-                setCost(target); // `set_edition` 末尾的 `set_cost`
+                setCost(target, ctx.discountPercent); // `set_edition` 末尾的 `set_cost`
             }
             ctx.changeHandSize(-ctx.nextEctoplasmMinus());
         },
@@ -254,7 +254,7 @@ export const SPECTRAL_SPECS: Record<string, ConsumableSpec> = {
                 ability: JSON.parse(JSON.stringify(chosen.ability)),
                 edition: chosen.edition === 'negative' ? undefined : chosen.edition,
             };
-            setCost(copy);
+            setCost(copy, ctx.discountPercent);
             ctx.addJoker(copy);
         },
         canUse: (_c, ctx) => ctx.jokers.length > 0 && ctx.jokerSlots > 1,
@@ -269,7 +269,7 @@ export const SPECTRAL_SPECS: Record<string, ConsumableSpec> = {
             const target = ctx.pickRandom(editionless(ctx), 'hex');
             if (!target) return;
             target.edition = 'polychrome';
-            setCost(target); // `set_edition` 末尾的 `set_cost`
+            setCost(target, ctx.discountPercent); // `set_edition` 末尾的 `set_cost`
             for (const joker of [...ctx.jokers]) {
                 if (joker !== target) ctx.removeJoker(joker);
             }
