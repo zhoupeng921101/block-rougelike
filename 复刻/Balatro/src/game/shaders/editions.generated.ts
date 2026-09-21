@@ -17,6 +17,16 @@ precision mediump float;
 
 varying vec2 outTexCoord;
 uniform sampler2D uMainSampler;
+
+// Phaser 上传的纹理是预乘 alpha、混合也按预乘（ONE, ONE_MINUS_SRC_ALPHA），原作 LÖVE 是非预乘。
+// 采样时还原成非预乘、按原文算，出口再乘回去——否则叠加层在透明像素上加的颜色会整块发亮
+vec4 texel_straight(vec2 uv)
+{
+    vec4 t = texture2D(uMainSampler, uv);
+    if (t.a > 0.0) t.rgb /= t.a;
+    return t;
+}
+
 uniform vec2 holo;
 uniform float dissolve;
 uniform float time;
@@ -109,7 +119,7 @@ vec4 HSL(vec4 c)
 
 vec4 effect(vec4 colour, vec2 texture_coords)
 {
-    vec4 tex = texture2D(uMainSampler, texture_coords);
+    vec4 tex = texel_straight( texture_coords);
 	vec2 uv = (((texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
     vec4 hsl = HSL(0.5*tex + 0.5*vec4(0.,0.,1.,tex.a));
 
@@ -147,7 +157,8 @@ vec4 effect(vec4 colour, vec2 texture_coords)
 
 void main ()
 {
-    gl_FragColor = effect(vec4(1.0), outTexCoord);
+    vec4 c = effect(vec4(1.0), outTexCoord);
+    gl_FragColor = vec4(c.rgb * c.a, c.a);
 }
 `,
     foil: /* glsl */ `
@@ -159,6 +170,16 @@ precision mediump float;
 
 varying vec2 outTexCoord;
 uniform sampler2D uMainSampler;
+
+// Phaser 上传的纹理是预乘 alpha、混合也按预乘（ONE, ONE_MINUS_SRC_ALPHA），原作 LÖVE 是非预乘。
+// 采样时还原成非预乘、按原文算，出口再乘回去——否则叠加层在透明像素上加的颜色会整块发亮
+vec4 texel_straight(vec2 uv)
+{
+    vec4 t = texture2D(uMainSampler, uv);
+    if (t.a > 0.0) t.rgb /= t.a;
+    return t;
+}
+
 uniform vec2 foil;
 uniform float dissolve;
 uniform float time;
@@ -251,7 +272,7 @@ vec4 HSL(vec4 c)
 
 vec4 effect(vec4 colour, vec2 texture_coords)
 {
-    vec4 tex = texture2D(uMainSampler, texture_coords);
+    vec4 tex = texel_straight( texture_coords);
     vec2 uv = (((texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
     vec2 adjusted_uv = uv - vec2(0.5, 0.5);
     adjusted_uv.x = adjusted_uv.x*texture_details.b/texture_details.a;
@@ -279,7 +300,8 @@ vec4 effect(vec4 colour, vec2 texture_coords)
 
 void main ()
 {
-    gl_FragColor = effect(vec4(1.0), outTexCoord);
+    vec4 c = effect(vec4(1.0), outTexCoord);
+    gl_FragColor = vec4(c.rgb * c.a, c.a);
 }
 `,
     polychrome: /* glsl */ `
@@ -291,6 +313,16 @@ precision mediump float;
 
 varying vec2 outTexCoord;
 uniform sampler2D uMainSampler;
+
+// Phaser 上传的纹理是预乘 alpha、混合也按预乘（ONE, ONE_MINUS_SRC_ALPHA），原作 LÖVE 是非预乘。
+// 采样时还原成非预乘、按原文算，出口再乘回去——否则叠加层在透明像素上加的颜色会整块发亮
+vec4 texel_straight(vec2 uv)
+{
+    vec4 t = texture2D(uMainSampler, uv);
+    if (t.a > 0.0) t.rgb /= t.a;
+    return t;
+}
+
 uniform vec2 polychrome;
 uniform float dissolve;
 uniform float time;
@@ -383,7 +415,7 @@ vec4 HSL(vec4 c)
 
 vec4 effect(vec4 colour, vec2 texture_coords)
 {
-    vec4 tex = texture2D(uMainSampler, texture_coords);
+    vec4 tex = texel_straight( texture_coords);
 	vec2 uv = (((texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
 
 	float low = min(tex.r, min(tex.g, tex.b));
@@ -419,7 +451,8 @@ vec4 effect(vec4 colour, vec2 texture_coords)
 
 void main ()
 {
-    gl_FragColor = effect(vec4(1.0), outTexCoord);
+    vec4 c = effect(vec4(1.0), outTexCoord);
+    gl_FragColor = vec4(c.rgb * c.a, c.a);
 }
 `,
     negative: /* glsl */ `
@@ -431,6 +464,16 @@ precision mediump float;
 
 varying vec2 outTexCoord;
 uniform sampler2D uMainSampler;
+
+// Phaser 上传的纹理是预乘 alpha、混合也按预乘（ONE, ONE_MINUS_SRC_ALPHA），原作 LÖVE 是非预乘。
+// 采样时还原成非预乘、按原文算，出口再乘回去——否则叠加层在透明像素上加的颜色会整块发亮
+vec4 texel_straight(vec2 uv)
+{
+    vec4 t = texture2D(uMainSampler, uv);
+    if (t.a > 0.0) t.rgb /= t.a;
+    return t;
+}
+
 uniform vec2 negative;
 uniform float dissolve;
 uniform float time;
@@ -523,7 +566,7 @@ vec4 HSL(vec4 c)
 
 vec4 effect(vec4 colour, vec2 texture_coords)
 {
-    vec4 tex = texture2D(uMainSampler, texture_coords);
+    vec4 tex = texel_straight( texture_coords);
 	vec2 uv = (((texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
 
     vec4 SAT = HSL(tex);
@@ -542,7 +585,8 @@ vec4 effect(vec4 colour, vec2 texture_coords)
 
 void main ()
 {
-    gl_FragColor = effect(vec4(1.0), outTexCoord);
+    vec4 c = effect(vec4(1.0), outTexCoord);
+    gl_FragColor = vec4(c.rgb * c.a, c.a);
 }
 `,
     negative_shine: /* glsl */ `
@@ -554,6 +598,16 @@ precision mediump float;
 
 varying vec2 outTexCoord;
 uniform sampler2D uMainSampler;
+
+// Phaser 上传的纹理是预乘 alpha、混合也按预乘（ONE, ONE_MINUS_SRC_ALPHA），原作 LÖVE 是非预乘。
+// 采样时还原成非预乘、按原文算，出口再乘回去——否则叠加层在透明像素上加的颜色会整块发亮
+vec4 texel_straight(vec2 uv)
+{
+    vec4 t = texture2D(uMainSampler, uv);
+    if (t.a > 0.0) t.rgb /= t.a;
+    return t;
+}
+
 uniform vec2 negative_shine;
 uniform float dissolve;
 uniform float time;
@@ -603,7 +657,7 @@ vec4 dissolve_mask(vec4 tex, vec2 texture_coords, vec2 uv)
 
 vec4 effect(vec4 colour, vec2 texture_coords)
 {
-    vec4 tex = texture2D(uMainSampler, texture_coords);
+    vec4 tex = texel_straight( texture_coords);
     vec2 uv = (((texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
 
     float low = min(tex.r, min(tex.g, tex.b));
@@ -630,7 +684,8 @@ vec4 effect(vec4 colour, vec2 texture_coords)
 
 void main ()
 {
-    gl_FragColor = effect(vec4(1.0), outTexCoord);
+    vec4 c = effect(vec4(1.0), outTexCoord);
+    gl_FragColor = vec4(c.rgb * c.a, c.a);
 }
 `,
     voucher: /* glsl */ `
@@ -642,6 +697,16 @@ precision mediump float;
 
 varying vec2 outTexCoord;
 uniform sampler2D uMainSampler;
+
+// Phaser 上传的纹理是预乘 alpha、混合也按预乘（ONE, ONE_MINUS_SRC_ALPHA），原作 LÖVE 是非预乘。
+// 采样时还原成非预乘、按原文算，出口再乘回去——否则叠加层在透明像素上加的颜色会整块发亮
+vec4 texel_straight(vec2 uv)
+{
+    vec4 t = texture2D(uMainSampler, uv);
+    if (t.a > 0.0) t.rgb /= t.a;
+    return t;
+}
+
 uniform vec2 voucher;
 uniform float dissolve;
 uniform float time;
@@ -691,7 +756,7 @@ vec4 dissolve_mask(vec4 tex, vec2 texture_coords, vec2 uv)
 
 vec4 effect(vec4 colour, vec2 texture_coords)
 {
-    vec4 tex = texture2D(uMainSampler, texture_coords);
+    vec4 tex = texel_straight( texture_coords);
     vec2 uv = (((texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
 
     float low = min(tex.r, min(tex.g, tex.b));
@@ -718,7 +783,8 @@ vec4 effect(vec4 colour, vec2 texture_coords)
 
 void main ()
 {
-    gl_FragColor = effect(vec4(1.0), outTexCoord);
+    vec4 c = effect(vec4(1.0), outTexCoord);
+    gl_FragColor = vec4(c.rgb * c.a, c.a);
 }
 `,
     booster: /* glsl */ `
@@ -730,6 +796,16 @@ precision mediump float;
 
 varying vec2 outTexCoord;
 uniform sampler2D uMainSampler;
+
+// Phaser 上传的纹理是预乘 alpha、混合也按预乘（ONE, ONE_MINUS_SRC_ALPHA），原作 LÖVE 是非预乘。
+// 采样时还原成非预乘、按原文算，出口再乘回去——否则叠加层在透明像素上加的颜色会整块发亮
+vec4 texel_straight(vec2 uv)
+{
+    vec4 t = texture2D(uMainSampler, uv);
+    if (t.a > 0.0) t.rgb /= t.a;
+    return t;
+}
+
 uniform vec2 booster;
 uniform float dissolve;
 uniform float time;
@@ -779,7 +855,7 @@ vec4 dissolve_mask(vec4 tex, vec2 texture_coords, vec2 uv)
 
 vec4 effect(vec4 colour, vec2 texture_coords)
 {
-    vec4 tex = texture2D(uMainSampler, texture_coords);
+    vec4 tex = texel_straight( texture_coords);
     vec2 uv = (((texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
 
     float low = min(tex.r, min(tex.g, tex.b));
@@ -806,7 +882,8 @@ vec4 effect(vec4 colour, vec2 texture_coords)
 
 void main ()
 {
-    gl_FragColor = effect(vec4(1.0), outTexCoord);
+    vec4 c = effect(vec4(1.0), outTexCoord);
+    gl_FragColor = vec4(c.rgb * c.a, c.a);
 }
 `,
 };

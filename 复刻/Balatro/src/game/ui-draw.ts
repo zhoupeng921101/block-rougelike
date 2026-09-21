@@ -12,6 +12,7 @@ import { BLIND_CENTERS } from '../core/blinds';
 import { C, type Colour, darken } from '../ui/colours';
 import type { HudBlind } from '../ui/definitions/hud-blind';
 import type { BlindChipObject, TagSpriteObject } from '../ui/definitions/blind-select';
+import type { ShopSignObject } from '../ui/definitions/shop';
 import { DynaText } from '../ui/dynatext';
 import type { SpriteObject } from '../ui/definitions/hud';
 import { EN_FONT } from '../ui/font';
@@ -155,9 +156,10 @@ export class UIBoxView {
             } else if (el.UIT === UIT.O && cfg.object instanceof UIBox) {
                 view.child = new UIBoxView(this.scene, cfg.object, 0, this.onButton);
                 this.container.add(view.child.container);
-            } else if (el.UIT === UIT.O && ['blind', 'blind_chip'].includes((cfg.object as { kind?: string } | undefined)?.kind ?? '')) {
-                const shadow = this.scene.add.image(0, 0, 'blind_chips', 0).setTint(0x000000).setAlpha(0.3);
-                const main = this.scene.add.image(0, 0, 'blind_chips', 0);
+            } else if (el.UIT === UIT.O && ['blind', 'blind_chip', 'shop_sign'].includes((cfg.object as { kind?: string } | undefined)?.kind ?? '')) {
+                const tex = (cfg.object as unknown as { kind: string }).kind === 'shop_sign' ? 'shop_sign' : 'blind_chips';
+                const shadow = this.scene.add.image(0, 0, tex, 0).setTint(0x000000).setAlpha(0.3);
+                const main = this.scene.add.image(0, 0, tex, 0);
                 this.container.add([shadow, main]);
                 view.blindChip = { shadow, main };
             } else if (el.UIT === UIT.O && (cfg.object as SpriteObject | undefined)?.kind === 'sprite') {
@@ -368,6 +370,12 @@ export class UIBoxView {
             const oy = (font.TEXT_OFFSET.y * s * font.FONTSCALE) / TILESIZE;
             // `ui.lua:716`：按钮不可用（`button` 被 `can_*` 摘掉了）时字变灰
             const shown = buttonActive ? colour : C.UI.TEXT_INACTIVE;
+            if (cfg.vert) {
+                // `ui.lua:715`：先平移 (0, h) 再转 −90°，字的局部 (ox, oy) 落到 (x + oy, y + h − ox)
+                v.text.main.setText(text).setColor(css(shown)).setAlpha(shown[3]).setRotation(-Math.PI / 2).setPosition(toPx(x + oy), toPx(y + h - ox));
+                v.text.shadow?.setVisible(false);
+                return;
+            }
             v.text.main.setText(text).setColor(css(shown)).setAlpha(shown[3]).setPosition(toPx(x + ox), toPx(y + oy));
             if (v.text.shadow) {
                 // 阴影按 0.97 以元素中心缩放，再偏 (-sp.x·0.5, -sp.y·0.5)/TILESIZE
@@ -395,10 +403,13 @@ export class UIBoxView {
             v.imageShadow.setPosition(toPx(el.x + w / 2 - sp.x * hgt), toPx(el.y + h / 2 - sp.y * hgt)).setDisplaySize(toPx(w) * k, toPx(h) * k);
         }
         if (v.blindChip) {
-            const obj = cfg.object as HudBlind | BlindChipObject;
+            const obj = cfg.object as HudBlind | BlindChipObject | ShopSignObject;
             if (obj.kind === 'blind') {
                 const center = obj.key ? BLIND_CENTERS[obj.key] : undefined;
                 this.drawBlindChip(v.blindChip, center?.pos ?? null, el.x, el.y, w, h, t, 0.1, true);
+            } else if (obj.kind === 'shop_sign') {
+                // `game.lua:979`：`shop_sign` 图集一行 4 帧
+                this.drawBlindChip(v.blindChip, { x: 0, y: 0 }, el.x, el.y, w, h, t, obj.shadowHeight, false, 4);
             } else this.drawBlindChip(v.blindChip, obj.pos, el.x, el.y, w, h, t, obj.shadowHeight, false);
         }
         if (v.child) v.child.update(t);
@@ -430,11 +441,11 @@ export class UIBoxView {
      * 缩到 `1 − 0.2·shadow_height`（`sprite.lua:76`）。帧 = `floor(10·t) % 21`（`AnimatedSprite:animate`）。
      * `pos` 为空（没有盲注）时不画
      */
-    private drawBlindChip(chip: { shadow: GameObjects.Image; main: GameObjects.Image }, pos: { x: number; y: number } | null, x: number, y: number, w: number, h: number, t: number, shadowHeight: number, sway: boolean): void {
+    private drawBlindChip(chip: { shadow: GameObjects.Image; main: GameObjects.Image }, pos: { x: number; y: number } | null, x: number, y: number, w: number, h: number, t: number, shadowHeight: number, sway: boolean, frames = BLIND_CHIP_FRAMES): void {
         chip.main.setVisible(!!pos);
         chip.shadow.setVisible(!!pos);
         if (!pos) return;
-        const frame = pos.y * BLIND_CHIP_FRAMES + (Math.floor(ANIMATION_FPS * t) % BLIND_CHIP_FRAMES);
+        const frame = pos.y * frames + (Math.floor(ANIMATION_FPS * t) % frames);
         const r = sway ? 0.02 * Math.sin(2 * t + x) : 0;
         const sp = shadowParallax(x, w);
         const cx = x + w / 2;

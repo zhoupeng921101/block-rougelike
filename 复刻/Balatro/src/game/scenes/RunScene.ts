@@ -46,7 +46,8 @@ import { type EvalRow, type EvalStep, RoundEval, evalTimeline } from '../../ui/d
 import { BLIND_TEXT, DICTIONARY } from '../../ui/lang.generated';
 import type { Rect, UIElement } from '../../ui/uibox';
 import { cardAreas } from '../areas';
-import { alignHand, alignJokers, alignPlay } from '../align-cards';
+import { type Placed, alignHand, alignJokers, alignPlay } from '../align-cards';
+import { type CardAreaObject, createShop, createShopSign, priceTag, shopAreas } from '../../ui/definitions/shop';
 import { DeckSprite } from '../deck-sprite';
 import { numberFormat } from '../../ui/format';
 import { UIBox } from '../../ui/uibox';
@@ -57,12 +58,6 @@ import { VoucherSprite } from '../voucher-sprite';
 import { BACKGROUND_COLOURS, BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
 import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
 
-/** 商店那两格 */
-const SHOP_Y_TILES = 4.0;
-const SHOP_X_TILES = 6.5;
-/** 补充包那两格，画在商店格子下面一排 */
-const PACK_Y_TILES = SHOP_Y_TILES - 3.2;
-const PACK_X_TILES = SHOP_X_TILES;
 /** 开着的包：内容摊在屏幕中间 */
 const PACK_OPEN_Y_TILES = 1.6;
 const PACK_OPEN_X_TILES = 1.2;
@@ -184,6 +179,8 @@ export class RunScene extends Scene {
         this.load.spritesheet('chips', '/assets/textures/chips.png', { frameWidth: 29, frameHeight: 29 });
         // `game.lua:994`：标签，34×34 一格
         this.load.spritesheet('tags', '/assets/textures/tags.png', { frameWidth: 34, frameHeight: 34 });
+        // `game.lua:979`：SHOP 招牌，113×57 一格，4 帧
+        this.load.spritesheet('shop_sign', '/assets/textures/ShopSignAnimation.png', { frameWidth: 113, frameHeight: 57 });
         // `game.lua:978`：盲注筹码，34×34 一格，每行 21 帧动画
         this.load.spritesheet('blind_chips', '/assets/textures/BlindChips.png', { frameWidth: 34, frameHeight: 34 });
         this.load.spritesheet('cards', '/assets/textures/8BitDeck.png', {
@@ -274,9 +271,10 @@ export class RunScene extends Scene {
         this.handPreview = this.add.text(toPx(5.0), toPx(3.1), '', {
             fontFamily: 'monospace', fontSize: 26, color: '#ffd76e',
         }).setVisible(false);
-        this.jokerInfo = this.add.text(toPx(5.0), toPx(3.9), '', {
-            fontFamily: 'monospace', fontSize: 18, color: '#9fd6ff',
-        });
+        // 小丑的数值与卖价：原作靠悬停提示框（`h_popup`，还没做），先写在小丑区正下方的空隙里（计数行之下）
+        this.jokerInfo = this.add.text(toPx(this.areas.jokers.x), toPx(this.areas.jokers.y + this.areas.jokers.h + 0.3), '', {
+            fontFamily: 'monospace', fontSize: 14, color: '#9fd6ff',
+        }).setDepth(45);
         this.message = this.add.text(CANVAS_W / 2, CANVAS_H / 2, '', {
             fontFamily: 'monospace', fontSize: 44, color: '#ffffff', align: 'center',
         }).setOrigin(0.5).setDepth(100);
@@ -610,6 +608,12 @@ ${String(e instanceof Error ? e.message : e)}`)
     }
 
     private clearShop(): void {
+        if (this.shopUi) {
+            this.shopUi.view.destroy();
+            this.shopUi.sign.destroy();
+            for (const t of this.shopUi.tags) t.destroy();
+            this.shopUi = null;
+        }
         for (const s of this.shopSprites) s.destroy();
         this.shopSprites = [];
         for (const s of this.packSprites) s.destroy();
@@ -722,114 +726,108 @@ ${String(e instanceof Error ? e.message : e)}`)
     private rebuildShop(): void {
         this.clearShop();
         const shop = this.run.shop;
-        if (!shop) return;
-        this.rebuildVouchers();
+        if (!shop || this.roundEval) return;
+        const U = toPx(1);
 
-        // 补充包那两格。买掉的那一格是 null，不画——原作也是让它空着
-        shop.packs.forEach((slot, i) => {
-            if (!slot) return;
-            const x = PACK_X_TILES + i * (CARD_W * 1.27 + 0.6);
-            const sprite = new BoosterSprite(this, slot.center, () => this.openPack(i));
-            sprite.layout(x, PACK_Y_TILES);
-            this.packSprites.push(sprite);
-
-            const done = isBoosterImplemented(slot.key, BOOSTER_CENTERS);
-            this.shopLabels.push(
-                this.add.text(
-                    toPx(x),
-                    toPx(PACK_Y_TILES + CARD_H * 1.27 + 0.1),
-                    `$${shop.packCost(i)}${done ? '' : '  ⚠未实现'}`,
-                    {
-                        fontFamily: 'monospace', fontSize: 16,
-                        color: done ? '#ffd76e' : '#e5885f',
-                    },
-                ).setDepth(40),
-            );
+        // `G.UIDEF.shop`：外框挂在手牌区上（`tmi`，offset 落定 −5.3），招牌挂在左侧面板的 `row_blind`
+        const areas = shopAreas(shop.jokerMax);
+        const currentRound = { reroll_cost: shop.rerollCost };
+        const box = new UIBox(createShop(areas, this.run.ante, currentRound), { align: 'tmi', offset: { x: 0, y: -5.3 }, major: { T: this.areas.hand } }, {
+            set_button_pip: () => undefined,
+            // `button_callbacks.lua` 的 `can_reroll`：付不起（且不是免费重掷）就灰掉
+            can_reroll: (e: UIElement) => {
+                currentRound.reroll_cost = shop.rerollCost;
+                const ok = shop.rerollCost === 0 || this.run.canAfford(shop.rerollCost);
+                e.config.colour = ok ? C.GREEN : C.UI.BACKGROUND_INACTIVE;
+                e.config.button = ok ? 'reroll_shop' : undefined;
+            },
         });
+        const sign = new UIBox(createShopSign(), { align: 'cm', offset: { x: 0, y: 0 }, major: this.hudView.box.getById('row_blind')!.asMajor });
+        const onButton = (name: string) => this.onUIButton(name);
+        this.shopUi = { view: new UIBoxView(this, box, 0.5, onButton), sign: new UIBoxView(this, sign, 41), tags: [] };
 
-        shop.items.forEach((item, i) => {
-            const x = SHOP_X_TILES + i * (CARD_W + 1.4);
+        // 区域在房间里的位置 = 装它的 O 元素的位置
+        const rectOf = (a: CardAreaObject): Rect => {
+            const el = [...box.root.walk()].find((e) => e.config.object === a)!;
+            return { x: el.x, y: el.y, w: a.T.w, h: a.T.h };
+        };
+        /** `align_cards` 的 shop 分支；阴影视差读上一帧的 x，静止摆放迭代一次就收敛 */
+        const align = (area: Rect, sizes: Array<{ w: number; h: number }>, limit: number, cardW = CARD_W) => {
+            const first = alignPlay(area, sizes.map((z) => ({ highlighted: false, prevX: area.x, ...z })), limit, cardW);
+            return alignPlay(area, sizes.map((z, i) => ({ highlighted: false, prevX: first[i]!.x, ...z })), limit, cardW);
+        };
+        /** 价签（`create_shop_card_ui` 的 t1）：挂在卡上，`tm`、下压 0.38（补充包 0.5） */
+        const tag = (p: Placed, w: number, h: number, cost: number, dy = 0.38) => {
+            const t = new UIBox(priceTag({ cost }), { align: 'tm', offset: { x: 0, y: dy }, major: { T: { x: p.x, y: p.y, w, h } } });
+            // 价签是卡的 child、先于卡面画：卡盖住价签的下半截（深度在外框之上、卡与卡的阴影之下）
+            const v = new UIBoxView(this, t, 0.8);
+            v.setResolution(this.mapping.pxPerTile / U);
+            this.shopUi!.tags.push(v);
+        };
+        /** 没实现行为的商品照旧标出来：商店从全池生成，买了什么也不发生就是把缺口伪装成正常行为 */
+        const warn = (p: Placed, h: number, done: boolean) => {
+            if (done) return;
+            this.shopLabels.push(this.add.text(toPx(p.x), toPx(p.y + h + 0.05), '⚠未实现', {
+                fontFamily: 'monospace', fontSize: 16, color: '#e5885f',
+            }).setDepth(40));
+        };
 
-            if (item.kind === 'card') {
-                // Magic Trick 的扑克牌。`CardSprite` 按 `T.x` 排版，所以先把它摆好
-                item.card.T.x = x - SHOP_X_TILES;
-                const sprite = new CardSprite(this, item.card, () => this.buy(i));
-                sprite.layout(SHOP_X_TILES, SHOP_Y_TILES);
-                this.shopCardSprites.push(sprite);
-                this.shopLabels.push(
-                    this.add.text(toPx(x), toPx(SHOP_Y_TILES + CARD_H + 0.1), `$${shop.itemCost(i)}`, {
-                        fontFamily: 'monospace', fontSize: 18, color: '#ffd76e',
-                    }).setDepth(40),
-                );
-                return;
+        // 货架
+        const sizes = shop.items.map((item) => {
+            if (item.kind === 'joker') {
+                const s = new JokerSprite(this, item.joker, () => this.buy(shop.items.indexOf(item)));
+                this.shopSprites.push(s);
+                return { w: s.w / U, h: s.h / U };
             }
-
-            if (item.kind === 'consumable') {
-                const c = item.consumable;
-                const sprite = new ConsumableSprite(this, c, () => this.buy(i));
-                sprite.layout(x, SHOP_Y_TILES);
+            return { w: CARD_W, h: CARD_H };
+        });
+        let jokerIndex = 0;
+        align(rectOf(areas.shop_jokers), sizes, shop.jokerMax).forEach((p, i) => {
+            const item = shop.items[i]!;
+            const { w, h } = sizes[i]!;
+            if (item.kind === 'joker') {
+                this.shopSprites[jokerIndex++]!.layout(p.x, p.y);
+                warn(p, h, isJokerImplemented(item.joker.key));
+            } else if (item.kind === 'consumable') {
+                const sprite = new ConsumableSprite(this, item.consumable, () => this.buy(i));
+                sprite.layout(p.x, p.y);
                 this.shopConsumableSprites.push(sprite);
-
-                // **没实现行为的塔罗要标出来**，与小丑那一条同理：
-                // 商店按设计从全池生成（池子内容影响 RNG，不能裁），
-                // 买了什么也不发生就是把缺口伪装成正常行为
-                const done = isConsumableImplemented(c.key);
-                this.shopLabels.push(
-                    this.add.text(
-                        toPx(x),
-                        toPx(SHOP_Y_TILES + CARD_H + 0.1),
-                        `$${shop.itemCost(i)}${done ? '' : '  ⚠未实现'}`,
-                        {
-                            fontFamily: 'monospace', fontSize: 18,
-                            color: done ? '#ffd76e' : '#e5885f',
-                        },
-                    ).setDepth(40),
-                );
-                return;
+                warn(p, h, isConsumableImplemented(item.consumable.key));
+            } else {
+                // Magic Trick 的扑克牌
+                const sprite = new CardSprite(this, item.card, () => this.buy(i));
+                sprite.place(p, 0);
+                this.shopCardSprites.push(sprite);
             }
-
-            const sprite = new JokerSprite(this, item.joker, () => this.buy(i));
-            sprite.layout(x, SHOP_Y_TILES);
-            this.shopSprites.push(sprite);
-
-            // **没有行为的小丑要标出来。** 商店按设计从 150 张的全池生成
-            // （池子大小影响 RNG，不能裁），所以会摆出还没实现的小丑，
-            // 而它买了什么也不发生。不标就是把缺口伪装成正常行为
-            const done = isJokerImplemented(item.joker.key);
-            this.shopLabels.push(
-                this.add.text(
-                    toPx(x),
-                    toPx(SHOP_Y_TILES + CARD_H + 0.1),
-                    `$${item.cost}${editionTag(item.joker.edition)}${done ? '' : '  ⚠未实现'}`,
-                    {
-                        fontFamily: 'monospace', fontSize: 18,
-                        color: done ? '#ffd76e' : '#e5885f',
-                    },
-                ).setDepth(40),
-            );
+            tag(p, w, h, shop.itemCost(i));
         });
-    }
 
-    /**
-     * 优惠券格，排在货架右边。**已兑换的列在 HUD 里**（原作在「本局信息」里），
-     * 这里只画还摆着的
-     */
-    private rebuildVouchers(): void {
-        const shop = this.run.shop;
-        if (!shop) return;
-        const x0 = SHOP_X_TILES + shop.jokerMax * (CARD_W + 1.4) + 0.4;
-        shop.vouchers.forEach((v, i) => {
-            const x = x0 + i * (CARD_W + 0.6);
-            const sprite = new VoucherSprite(this, v.center, () => this.redeem(i));
-            sprite.layout(x, SHOP_Y_TILES);
+        // 优惠券
+        align(rectOf(areas.shop_vouchers), shop.vouchers.map(() => ({ w: CARD_W, h: CARD_H })), 1).forEach((p, i) => {
+            const sprite = new VoucherSprite(this, shop.vouchers[i]!.center, () => this.redeem(i));
+            sprite.layout(p.x, p.y);
             this.voucherSprites.push(sprite);
-            this.shopLabels.push(
-                this.add.text(toPx(x), toPx(SHOP_Y_TILES + CARD_H + 0.1), `$${shop.voucherCost(i)}\n${v.center.name}`, {
-                    fontFamily: 'monospace', fontSize: 15, color: '#ffd76e',
-                }).setDepth(40),
-            );
+            tag(p, CARD_W, CARD_H, shop.voucherCost(i));
         });
+
+        // 补充包：买掉的那一格从区域里拿走，剩下的重新居中（原作 `remove_card` 之后 `align_cards`）
+        const packs = shop.packs.map((slot, i) => ({ slot, i })).filter((x) => x.slot);
+        const PW = CARD_W * 1.27;
+        const PH = CARD_H * 1.27;
+        align(rectOf(areas.shop_booster), packs.map(() => ({ w: PW, h: PH })), 2, PW).forEach((p, k) => {
+            const { slot, i } = packs[k]!;
+            const sprite = new BoosterSprite(this, slot!.center, () => this.openPack(i));
+            sprite.layout(p.x, p.y);
+            this.packSprites.push(sprite);
+            tag(p, PW, PH, shop.packCost(i), 0.5);
+            warn(p, PH, isBoosterImplemented(slot!.key, BOOSTER_CENTERS));
+        });
+
+        for (const v of [this.shopUi.view, this.shopUi.sign]) v.setResolution(this.mapping.pxPerTile / U);
     }
+
+    /** 商店的 UI（外框、招牌、价签）。开包时整个收起（原作把 `G.shop` 挪到屏幕外） */
+    private shopUi: { view: UIBoxView; sign: UIBoxView; tags: UIBoxView[] } | null = null;
 
     private redeem(index: number): void {
         if (this.animating || this.run.state !== 'shop') return;
@@ -1103,6 +1101,14 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.cashOut();
             return;
         }
+        if (name === 'toggle_shop') {
+            this.doNext();
+            return;
+        }
+        if (name === 'reroll_shop') {
+            this.doReroll();
+            return;
+        }
         if (name === 'play_cards_from_highlighted') this.doPlay();
         else if (name === 'discard_cards_from_highlighted') {
             this.doDiscard();
@@ -1171,7 +1177,6 @@ ${String(e instanceof Error ? e.message : e)}`)
     private refresh(lastAction = ''): void {
         const run = this.run;
         const round = this.round;
-        const blindName = BLIND_CENTERS[run.blindKey].name;
 
         const vouchersLine = run.usedVouchers.size > 0
             ? `优惠券：${[...run.usedVouchers].map((k) => VOUCHER_CENTERS[k].name).join('、')}`
@@ -1193,13 +1198,11 @@ ${String(e instanceof Error ? e.message : e)}`)
             // 回合结算中：`run.state` 已经是 'shop'，但 Cash Out 之前商店还没开
             this.hud.setText('');
         } else if (run.state === 'shop') {
+            // 盲注、钱、重掷价、格数都在 UI 里了；这里只剩还没有 UI 的已有标签 / 优惠券与开包提示
             this.hud.setText([
-                `商店 — Ante ${run.ante}${run.won ? '（无尽）' : ''}   下一关：${blindName}`,
-                `$${run.dollars}    重掷 $${run.shop?.rerollCost ?? 0}    小丑 ${run.jokers.length}/${run.jokerSlots}    消耗品 ${run.consumables.length}/${run.consumableSlots}    ${tagsLine}`,
-                run.openPack
-                    ? `${run.openPack.center.name} —— 还能挑 ${run.openPack.choicesLeft} 张`
-                    : `点商店的牌买入，点小丑区的牌卖出，点消耗品用掉它    ${vouchersLine}`,
-            ].join('\n'));
+                [tagsLine, vouchersLine].filter(Boolean).join('    '),
+                run.openPack ? `${run.openPack.center.name} —— 还能挑 ${run.openPack.choicesLeft} 张` : '',
+            ].filter(Boolean).join('\n'));
         } else if (round) {
             // 盲注、目标分、出牌 / 弃牌数、钱都在左侧面板与盲注面板里了，这里只剩上一手的结算说明
             this.hud.setText(lastAction);
@@ -1248,6 +1251,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
         this.blindSelectViews?.select.setVisible(!run.openPack);
         if (this.roundEval) for (const b of [this.nextBtn, this.rerollBtn, this.skipBtn, this.skipBlindBtn]) b.setVisible(false);
+        // 商店里 Next Round / Reroll 由商店 UI 接管；开包时「跳过」还要用
+        if (inShop && !run.openPack) for (const b of [this.nextBtn, this.rerollBtn, this.skipBtn, this.skipBlindBtn]) b.setVisible(false);
 
         if (run.state === 'game-over') {
             this.message.setText('失败').setColor('#e5585f');
@@ -1320,6 +1325,14 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.blindSelectViews.prompt.update(time / 1000);
         }
         if (this.round?.phase === 'won' && !this.animating && !this.roundEval) this.startRoundEval();
+        if (this.shopUi) {
+            const hidden = !!this.run.openPack;
+            for (const v of [this.shopUi.view, ...this.shopUi.tags]) {
+                v.setVisible(!hidden);
+                v.update(time / 1000);
+            }
+            this.shopUi.sign.update(time / 1000);
+        }
         this.roundEval?.view.update(time / 1000);
         this.roundEval?.cashView?.update(time / 1000);
         this.placeCards(time / 1000);

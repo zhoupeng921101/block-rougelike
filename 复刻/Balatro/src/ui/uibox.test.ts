@@ -12,6 +12,7 @@ import { type BlindSelectState, createBlindPrompt, createBlindSelect } from './d
 import { createButtons } from './definitions/buttons';
 import { type EvalRow, RoundEval, evalTimeline } from './definitions/round-eval';
 import { cardAreaBox } from './definitions/card-area';
+import { createShop, createShopSign, priceTag, shopAreas } from './definitions/shop';
 import { createHudBlind, makeHudBlindState } from './definitions/hud-blind';
 import { hudBlindFuncs } from './definitions/hud-blind-funcs';
 import { makeHudState, createHud } from './definitions/hud';
@@ -159,5 +160,21 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
         for (const { step } of evalTimeline(rows, 3)) ev.apply(step);
         expectSame(dump(ev.box), cases.find((c) => c.name === `round_eval_${k}`)!.elements);
         expectSame(dump(ev.cashOut!), cases.find((c) => c.name === `cash_out_${k}`)!.elements);
+    });
+
+    /** 商店外框挂在手牌区上（`tmi`，offset −5.3）；招牌挂在 `row_blind`；价签挂在卡上（`tm`，offset 0.38） */
+    it('G.UIDEF.shop、SHOP 招牌与价签', () => {
+        const shop = new UIBox(createShop(shopAreas(2), 1, { reroll_cost: 5 }), { align: 'tmi', offset: { x: 0, y: -5.3 }, major: { T: areas.hand } });
+        expectSame(dump(shop), cases.find((c) => c.name === 'shop')!.elements);
+
+        const hud = new UIBox(createHud(makeHudState()), {
+            align: 'cli', offset: { x: -0.7, y: 0 }, major: { T: { x: 0, y: 0, w: 21, h: 11.2 } },
+        });
+        const sign = new UIBox(createShopSign(), { align: 'cm', offset: { x: 0, y: 0 }, major: hud.getById('row_blind')!.asMajor });
+        expectSame(dump(sign), cases.find((c) => c.name === 'shop_sign')!.elements);
+
+        const card = { cost: 5, T: { x: 8, y: 4, w: (2.4 * 35) / 41, h: (2.4 * 47) / 41 } };
+        const price = new UIBox(priceTag(card), { align: 'tm', offset: { x: 0, y: 0.38 }, major: card });
+        expectSame(dump(price), cases.find((c) => c.name === 'price_tag')!.elements);
     });
 });

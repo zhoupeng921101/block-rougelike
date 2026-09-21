@@ -377,6 +377,44 @@ def main():
     for name, var in [('round_eval_a', 'EVAL_A'), ('cash_out_a', 'CASH_A'), ('round_eval_b', 'EVAL_B'), ('cash_out_b', 'CASH_B')]:
         cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
 
+    # 商店：G.UIDEF.shop 挂在手牌区上（game.lua:3438，offset 落定在 -5.3），三个 CardArea 换成同尺寸的 Moveable；
+    # G.SHOP_SIGN 挂在 row_blind 上；再给一张小丑（$5）跑 create_shop_card_ui，导出它的价签
+    lua.execute(r'''
+      CardArea = function(x, y, w, h, cfg) local a = Moveable(x, y, w, h); a.config = cfg; a.cards = {}; return a end
+      G.CARD_W, G.CARD_H = 2.4*35/41, 2.4*47/41
+      G.GAME.shop = { joker_max = 2 }
+      G.GAME.bankrupt_at = 0
+      G.GAME.current_round.reroll_cost = 5
+      G.ANIMATION_ATLAS.shop_sign = {}
+      local plain2 = localize
+      localize = function(args, misc_cat)
+        if type(args) == 'table' and args.key == 'ante_x_voucher' then return 'ANTE '..args.vars[1]..' VOUCHER' end
+        return plain2(args, misc_cat)
+      end
+      local function settle(box)
+        box.alignment.prev_type = ''
+        box:align_to_major()
+        box.T.x = box.role.major.T.x + box.role.offset.x
+        box.T.y = box.role.major.T.y + box.role.offset.y
+        box.UIRoot:initialize_VT()
+      end
+      SHOP = UIBox{ definition = G.UIDEF.shop(), config = {align='tmi', offset = {x=0,y=-5.3}, major = G.hand, bond = 'Weak'} }
+      RUN_QUEUE()
+      settle(SHOP)
+      settle(G.SHOP_SIGN)
+      local CW, CH = 2.4*35/41, 2.4*47/41
+      local card = Moveable(8, 4, CW, CH)
+      card.ability = { set = 'Joker' }
+      card.cost = 5
+      card.children = {}
+      create_shop_card_ui(card)
+      RUN_QUEUE()
+      PRICE = card.children.price
+      settle(PRICE)
+    ''')
+    for name, var in [('shop', 'SHOP'), ('shop_sign', 'G.SHOP_SIGN'), ('price_tag', 'PRICE')]:
+        cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 

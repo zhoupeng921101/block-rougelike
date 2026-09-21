@@ -96,7 +96,9 @@ void main ()
 {
     vec4 fragColor;
     vec2 texture_coords = outTexCoord;
+    // Phaser 的纹理是预乘 alpha：还原成非预乘按原文算，出口再乘回去（见 editions 生成器的同一段）
     vec4 tex = texture2D(uMainSampler, texture_coords);
+    if (tex.a > 0.0) tex.rgb /= tex.a;
     vec2 uv = (((texture_coords) * (image_details)) - texture_details.xy * texture_details.ba) / texture_details.ba;
 
     if (!shadow && dissolve > 0.01) {
@@ -114,7 +116,7 @@ void main ()
         fragColor = vec4(uProbe, 1.0);
     }
 
-    gl_FragColor = fragColor;
+    gl_FragColor = vec4(fragColor.rgb * fragColor.a, fragColor.a);
 }
 `;
 

@@ -46,12 +46,13 @@ export function alignHand(area: Rect, cards: CardIn[], limit: number, real: numb
 }
 
 /** `cardarea.lua:501`：出牌区与商店。不转、不晃 */
-export function alignPlay(area: Rect, cards: CardIn[], limit: number): Placed[] {
+export function alignPlay(area: Rect, cards: CardIn[], limit: number, cardW = CARD_W): Placed[] {
     const n = cards.length;
     return cards.map((c, i) => {
         const w = c.w ?? CARD_W;
         const h = c.h ?? CARD_H;
-        let x = spread(area, i + 1, n, limit, w) + (limit === 1 ? 0.5 * (area.w - w) : 0);
+        // `self.card_w or G.CARD_W`：补充包那一格是 1.27 倍宽
+        let x = spread(area, i + 1, n, limit, w, cardW) + (limit === 1 ? 0.5 * (area.w - w) : 0);
         const y = area.y + area.h / 2 - h / 2 - (c.highlighted ? HIGHLIGHT_H : 0);
         x += cardShadowParallaxX(c.prevX, w) / 30;
         return { x, y, r: 0 };

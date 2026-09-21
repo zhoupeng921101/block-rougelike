@@ -54,7 +54,7 @@ function convert(name) {
             /vec4 effect\(\s*vec4 colour,\s*Image texture,\s*vec2 texture_coords,\s*vec2 screen_coords\s*\)/,
             'vec4 effect(vec4 colour, vec2 texture_coords)',
         )
-        .replace(/Texel\(\s*texture\s*,/g, 'texture2D(uMainSampler,');
+        .replace(/Texel\(\s*texture\s*,/g, 'texel_straight(');
 
     for (const bad of ['Image', 'Texel', 'screen_coords', 'extern', 'love_']) {
         if (body.includes(bad)) throw new Error(`${name}.fs：转换后还剩 \`${bad}\``);
@@ -76,11 +76,22 @@ precision mediump float;
 
 varying vec2 outTexCoord;
 uniform sampler2D uMainSampler;
+
+// Phaser 上传的纹理是预乘 alpha、混合也按预乘（ONE, ONE_MINUS_SRC_ALPHA），原作 LÖVE 是非预乘。
+// 采样时还原成非预乘、按原文算，出口再乘回去——否则叠加层在透明像素上加的颜色会整块发亮
+vec4 texel_straight(vec2 uv)
+{
+    vec4 t = texture2D(uMainSampler, uv);
+    if (t.a > 0.0) t.rgb /= t.a;
+    return t;
+}
+
 ${body.trim()}
 
 void main ()
 {
-    gl_FragColor = effect(vec4(1.0), outTexCoord);
+    vec4 c = effect(vec4(1.0), outTexCoord);
+    gl_FragColor = vec4(c.rgb * c.a, c.a);
 }
 `;
 }
