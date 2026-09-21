@@ -36,8 +36,10 @@ import { Particles } from '../particles';
 import type { OpenPack } from '../../core/booster-open';
 import type { BoosterKind } from '../../core/boosters';
 import { type BackgroundColours, applyBlindColours, backgroundFor, packMainColour } from '../../ui/blind-colour';
-import { C, type Colour, HEX, lighten, mixColours, setColour } from '../../ui/colours';
+import { C, type Colour, HEX, lighten, mixColours, setColour, tickColours } from '../../ui/colours';
 import { buyAndUseButton, shopBuyButton, useAndSellButtons } from '../../ui/definitions/card-buttons';
+import { type PopupCard, abilityTable, cardHPopup, infoBoxes } from '../../ui/definitions/card-popup';
+import { popupGame, popupOfCard, popupOfCenter, popupOfConsumable, popupOfJoker } from '../popup-adapter';
 import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
 import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
@@ -305,7 +307,7 @@ export class RunScene extends Scene {
         this.handPreview = this.add.text(toPx(5.0), toPx(3.1), '', {
             fontFamily: 'monospace', fontSize: 26, color: '#ffd76e',
         }).setVisible(false);
-        // 小丑的数值与卖价：原作靠悬停提示框（`h_popup`，还没做），先写在小丑区正下方的空隙里（计数行之下）
+        // 数值与说明在悬停提示框里；这里只标出没实现行为的小丑（不标就是把缺口伪装成正常行为）
         this.jokerInfo = this.add.text(toPx(this.areas.jokers.x), toPx(this.areas.jokers.y + this.areas.jokers.h + 0.3), '', {
             fontFamily: 'monospace', fontSize: 14, color: '#9fd6ff',
         }).setDepth(45);
@@ -553,10 +555,12 @@ ${String(e instanceof Error ? e.message : e)}`)
     // ————————————————————————————————————————————————————————————————
 
     private rebuildJokers(): void {
+        this.hidePopup();
         if (this.picked?.where.kind === 'joker') this.unpick();
         for (const s of this.jokerSprites) s.destroy();
         this.jokerSprites = this.run.jokers.map((j) => {
             const s: JokerSprite = new JokerSprite(this, j, (joker) => this.pick(s, { kind: 'joker', joker }));
+            this.attachPopup([s.shader], s, () => popupOfJoker(j, 'jokers'));
             return s;
         });
         this.layoutJokers();
@@ -589,10 +593,12 @@ ${String(e instanceof Error ? e.message : e)}`)
      * 卖消耗品走「在商店里点」这条路，与卖小丑一致。
      */
     private rebuildConsumables(): void {
+        this.hidePopup();
         if (this.picked?.where.kind === 'consumable') this.unpick();
         for (const s of this.consumableSprites) s.destroy();
         this.consumableSprites = this.run.consumables.map((c) => {
             const s: ConsumableSprite = new ConsumableSprite(this, c, (con) => this.pick(s, { kind: 'consumable', consumable: con }));
+            this.attachPopup([s.shader], s, () => popupOfConsumable(c, 'consumeables'));
             return s;
         });
         this.layoutJokers();
@@ -665,10 +671,12 @@ ${String(e instanceof Error ? e.message : e)}`)
         for (const s of this.shopCardSprites) s.destroy();
         this.shopCardSprites = [];
         this.shopSlots = [];
+        this.hidePopup();
         if (this.picked?.where.kind === 'shop' || this.picked?.where.kind === 'voucher' || this.picked?.where.kind === 'booster') this.unpick();
     }
 
     private clearPackCards(): void {
+        this.hidePopup();
         if (this.picked?.where.kind === 'pack') this.unpick();
         for (const s of this.packCardSprites) s.destroy();
         this.packCardSprites = [];
@@ -725,12 +733,15 @@ ${String(e instanceof Error ? e.message : e)}`)
         pack.cards.forEach((card, i) => {
             if (card.kind === 'joker') {
                 const s: JokerSprite = new JokerSprite(this, card.joker, () => this.pick(s, { kind: 'pack', index: i }));
+                this.attachPopup([s.shader], s, () => popupOfJoker(card.joker, 'pack'));
                 this.packCardSprites.push(s);
             } else if (card.kind === 'consumable') {
                 const s: ConsumableSprite = new ConsumableSprite(this, card.consumable, () => this.pick(s, { kind: 'pack', index: i }));
+                this.attachPopup([s.shader], s, () => popupOfConsumable(card.consumable, 'pack'));
                 this.packCardSprites.push(s);
             } else {
                 const s: CardSprite = new CardSprite(this, card.card, () => this.pick(s, { kind: 'pack', index: i }));
+                this.attachPopup(s.hoverTargets, s, () => popupOfCard(card.card, 'pack'));
                 this.packCardSprites.push(s);
                 // **版本与蜡封的贴图都没有移植**，只用文字标出来——
                 // 一张 Red 蜡封的牌会多算一遍分，不标就看不出来
@@ -912,15 +923,18 @@ ${String(e instanceof Error ? e.message : e)}`)
         shop.items.forEach((item, i) => {
             if (item.kind === 'joker') {
                 const s = new JokerSprite(this, item.joker, () => this.pick(s, { kind: 'shop', index: i }));
+                this.attachPopup([s.shader], s, () => popupOfJoker(item.joker, 'shop'), true);
                 this.shopSprites.push(s);
                 slot('items', i, s, itemsArea, s.w / U, s.h / U, shop.itemCost(i), isJokerImplemented(item.joker.key));
             } else if (item.kind === 'consumable') {
                 const s = new ConsumableSprite(this, item.consumable, () => this.pick(s, { kind: 'shop', index: i }));
+                this.attachPopup([s.shader], s, () => popupOfConsumable(item.consumable, 'shop'), true);
                 this.shopConsumableSprites.push(s);
                 slot('items', i, s, itemsArea, CARD_W, CARD_H, shop.itemCost(i), isConsumableImplemented(item.consumable.key));
             } else {
                 // Magic Trick 的扑克牌
                 const s = new CardSprite(this, item.card, () => this.pick(s, { kind: 'shop', index: i }));
+                this.attachPopup(s.hoverTargets, s, () => popupOfCard(item.card, 'shop'), true);
                 this.shopCardSprites.push(s);
                 slot('items', i, s, itemsArea, CARD_W, CARD_H, shop.itemCost(i), true);
             }
@@ -930,6 +944,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         const voucherArea = rectOf(areas.shop_vouchers);
         shop.vouchers.forEach((v, i) => {
             const s = new VoucherSprite(this, v.center, () => this.pick(s, { kind: 'voucher', index: i }));
+            this.attachPopup([s.shader], s, () => popupOfCenter(v.key, 'shop'), true);
             this.voucherSprites.push(s);
             slot('vouchers', i, s, voucherArea, CARD_W, CARD_H, shop.voucherCost(i), true);
         });
@@ -939,6 +954,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         shop.packs.forEach((p, i) => {
             if (!p) return;
             const s = new BoosterSprite(this, p.center, () => this.pick(s, { kind: 'booster', index: i }));
+            this.attachPopup([s.shader], s, () => popupOfCenter(p.key, 'shop'), true);
             this.packSprites.push(s);
             slot('packs', i, s, packArea, CARD_W * 1.27, CARD_H * 1.27, shop.packCost(i), isBoosterImplemented(p.key, BOOSTER_CENTERS));
         });
@@ -963,11 +979,14 @@ ${String(e instanceof Error ? e.message : e)}`)
         sprite.highlighted = true;
         const major = { T: { ...sprite.rect } };
         this.picked = { sprite, where, major, views: this.pickButtons(where, major) };
+        const m = this.popupMakers.get(sprite);
+        if (m) this.showPopup(sprite, m.make(), m.shop);
         this.sound.play('cardSlide1', { volume: 0.4 });
     }
 
     private unpick(): void {
         if (!this.picked) return;
+        if (this.popup?.sprite === this.picked.sprite) this.hidePopup();
         this.picked.sprite.highlighted = false;
         for (const v of this.picked.views) v.view.destroy();
         this.picked = null;
@@ -1089,6 +1108,63 @@ ${String(e instanceof Error ? e.message : e)}`)
             v.view.box.followMajor();
             v.view.setVisible(v.visible ? v.visible() : true);
             v.view.update(time);
+        }
+    }
+
+    /** 悬停的提示框（`h_popup`）与它挂着的附加说明（`show_infotip`） */
+    private popup: { sprite: Pickable; major: { T: Rect }; views: UIBoxView[] } | null = null;
+
+    /** 给一张卡挂悬停提示框。`shop`：商店里的卡朝左弹（`align_h_popup` 的 `buy_button` / `shop` 那一支） */
+    private attachPopup(targets: GameObjects.Shader[], sprite: Pickable, make: () => PopupCard, shop = false): void {
+        this.popupMakers.set(sprite, { make, shop });
+        for (const t of targets) {
+            t.on('pointerover', () => this.showPopup(sprite, make(), shop));
+            // 选中的那张常驻（触屏上抬手就是 pointerout；原作移动版单击卡牌也是一直显示提示）
+            t.on('pointerout', () => { if (this.popup?.sprite === sprite && this.picked?.sprite !== sprite) this.hidePopup(); });
+        }
+    }
+
+    private readonly popupMakers = new WeakMap<Pickable, { make: () => PopupCard; shop: boolean }>();
+
+    /**
+     * `Card:hover` → `card_h_popup`，挂法照 `Card:align_h_popup`：商店里 `cl`（小丑 x −0.05、消耗品 / 优惠券 0）；
+     * 卡在上半屏（`T.y < 1.4·CARD_H`，小丑区与消耗品区）`bm`、下压 0.1；其余 `tm`、上提 0.13
+     */
+    private showPopup(sprite: Pickable, card: PopupCard, shop: boolean): void {
+        this.hidePopup();
+        const aut = abilityTable(card, popupGame(this.run, LOOK.mobileUi));
+        const r = sprite.rect;
+        const type = shop ? 'cl' : r.y < CARD_H * 1.4 ? 'bm' : 'tm';
+        const set = card.ability.set as string;
+        const offset = type === 'cl' ? { x: card.ability.consumeable || set === 'Voucher' ? 0 : -0.05, y: 0 }
+            : type === 'bm' ? { x: 0, y: 0.1 } : { x: 0, y: -0.13 };
+        const major = { T: { ...r } };
+        const box = new UIBox(cardHPopup(card, aut), { align: type, offset, major });
+        const U = toPx(1);
+        const views = [new UIBoxView(this, box, 90)];
+        const info = infoBoxes(aut);
+        if (info) {
+            const ibox = new UIBox(info, { align: 'cl', offset: { x: -0.03, y: 0 }, major: box.getById('h_popup_main')!.asMajor });
+            views.push(new UIBoxView(this, ibox, 90));
+        }
+        for (const v of views) v.setResolution(this.mapping.pxPerTile / U);
+        this.popup = { sprite, major, views };
+    }
+
+    private hidePopup(): void {
+        if (!this.popup) return;
+        for (const v of this.popup.views) v.destroy();
+        this.popup = null;
+    }
+
+    /** 每帧：提示框跟着卡的可见位置走（`xy_bond = 'Strong'`） */
+    private followPopup(time: number): void {
+        const p = this.popup;
+        if (!p) return;
+        Object.assign(p.major.T, p.sprite.rect);
+        for (const v of p.views) {
+            v.box.followMajor();
+            v.update(time);
         }
     }
 
@@ -1281,6 +1357,7 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     /** 手牌变了就整体重建。8 张牌，重建比增量同步便宜也不容易错。 */
     private rebuildHand(): void {
+        this.hidePopup();
         const old = this.sprites;
         this.sprites = [];
         this.inPlay.clear();
@@ -1303,6 +1380,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     /** 手牌的精灵：已经在屏幕上的接着它的缓动走，新摸进来的从牌堆顶飞过来（`draw_card`） */
     private handSprite(card: Card, old: CardSprite[], onClick: (c: Card) => void): CardSprite {
         const sprite = new CardSprite(this, card, onClick);
+        this.attachPopup(sprite.hoverTargets, sprite, () => popupOfCard(card, 'hand'));
         const prev = old.find((s) => s.card === card);
         if (prev) sprite.adoptMotion(prev);
         else {
@@ -1567,30 +1645,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
     }
 
-    /**
-     * 小丑区的文字说明。
-     *
-     * 本里程碑**不做卡面上的描述文字**——那要接 `本地化/` 的全量文本与
-     * `generate_UIBox_ability_table`（`card.lua:708`，6,607 行 UI 定义的一部分），
-     * 而 UI 按 03 号票是重写不是直译。先用一行纯文本顶着，
-     * 至少让「这张小丑现在给多少」可见。
-     */
+    /** 小丑区下面那行：只列没实现行为的小丑 */
     private describeJokers(): string {
-        if (this.run.jokers.length === 0) return '';
-        return this.run.jokers
-            .map((j) => {
-                const a = j.ability;
-                const parts: string[] = [];
-                if (a.mult > 0) parts.push(`+${a.mult}`);
-                if (a.t_mult > 0) parts.push(`+${a.t_mult}/${a.type}`);
-                if (a.t_chips > 0) parts.push(`+${a.t_chips}c/${a.type}`);
-                if (a.x_mult > 1) parts.push(`×${a.x_mult}`);
-                if (typeof a.extra?.chips === 'number') parts.push(`+${a.extra.chips}c`);
-                // 没有行为的小丑要标出来，理由同商店那一处
-                const warn = isJokerImplemented(j.key) ? '' : ' ⚠未实现';
-                return `${a.name}${editionTag(j.edition)}${parts.length ? ` ${parts.join(' ')}` : ''} ($${j.sell_cost})${warn}`;
-            })
-            .join('   ');
+        return this.run.jokers.filter((j) => !isJokerImplemented(j.key)).map((j) => `${j.ability.name} ⚠未实现`).join('   ');
     }
 
     private makeButton(
@@ -1638,6 +1695,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.packUi?.view.update(time / 1000);
         this.layoutShop();
         this.followPick(time / 1000);
+        this.followPopup(time / 1000);
+        tickColours(time / 1000);
         this.roundEval?.view.update(time / 1000);
         this.roundEval?.cashView?.update(time / 1000);
         this.placeCards(time / 1000);

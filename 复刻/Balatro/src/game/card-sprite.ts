@@ -313,6 +313,11 @@ export class CardSprite {
         for (const q of this.allQuads()) q.destroy();
     }
 
+    /** 挂点击区的三层（悬停提示框也挂在这三层上） */
+    get hoverTargets(): GameObjects.Shader[] {
+        return [this.baseLayers.main, this.frontLayers.main, this.back];
+    }
+
     /** 正面那一层的底（点击区挂在它上面） */
     get shader(): GameObjects.Shader {
         return this.frontLayers.main;

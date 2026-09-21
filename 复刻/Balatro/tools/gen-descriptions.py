@@ -16,6 +16,7 @@ from lupa import luajit21
 
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 LOC = ROOT / '参考/产物/Balatro_1.0.1o/本地化/en-us.lua'
+SRC_DIR = ROOT / '参考/产物/Balatro_1.0.1o/源码'
 OUT = pathlib.Path(__file__).resolve().parents[1] / 'src/ui/descriptions.generated.ts'
 
 
@@ -38,6 +39,40 @@ def main():
                 item['text'] = seq(e['text'])
             out[key] = item
         desc[set_name] = dict(sorted(out.items()))
+    # G.P_CENTERS / G.P_TAGS：原样跑 Game:init_item_prototypes（桩掉 save_progress 与读档用的全局）
+    lua.execute('''
+      Object = {}; Object.__index = Object
+      function Object:extend() local c = {}; for k, v in pairs(self) do if k:find('__') == 1 then c[k] = v end end
+        c.__index = c; c.super = self; setmetatable(c, self); return c end
+      function HEX(hex) local r = {}; for i = 1, 4 do r[i] = tonumber((hex..'FF'):sub(2*i-1, 2*i), 16)/255 end return r end
+    ''')
+    lua.execute((SRC_DIR / 'game.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+      localize = function(k) return k end
+      G = {}; FAKE = setmetatable({ save_progress = function() end }, {__index = Game})
+      pcall(FAKE.init_item_prototypes, FAKE)  -- 读档那段（love.mod_filesystem）会炸，表在它之前就建好了
+    ''')
+    keep = ['name', 'set', 'effect', 'rarity', 'order', 'config', 'consumeable', 'unlocked', 'discovered']
+
+    def plain(v):
+        if hasattr(v, 'items'):
+            keys = list(v.keys())
+            if keys and all(isinstance(k, int) for k in keys):
+                return [plain(v[k]) for k in sorted(keys)]
+            return {k: plain(x) for k, x in v.items()}
+        return v
+
+    centers = {}
+    for key, c in lua.eval('FAKE.P_CENTERS').items():
+        if c['name'] is None:
+            continue  # soul / undiscovered_* 这些只有 pos 的占位
+        centers[key] = {k: plain(c[k]) for k in keep if c[k] is not None}
+        centers[key].setdefault('config', {})
+        if 'consumeable' in centers[key]:
+            centers[key]['consumeable'] = True
+    tags = {key: {'config': {}, **{k: plain(c[k]) for k in ['name', 'set', 'config', 'order'] if c[k] is not None}}
+            for key, c in lua.eval('FAKE.P_TAGS').items()}
+
     misc = {}
     for cat in ['labels', 'poker_hands', 'suits_singular', 'suits_plural', 'ranks']:
         misc[cat] = dict(sorted((k, v) for k, v in loc['misc'][cat].items() if isinstance(v, str)))
@@ -48,10 +83,19 @@ def main():
         + json.dumps(dict(sorted(desc.items())), ensure_ascii=False, indent=1) + ';\n\n'
         '/** `G.localization.misc` 里提示框会查的几张表（`localize(key, cat)`） */\n'
         'export const MISC: Readonly<Record<string, Readonly<Record<string, string>>>> = '
-        + json.dumps(misc, ensure_ascii=False, indent=1) + ';\n'
+        + json.dumps(misc, ensure_ascii=False, indent=1) + ';\n\n'
+        '/** `G.P_CENTERS`（`Game:init_item_prototypes` 原样跑出来的）：提示框读 name / set / effect / rarity / config */\n'
+        'export const P_CENTERS: Readonly<Record<string, PCenter>> = '
+        + json.dumps(dict(sorted(centers.items())), ensure_ascii=False, separators=(',', ':')) + ';\n\n'
+        '/** `G.P_TAGS` */\n'
+        'export const P_TAGS: Readonly<Record<string, PCenter>> = '
+        + json.dumps(dict(sorted(tags.items())), ensure_ascii=False, separators=(',', ':')) + ';\n'
     )
+    body = ('/* eslint-disable */\nexport type PCenter = { name: string; set: string; effect?: string; rarity?: number; order?: number; '
+            '// eslint-disable-next-line @typescript-eslint/no-explicit-any\n'
+            'config: Record<string, any>; consumeable?: boolean; unlocked?: boolean; discovered?: boolean };\n\n' + body)
     OUT.write_text(body, encoding='utf-8')
-    print(f'{OUT.name}: ' + ', '.join(f'{k} {len(v)}' for k, v in sorted(desc.items())))
+    print(f'{OUT.name}: ' + ', '.join(f'{k} {len(v)}' for k, v in sorted(desc.items())) + f'; centers {len(centers)}, tags {len(tags)}')
 
 
 if __name__ == '__main__':

@@ -137,6 +137,10 @@ export class Run {
     packHand: Card[] | null = null;
     /** `G.GAME.ecto_minus`（`card.lua:1497`）。从 1 起，每用一张 Ectoplasm +1 */
     private ectoMinus = 1;
+    /** Ectoplasm 下一次要减几（提示框显示它） */
+    get ectoplasmMinus(): number {
+        return this.ectoMinus;
+    }
     /**
      * `G.GAME.first_shop_buffoon`。新档的第一个商店，第一个补充包格子恒是小丑包，
      * 而且那一格**不消费 `shop_pack<ante>`**（`common_events.lua:1984` 提前 return）。
