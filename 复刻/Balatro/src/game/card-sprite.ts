@@ -297,8 +297,9 @@ export class CardSprite {
     }
 
     /** 计分时弹一下：`card_eval_status_text` 的 `juice_up(0.6, 0.1)`（`common_events.lua:896`） */
-    pop(): void {
-        this.motion?.cardJuiceUp(this.scene.time.now / 1000, 0.6, 0.1);
+    pop(amount?: number): void {
+        if (amount === undefined) this.motion?.cardJuiceUp(this.scene.time.now / 1000, 0.6, 0.1);
+        else this.motion?.cardJuiceUp(this.scene.time.now / 1000, amount);
     }
 
     destroy(): void {

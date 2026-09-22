@@ -189,7 +189,7 @@ export class DynaText implements UIObject {
     }
 
     /** `DynaText:pop_out`：`pop_delay` 秒后开始按 `rate` 缩回去（起点在下一次 `popStep` 定） */
-    private startPopOut(rate: number): void {
+    startPopOut(rate: number): void {
         this.popOut = rate;
         this.popOutTime = null;
     }
@@ -283,5 +283,46 @@ export class DynaText implements UIObject {
         this.strings.forEach((s, k) => s.letters.forEach((l, i) => { l.popIn = from.strings[k]?.letters[i]?.popIn ?? 1; }));
         this.text = this.strings[this.focused]!.text;
         this.letters = this.strings[this.focused]!.letters;
+    }
+
+    /** `DynaText:pulse`：一道从左往右扫过去的放大（`speed 40`、`width 2.5`），起点在下一次 `letterFx` 定 */
+    private pulseCfg: { speed: number; width: number; start: number | null; amount: number } | null = null;
+    /** `DynaText:set_quiver`：每个字一直细细地抖（数字上了两位数之后的 HUD） */
+    private quiverCfg: { speed: number; amount: number } | null = null;
+
+    pulse(amount = 0.2): void {
+        this.pulseCfg = { speed: 40, width: 2.5, start: null, amount };
+    }
+
+    setQuiver(amount = 0.7): void {
+        this.quiverCfg = { speed: 0.5, amount };
+    }
+
+    /**
+     * `text.lua:214` 起：第 k 个字（0 起）因 pulse / quiver 额外的缩放与转角。
+     * `render_scale/(TILESIZE·10)` 在默认字体下是 1
+     */
+    letterFx(k0: number, now: number): { scale: number; r: number } {
+        let scale = 1;
+        let r = 0;
+        const n = this.letters.length;
+        const k = k0 + 1;
+        const p = this.pulseCfg;
+        if (p) {
+            p.start ??= now;
+            const f = (this.font.renderScale / (TILESIZE * 10));
+            scale += (1 / p.width) * p.amount * Math.max(Math.min((p.start - now) * p.speed + k + p.width, (now - p.start) * p.speed - k + p.width + 2), 0) * f;
+            r += (scale - 1) * (0.02 * (-n / 2 - 0.5 + k));
+        }
+        const q = this.quiverCfg;
+        if (q) {
+            const t = now * q.speed;
+            scale += 0.1 * q.amount;
+            r += 0.3 * q.amount * (Math.sin(41.12342 * t + k * 1223.2)
+                + Math.cos(63.21231 * t + k * 1112.2) * Math.sin(36.1231 * t)
+                + Math.cos(95.123 * t + k * 1233.2)
+                - Math.sin(30.133421 * t + k * 123.2));
+        }
+        return { scale, r };
     }
 }

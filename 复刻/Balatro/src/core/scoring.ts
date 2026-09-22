@@ -186,6 +186,11 @@ export type ScoreStep =
           handChips: number;
           mult: number;
           message?: string;
+          /**
+           * 哪一趟：`before`（取基础值之前，`state_events.lua:652`，只有提示字）、
+           * 缺省是主遍历、`after`（分数算完之后的善后，`:1089`，表现层排在入账之后播）
+           */
+          phase?: 'before' | 'after';
       };
 
 export type PlayResult = {
@@ -294,6 +299,13 @@ export function evaluatePlay(
         }
 
         if (effects.jokers?.level_up) levelUpHand(hands, handName);
+        // `card_eval_status_text(joker, 'jokers', …)`：给表现层留一条提示（Runner 的 Upgrade!、Space Joker 的 Level Up! 之类）
+        if (effects.jokers) {
+            steps.push({
+                kind: 'joker', joker, chipMod: 0, multMod: 0, xMult: 1, handChips: 0, mult: 0,
+                message: effects.jokers.message, phase: 'before',
+            });
+        }
     }
 
     // —— 第 7 步：取牌型的基础筹码与基础倍率 ——
@@ -630,7 +642,7 @@ export function evaluatePlay(
         // **不动 handChips / mult**：分数已经定了。只记一条给表现层放动画
         steps.push({
             kind: 'joker', joker, chipMod: 0, multMod: 0, xMult: 1,
-            handChips, mult, message: e.message,
+            handChips, mult, message: e.message, phase: 'after',
         });
     }
 

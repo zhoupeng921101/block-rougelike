@@ -24,6 +24,8 @@ export type ParticlesConfig = {
     fill?: boolean;
     max?: number;
     vel_variation?: number;
+    /** `pulse_max`：不管 `max`，先连着出这么多颗（最多 20），`attention_text` 盖色块时的那一阵碎屑 */
+    pulse_max?: number;
     /**
      * `attach`：跟着哪个东西走（`bond = 'Strong'`，以它的中心为原点）。返回它当前的矩形（tile）。
      * 不给就是挂 `G.ROOM_ATTACH`（开包的全屏粒子）
@@ -56,6 +58,8 @@ export class Particles {
     /** `max`：`start_materialize` 在半程把它置 0，不再出新的 */
     max: number;
     private readonly velVariation: number;
+    private readonly pulseMax: number;
+    private pulsed = 0;
     private readonly fill: boolean;
     private readonly w: number;
     private readonly h: number;
@@ -80,6 +84,7 @@ export class Particles {
         this.scale = config.scale ?? 1;
         this.max = config.max ?? 1e15;
         this.velVariation = config.vel_variation ?? 1;
+        this.pulseMax = Math.min(20, config.pulse_max ?? 0);
         this.fill = !!config.fill;
         this.colours = config.colours;
         const padding = config.padding ?? 0;
@@ -125,8 +130,9 @@ export class Particles {
 
     private update(): void {
         let added = 0;
-        while (this.now > this.lastRealTime + this.timer && this.particles.length < this.max && added < 20) {
+        while (this.now > this.lastRealTime + this.timer && (this.particles.length < this.max || this.pulsed < this.pulseMax) && added < 20) {
             this.lastRealTime += this.timer;
+            if (this.pulsed <= this.pulseMax) this.pulsed++;
             this.particles.push({
                 dir: Math.random() * 2 * Math.PI,
                 facing: Math.random() * 2 * Math.PI,

@@ -352,6 +352,11 @@ export class UIBoxView {
     /** O 节点里对象自己的「弹一下」（`Moveable:juice_up`）：只取 `VT.scale` 与 `VT.r` 画 */
     private juices = new Map<object, Motion>();
 
+    /** `UIElement:juice_up()`（缺省幅度 0.4）：只有这个元素自己的底框弹，孩子不跟（原作孩子各自 `prep_draw`） */
+    juiceElement(el: UIElement | null | undefined, now: number, amount = 0.4, rotAmt?: number): void {
+        if (el) this.juiceObject(el, now, amount, rotAmt);
+    }
+
     juiceObject(obj: object, now: number, amount: number, rotAmt?: number): void {
         const m = this.juices.get(obj) ?? new Motion({ x: 0, y: 0, r: 0, scale: 1 });
         m.juiceUp(now, amount, rotAmt);
@@ -421,7 +426,12 @@ export class UIBoxView {
             const btnView = this.views.find((w2) => w2.el === btn);
             const hover = !!btn.config.hover && ((!!btnView?.hovered && this.scene.input.activePointer.isDown)
                 || t - btn.lastClicked < 0.1);
-            g.setScale(pressed ? 0.985 : 1);
+            // 元素自己的 `juice_up`：以中心缩放、转
+            const ej = this.juices.get(el)?.VT;
+            if (ej) {
+                g.setScale((pressed ? 0.985 : 1) * ej.scale).setRotation(ej.r);
+                g.setPosition(toPx(x + (w * (1 - ej.scale)) / 2), toPx(y + (h * (1 - ej.scale)) / 2));
+            } else g.setScale(pressed ? 0.985 : 1).setRotation(0);
             if (colour[3] <= 0.01) {
                 this.drawOutline(g, el, w, h, sp, hover);
                 return;
@@ -623,6 +633,9 @@ export class UIBoxView {
             // `text.lua:187` 起的逐字动画（旋转 / 漂浮 / 弹跳）
             let rl = 0;
             if (d.config.rotate) rl = (d.config.rotate === 2 ? -1 : 1) * (0.2 * (-n / 2 - 0.5 + k) / n + 0.02 * Math.sin(2 * t + k));
+            // `pulse` / `set_quiver`：额外的转角（阴影也吃）与缩放（只有本体吃）
+            const fx = d.letterFx(k0, t);
+            rl += fx.r;
             let offY = 0;
             if (d.config.float) offY = sqrtS * px * 1.5 * Math.sin(2.666 * t + 200 * k);
             if (d.config.bump) {
@@ -641,16 +654,16 @@ export class UIBoxView {
             const fontToWorld = toPx(d.scale) / d.font.renderScale;
             // `text.lua:268`：字按弹入进度以格子中心缩放
             const pop = letter.popIn;
-            const place = (txt: GameObjects.Text, ax0: number, ay0: number) => {
+            const place = (txt: GameObjects.Text, ax0: number, ay0: number, letterScale = 1) => {
                 // `text_rot`：整串绕 DynaText 的中心转（`prep_draw` 按 `T.r` 旋转）
                 const ax = R ? rcx + (ax0 - rcx) * Math.cos(R) - (ay0 - rcy) * Math.sin(R) : ax0;
                 const ay = R ? rcy + (ax0 - rcx) * Math.sin(R) + (ay0 - rcy) * Math.cos(R) : ay0;
                 const r = rl + R;
-                const k = fontToWorld * pop;
+                const k = fontToWorld * pop * letterScale;
                 txt.setText(letter.char)
                     .setOrigin(0, 0)
                     .setRotation(r)
-                    .setScale(pop)
+                    .setScale(pop * letterScale)
                     .setPosition(
                         toPx(ax) - (oxFont * Math.cos(r) - oyFont * Math.sin(r)) * k,
                         toPx(ay) - (oxFont * Math.sin(r) + oyFont * Math.cos(r)) * k,
@@ -660,7 +673,7 @@ export class UIBoxView {
                 place(l.shadow, cx - (sp.x * d.scale) / TILESIZE, base.y + (0.5 * letter.dims.y * fs) / TILESIZE - (sp.y * d.scale) / TILESIZE);
                 l.shadow.setColor('#000000').setAlpha(0.3 * (colours[0]![3]));
             }
-            place(l.main, cx + shadowNorm.x, cy + shadowNorm.y);
+            place(l.main, cx + shadowNorm.x, cy + shadowNorm.y, fx.scale);
             l.main.setColor(css(colour)).setAlpha(colour[3]);
             cursor += (letter.dims.x * fs) / TILESIZE;
         });

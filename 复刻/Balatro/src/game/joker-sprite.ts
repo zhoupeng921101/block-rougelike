@@ -112,8 +112,10 @@ export class JokerSprite {
     }
 
     /** 计分时弹一下：`card_eval_status_text` 的 `juice_up(0.6, 0.1)`（`common_events.lua:896`） */
-    pop(): void {
-        this.placed.juiceUp(0.6, 0.1);
+    /** `juice_up(0.6, 0.1)`（计分冒字）；给了 `amount` 就是 `juice_up(amount)`（`juice_card` 的 0.7） */
+    pop(amount?: number): void {
+        if (amount === undefined) this.placed.juiceUp(0.6, 0.1);
+        else this.placed.juiceUp(amount);
     }
 
     destroy(): void {

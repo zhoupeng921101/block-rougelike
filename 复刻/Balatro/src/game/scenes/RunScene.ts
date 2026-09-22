@@ -46,6 +46,11 @@ import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
 import { deckPreview, viewDeckLabel } from '../../ui/definitions/deck-preview';
 import { MUSIC_KEYS, Music, desiredTrack } from '../music';
+import { AttentionText } from '../attention-text';
+import { hudFuncs } from '../../ui/definitions/hud-funcs';
+
+/** `localize{type = 'variable', key, vars = {v}}` 的单变量版 */
+const locVariable = (key: string, v: number) => (V_DICTIONARY[key] ?? 'ERROR').replace('#1#', String(v));
 import { type ViewDeckArea, deckInfo } from '../../ui/definitions/deck-info';
 import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/definitions/hud-blind';
 import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
@@ -53,7 +58,7 @@ import { type BlindSelectState, type BlindType, blindChoiceBox, blindChoiceFuncs
 import { mostPlayedHand } from '../../core/round';
 import { runModifiers } from '../../core/jokers/modifiers';
 import { type EvalRow, type EvalStep, RoundEval, evalTimeline } from '../../ui/definitions/round-eval';
-import { BLIND_TEXT, DICTIONARY } from '../../ui/lang.generated';
+import { BLIND_TEXT, DICTIONARY, V_DICTIONARY } from '../../ui/lang.generated';
 import type { Rect, UIElement, UIFuncs, UINodeDef } from '../../ui/uibox';
 import { cardAreas } from '../areas';
 import { type Placed, alignConsumeable, alignHand, alignJokers, alignPackHand, alignPlay, cardShadowParallaxX } from '../align-cards';
@@ -140,7 +145,6 @@ type ShopSlot = {
 };
 
 /** 逐张计分之间的间隔，秒。原作在 state_events.lua:622 是 delay(0.2) 起步 */
-const SCORE_STEP_DELAY = 0.22;
 
 export class RunScene extends Scene {
     private run!: Run;
@@ -309,7 +313,7 @@ export class RunScene extends Scene {
         for (const key of [
             'cardSlide1', 'cardSlide2', 'chips1', 'chips2', 'card1', 'button', 'generic1',
             'coin1', 'coin2', 'coin3', 'coin6', 'other1', 'tarot1', 'cancel', 'multhit1', 'highlight1',
-            'negative', 'whoosh2', 'win', 'whoosh1', 'paper1', 'tarot2',
+            'negative', 'whoosh2', 'win', 'whoosh1', 'paper1', 'tarot2', 'multhit2', 'cardFan2', 'foil2',
             ...Array.from({ length: 11 }, (_, i) => `voice${i + 1}`),
             ...Array.from({ length: 5 }, (_, i) => `crumple${i + 1}`),
         ]) {
@@ -336,7 +340,7 @@ export class RunScene extends Scene {
             align: 'cli',
             offset: { x: -0.7, y: 0 },
             major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } },
-        });
+        }, hudFuncs(this.hudState));
         // 左侧面板上的按钮：Run Info 打开 overlay；Options 还没做
         this.hudView = new UIBoxView(this, hudBox, 40, (name) => { if (name === 'run_info') this.openRunInfo(); });
 
@@ -1610,14 +1614,21 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (this.selected.size === 0) return;
 
         const played = this.selectedInOrder();
+        const chipsBefore = round.chips;
         const out = round.play(played);
 
         this.animating = true;
         this.selected.clear();
         this.liveChips = out.baseChips;
         this.liveMult = out.baseMult;
+        // 回合分数在逻辑层已经加上了，显示上照 `ease_chips` 在最后才缓过去
+        this.shownRoundChips = { v: chipsBefore };
+        const hand = this.hudState.current_round.current_hand;
+        const handSprite = (c: Card) => this.sprites.find((x) => x.card === c);
+        const jokerSprite = (j: Joker) => this.jokerSprites.find((x) => x.joker === j);
 
-        // 1) 打出的牌飞到打出区
+        // 打出的牌飞到出牌区（`play_cards_from_highlighted`），出牌次数 -1
+        this.easeHudCount('hand_UI_count', -1);
         const sprites = this.sprites.filter((s) => played.includes(s.card));
         this.queue.add(new GameEvent({
             trigger: 'after',
@@ -1628,70 +1639,311 @@ ${String(e instanceof Error ? e.message : e)}`)
                     this.inPlay.add(sp);
                 }
                 this.sound.play('cardSlide2', { volume: 0.4 });
-                this.refresh(
-                    out.debuffed
-                        ? `${out.handName}   不合法！`
-                        : `${out.handName}   ${out.baseChips} × ${out.baseMult}`,
-                );
                 return true;
             },
         }));
 
-        // 2) 逐张计分。原作 state_events.lua:628 的 percent 从 0.3 每张 +0.08，
-        //    用来递增音高——这里照搬。
-        out.steps.forEach((step, i) => {
-            this.queue.add(new GameEvent({
-                trigger: 'after',
-                delay: SCORE_STEP_DELAY,
-                func: () => {
-                    // `held` 那一步只改倍率、不动筹码，所以 handChips 在它上面没有字段——
-                    // 保持当前值。
-                    if (step.kind !== 'held') this.liveChips = step.handChips;
-                    this.liveMult = step.mult;
+        // —— `G.FUNCS.evaluate_play`（`state_events.lua:592`）的表现部分，按 `out.steps` 重放 ——
+        const scoring = out.scoringHand.map(handSprite).filter((s): s is CardSprite => !!s);
+        this.delayEvent(0.2);
+        scoring.forEach((sp, i) => this.highlightCard(sp, (i + 1 - 0.999) / 5, 'up'));
 
-                    if (step.kind === 'joker') {
-                        this.jokerSprites.find((x) => x.joker === step.joker)?.pop();
-                        this.sound.play('multhit1', { volume: 0.4 });
-                    } else {
-                        this.sprites.find((x) => x.card === step.card)?.pop();
-                        // 效果来自小丑时也弹那张小丑
-                        if (step.source) {
-                            this.jokerSprites.find((x) => x.joker === step.source)?.pop();
-                        }
-                        this.sound.play('chips1', {
-                            volume: 0.45,
-                            rate: 0.9 + (0.3 + i * 0.08) * 0.5,
-                        });
+        let percent = 0.3;
+        const delta = 0.08;
+        const info = round.hands[out.handName];
+        const changed = hand.handname !== out.handName;
+        if (changed) this.delayEvent(0.3);
+        this.updateHandText({ sound: changed ? 'button' : undefined, volume: 0.4, immediate: true, delay: changed ? 0.4 : 0 },
+            { handname: out.handName, level: info.level, mult: out.baseMult, chips: out.baseChips });
+
+        if (out.debuffed) {
+            // `:1018`：整手不合法——盲注面板弹一下、两声 tarot2、出牌区上方「Not Allowed!」
+            this.queue.add(new GameEvent({ trigger: 'immediate', func: () => {
+                this.sound.play('tarot2', { rate: 1, volume: 0.4 });
+                this.time.delayedCall(60, () => this.sound.play('tarot2', { rate: 0.76, volume: 0.4 }));
+                return true;
+            } }));
+            this.playAreaStatusText('Not Allowed!');
+        } else {
+            this.delayEvent(0.4);
+            let lastCard: Card | null = null;
+            let lastRep = -1;
+            for (const step of out.steps) {
+                if (step.kind === 'joker' && step.phase === 'after') continue;
+                if (step.kind === 'joker' && step.phase === 'before') {
+                    const js = jokerSprite(step.joker);
+                    if (js && step.message) this.cardEvalStatus(js, 'jokers', 'jokers', 0, percent, { message: step.message });
+                    percent += delta;
+                    continue;
+                }
+                if (step.kind === 'card') {
+                    const sp = handSprite(step.card);
+                    if (step.card !== lastCard || step.rep !== lastRep) {
+                        percent += delta;
+                        // 重复触发：先让带来重复的那张（Red 蜡封是牌自己）冒「Again!」
+                        if (step.rep > 0 && step.card === lastCard && sp) this.cardEvalStatus(sp, 'play', 'jokers', 0, percent, { message: DICTIONARY.k_again_ex });
+                        lastCard = step.card;
+                        lastRep = step.rep;
                     }
-                    this.refresh(`${out.handName}   ${this.liveChips} × ${this.liveMult}`);
-                    return true;
-                },
-            }));
-        });
+                    if (!sp) continue;
+                    if (step.message === 'debuffed') {
+                        this.cardEvalStatus(sp, 'play', 'debuff', 1, percent);
+                        continue;
+                    }
+                    const src = step.source ? jokerSprite(step.source) : undefined;
+                    if (step.chipMod) {
+                        if (src) this.juiceCard(src);
+                        this.updateHandText({ delay: 0 }, { chips: step.handChips });
+                        this.cardEvalStatus(sp, 'play', 'chips', step.chipMod, percent);
+                    }
+                    if (step.multMod) {
+                        if (src) this.juiceCard(src);
+                        this.updateHandText({ delay: 0 }, { mult: step.xMult !== 1 ? step.mult / step.xMult : step.mult });
+                        this.cardEvalStatus(sp, 'play', 'mult', step.multMod, percent);
+                    }
+                    if (step.xMult !== 1) {
+                        if (src) this.juiceCard(src);
+                        this.updateHandText({ delay: 0 }, { mult: step.mult });
+                        this.cardEvalStatus(sp, 'play', 'x_mult', step.xMult, percent);
+                    }
+                    if (!step.chipMod && !step.multMod && step.xMult === 1 && step.message) {
+                        if (src) this.juiceCard(src);
+                        this.cardEvalStatus(sp, 'play', 'extra', 0, percent, { message: step.message });
+                    }
+                    continue;
+                }
+                if (step.kind === 'held') {
+                    const sp = handSprite(step.card);
+                    if (step.card !== lastCard) {
+                        percent += delta;
+                        lastCard = step.card;
+                    }
+                    if (!sp) continue;
+                    const src = step.source ? jokerSprite(step.source) : undefined;
+                    if (src) this.queue.add(new GameEvent({ trigger: 'immediate', func: () => { src.pop(0.7); return true; } }));
+                    if (step.multMod) {
+                        this.updateHandText({ delay: 0 }, { mult: step.xMult !== 1 ? step.mult / step.xMult : step.mult });
+                        this.cardEvalStatus(sp, 'hand', 'h_mult', step.multMod, percent);
+                    }
+                    if (step.xMult !== 1) {
+                        this.updateHandText({ delay: 0 }, { mult: step.mult });
+                        this.cardEvalStatus(sp, 'hand', 'x_mult', step.xMult, percent);
+                    }
+                    if (!step.multMod && step.xMult === 1 && step.message) {
+                        this.updateHandText({ delay: 0 }, { mult: step.mult });
+                        this.cardEvalStatus(sp, 'hand', 'extra', 0, percent, { message: step.message });
+                    }
+                    continue;
+                }
+                // 小丑主遍历：加法 → 乘法都在同一条里，提示字一条
+                const js = jokerSprite(step.joker);
+                this.updateHandText({ delay: 0 }, {
+                    chips: step.chipMod ? step.handChips : undefined,
+                    mult: step.multMod || step.xMult !== 1 ? step.mult : undefined,
+                });
+                const message = step.message
+                    ?? (step.xMult !== 1 ? locVariable('a_xmult', step.xMult) : step.multMod ? locVariable('a_mult', step.multMod) : step.chipMod ? locVariable('a_chips', step.chipMod) : undefined);
+                if (js && message) {
+                    this.cardEvalStatus(js, 'jokers', 'jokers', 0, percent, {
+                        message, chip_mod: step.chipMod || undefined, mult_mod: step.multMod || undefined, Xmult_mod: step.xMult !== 1 ? step.xMult : undefined,
+                    });
+                }
+                percent += delta;
+            }
+            scoring.forEach((sp, i) => this.highlightCard(sp, (i + 1 - 0.999) / (scoring.length - 0.998), 'down'));
+        }
 
-        // 3) 最终乘法与入账
-        this.queue.add(new GameEvent({
-            trigger: 'after',
-            delay: 0.35,
-            func: () => {
-                this.sound.play('chips2', { volume: 0.6 });
-                this.refresh(`${out.handName}   +${out.score}`);
-                return true;
-            },
-        }));
+        // `:1045`：本手总分挪到牌型名那一格，筹码 × 倍率清零
+        this.queue.add(new GameEvent({ trigger: 'after', delay: 0.4, func: () => {
+            this.applyHandText({ mult: 0, chips: 0, chip_total: out.score, level: '', handname: '' }, { nopulse: false });
+            this.sound.play('button', { rate: 0.9, volume: 0.6 });
+            return true;
+        } }));
+        if (out.score > 0) {
+            this.delayEvent(0.8);
+            this.queue.add(new GameEvent({ trigger: 'immediate', func: () => { this.sound.play('chips2'); return true; } }));
+        }
+        // `ease_chips` 与 `chip_total` 同时 0.5 秒缓过去，后者阻塞
+        const shown = this.shownRoundChips;
+        this.queue.add(new GameEvent({ trigger: 'ease', blocking: false, refTable: shown, refValue: 'v', easeTo: round.chips, delay: 0.5 }));
+        this.queue.add(new GameEvent({ trigger: 'ease', refTable: hand as unknown as Record<string, number>, refValue: 'chip_total', easeTo: 0, delay: 0.5 }));
+        this.queue.add(new GameEvent({ trigger: 'immediate', func: () => { hand.handname = ''; return true; } }));
+        this.delayEvent(0.3);
+        // 出牌后的善后（Ice Cream、Seltzer……）
+        for (const step of out.steps) {
+            if (step.kind !== 'joker' || step.phase !== 'after' || !step.message) continue;
+            const js = jokerSprite(step.joker);
+            if (js) this.cardEvalStatus(js, 'jokers', 'jokers', 0, percent, { message: step.message });
+        }
 
-        // 4) 收拾残局：重建手牌、放开输入
+        // 收拾残局：重建手牌、放开输入
         this.queue.add(new GameEvent({
             trigger: 'after',
             delay: 0.45,
             func: () => {
+                this.shownRoundChips = null;
                 this.rebuildHand();
                 this.rebuildJokers(); // 自增型小丑长了个子，数字要跟着变
                 this.animating = false;
-                this.refresh(`${out.handName}   +${out.score}`);
+                this.refresh();
                 return true;
             },
         }));
+    }
+
+    /**
+     * `ease_hands_played` / `ease_discard` 的表现：那一格上盖一块红（减）/ 绿（加）色块、冒 `-1`，`chips2` 一声。
+     * 次数本身逻辑层已经改了
+     */
+    private easeHudCount(id: 'hand_UI_count' | 'discard_UI_count', mod: number): void {
+        this.queue.add(new GameEvent({ trigger: 'immediate', func: () => {
+            const el = this.hudView.box.getById(id)?.parent;
+            if (!el) return true;
+            this.attentionTexts.push(new AttentionText(this, {
+                text: `${mod < 0 ? '' : '+'}${mod}`, scale: 0.8, hold: 0.7, align: 'cm',
+                major: () => ({ x: el.x, y: el.y, w: el.T.w, h: el.T.h }), cover: true, coverColour: mod < 0 ? C.RED : C.GREEN,
+            }, this.mapping.pxPerTile / toPx(1), 45));
+            this.sound.play('chips2');
+            return true;
+        } }));
+    }
+
+    /** 当前显示的回合分数（`G.GAME.chips` 的缓动值）；null 时直接读逻辑层 */
+    private shownRoundChips: { v: number } | null = null;
+
+    /** `delay(t)` */
+    private delayEvent(t: number): void {
+        this.queue.add(new GameEvent({ trigger: 'after', delay: t, func: () => true }));
+    }
+
+    /** `highlight_card`（`common_events.lua:429`）：抬起 / 放下一张计分牌，`cardSlide1` 音高随 percent 升 */
+    private highlightCard(sp: CardSprite, percent: number, dir: 'up' | 'down'): void {
+        const p = dir === 'down' ? 1 - percent : percent;
+        this.queue.add(new GameEvent({ trigger: 'before', delay: 0.1, func: () => {
+            sp.highlighted = dir === 'up';
+            this.sound.play('cardSlide1', { rate: 0.85 + p * 0.2 });
+            return true;
+        } }));
+    }
+
+    /** `juice_card`：效果来自哪张小丑，那张 `juice_up(0.7)` */
+    private juiceCard(js: JokerSprite): void {
+        this.queue.add(new GameEvent({ trigger: 'immediate', func: () => { js.pop(0.7); return true; } }));
+    }
+
+    /**
+     * `update_hand_text`（`common_events.lua:498`）：入队，`before` 触发、`delay` 缺省 0.8。
+     * 只写数值；显示由 HUD 的 `*_UI_set` 每帧同步
+     */
+    private updateHandText(config: { delay?: number; immediate?: boolean; sound?: string; volume?: number; pitch?: number; nopulse?: boolean },
+        vals: { chips?: number; mult?: number; handname?: string; level?: number | ''; chip_total?: number }): void {
+        this.queue.add(new GameEvent({
+            trigger: 'before', blockable: !config.immediate, delay: config.delay ?? 0.8,
+            func: () => {
+                this.applyHandText(vals, config);
+                if (config.sound) this.sound.play(config.sound, { rate: config.pitch ?? 1, volume: config.volume ?? 1 });
+                return true;
+            },
+        }));
+    }
+
+    private applyHandText(vals: { chips?: number; mult?: number; handname?: string; level?: number | ''; chip_total?: number }, config: { nopulse?: boolean }): void {
+        const hand = this.hudState.current_round.current_hand;
+        if (vals.chips !== undefined) {
+            hand.chips = vals.chips;
+            this.liveChips = vals.chips;
+        }
+        if (vals.mult !== undefined && hand.mult !== vals.mult) {
+            hand.mult = vals.mult;
+            this.liveMult = vals.mult;
+            this.hudView.juiceElement(this.hudView.box.getById('hand_mult_area'), this.time.now / 1000);
+        }
+        if (vals.handname !== undefined && hand.handname !== vals.handname) {
+            hand.handname = vals.handname;
+            if (!config.nopulse) (this.hudView.box.getById('hand_name')?.config.object as DynaText | undefined)?.pulse(0.2);
+        }
+        if (vals.chip_total !== undefined) {
+            hand.chip_total = vals.chip_total;
+            (this.hudView.box.getById('hand_chip_total')?.config.object as DynaText | undefined)?.pulse(0.5);
+        }
+        if (vals.level !== undefined) {
+            const text = vals.level === '' ? '' : ` ${DICTIONARY.k_lvl}${vals.level}`;
+            if (text !== hand.hand_level) {
+                hand.hand_level = text;
+                const el = this.hudView.box.getById('hand_level');
+                if (el && vals.level !== '') {
+                    el.config.colour = C.HAND_LEVELS[Math.min(vals.level as number, 7)]!;
+                    this.hudView.juiceElement(el, this.time.now / 1000);
+                }
+            }
+        }
+    }
+
+    /** 飘在卡上的字（`attention_text`），每帧推进，拆完就从表里拿掉 */
+    private attentionTexts: AttentionText[] = [];
+
+    /**
+     * `card_eval_status_text`（`common_events.lua:781`）：入队一个 `before` 事件（时长 ×1.25），
+     * 到点在卡上冒字（出牌区 / 手牌区的牌挂 `tm` 上提 0.05 卡高，小丑挂 `bm` 下压 0.05 卡高）、按类型放声（音高 0.8 + 0.2·percent）、卡弹一下、房间抖 0.7
+     */
+    private cardEvalStatus(target: { readonly rect: Rect; pop(amount?: number): void }, area: 'play' | 'hand' | 'jokers', type: 'debuff' | 'chips' | 'mult' | 'x_mult' | 'h_mult' | 'dollars' | 'extra' | 'jokers',
+        amt: number, percent: number, extra?: { message?: string; colour?: Colour; chip_mod?: number; mult_mod?: number; Xmult_mod?: number; edition?: boolean }): void {
+        let text = '';
+        let sound = 'generic1';
+        let volume = 1;
+        let delay = 0.65;
+        let colour: Colour = extra?.colour ?? C.FILTER;
+        let scale = 1;
+        if (type === 'debuff') {
+            sound = 'cancel'; amt = 1; colour = C.RED; scale = 0.6; text = DICTIONARY.k_debuffed ?? 'Debuffed';
+        } else if (type === 'chips') {
+            sound = 'chips1'; colour = C.CHIPS; text = locVariable('a_chips', amt); delay = 0.6;
+        } else if (type === 'mult' || type === 'h_mult') {
+            sound = 'multhit1'; text = locVariable('a_mult', amt); colour = C.MULT; scale = 0.7;
+        } else if (type === 'x_mult') {
+            sound = 'multhit2'; volume = 0.7; text = locVariable('a_xmult', amt); colour = C.XMULT; scale = 0.7;
+        } else if (type === 'dollars') {
+            sound = 'coin3'; text = `${amt < -0.01 ? '-' : ''}$${Math.abs(amt)}`; colour = amt < -0.01 ? C.RED : C.MONEY;
+        } else {
+            const e = extra ?? {};
+            sound = e.edition ? 'foil2' : e.mult_mod ? 'multhit1' : e.Xmult_mod ? 'multhit2' : 'generic1';
+            if (e.edition) colour = C.DARK_EDITION;
+            volume = e.edition ? 0.3 : sound === 'multhit2' ? 0.7 : 1;
+            delay = 0.75;
+            amt = 1;
+            text = e.message ?? text;
+            if (!e.edition && (e.mult_mod || e.Xmult_mod)) colour = C.MULT;
+            if (e.chip_mod) colour = C.CHIPS;
+            scale = 0.7;
+        }
+        delay *= 1.25;
+        if (!amt) return;
+        const aligned = area === 'jokers' ? 'bm' : 'tm';
+        const yOff = area === 'jokers' ? 0.05 * target.rect.h : -0.05 * CARD_H;
+        this.queue.add(new GameEvent({
+            trigger: 'before', delay,
+            func: () => {
+                this.attentionTexts.push(new AttentionText(this, {
+                    text, scale, hold: delay - 0.2, backdropColour: colour, align: aligned, major: () => target.rect, offset: { x: 0, y: yOff },
+                }, this.mapping.pxPerTile / toPx(1), 60));
+                if (this.cache.audio.exists(sound)) this.sound.play(sound, { rate: 0.8 + percent * 0.2, volume });
+                target.pop();
+                this.juice.jiggle += 0.7;
+                return true;
+            },
+        }));
+    }
+
+    /** `play_area_status_text`：出牌区上方 1 格的大字，`cardFan2` 一声、房间抖 2 */
+    private playAreaStatusText(text: string): void {
+        this.queue.add(new GameEvent({ trigger: 'before', delay: 0.6, func: () => {
+            const area = this.areas.play;
+            this.attentionTexts.push(new AttentionText(this, { text, scale: 0.9, hold: 0.9, align: 'tm', major: () => area, offset: { x: 0, y: -1 } },
+                this.mapping.pxPerTile / toPx(1), 60));
+            this.juice.jiggle += 2;
+            if (this.cache.audio.exists('cardFan2')) this.sound.play('cardFan2');
+            return true;
+        } }));
     }
 
     private doDiscard(): void {
@@ -1701,6 +1953,7 @@ ${String(e instanceof Error ? e.message : e)}`)
 
         round.discard(this.selectedInOrder());
         this.sound.play('card1', { volume: 0.4 });
+        this.easeHudCount('discard_UI_count', -1);
         this.selected.clear();
         this.rebuildHand();
         this.rebuildJokers(); // Green Joker 弃牌会掉倍率
@@ -2379,7 +2632,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         alignHand(this.areas.hand, hand.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX })), round.handLimit, real)
             .forEach((p, i) => hand[i]!.place(p, i));
         const played = this.sprites.filter((s) => this.inPlay.has(s));
-        alignPlay(this.areas.play, played.map((s) => ({ highlighted: false, prevX: s.prevX })), 5)
+        // 计分牌被 `highlight_card` 抬起来
+        alignPlay(this.areas.play, played.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX })), 5)
             .forEach((p, i) => played[i]!.place(p, 20 + i));
     }
 
@@ -2556,6 +2810,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.deckSprite.update(this.areas.deck, this.deckCount());
         this.syncDeckPreview(time / 1000);
         this.syncMusic(time / 1000);
+        for (const a of this.attentionTexts) a.update(time / 1000);
+        this.attentionTexts = this.attentionTexts.filter((a) => !a.done);
     }
 
     /** `modulate_sound`：挑音轨、游戏结束降调、管风琴跟着本手分数 */
@@ -2743,20 +2999,21 @@ ${String(e instanceof Error ? e.message : e)}`)
         s.round = run.roundNumber;
         s.round_resets.ante = run.ante;
         const last = this.roundEval?.last;
-        s.chips_text = numberFormat(inRound ? round.chips : last?.chips ?? 0);
+        s.chips_text = numberFormat(Math.floor(this.shownRoundChips?.v ?? (inRound ? round.chips : last?.chips ?? 0)));
         s.current_round.hands_left = round ? round.handsLeft : last?.handsLeft ?? 4 + run.vouchers.hands;
         s.current_round.discards_left = round
             ? round.discardsLeft
             : last?.discardsLeft ?? 3 + RED_DECK.config.discards + run.vouchers.discards;
 
-        const hand = s.current_round.current_hand;
-        const preview = round && this.selected.size > 0 ? evaluatePokerHand(this.selectedInOrder()) : null;
-        const info = preview?.topName ? round!.hands[preview.topName] : null;
-        hand.handname_text = preview?.topName ?? '';
-        // `common_events.lua:561`：前面带一个空格（`' '..localize('k_lvl')..level`），牌型名与等级之间的间距就是它
-        hand.hand_level = info ? ` ${DICTIONARY.k_lvl}${info.level}` : '';
-        hand.chip_text = numberFormat(info?.chips ?? 0);
-        hand.mult_text = numberFormat(info?.mult ?? 0);
+        // 选牌时（`CardArea:parse_highlighted` → `update_hand_text{immediate, nopulse, delay = 0}`）：本手那一格显示选中那几张的牌型；
+        // 计分中由出牌的事件流写，这里不碰
+        if (!this.animating) {
+            const preview = round && this.selected.size > 0 ? evaluatePokerHand(this.selectedInOrder()) : null;
+            const info = preview?.topName ? round!.hands[preview.topName] : null;
+            this.applyHandText({
+                handname: preview?.topName ?? '', level: info ? info.level : '', chips: info?.chips ?? 0, mult: info?.mult ?? 0,
+            }, { nopulse: true });
+        }
 
         // `ease_background_colour_blind`：盲注里按盲注换色；选盲注与商店时 `G.GAME.blind` 是空名字的占位，
         // 商店再把 MAIN 换成暗红

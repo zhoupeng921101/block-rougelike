@@ -21,6 +21,11 @@ export type HudState = {
         hands_left: number;
         discards_left: number;
         current_hand: {
+            /** `update_hand_text` 写的数值；`*_text` 由 `hud-funcs.ts` 的几个 `*_UI_set` 同步 */
+            handname: string;
+            chips: number | string;
+            mult: number | string;
+            chip_total: number;
             handname_text: string;
             chip_total_text: string;
             hand_level: string;
@@ -41,7 +46,7 @@ export function makeHudState(): HudState {
             hands_left: 4,
             discards_left: 4,
             // `game.lua` 的 `init_game_object`：这几项开局都是空串 / '0'
-            current_hand: { handname_text: '', chip_total_text: '', hand_level: '', chip_text: '0', mult_text: '0' },
+            current_hand: { handname: '', chips: 0, mult: 0, chip_total: 0, handname_text: '', chip_total_text: '', hand_level: '', chip_text: '0', mult_text: '0' },
         },
         round_resets: { ante: 1 },
     };
