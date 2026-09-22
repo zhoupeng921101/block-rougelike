@@ -1627,20 +1627,13 @@ ${String(e instanceof Error ? e.message : e)}`)
         const handSprite = (c: Card) => this.sprites.find((x) => x.card === c);
         const jokerSprite = (j: Joker) => this.jokerSprites.find((x) => x.joker === j);
 
-        // 打出的牌飞到出牌区（`play_cards_from_highlighted`），出牌次数 -1
+        // `play_cards_from_highlighted`：出牌次数 -1，0.4 秒后逐张 `draw_card(G.hand, G.play)`
         this.easeHudCount('hand_UI_count', -1);
-        const sprites = this.sprites.filter((s) => played.includes(s.card));
-        this.queue.add(new GameEvent({
-            trigger: 'after',
-            delay: 0.25,
-            func: () => {
-                for (const sp of sprites) {
-                    sp.highlighted = false;
-                    this.inPlay.add(sp);
-                }
-                this.sound.play('cardSlide2', { volume: 0.4 });
-                return true;
-            },
+        const sprites = played.map(handSprite).filter((s): s is CardSprite => !!s);
+        this.delayEvent(0.4);
+        sprites.forEach((sp, i) => this.drawCardEvent((i + 1) * 100 / sprites.length, 'up', () => {
+            sp.highlighted = false;
+            this.inPlay.add(sp);
         }));
 
         // —— `G.FUNCS.evaluate_play`（`state_events.lua:592`）的表现部分，按 `out.steps` 重放 ——
@@ -1776,19 +1769,69 @@ ${String(e instanceof Error ? e.message : e)}`)
             if (js) this.cardEvalStatus(js, 'jokers', 'jokers', 0, percent, { message: step.message });
         }
 
-        // 收拾残局：重建手牌、放开输入
-        this.queue.add(new GameEvent({
-            trigger: 'after',
-            delay: 0.45,
-            func: () => {
-                this.shownRoundChips = null;
-                this.rebuildHand();
-                this.rebuildJokers(); // 自增型小丑长了个子，数字要跟着变
+        // `draw_from_play_to_discard`（碎掉 / 毁掉的不去弃牌堆），再 `draw_from_deck_to_hand`
+        this.delayEvent(0.1);
+        const kept = sprites.filter((sp) => !out.destroyed.includes(sp.card));
+        kept.forEach((sp, i) => this.drawCardEvent((i + 1) * 100 / kept.length, 'down', () => this.sendToDiscard(sp)));
+        this.queue.add(new GameEvent({ trigger: 'immediate', func: () => {
+            for (const sp of sprites) if (out.destroyed.includes(sp.card)) {
+                this.inPlay.delete(sp);
+                this.sprites = this.sprites.filter((x) => x !== sp);
+                sp.destroy();
+            }
+            this.shownRoundChips = null;
+            return true;
+        } }));
+        this.drawFromDeckToHand();
+    }
+
+    /** 飞向弃牌堆的牌（屏幕外右边），飞够了就拆 */
+    private discarding: Array<{ sprite: CardSprite; until: number }> = [];
+
+    /**
+     * `draw_card`（`common_events.lua:393`）：入队一个 `before` 0.1 秒的事件，到点把一张牌挪进目标区、`card1` 一声。
+     * 音高 `0.85 + percent·0.2/100`；`dir = 'down'` 时原文写的是 `percent = 1 − percent`（percent 是 0..100），照抄
+     */
+    private drawCardEvent(percent: number, dir: 'up' | 'down', move: () => void): void {
+        const p = dir === 'down' ? 1 - percent : percent;
+        this.queue.add(new GameEvent({ trigger: 'before', delay: 0.1, func: () => {
+            move();
+            this.sound.play('card1', { rate: 0.85 + (p * 0.2) / 100, volume: 0.6 });
+            return true;
+        } }));
+    }
+
+    /** 把一张牌交给弃牌堆：从手牌 / 出牌区摘掉，每帧摆到 `G.discard`（屏幕外），1.5 秒后拆 */
+    private sendToDiscard(sp: CardSprite): void {
+        this.inPlay.delete(sp);
+        this.sprites = this.sprites.filter((x) => x !== sp);
+        sp.highlighted = false;
+        this.discarding.push({ sprite: sp, until: this.time.now / 1000 + 1.5 });
+    }
+
+    /**
+     * `draw_from_deck_to_hand`：0.3 秒后逐张从牌堆摸（逻辑层早就摸好了，这里只按 0.1 秒一张让它们飞进来、各响一声），
+     * 摸完才放开输入
+     */
+    private drawFromDeckToHand(): void {
+        this.delayEvent(0.3);
+        let drawn = 0;
+        this.queue.add(new GameEvent({ trigger: 'immediate', func: () => {
+            const before = new Set(this.sprites.map((s) => s.card));
+            this.rebuildHand();
+            this.rebuildJokers(); // 自增型小丑长了个子，数字要跟着变
+            const fresh = this.sprites.filter((s) => !before.has(s.card));
+            drawn = fresh.length;
+            fresh.forEach((_, i) => this.time.delayedCall(100 * i, () => this.sound.play('card1', { rate: 0.85 + ((i + 1) * 100 / fresh.length * 0.2) / 100, volume: 0.6 })));
+            return true;
+        } }));
+        this.queue.add(new GameEvent({ trigger: 'after', delay: 0, func: () => {
+            this.time.delayedCall(100 * drawn, () => {
                 this.animating = false;
                 this.refresh();
-                return true;
-            },
-        }));
+            });
+            return true;
+        } }));
     }
 
     /**
@@ -1951,12 +1994,16 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (this.animating || !round || round.phase !== 'selecting') return;
         if (this.selected.size === 0 || round.discardsLeft < 1) return;
 
-        round.discard(this.selectedInOrder());
-        this.sound.play('card1', { volume: 0.4 });
-        this.easeHudCount('discard_UI_count', -1);
+        // `discard_cards_from_highlighted`：本手那格清空，逐张 `draw_card(G.hand, G.discard)`，弃牌次数 -1，再摸牌
+        const cards = this.selectedInOrder();
+        round.discard(cards);
+        this.animating = true;
         this.selected.clear();
-        this.rebuildHand();
-        this.rebuildJokers(); // Green Joker 弃牌会掉倍率
+        this.updateHandText({ immediate: true, nopulse: true, delay: 0 }, { mult: 0, chips: 0, level: '', handname: '' });
+        const sprites = cards.map((c) => this.sprites.find((s) => s.card === c)).filter((s): s is CardSprite => !!s);
+        sprites.forEach((sp, i) => this.drawCardEvent((i + 1) * 100 / sprites.length, 'down', () => this.sendToDiscard(sp)));
+        this.easeHudCount('discard_UI_count', -1);
+        this.drawFromDeckToHand();
         this.refresh('弃牌');
     }
 
@@ -2632,6 +2679,17 @@ ${String(e instanceof Error ? e.message : e)}`)
         alignHand(this.areas.hand, hand.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX })), round.handLimit, real)
             .forEach((p, i) => hand[i]!.place(p, i));
         const played = this.sprites.filter((s) => this.inPlay.has(s));
+        // 飞向弃牌堆的
+        const now = real;
+        this.discarding = this.discarding.filter(({ sprite, until }) => {
+            if (now > until) {
+                sprite.destroy();
+                return false;
+            }
+            const d = this.areas.discard;
+            sprite.place({ x: d.x, y: d.y, r: 0 }, 30);
+            return true;
+        });
         // 计分牌被 `highlight_card` 抬起来
         alignPlay(this.areas.play, played.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX })), 5)
             .forEach((p, i) => played[i]!.place(p, 20 + i));
@@ -2962,7 +3020,11 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     /** 牌堆里有几张：盲注里是剩余张数；盲注外整副牌都在牌堆里，开奥秘 / 幽灵包时扣掉发出去的那手 */
     private deckCount(): number {
-        if (this.round && this.run.state === 'playing') return this.round.deck.length;
+        // 还没飞出来的新牌算在牌堆里
+        if (this.round && this.run.state === 'playing') {
+            const shown = new Set(this.sprites.filter((s) => s.appeared).map((s) => s.card));
+            return this.round.deck.length + this.round.hand.filter((c) => !shown.has(c)).length;
+        }
         return this.run.fullDeck.length - (this.run.packHand?.length ?? 0);
     }
 
@@ -2978,7 +3040,9 @@ ${String(e instanceof Error ? e.message : e)}`)
             if (a.key === 'jokers') [c.card_count, c.card_limit] = [run.jokers.length, run.jokerSlots];
             else if (a.key === 'consumeables') [c.card_count, c.card_limit] = [run.consumables.length, run.consumableSlots];
             else if (a.key === 'hand') {
-                [c.card_count, c.card_limit] = [round?.hand.length ?? 0, round?.handLimit ?? 8];
+                // 摸牌 / 出牌动画中按屏幕上的算（逻辑层早就摸好了）
+                const shown = this.animating ? this.sprites.filter((s) => !this.inPlay.has(s) && s.appeared).length : round?.hand.length ?? 0;
+                [c.card_count, c.card_limit] = [shown, round?.handLimit ?? 8];
                 a.view.setVisible(run.state === 'playing' && (round?.phase === 'selecting' || this.runOver) && !run.openPack);
             } else [c.card_count, c.card_limit] = [this.deckCount(), run.fullDeck.length];
         }

@@ -80,6 +80,8 @@ export type PlayOutcome = {
     dollars: number;
     /** 整手被盲注判为不合法（The Psychic 出不满 5 张）——分数为 0 */
     debuffed: boolean;
+    /** 碎掉 / 被毁的计分牌（不进弃牌堆） */
+    destroyed: Card[];
     phase: RoundPhase;
 };
 
@@ -727,6 +729,7 @@ export class Round {
             chips: this.chips,
             dollars: result.dollars,
             debuffed: result.debuffed,
+            destroyed: result.destroyed,
             phase: this.phase,
         };
     }

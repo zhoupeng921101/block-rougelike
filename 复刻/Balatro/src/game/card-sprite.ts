@@ -251,6 +251,11 @@ export class CardSprite {
     }
 
     /** 可见矩形（tile） */
+    /** 已经出现在屏幕上了（新摸的牌在 `holdUntil` 之前还藏着） */
+    get appeared(): boolean {
+        return !!this.motion;
+    }
+
     get rect(): { x: number; y: number; w: number; h: number } {
         const VT = this.motion?.VT ?? { x: 0, y: 0 };
         return { x: VT.x, y: VT.y, w: CARD_W, h: CARD_H };
