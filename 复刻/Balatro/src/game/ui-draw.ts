@@ -18,6 +18,7 @@ import type { SpriteObject } from '../ui/definitions/hud';
 import { EN_FONT } from '../ui/font';
 import { TILESIZE, UIT, UIBox, type UIElement } from '../ui/uibox';
 import { TILE_W, toPx } from './coords';
+import { Motion } from './moveable';
 
 /** 世界像素 / 原作画矩形时的顶点单位（1/TILESIZE tile） */
 const U = toPx(1) / TILESIZE;
@@ -271,7 +272,58 @@ export class UIBoxView {
     }
 
     /** 每帧：同步绑定值、必要时重排，再按当前布局画一遍 */
+    /**
+     * 界面的滑入 / 滑出（`bond = 'Weak'` 的 UIBox 靠 `move_xy` 的弹簧追 `role.offset`）。布局里的位置 `T` 恒是终点，
+     * 画的时候整块挪 `VT − T`：`slideFrom(dy)` 让它从终点下方（或上方）`dy` tile 处滑回来
+     */
+    private slide: Motion | null = null;
+    /** 跟着另一块一起滑（挂在它上面的角标、Cash Out 按钮） */
+    private slideLeader: UIBoxView | null = null;
+    private lastT = -1;
+
+    slideFrom(dy: number, dx = 0): this {
+        this.slide = new Motion({ x: 0, y: 0, r: 0, scale: 1 });
+        this.slide.VT.x = dx;
+        this.slide.VT.y = dy;
+        this.applySlide();
+        return this;
+    }
+
+    /** 往 `dy` 处滑走（终点换成 `dy`，`T` 不动）。滑出去之后由调用方销毁 */
+    slideTo(dy: number): this {
+        this.slide ??= new Motion({ x: 0, y: 0, r: 0, scale: 1 });
+        this.slide.T.y = dy;
+        return this;
+    }
+
+    followSlide(leader: UIBoxView): this {
+        this.slideLeader = leader;
+        this.applySlide();
+        return this;
+    }
+
+    /** 当前画的位置相对布局位置挪了多少（tile）。画在 UIBox 之外但跟着它走的东西（商店的卡、开包的卡）要加上它 */
+    get slideOffset(): { x: number; y: number } {
+        if (this.slideLeader) return this.slideLeader.slideOffset;
+        return this.slide ? { x: this.slide.VT.x, y: this.slide.VT.y } : { x: 0, y: 0 };
+    }
+
+    /** 滑完了没有（终点就是布局位置） */
+    get settled(): boolean {
+        const s = this.slide;
+        return !s || (s.VT.x === s.T.x && s.VT.y === s.T.y);
+    }
+
+    private applySlide(): void {
+        const o = this.slideOffset;
+        this.container.setPosition(toPx(o.x), toPx(o.y));
+    }
+
     update(timeSeconds: number): void {
+        const dt = this.lastT < 0 ? 0 : timeSeconds - this.lastT;
+        this.lastT = timeSeconds;
+        if (this.slide && dt > 0) this.slide.step(dt, timeSeconds);
+        this.applySlide();
         if (this.box.version !== this.builtVersion) this.build();
         this.box.followMajor();
         let resized = false;

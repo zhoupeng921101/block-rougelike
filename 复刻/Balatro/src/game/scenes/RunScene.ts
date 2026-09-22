@@ -66,7 +66,6 @@ import { BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
 import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
 import { type GameOverState, createGameOver, createWin } from '../../ui/definitions/game-over';
 import { mostPlayedHandUsage } from '../../core/round-scores';
-import { Motion } from '../moveable';
 import { Jimbo } from '../jimbo';
 import { type Tab, type VoucherArea, changeTab, currentHands, handTip, popupTooltip, runInfo, usedVouchers } from '../../ui/definitions/run-info';
 import { HAND_DESCRIPTIONS, HAND_EXAMPLES } from '../../ui/descriptions.generated';
@@ -186,7 +185,7 @@ export class RunScene extends Scene {
     private blindSelectViews: { select: UIBoxView; prompt: UIBoxView } | null = null;
     /** 回合结算（`G.round_eval` 与 Cash Out）。`blindHeld`：左上盲注面板在 `defeat` 之前还留着 */
     /**
-     * `G.OVERLAY_MENU`：游戏结束 / 胜利界面。`motion` 是 UIBox 自己的 VT（`bond = 'Weak'`，从下方 10 tile 弹上来），
+     * `G.OVERLAY_MENU`：游戏结束 / 胜利界面。从下方 10 tile 弹上来（`UIBoxView.slideFrom`），
      * `bg` 是背景那张颜色表，alpha 由 `ease_value` 0.3 秒线性缓上去；`blocker` 吞掉底下所有点击与悬停
      */
     /** `G.HUD_tags`：手上的标签，右下角往上叠。`run.tags` 变了就整列重建 */
@@ -197,7 +196,6 @@ export class RunScene extends Scene {
     private runOver = false;
     private overlay: {
         view: UIBoxView;
-        motion: Motion;
         bg: Colour;
         alpha: { from: number; to: number; start: number };
         blocker: GameObjects.Zone;
@@ -385,6 +383,8 @@ ${String(e instanceof Error ? e.message : e)}`)
             return;
         }
         this.destroyBlindSelect();
+        // `Blind:set_blind`（`blind.lua:126`）：左上盲注面板 offset −10 → 0，从上面落下来
+        this.hudBlindView.slideFrom(-10);
         this.selected.clear();
         this.rebuildHand();
         this.rebuildJokers();
@@ -552,7 +552,8 @@ ${String(e instanceof Error ? e.message : e)}`)
 
         const ev = new RoundEval({ T: this.areas.hand });
         const onButton = (name: string) => this.onUIButton(name);
-        const view = new UIBoxView(this, ev.box, 30, onButton);
+        // `G.round_eval`：offset `ROOM.T.y+19` → −7.8，从下面滑上来
+        const view = new UIBoxView(this, ev.box, 30, onButton).slideFrom(26.8);
         view.setResolution(this.mapping.pxPerTile / toPx(1));
         this.roundEval = { ev, view, cashView: null, blindHeld: true, last };
         this.message.setText('');
@@ -590,7 +591,7 @@ ${String(e instanceof Error ? e.message : e)}`)
                 break;
             case 'cash_out': {
                 this.sound.play('coin6', { volume: 0.6 });
-                state.cashView = new UIBoxView(this, state.ev.cashOut!, 31, (name) => this.onUIButton(name));
+                state.cashView = new UIBoxView(this, state.ev.cashOut!, 31, (name) => this.onUIButton(name)).followSlide(state.view);
                 state.cashView.setResolution(this.mapping.pxPerTile / toPx(1));
                 break;
             }
@@ -770,7 +771,12 @@ ${String(e instanceof Error ? e.message : e)}`)
      * **挑不走的也画出来**（小丑区满了之类），点一下给一句反馈——
      * 与「点不动的塔罗」同一条：不画出来等于把限制伪装成「这张不存在」。
      */
+    /** 开包界面上一次对应的包与滑动位置（挑牌重建时不重滑） */
+    private packShownFor: object | null = null;
+    private packSlide = 0;
+
     private rebuildPackCards(): void {
+        this.packSlide = this.packUi?.view.slideOffset.y ?? 0;
         // 发下来的手牌接着上一版精灵的缓动走（挑牌 / 用塔罗之后整个重建）
         const oldPackHand = this.packHandSprites;
         this.packHandSprites = [];
@@ -800,6 +806,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         });
         const view = new UIBoxView(this, box, 0.5, (name) => this.onUIButton(name));
         view.setResolution(this.mapping.pxPerTile / toPx(1));
+        // 新开的包从下面滑上来（offset `ROOM.T.y+9` → −2.2）；挑牌重建时接着上一版的位置
+        view.slideFrom(this.packShownFor === pack ? this.packSlide : 11.2);
+        this.packShownFor = pack;
         const el = [...box.root.walk()].find((e) => e.config.object === area)!;
         this.packUi = { view, area, rect: { x: el.x, y: el.y, w: area.T.w, h: area.T.h } };
 
@@ -874,7 +883,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         const size = (s: JokerSprite | ConsumableSprite | CardSprite) =>
             s instanceof CardSprite ? { w: CARD_W, h: CARD_H } : { w: s.w / U, h: s.h / U };
         let label = 0;
-        alignConsumeable(this.packUi.rect, sprites.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX, ...size(s) })), real)
+        alignConsumeable({ ...this.packUi.rect, y: this.packUi.rect.y + this.packUi.view.slideOffset.y }, sprites.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX, ...size(s) })), real)
             .forEach((p, i) => {
                 const s = sprites[i]!;
                 s.place(p, i);
@@ -943,7 +952,15 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.refresh();
     }
 
+    /**
+     * 商店界面上一次「出现」对应的商店与滑动位置。原作 `G.shop` 建一次、买卖重掷只改里面的卡；复刻件整个重建，
+     * 所以要记住：同一个商店接着上一版的位置走，**新商店或关包回来**才从下面滑上来（offset `ROOM.T.y+11` → −5.3）
+     */
+    private shopShownFor: object | null = null;
+    private signShownFor: object | null = null;
+
     private rebuildShop(): void {
+        const prevShop = this.shopUi ? { shop: this.shopShownFor, offset: this.shopUi.view.slideOffset.y, sign: this.shopUi.sign.slideOffset.y } : null;
         this.clearShop();
         const shop = this.run.shop;
         if (!shop || this.roundEval) return;
@@ -966,6 +983,14 @@ ${String(e instanceof Error ? e.message : e)}`)
         const onButton = (name: string) => this.onUIButton(name);
         this.shopUi = { view: new UIBoxView(this, box, 0.5, onButton), sign: new UIBoxView(this, sign, 41), tags: [] };
         for (const v of [this.shopUi.view, this.shopUi.sign]) v.setResolution(this.mapping.pxPerTile / U);
+        // 开包时商店滑到下面（`ROOM.T.y+11`），关包回来再滑上来；招牌只在新商店时从上面（−15）落下
+        if (this.run.openPack) {
+            this.shopUi.view.slideFrom(prevShop ? prevShop.offset : 16.3).slideTo(16.3);
+            this.shopShownFor = null;
+        } else this.shopUi.view.slideFrom(prevShop && prevShop.shop === shop ? prevShop.offset : 16.3);
+        if (!this.run.openPack) this.shopShownFor = shop;
+        this.shopUi.sign.slideFrom(this.signShownFor === shop ? prevShop?.sign ?? 0 : -15);
+        this.signShownFor = shop;
         // 开包时商店整个挪出屏幕（`update_*_pack`：`G.shop.alignment.offset.y = G.ROOM.T.y + 11`），只留招牌；
         // 货架上的卡不建，关包时重建
         if (this.run.openPack) return;
@@ -1302,10 +1327,11 @@ ${String(e instanceof Error ? e.message : e)}`)
         const shop = this.run.shop;
         if (!shop) return;
         const groups: Array<[ShopSlot['group'], number, number]> = [['items', shop.jokerMax, CARD_W], ['vouchers', 1, CARD_W], ['packs', 2, CARD_W * 1.27]];
+        const dy = this.shopUi?.view.slideOffset.y ?? 0;
         for (const [group, limit, cardW] of groups) {
             const slots = this.shopSlots.filter((x) => x.group === group);
             if (slots.length === 0) continue;
-            alignPlay(slots[0]!.area, slots.map((x) => ({ highlighted: x.sprite.highlighted, prevX: x.sprite.prevX || slots[0]!.area.x, w: x.w, h: x.h })), limit, cardW)
+            alignPlay({ ...slots[0]!.area, y: slots[0]!.area.y + dy }, slots.map((x) => ({ highlighted: x.sprite.highlighted, prevX: x.sprite.prevX || slots[0]!.area.x, w: x.w, h: x.h })), limit, cardW)
                 .forEach((p, k) => slots[k]!.sprite.place(p, 0));
         }
         for (const x of this.shopSlots) {
@@ -1589,8 +1615,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         });
         const onButton = (name: string) => this.onUIButton(name);
         this.blindSelectViews = {
-            select: new UIBoxView(this, select, 30, onButton),
-            prompt: new UIBoxView(this, prompt, 41, onButton),
+            // `G.blind_select`：offset `ROOM.T.y+29` → 终值，从下面滑上来；左侧提示框 −15 → 0 从上面落下
+            select: new UIBoxView(this, select, 30, onButton).slideFrom(29 - select.config.offset!.y),
+            prompt: new UIBoxView(this, prompt, 41, onButton).slideFrom(-15),
         };
         for (const v of Object.values(this.blindSelectViews)) v.setResolution(this.mapping.pxPerTile / toPx(1));
         // `blind_choice_handler`：跳过的那一格盖一个斜着的「SKIPPED」（`tmi` 挂卡片、下移 2.2，跟着卡走）
@@ -1625,6 +1652,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         const alert = new UIBox(cardAlert({ textRot: -0.35, noBg: true, text: DICTIONARY.k_skipped_cap, bumpAmount: 1, scale: 0.9, maxw: 3.4 }),
             { align: 'tmi', offset: { x: 0, y: 2.2 }, major: card });
         const view = new UIBoxView(this, alert, 31);
+        if (this.blindSelectViews) view.followSlide(this.blindSelectViews.select);
         view.setResolution(this.mapping.pxPerTile / toPx(1));
         this.skippedAlerts.push(view);
     }
@@ -1699,7 +1727,7 @@ ${String(e instanceof Error ? e.message : e)}`)
                 if (!spot) return;
                 const quip = kind === 'win' ? `wq_${1 + Math.floor(Math.random() * 7)}` : `lq_${1 + Math.floor(Math.random() * 10)}`;
                 overlay.jimbo = new Jimbo(this, () => ({
-                    x: spot.x, y: spot.y + overlay.motion.VT.y - overlay.motion.T.y, w: spot.T.w, h: spot.T.h,
+                    x: spot.x, y: spot.y + overlay.view.slideOffset.y, w: spot.T.w, h: spot.T.h,
                 }), quip, LOOK.mobileUi, this.mapping.pxPerTile / toPx(1));
             });
         }
@@ -1714,12 +1742,11 @@ ${String(e instanceof Error ? e.message : e)}`)
         const box = new UIBox(def, { align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } } });
         const view = new UIBoxView(this, box, 200, (name, el) => this.onOverlayButton(name, el));
         view.setResolution(this.mapping.pxPerTile / toPx(1));
-        const motion = new Motion({ x: box.T.x, y: box.T.y + 10, r: 0, scale: 1 });
-        motion.T.y = box.T.y;
+        view.slideFrom(10);
         const blocker = this.add.zone(-toPx(TILE_W * 3), -toPx(TILE_H * 3), toPx(TILE_W * 7), toPx(TILE_H * 7))
             .setOrigin(0, 0).setInteractive().setDepth(199);
         const overlay = {
-            view, motion, bg, alpha: { from: bg[3], to: alphaTo, start: this.time.now / 1000 }, blocker,
+            view, bg, alpha: { from: bg[3], to: alphaTo, start: this.time.now / 1000 }, blocker,
             jimbo: null as Jimbo | null, vouchers: [] as Array<{ sprite: VoucherSprite; area: VoucherArea }>,
         };
         this.overlay = overlay;
@@ -1797,7 +1824,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (!o) return;
         const example = HAND_EXAMPLES[hand];
         const tip = handTip(hand, !!example);
-        const slide = o.motion.VT.y - o.motion.T.y;
+        const slide = o.view.slideOffset.y;
         const major = { T: { x: el.x, y: el.y + slide, w: el.T.w, h: el.T.h } };
         const lower = el.y > TILE_H / 2;
         const box = new UIBox(popupTooltip(HAND_DESCRIPTIONS[hand] ?? [], tip.def), { align: lower ? 'tm' : 'bm', offset: { x: 0, y: lower ? -0.1 : 0.1 }, major });
@@ -1821,7 +1848,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     private followRunInfoHovers(now: number): void {
         const o = this.overlay;
         if (!o) return;
-        const slide = o.motion.VT.y - o.motion.T.y;
+        const slide = o.view.slideOffset.y;
         for (const { zone, el } of this.handRowHovers) {
             zone.setPosition(toPx(el.x), toPx(el.y + slide)).setSize(toPx(el.T.w), toPx(el.T.h));
             zone.input!.hitArea.setTo(0, 0, toPx(el.T.w), toPx(el.T.h));
@@ -1876,7 +1903,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (!o || o.vouchers.length === 0) return;
         const inner = o.view.box.getById('tab_contents')?.config.object as UIBox | undefined;
         if (!inner) return;
-        const slide = o.motion.VT.y - o.motion.T.y;
+        const slide = o.view.slideOffset.y;
         const byArea = new Map<VoucherArea, VoucherSprite[]>();
         for (const v of o.vouchers) byArea.set(v.area, [...(byArea.get(v.area) ?? []), v.sprite]);
         for (const [area, cards] of byArea) {
@@ -1894,11 +1921,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
     }
 
-    private stepOverlay(dt: number, now: number): void {
+    private stepOverlay(now: number): void {
         const o = this.overlay;
         if (!o) return;
-        o.motion.step(dt, now);
-        o.view.container.y = toPx(o.motion.VT.y - o.motion.T.y);
         // `ease_value` 的缺省：0.3 秒线性
         const p = Math.min(1, (now - o.alpha.start) / 0.3);
         o.bg[3] = o.alpha.from + (o.alpha.to - o.alpha.from) * p;
@@ -2159,10 +2184,12 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (this.round?.phase === 'won' && !this.animating && !this.roundEval) this.startRoundEval();
         // `end_round`：没够分就直接 `G.STATE = GAME_OVER`，不用点任何按钮
         if (this.round?.phase === 'lost' && !this.animating) this.gameOver();
-        this.stepOverlay(delta / 1000, time / 1000);
+        this.stepOverlay(time / 1000);
         if (this.shopUi) {
             const hidden = !!this.run.openPack;
-            for (const v of [this.shopUi.view, ...this.shopUi.tags]) {
+            // 开包时外框自己滑到屏幕下面（`slideTo`），价签跟着卡一起收起
+            this.shopUi.view.update(time / 1000);
+            for (const v of this.shopUi.tags) {
                 v.setVisible(!hidden);
                 v.update(time / 1000);
             }
