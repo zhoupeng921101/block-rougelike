@@ -29,6 +29,25 @@ function flatSection(name) {
 }
 
 const dict = flatSection('dictionary');
+
+/** `misc.dictionary` 里值是字符串表的条目（`ml_*`：选项循环的选项、多行说明） */
+function listEntries(name) {
+    const start = lines.findIndex((l) => l.trim() === `${name}={`);
+    const indent = lines[start].match(/^\s*/)[0];
+    const out = {};
+    let key = null;
+    for (let i = start + 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (line.startsWith(`${indent}},`) || line === `${indent}}`) break;
+        let m;
+        if (!key && (m = line.match(/^\s*([A-Za-z_]\w*)=\{\s*$/))) { key = m[1]; out[key] = []; continue; }
+        if (key && (m = line.match(/^\s*"((?:[^"\\]|\\.)*)",\s*$/))) { out[key].push(unescape(m[1])); continue; }
+        if (key && /^\s*\},?\s*$/.test(line)) key = null;
+    }
+    return out;
+}
+const lists = listEntries('dictionary');
+const listBody = Object.keys(lists).sort().map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(lists[k])},`).join('\n');
 // `localize{type = 'variable', key = ...}` 查的是 `misc.v_dictionary`（`#1#` 占位符原样保留）
 const vdict = flatSection('v_dictionary');
 const flat = (d) => Object.keys(d).sort().map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(d[k])},`).join('\n');
@@ -60,7 +79,9 @@ writeFileSync(
     `/** \`misc.dictionary\` 的纯字符串条目 */\nexport const DICTIONARY: Readonly<Record<string, string>> = {\n${body}\n};\n\n` +
     `/** \`misc.v_dictionary\`：带 \`#1#\` 占位符的条目（\`localize{type = 'variable'}\`） */\n` +
     `export const V_DICTIONARY: Readonly<Record<string, string>> = {\n${vBody}\n};\n\n` +
+    `/** \`misc.dictionary\` 里值是字符串表的条目（\`ml_*\`） */\n` +
+    `export const ML_DICTIONARY: Readonly<Record<string, readonly string[]>> = {\n${listBody}\n};\n\n` +
     `/** \`descriptions.Blind\`：盲注名与描述行（\`{#1#}\` 这类占位符原样保留） */\n` +
     `export const BLIND_TEXT: Readonly<Record<string, { name: string; text: string[] }>> = {\n${blindBody}\n};\n`,
 );
-console.log(`${Object.keys(dict).length} dictionary, ${Object.keys(vdict).length} v_dictionary, ${Object.keys(blinds).length} blinds`);
+console.log(`${Object.keys(dict).length} dictionary, ${Object.keys(lists).length} lists, ${Object.keys(vdict).length} v_dictionary, ${Object.keys(blinds).length} blinds`);

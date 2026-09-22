@@ -9,6 +9,7 @@ import type { Placed } from './align-cards';
 import { cardShadowParallaxX } from './align-cards';
 import { toPx } from './coords';
 import { Motion } from './moveable';
+import { shadowsOn } from './settings';
 import { type LayeredQuad, type QuadOptions, makeShaderQuad } from './shader-quad';
 
 const CARD_SCALE = 0.95;
@@ -39,6 +40,8 @@ export class PlacedLayers {
     /** `T` → `VT` 的缓动（`moveable.lua`）。第一次摆放时 `hard_set` 落定 */
     private motion: Motion | null = null;
     private depth = 10;
+    /** `setVisible` 的值：阴影每帧按设置重算显隐，藏起来的卡不能被它带出来 */
+    private shown = true;
     private floating: { kind: FloatingKind; shadow: GameObjects.Shader | null; body: GameObjects.Shader } | null = null;
     private readonly onPostUpdate = (time: number, delta: number) => this.render(time / 1000, delta / 1000);
 
@@ -134,6 +137,7 @@ export class PlacedLayers {
         this.layers.setRotation(VT.r);
         // `sprite.lua:76`：阴影从 VT 往视差反方向错开（视差按 T 算，`calculate_parrallax`），缩 `1 − 0.2·h`
         const spx = cardShadowParallaxX(m.T.x, this.wTiles);
+        this.shadow.setVisible(this.shown && shadowsOn());
         this.shadow.setScale(VT.scale * (1 - 0.2 * SHADOW_HEIGHT) * m.wScale, VT.scale * (1 - 0.2 * SHADOW_HEIGHT))
             .setPosition(cx - toPx(spx * SHADOW_HEIGHT), cy + toPx(1.5 * SHADOW_HEIGHT))
             .setRotation(VT.r);
@@ -153,8 +157,9 @@ export class PlacedLayers {
     }
 
     setVisible(v: boolean): void {
+        this.shown = v;
         this.layers.setVisible(v);
-        this.shadow.setVisible(v);
+        this.shadow.setVisible(v && shadowsOn());
         this.floating?.shadow?.setVisible(v);
         this.floating?.body.setVisible(v);
     }

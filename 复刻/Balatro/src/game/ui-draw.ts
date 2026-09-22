@@ -16,14 +16,15 @@ import type { ShopSignObject } from '../ui/definitions/shop';
 import { DynaText } from '../ui/dynatext';
 import type { SpriteObject } from '../ui/definitions/hud';
 import { EN_FONT } from '../ui/font';
-import { TILESIZE, UIT, UIBox, type UIElement } from '../ui/uibox';
+import { TILESIZE, UIT, UIBox, UI_DRAG, type UIElement } from '../ui/uibox';
 import { TILE_H, TILE_W, toPx } from './coords';
 import { Motion } from './moveable';
+import { SETTINGS } from './settings';
 
 /** 世界像素 / 原作画矩形时的顶点单位（1/TILESIZE tile） */
 const U = toPx(1) / TILESIZE;
-/** 纯观感：原作设置里的「阴影」开关，缺省开 */
-const SHADOWS_ON = true;
+/** `G.SETTINGS.GRAPHICS.shadows == 'On'`：界面上所有的阴影（底框、字、选中三角）跟着它 */
+const shadowsOn = () => SETTINGS.GRAPHICS.shadows === 'On';
 export const UI_FONT_FAMILY = 'm6x11plus';
 
 /** `fillPoints` 的类型要 `Vector2[]`，实际只读 x / y */
@@ -164,7 +165,7 @@ export class UIBoxView {
             if (el.UIT === UIT.T) {
                 const px = toPx(cfg.scale ?? 1);
                 view.text = {
-                    shadow: cfg.shadow && SHADOWS_ON ? makeText(this.scene, px) : null,
+                    shadow: cfg.shadow ? makeText(this.scene, px) : null,
                     main: makeText(this.scene, px),
                 };
                 if (view.text.shadow) this.container.add(view.text.shadow);
@@ -193,6 +194,15 @@ export class UIBoxView {
             } else if (el.UIT !== UIT.O) {
                 view.gfx = this.scene.add.graphics();
                 this.container.add(view.gfx);
+            }
+            if (cfg.collideable && !cfg.button) {
+                // 滑条的槽：按下就开始拖（`G.CONTROLLER.dragging`），松手在 `update` 里清
+                const zone = this.scene.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive({ useHandCursor: true });
+                zone.on('pointerover', () => { view.hovered = true; });
+                zone.on('pointerout', () => { view.hovered = false; });
+                zone.on('pointerdown', () => { UI_DRAG.target = el; this.trackDrag(); });
+                this.container.add(zone);
+                view.zone = zone;
             }
             if (cfg.button) {
                 const zone = this.scene.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive({ useHandCursor: true });
@@ -405,10 +415,24 @@ export class UIBoxView {
         if (this.box.refresh() || resized) {
             if (resized) this.box.recalculate();
         }
+        this.trackDrag();
         this.box.runFuncs();
         this.computeLayeredParallax(timeSeconds);
         for (const v of this.views) this.draw(v, timeSeconds);
         this.reorder();
+    }
+
+    /** 拖着这块里的元素时，把光标换成这块的布局坐标（tile，减去滑动量）；松手就放开 */
+    private trackDrag(): void {
+        const target = UI_DRAG.target;
+        if (!target || target.box !== this.box) return;
+        const p = this.scene.input.activePointer;
+        if (!p.isDown) {
+            UI_DRAG.target = null;
+            return;
+        }
+        const world = p.positionToCamera(this.scene.cameras.main) as { x: number };
+        UI_DRAG.x = world.x / toPx(1) - this.slideOffset.x;
     }
 
     private draw(v: ElementView, t: number): void {
@@ -451,7 +475,7 @@ export class UIBoxView {
                 return;
             }
             // 阴影：原点在左上角时整体 ×0.98，再往远离中线的方向错开
-            if (cfg.shadow && SHADOWS_ON) {
+            if (cfg.shadow && shadowsOn()) {
                 const shadow = cfg.shadow_colour ?? ([0, 0, 0, 0.3 * colour[3]] as Colour);
                 g.fillStyle(rgb(shadow), shadow[3]);
                 const dx = -sp.x * parallax;
@@ -480,7 +504,7 @@ export class UIBoxView {
                     { x: (W / 2 + ox) * U, y: (-2.2 + bob + oy) * U },
                     { x: (W / 2 + 3 + ox) * U, y: (-8 + bob + oy) * U },
                 ]);
-                if (cfg.shadow && SHADOWS_ON) {
+                if (cfg.shadow && shadowsOn()) {
                     g.fillStyle(0x000000, 0.3 * colour[3]);
                     g.fillPoints(tri(-sp.x * parallax * 0.5, -sp.y * parallax * 0.5), true);
                 }
@@ -494,7 +518,7 @@ export class UIBoxView {
             // `ui.lua:697`：按钮里的字（且按钮可用）无论 `shadow` 配没配都画阴影
             const button = cfg.button_UIE;
             const buttonActive = !button || !!button.config.button;
-            if (v.text.shadow === null && button && buttonActive && SHADOWS_ON) {
+            if (v.text.shadow === null && button && buttonActive) {
                 v.text.shadow = makeText(this.scene, toPx(cfg.scale ?? 1)).setResolution(this.resolution);
                 this.container.addAt(v.text.shadow, this.container.getIndex(v.text.main));
             }
@@ -515,6 +539,7 @@ export class UIBoxView {
                 return;
             }
             v.text.main.setText(text).setColor(css(shown)).setAlpha(shown[3]).setPosition(toPx(x + ox), toPx(y + oy));
+            v.text.shadow?.setVisible(shadowsOn());
             if (v.text.shadow) {
                 // 阴影按 0.97 以元素中心缩放，再偏 (-sp.x·0.5, -sp.y·0.5)/TILESIZE
                 const k = 0.97;
@@ -537,7 +562,9 @@ export class UIBoxView {
             // 以中心画，好吃 `juice_up` 的缩放与转角（标签精灵悬停、刚拿到时弹一下）
             const j = this.juices.get(cfg.object as object)?.VT;
             const k = j?.scale ?? 1;
-            v.image.setPosition(toPx(el.x + w / 2), toPx(el.y + h / 2)).setDisplaySize(toPx(w) * k, toPx(h) * k).setRotation(j?.r ?? 0);
+            v.image.setPosition(toPx(el.x + w / 2), toPx(el.y + h / 2)).setDisplaySize(toPx(w) * k, toPx(h) * k).setRotation(j?.r ?? 0)
+                // 开关的勾关着时藏起来（`states.visible = false`）
+                .setVisible((cfg.object as { visible?: boolean }).visible !== false);
         }
         if (v.imageShadow) {
             // `sprite.lua:76`：往视差反方向错开 `shadow_height`、缩到 `1 − 0.2·shadow_height`（以中心）

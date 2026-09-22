@@ -16,6 +16,7 @@ import { SEAL_POS } from './card-sprite';
 import { toPx } from './coords';
 import { Motion } from './moveable';
 import { LayeredQuad, cardTimeOf, makeClickable, makeShaderQuad } from './shader-quad';
+import { cardsTexture, shadowsOn } from './settings';
 
 /** `P_CARDS` 的 key（`S_A`、`D_T`…）→ 图集格：花色定行、点数定列（2 → 0 … A → 12） */
 const SUIT_ROW: Record<string, number> = { H: 0, C: 1, D: 2, S: 3 };
@@ -68,7 +69,7 @@ export class MiniCard {
         this.base = new LayeredQuad(scene, { ...common, name: `mini_base_${id}`, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: basePos, shader }, depth, layerLook);
         this.front = look.enhancement === 'm_stone'
             ? null
-            : new LayeredQuad(scene, { ...common, name: `mini_front_${id}`, textureKey: 'cards', atlas: DECK_ATLAS, pos: { x: RANK_COL[rank]!, y: SUIT_ROW[suit]! }, shader }, depth + 0.02, layerLook);
+            : new LayeredQuad(scene, { ...common, name: `mini_front_${id}`, textureKey: cardsTexture(), atlas: DECK_ATLAS, pos: { x: RANK_COL[rank]!, y: SUIT_ROW[suit]! }, shader }, depth + 0.02, layerLook);
         this.seal = look.seal
             ? new LayeredQuad(scene, { ...common, name: `mini_seal_${id}`, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: SEAL_POS[look.seal]!, shader: 'dissolve' }, depth + 0.04, { set: look.seal === 'Gold' ? 'Voucher' : undefined })
             : null;
@@ -130,6 +131,7 @@ export class MiniCard {
             for (const q of l.quads) q.setScale(VT.scale);
         }
         if (this.shadow) {
+            this.shadow.setVisible(shadowsOn());
             const spx = cardShadowParallaxX(m.T.x, this.w);
             this.shadow.setScale(VT.scale * (1 - 0.2 * SHADOW_HEIGHT))
                 .setPosition(cx - toPx(spx * SHADOW_HEIGHT), cy + toPx(1.5 * SHADOW_HEIGHT))

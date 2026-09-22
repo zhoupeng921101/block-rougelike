@@ -28,8 +28,8 @@ export function tabContents(tab: Tab): UIBox {
     return box;
 }
 
-/** `create_tabs`（只做 run_info / deck_info 用到的参数） */
-export function createTabs(tabs: Tab[], args: { tabH?: number; tabW?: number; textScale?: number; scale?: number } = {}): UINodeDef {
+/** `create_tabs`（只做 run_info / deck_info / settings 用到的参数） */
+export function createTabs(tabs: Tab[], args: { tabH?: number; tabW?: number; textScale?: number; scale?: number; tabAlignment?: string } = {}): UINodeDef {
     const scale = args.scale ?? 1;
     const textScale = args.textScale ?? 0.5;
     const current = tabs.find((t) => t.chosen) ?? tabs[0]!;
@@ -44,7 +44,7 @@ export function createTabs(tabs: Tab[], args: { tabH?: number; tabW?: number; te
             { n: UIT.C, config: { id: 'tab_shoulders', align: 'cm', padding: 0.15 }, nodes: buttons },
             shoulders ? { n: UIT.C, config: { minw: 0.7, align: 'cm', colour: C.CLEAR }, nodes: [] } : null,
         ] },
-        { n: UIT.R, config: { align: 'cm', padding: 0.1, no_fill: true, minh: args.tabH ?? 0, minw: args.tabW ?? 0 }, nodes: [
+        { n: UIT.R, config: { align: args.tabAlignment ?? 'cm', padding: 0.1, no_fill: true, minh: args.tabH ?? 0, minw: args.tabW ?? 0 }, nodes: [
             { n: UIT.O, config: { id: 'tab_contents', object: tabContents(current) } },
         ] },
     ] };

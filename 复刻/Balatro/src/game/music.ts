@@ -11,10 +11,13 @@
  *   `organ = clamp(0.1·log₅(earned/(required + 1)), 0, 0.4)`，音量 `v ← v·(1 − dt) + dt·0.6·organ`（音乐音量 100 时），音高 0.7
  *
  * 音量口径与复刻件的音效一致：原作两边都再乘 `volume/100`（缺省 50）与各自的分类音量（缺省都是 100），
- * 复刻件的音效直接用原文的 `vol`，所以这里也不乘。
+ * 复刻件的音效直接用原文的 `vol`，所以这里也不乘；主音量由场景设在整个音频管理器上（`settings.ts` 的 `masterGain`），
+ * 这里只乘分类音量：音轨乘 `music_volume/100`、氛围音（原作归在音效里）乘 `game_sounds_volume/100`。
  * 只动 Phaser 的 `WebAudioSound`；`rate` 与 LÖVE 的 `setPitch` 一样同时改音高与速度。
  */
 import type { Scene, Sound } from 'phaser';
+
+import { SETTINGS } from './settings';
 
 export const MUSIC_KEYS = ['music1', 'music2', 'music3', 'music4', 'music5'] as const;
 export type MusicKey = (typeof MUSIC_KEYS)[number];
@@ -78,7 +81,7 @@ export class Music {
         this.tracks = MUSIC_KEYS.map((k) => {
             const sound = this.scene.sound.add(k) as Sound.WebAudioSound;
             const volume = k === desired ? 1 : 0;
-            sound.play({ volume: volume * 0.6, rate: 0.7 * this.pitchMod });
+            sound.play({ volume: volume * 0.6 * SETTINGS.SOUND.music_volume / 100, rate: 0.7 * this.pitchMod });
             return { sound, volume };
         });
     }
@@ -93,7 +96,7 @@ export class Music {
         this.tracks!.forEach((t, i) => {
             const target = MUSIC_KEYS[i] === s.track ? 1 : 0;
             t.volume = target * k + (1 - k) * t.volume;
-            t.sound.setVolume(t.volume * 0.6);
+            t.sound.setVolume(t.volume * 0.6 * SETTINGS.SOUND.music_volume / 100);
             t.sound.setRate(0.7 * this.pitchMod);
         });
 
@@ -106,9 +109,9 @@ export class Music {
             if (cur.volume > 0.001 && (!cur.sound || !cur.sound.isPlaying)) {
                 cur.sound?.destroy();
                 cur.sound = this.scene.sound.add(a.key) as Sound.WebAudioSound;
-                cur.sound.play({ volume: cur.volume, rate: a.per });
+                cur.sound.play({ volume: cur.volume * SETTINGS.SOUND.game_sounds_volume / 100, rate: a.per });
             }
-            cur.sound?.setVolume(cur.volume);
+            cur.sound?.setVolume(cur.volume * SETTINGS.SOUND.game_sounds_volume / 100);
         }
     }
 }

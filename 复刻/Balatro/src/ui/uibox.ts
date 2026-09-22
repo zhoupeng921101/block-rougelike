@@ -17,6 +17,12 @@ import { EN_FONT, type FontSpec, fontHeight, fontWidth } from './font';
 export const TILESIZE = 20;
 
 /** `globals.lua:519` 的 `G.UIT`。`padding = 0` 是缺省内边距 */
+/**
+ * `G.CONTROLLER.dragging.target`：正被拖着的界面元素（滑条），与光标的 x（tile，界面布局坐标）。
+ * 绘制层按住时写、松开时清，`G.FUNCS.slider` 读
+ */
+export const UI_DRAG: { target: UIElement | null; x: number } = { target: null, x: 0 };
+
 export const UIT = { T: 1, B: 2, C: 3, R: 4, O: 5, ROOT: 7 } as const;
 export type UITKind = (typeof UIT)[keyof typeof UIT];
 const DEFAULT_PADDING = 0;

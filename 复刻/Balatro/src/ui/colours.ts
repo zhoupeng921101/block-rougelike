@@ -138,6 +138,18 @@ export const C = {
 };
 
 /** `Game:update` 里每帧改的两个颜色（`game.lua:2735`）。`t` 是 `G.TIMERS.REAL` */
+/** `globals.lua:433`：两套花色色。**原作启动时就按设置把 `G.C.SUITS` 改成其中一套**（`game.lua:43`），`SUITS` 里的初值从来不会被看到 */
+const SUIT_PROTOS: Record<1 | 2, Record<string, Colour>> = {
+    1: { Hearts: HEX('f03464'), Diamonds: HEX('f06b3f'), Spades: HEX('403995'), Clubs: HEX('235955') },
+    2: { Hearts: HEX('f83b2f'), Diamonds: HEX('e29000'), Spades: HEX('4f31b9'), Clubs: HEX('008ee6') },
+};
+
+/** `game.lua:43` / `G.FUNCS.refresh_contrast_mode`：`G.C.SUITS` 换成 `SO_1`（缺省）或 `SO_2`（高对比度）。原地改，引用它的定义跟着变 */
+export function applySuitColours(highContrast: boolean): void {
+    const proto = SUIT_PROTOS[highContrast ? 2 : 1];
+    for (const suit of Object.keys(proto)) setColour(C.SUITS[suit]!, proto[suit]!);
+}
+
 export function tickColours(t: number): void {
     C.DARK_EDITION[0] = 0.6 + 0.2 * Math.sin(t * 1.3);
     C.DARK_EDITION[2] = 0.6 + 0.2 * (1 - Math.sin(t * 1.3));

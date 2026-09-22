@@ -302,6 +302,33 @@ export const V_DICTIONARY: Readonly<Record<string, string>> = {
     "unlocked": "#1#/#2# Unlocked",
 };
 
+/** `misc.dictionary` 里值是字符串表的条目（`ml_*`） */
+export const ML_DICTIONARY: Readonly<Record<string, readonly string[]>> = {
+    "ml_bloom_opt": ["Off","On"],
+    "ml_buy_and_use_target": ["Buy","and Use"],
+    "ml_buy_target": ["Buy"],
+    "ml_card_stats": ["Card","Stats"],
+    "ml_controller_required": ["A game controller is required to play.","Please connect a controller to continue."],
+    "ml_crash_report_info": ["Crash reports will be sent to the developer","to help reduce issues in the future. No","identifying or personal info will be sent."],
+    "ml_demo_thanks_message": ["Please consider wishlisting","Balatro on Steam and sign up for","the newsletter at playbalatro.com"],
+    "ml_disabled_seed": ["All Unlocks and","Discoveries disabled"],
+    "ml_edition_seal_enhancement_explanation": ["Playing cards may each have one","Enhancement, Edition, and Seal"],
+    "ml_eternal": ["Eternal","Can't be sold","or destroyed"],
+    "ml_gold_seal_desc": ["Gold Seal","returns to hand","when played"],
+    "ml_offline_message": ["This device is offline.","The current save may be out of date."],
+    "ml_open_target": ["Open"],
+    "ml_paste_seed": ["Paste","Seed"],
+    "ml_play_discard_pos_opt": ["Discard/Play","Play/Discard"],
+    "ml_redeem_target": ["Redeem"],
+    "ml_sell_target": ["Sell"],
+    "ml_shadow_opt": ["On","Off"],
+    "ml_smoothing_opt": ["Off","On"],
+    "ml_unlock_all_explanation": ["WARNING! Unlocking the complete Collection","will disable achievements for this profile!"],
+    "ml_unlock_all_trophies": ["WARNING! Unlocking the complete Collection","will disable trophies for this profile!"],
+    "ml_vsync_opt": ["VSync On","VSync Off"],
+    "ml_windowmode_opt": ["Windowed","Fullscreen","Borderless"],
+};
+
 /** `descriptions.Blind`：盲注名与描述行（`{#1#}` 这类占位符原样保留） */
 export const BLIND_TEXT: Readonly<Record<string, { name: string; text: string[] }>> = {
     bl_arm: {"name":"The Arm","text":["Decrease level of","played poker hand"]},

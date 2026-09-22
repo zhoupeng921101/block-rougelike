@@ -14,6 +14,7 @@ import { ENHANCEMENT_CENTERS, isStone } from '../core/enhancements';
 import { CARD_H, CARD_W, toPx } from './coords';
 import { type Placed, cardShadowParallaxX } from './align-cards';
 import { Motion } from './moveable';
+import { cardsTexture, shadowsOn } from './settings';
 import {
     CENTERS_ATLAS,
     DECK_ATLAS,
@@ -130,7 +131,7 @@ export class CardSprite {
 
         this.frontLayers = new LayeredQuad(scene, {
             name: `card_${card.key}_${card.unique_val}`,
-            textureKey: 'cards',
+            textureKey: cardsTexture(),
             atlas: DECK_ATLAS,
             pos,
             cardTime, w, h, tilt, dissolve,
@@ -283,6 +284,8 @@ export class CardSprite {
         // `pinch.x` 只缩横向（`VT.w`）
         for (const q of this.allQuads()) if (q !== this.shadow) q.setScale(VT.scale * m.wScale, VT.scale);
         const sh = SHADOW_HEIGHT;
+        // `card.lua:4368`：设置关了阴影就不画；**玻璃牌从来没有投影**（`ability.effect ~= 'Glass Card'`）
+        this.shadow.setVisible(shadowsOn() && this.card.enhancement !== 'm_glass');
         const spx = cardShadowParallaxX(m.T.x, CARD_W);
         this.shadow.setScale(VT.scale * (1 - 0.2 * sh) * m.wScale, VT.scale * (1 - 0.2 * sh))
             .setPosition(cx - toPx(spx * sh), cy + toPx(1.5 * sh))

@@ -9,7 +9,7 @@
  * 盲注序、商店、钱都在它手里。
  */
 
-import { GameObjects, Scene } from 'phaser';
+import { GameObjects, Scene, Textures, type Types } from 'phaser';
 
 import { BLIND_CENTERS } from '../../core/blinds';
 import type { Card } from '../../core/card';
@@ -37,7 +37,7 @@ import { Particles } from '../particles';
 import type { OpenPack } from '../../core/booster-open';
 import type { BoosterKind } from '../../core/boosters';
 import { type BackgroundColours, applyBlindColours, backgroundFor, packMainColour } from '../../ui/blind-colour';
-import { C, type Colour, HEX, lighten, mixColours, setColour, tickColours } from '../../ui/colours';
+import { C, type Colour, HEX, applySuitColours, lighten, mixColours, setColour, tickColours } from '../../ui/colours';
 import { buyAndUseButton, shopBuyButton, useAndSellButtons } from '../../ui/definitions/card-buttons';
 import { type PopupCard, abilityTable, cardHPopup, infoBoxes, tagAbilityTable } from '../../ui/definitions/card-popup';
 import { popupGame, popupOfCard, popupOfCenter, popupOfConsumable, popupOfJoker } from '../popup-adapter';
@@ -74,6 +74,8 @@ import { RED_DECK, WIN_ANTE } from '../../core/run';
 import { JokerSprite } from '../joker-sprite';
 import { type ExitStyle, type ExitTarget, destroyStyle, playExit } from '../card-exit';
 import { LOOK } from '../look';
+import { SETTINGS, masterGain, saveSettings, wobble } from '../settings';
+import { type SettingsHooks, controlFuncs, handleControlButton, optionsMenu, settingsMenu } from '../../ui/definitions/options';
 import { VoucherSprite } from '../voucher-sprite';
 import { BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
 import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
@@ -283,6 +285,9 @@ export class RunScene extends Scene {
             frameWidth: 71,
             frameHeight: 95,
         });
+        // 高对比度牌面（`cards_2`）与设置里开关的勾（`icons`，66 像素一格）
+        this.load.spritesheet('cards_2', '/assets/textures/8BitDeck_opt2.png', { frameWidth: 71, frameHeight: 95 });
+        this.load.spritesheet('icons', '/assets/textures/icons.png', { frameWidth: 66, frameHeight: 66 });
         // 底板层。原作每张牌是底板 + 正面两层，8BitDeck 里的牌面是透明背景的
         this.load.spritesheet('centers', '/assets/textures/Enhancers.png', {
             frameWidth: 71,
@@ -335,6 +340,9 @@ export class RunScene extends Scene {
 
         resetCardCounters();
         this.run = new Run(seed, makeStandardDeck());
+        // `G.GAME.seeded`：种子是玩家给的（URL 上带 `?seed=`，且不是 New Run 随机出来的 `rs`）
+        this.seeded = new URLSearchParams(location.search).has('seed') && !new URLSearchParams(location.search).has('rs');
+        this.applySettings();
 
         this.setupBackground();
 
@@ -345,8 +353,11 @@ export class RunScene extends Scene {
             offset: { x: -0.7, y: 0 },
             major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } },
         }, hudFuncs(this.hudState));
-        // 左侧面板上的按钮：Run Info 打开 overlay；Options 还没做
-        this.hudView = new UIBoxView(this, hudBox, 40, (name) => { if (name === 'run_info') this.openRunInfo(); });
+        // 左侧面板上的按钮：Run Info / Options 打开 overlay
+        this.hudView = new UIBoxView(this, hudBox, 40, (name) => {
+            if (name === 'run_info') this.openRunInfo();
+            else if (name === 'options') this.openOptions();
+        });
 
         // `game.lua:2617`：`G.HUD_blind = UIBox{definition = create_UIBox_HUD_blind(), config = {major = row_blind, align = 'cm'}}`
         const row = hudBox.getById('row_blind')!;
@@ -2174,7 +2185,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
         if (this.buttonsView) return;
         const box = new UIBox(
-            createButtons({ playButtonPos: 2, mobile: LOOK.mobileUi }),
+            createButtons({ playButtonPos: SETTINGS.play_button_pos, mobile: LOOK.mobileUi }),
             { align: 'bm', offset: { x: 0, y: 0.3 }, major: { T: this.areas.hand } },
             {
                 can_play: (e: UIElement) => {
@@ -2487,10 +2498,61 @@ ${String(e instanceof Error ? e.message : e)}`)
             const n = area.cards.length;
             const k = index + 1;
             let x = el.x + (area.T.w - cw) * ((k - 1) / Math.max(n - 1, 1));
-            const r = (0.2 * (-n / 2 - 0.5 + k)) / n + 0.02 * Math.sin(2 * now + x);
-            const y = el.y + slide + area.T.h / 2 - ch / 2 + 0.03 * Math.sin(0.666 * now + x) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - (n > 1 ? 0.2 : 0);
+            const r = (0.2 * (-n / 2 - 0.5 + k)) / n + wobble() * 0.02 * Math.sin(2 * now + x);
+            const y = el.y + slide + area.T.h / 2 - ch / 2 + wobble() * 0.03 * Math.sin(0.666 * now + x) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - (n > 1 ? 0.2 : 0);
             x += cardShadowParallaxX(x, cw) / 30;
             card.place(x, y, r, 0.95);
+        }
+    }
+
+    private seeded = false;
+
+    /** `G.FUNCS.options`：`create_UIBox_options()` 挂成 overlay（灰底 0.7） */
+    private openOptions(): void {
+        if (this.overlay) return;
+        const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
+        this.mountOverlay(optionsMenu({ seeded: this.seeded, seed: this.run.seed }), bg, 0.7);
+    }
+
+    /** `G.FUNCS.settings`：三页设置，第一页 Game。控件的 `func`（滑条、开关）挂在每页的内容盒上 */
+    private openSettings(): void {
+        const hooks: SettingsHooks = {
+            playDiscardPosition: () => {
+                // `change_play_discard_position`：出牌 / 弃牌按钮整块重建
+                this.buttonsView?.container.destroy();
+                this.buttonsView = null;
+                saveSettings();
+            },
+            contrast: () => {
+                this.applySettings();
+                this.rebuildHand();
+                if (this.run.openPack) this.rebuildPackCards();
+                if (this.run.state === 'shop') this.rebuildShop();
+            },
+            shadows: () => saveSettings(),
+            smoothing: () => { this.applySettings(); saveSettings(); },
+            volume: () => this.applySettings(),
+        };
+        const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
+        this.mountOverlay(settingsMenu(SETTINGS, hooks, controlFuncs()), bg, 0.7);
+    }
+
+    /**
+     * 设置里不是每帧读的那几项落到画面上：花色色（`refresh_contrast_mode`）、纹理滤波（`set_render_settings`：
+     * Pixel Art Smoothing 关 = 最近邻，开 = 线性；原作开的时候还换 2 倍图，复刻件只有 1 倍图）、主音量与音效音量
+     */
+    private applySettings(): void {
+        applySuitColours(SETTINGS.colourblind_option);
+        const filter = SETTINGS.GRAPHICS.texture_scaling === 1 ? Textures.FilterMode.NEAREST : Textures.FilterMode.LINEAR;
+        for (const key of this.textures.getTextureKeys()) this.textures.get(key).setFilter(filter);
+        this.sound.volume = masterGain();
+        // 音效再乘 `game_sounds_volume/100`（`SET_SFX`）。音乐走 `sound.add`，不经这里，由 `Music` 自己乘音乐音量
+        const mgr = this.sound as typeof this.sound & { gamePlayPatched?: boolean };
+        if (!mgr.gamePlayPatched) {
+            const play = mgr.play.bind(mgr);
+            mgr.play = ((key: string, extra?: Types.Sound.SoundConfig) =>
+                play(key, { ...extra, volume: (extra?.volume ?? 1) * SETTINGS.SOUND.game_sounds_volume / 100 })) as typeof mgr.play;
+            mgr.gamePlayPatched = true;
         }
     }
 
@@ -2613,8 +2675,8 @@ ${String(e instanceof Error ? e.message : e)}`)
             const ch = 0.5 * CARD_H;
             const maxCards = Math.max(n, 5);
             const x = areaEl.x + (areaEl.T.w - CARD_W) * ((k - 1) / Math.max(maxCards - 1, 1) - (0.5 * (n - maxCards)) / Math.max(maxCards - 1, 1)) + 0.5 * (CARD_W - cw);
-            const y = areaEl.y + areaEl.T.h / 2 - ch / 2 + 0.03 * Math.sin(0.666 * now + x) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - (n > 1 ? 0.2 : 0);
-            const r = (0.2 * (-n / 2 - 0.5 + k)) / n + 0.02 * Math.sin(2 * now + x);
+            const y = areaEl.y + areaEl.T.h / 2 - ch / 2 + wobble() * 0.03 * Math.sin(0.666 * now + x) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - (n > 1 ? 0.2 : 0);
+            const r = (0.2 * (-n / 2 - 0.5 + k)) / n + wobble() * 0.02 * Math.sin(2 * now + x);
             // `ease_value(card.T, 'scale', ±, nil, 'REAL', true, 0.2)`：0.2 秒线性从 0.95 缓到 1.2 / 0.8
             const p = Math.min(1, grown / 0.2);
             const scale = 0.95 + (example[i]?.[1] ? 0.25 : -0.15) * p;
@@ -2665,8 +2727,8 @@ ${String(e instanceof Error ? e.message : e)}`)
             cards.forEach((card, i) => {
                 const k = i + 1;
                 const x0 = el.x + (area.T.w - CARD_W) * ((k - 1) / Math.max(maxCards - 1, 1) - (0.5 * (n - maxCards)) / Math.max(maxCards - 1, 1));
-                const y = el.y + slide + area.T.h / 2 - CARD_H / 2 + 0.03 * Math.sin(0.666 * now + x0) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - (n > 1 ? 0.2 : 0);
-                const r = (0.2 * (-n / 2 - 0.5 + k)) / n + 0.02 * Math.sin(2 * now + x0);
+                const y = el.y + slide + area.T.h / 2 - CARD_H / 2 + wobble() * 0.03 * Math.sin(0.666 * now + x0) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - (n > 1 ? 0.2 : 0);
+                const r = (0.2 * (-n / 2 - 0.5 + k)) / n + wobble() * 0.02 * Math.sin(2 * now + x0);
                 card.place({ x: x0, y, r }, i);
             });
         }
@@ -2700,16 +2762,31 @@ ${String(e instanceof Error ? e.message : e)}`)
             void navigator.clipboard?.writeText(this.run.seed).catch(() => undefined);
             return;
         }
-        if (name === 'exit_overlay_menu') {
-            // Endless：关掉胜利窗口接着打
+        if (handleControlButton(name, el!)) {
+            this.sound.play('button', { volume: 0.3 });
+            return;
+        }
+        if (name === 'settings' || name === 'options') {
+            // Options ↔ Settings：换掉整块 overlay（`overlay_menu` 先拆旧的），新的从下面滑上来
             this.closeOverlay();
+            if (name === 'settings') this.openSettings();
+            else this.openOptions();
+            return;
+        }
+        if (name === 'exit_overlay_menu') {
+            // Endless：关掉胜利窗口接着打。`exit_overlay_menu` 顺手存设置
+            this.closeOverlay();
+            saveSettings();
             return;
         }
         // 复刻件没有主菜单与开局设置（牌组 / 赌注 / 种子都定死）：
         // 「New Run」换一个随机种子重开，「Main Menu」同种子重开。都走整页重载，URL 上的 ?seed 就是这一局的种子
-        if (name === 'notify_then_setup_run' || name === 'go_to_menu') {
+        if (name === 'notify_then_setup_run' || name === 'setup_run' || name === 'go_to_menu') {
+            saveSettings();
             const params = new URLSearchParams(location.search);
             params.set('seed', name === 'go_to_menu' ? this.run.seed : randomSeed());
+            // 随机出来的种子不算「玩家给的种子」（Options 里不显示种子那一行）
+            if (name !== 'go_to_menu') params.set('rs', '1');
             location.search = params.toString();
         }
     }
@@ -2925,11 +3002,12 @@ ${String(e instanceof Error ? e.message : e)}`)
     }
 
     update(time: number, delta: number): void {
-        this.queue.update(delta / 1000);
+        // `game.lua:2730` 的 `SPEEDFACTOR`：局内、没暂停（overlay 开着就是暂停）时按设置的游戏速度走事件队列
+        this.queue.update((delta / 1000) * (this.overlay ? 1 : SETTINGS.GAMESPEED));
         // `update_canvas_juice`：光标用屏幕 tile 坐标（`G.CURSOR.T`）
         const p = this.input.activePointer;
         const P = this.mapping.pxPerTile;
-        this.placeRoom(stepRoomJuice(this.juice, delta / 1000, time / 1000, LOOK.screenshake,
+        this.placeRoom(stepRoomJuice(this.juice, delta / 1000, time / 1000, SETTINGS.screenshake,
             { x: p.x / P, y: p.y / P }, { x: this.mapping.roomX, y: this.mapping.roomY }));
         this.syncHud();
         this.hudView.update(time / 1000);
@@ -3390,7 +3468,7 @@ ${String(e instanceof Error ? e.message : e)}`)
                 setupUniforms: (setUniform: (n: string, v: unknown) => void) => {
                     // 扫描线密度与色散都按画布像素算（`G.CANVAS:getPixelHeight()`、`love_ScreenSize`）。
                     // 画布曾经只有 1512×806 再被 CSS 放大，线粗一倍多（21 号票在模拟器上并排看出来的）
-                    const u = crtUniforms(LOOK.crt, this.scale.width, this.scale.height, this.time.now / 1000);
+                    const u = crtUniforms(SETTINGS.GRAPHICS.crt, this.scale.width, this.scale.height, this.time.now / 1000);
                     setUniform('uMainSampler', 0);
                     setUniform('distortion_fac', u.distortion_fac);
                     setUniform('scale_fac', u.scale_fac);
