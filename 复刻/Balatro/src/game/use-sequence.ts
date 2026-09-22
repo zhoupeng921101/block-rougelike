@@ -1,18 +1,25 @@
 /**
- * 用消耗品的表现（22 号票第四十二步）：`G.FUNCS.use_card`（`button_callbacks.lua:2265`）与
+ * 用消耗品的表现（22 号票第四十二、四十三步）：`G.FUNCS.use_card`（`button_callbacks.lua:2265`）与
  * `Card:use_consumeable`（`card.lua:1092`）里入队的那一串事件。
  *
- * **逻辑层已经一次算完**（改牌、升级、毁牌都落地了），这里只按原作的节奏把结果「演」出来：
+ * **逻辑层已经一次算完**（改牌、升级、毁牌、造牌、给钱都落地了），这里只按原作的节奏把结果「演」出来：
  * 用的那张飞到出牌区（开包时是手牌区上方）→ `delay(0.2)` → 各类消耗品自己的一段 → 0.2 秒后溶掉 → 0.1 秒后放开输入。
+ * 新造的牌 / 小丑 / 消耗品与金额的变化**先藏着，到点才揭开**（场景那边的 `reveal*` / `releaseDollars`）。
  *
  * 各类的那一段照原文：
  * - 改牌的塔罗（`mod_conv` / `suit_conv`，含 Strength、Death）：0.4 秒后 `tarot1`、用的那张弹一下；选中的牌逐张（0.15 秒）翻过去，
  *   `delay(0.2)`，逐张（0.1 秒）换成新牌面，逐张（0.15 秒）翻回来（`tarot2`），0.2 秒后放下选中，`delay(0.5)`
+ * - Sigil / Ouija：同一套，但翻的是整手，换面是 immediate 事件
  * - 星球（`hand_type`）：本手那格先写上牌型与**升级前**的筹码 / 倍率 / 等级，`level_up_hand` 的三拍（每拍 `tarot1`、弹一下）
- *   倍率冒增量、筹码冒增量、等级跳一级，`delay(1.3)`，再清空那格
- * - Black Hole：同一套，但写的是 `All Hands` 与 `...` / `+` / `+1`
- * - 毁牌（`remove_card`）：0.4 秒后 `tarot1`、弹一下，The Hanged Man 再 0.2 秒、Familiar 一族再 0.1 秒后碎 / 溶
- * - 其余：0.4 秒后 `tarot1`、弹一下，结果在收尾时一次性刷出来（它们各自的细节动画还没做）
+ *   倍率冒增量、筹码冒增量、等级跳一级，`delay(1.3)`，再清空那格。Black Hole 同一套，写的是 `All Hands` 与 `...` / `+` / `+1`
+ * - 蜡封（Talisman / Deja Vu / Trance / Medium）：立刻 `tarot1`，0.1 秒后上蜡封（弹一下、`gold_seal`），`delay(0.5)`，0.2 秒后放下
+ * - Aura：0.4 秒后换版本（那张弹一下、按版本放声）；Cryptid：复制品立刻溶进手里
+ * - 毁牌（`remove_card`）：0.4 秒 `tarot1`；Hanged Man 再 0.2 秒碎 / 溶；Immolate 0.1 秒后毁、`delay(0.5)` 后给钱；
+ *   Familiar 一族 0.1 秒后毁、0.7 秒后造的牌带着幽灵色溶进来；最后 `delay(0.3)`
+ * - Fool / Emperor / High Priestess：每张新消耗品一拍（0.4 秒，`timpani`）；Hermit / Temperance：0.4 秒 `timpani` 给钱
+ * - Judgement / Soul / Wraith：0.4 秒 `timpani`，新小丑出现（Wraith 同时金额清零）
+ * - Ankh：`before` 0.75 秒溶掉别的小丑，`before` 0.4 秒复制品溶进来
+ * - Wheel / Ectoplasm / Hex：0.4 秒后那张小丑换版本（Hex 同时溶掉别的）；Wheel 落空冒「Nope!」
  */
 import type { Card } from '../core/card';
 import type { Consumable } from '../core/consumables';
@@ -32,22 +39,42 @@ export type UseDeps = {
     juiceUsed: (amount: number, rot: number) => void;
     /** `G.TAROT_INTERRUPT_PULSE` */
     setPulse: (on: boolean) => void;
-    /** 选中的手牌精灵（`G.hand.highlighted`，按选中顺序） */
+    /** 选中的手牌精灵（`G.hand.highlighted`，按选中顺序）。换过牌面的会被原地替换成新精灵 */
     highlighted: CardSprite[];
+    /** 手里所有牌的精灵（`G.hand.cards`，Sigil / Ouija 翻整手），同样原地替换 */
+    handCards: CardSprite[];
     /** 按逻辑层的新状态重建这张牌的精灵（接着旧精灵的位置与翻面） */
     refreshCard: (card: Card) => void;
     /** `G.hand:unhighlight_all()` */
     unhighlightAll: () => void;
     /** 碎 / 溶掉被毁的手牌 */
     destroyCards: () => void;
-    /** 星球 / Black Hole：各牌型升级前后的值 */
+    /** 星球：各牌型升级前后的值 */
     handsBefore: Record<string, HandVals>;
     handsAfter: Record<string, HandVals>;
+    /** 小丑区按新状态重建：被毁的溶掉；新造的出现（`materialize` 时溶进来，`keepNew` 时继续藏着） */
+    revealJokers: (opts?: { materialize?: boolean; keepNew?: boolean }) => void;
+    /** 新造的消耗品揭开一张（`G.consumeables:emplace`） */
+    revealConsumable: () => void;
+    /** 还有几张新消耗品没揭开 */
+    hiddenConsumables: () => number;
+    /** 新进手牌的牌（Cryptid、Familiar 一族）溶进来 */
+    revealHand: (colours: 'default' | 'spectral') => void;
+    /** 逻辑层已经改掉的金额，现在 `ease_dollars` 出来 */
+    releaseDollars: () => void;
+    /** 小丑的版本变了（Wheel / Ectoplasm / Hex）：换精灵、那张弹一下、按版本放声。没变（Wheel 落空）返回 false */
+    jokerEditionChanged: () => boolean;
+    /** 这张手牌的版本变了（Aura）：弹一下、按版本放声 */
+    cardEditionPop: (card: Card) => void;
+    /** 蜡封（`set_seal(seal, nil, true)`）：弹一下、`gold_seal` */
+    sealPop: (card: Card) => void;
+    /** Wheel of Fortune 落空：用的那张上冒「Nope!」 */
+    nope: () => void;
 };
 
 const handName = (key: string) => DICTIONARY[key] ?? key;
 
-function event(d: UseDeps, delay: number, func: () => void, trigger: 'after' | 'before' = 'after'): void {
+function event(d: UseDeps, delay: number, func: () => void, trigger: 'after' | 'before' | 'immediate' = 'after'): void {
     d.queue.add(new GameEvent({ trigger, delay, func: () => { func(); return true; } }));
 }
 
@@ -62,6 +89,30 @@ function levelUpHand(d: UseDeps, after: { chips: number | string; mult: number |
     d.delay(1.3);
 }
 
+/** 翻牌换面：逐张翻过去（`card1`）、`delay(0.2)`、换面（`changeDelay` 为 0 时是 immediate 事件）、逐张翻回来（`tarot2`） */
+function flipAndChange(d: UseDeps, list: CardSprite[], changeDelay: number): void {
+    const n = list.length;
+    list.forEach((sp, i) => {
+        const percent = 1.15 - ((i + 1 - 0.999) / (n - 0.998)) * 0.3;
+        event(d, 0.15, () => { sp.flip(); d.sound('card1', percent); sp.juiceUp(0.3, 0.3); });
+    });
+    d.delay(0.2);
+    // 事件里读 `list[i]`：换过面的是新精灵
+    list.forEach((_, i) => event(d, changeDelay, () => { const sp = list[i]; if (sp) d.refreshCard(sp.card); }, changeDelay > 0 ? 'after' : 'immediate'));
+    list.forEach((_, i) => {
+        const percent = 0.85 + ((i + 1 - 0.999) / (n - 0.998)) * 0.3;
+        event(d, 0.15, () => {
+            const now = list[i];
+            now?.flip();
+            d.sound('tarot2', percent, 0.6);
+            now?.juiceUp(0.3, 0.3);
+        });
+    });
+}
+
+const tarotJuice = (d: UseDeps) => { d.sound('tarot1'); d.juiceUsed(0.3, 0.5); };
+const timpaniJuice = (d: UseDeps) => { d.sound('timpani'); d.juiceUsed(0.3, 0.5); };
+
 /** `Card:use_consumeable` 的表现部分。调用前逻辑层已经 `use` 过了 */
 export function queueUseConsumable(d: UseDeps, c: Consumable): void {
     const cfg = c.center.config as { mod_conv?: string; suit_conv?: string; hand_type?: string; remove_card?: boolean; max_highlighted?: number };
@@ -70,40 +121,40 @@ export function queueUseConsumable(d: UseDeps, c: Consumable): void {
     if (cfg.max_highlighted) d.updateHandText({ immediate: true, nopulse: true, delay: 0 }, { mult: 0, chips: 0, level: '', handname: '' });
 
     if (cfg.mod_conv || cfg.suit_conv) {
-        event(d, 0.4, () => { d.sound('tarot1'); d.juiceUsed(0.3, 0.5); });
-        const hl = d.highlighted;
-        const n = hl.length;
-        hl.forEach((sp, i) => {
-            const percent = 1.15 - ((i + 1 - 0.999) / (n - 0.998)) * 0.3;
-            event(d, 0.15, () => { sp.flip(); d.sound('card1', percent); sp.juiceUp(0.3, 0.3); });
-        });
-        d.delay(0.2);
-        // 换牌面：逐张 0.1 秒（Death 把右边那张抄到别的上面，同一个节奏）
-        hl.forEach((sp) => event(d, 0.1, () => d.refreshCard(sp.card)));
-        hl.forEach((_, i) => {
-            const percent = 0.85 + ((i + 1 - 0.999) / (n - 0.998)) * 0.3;
-            // 翻回来的是换过的新精灵，到点再取
-            event(d, 0.15, () => {
-                const now = d.highlighted[i];
-                now?.flip();
-                d.sound('tarot2', percent, 0.6);
-                now?.juiceUp(0.3, 0.3);
-            });
-        });
+        event(d, 0.4, () => tarotJuice(d));
+        flipAndChange(d, d.highlighted, 0.1);
         event(d, 0.2, () => d.unhighlightAll());
         d.delay(0.5);
     }
 
     if (name === 'Black Hole') {
         d.updateHandText({ sound: 'button', volume: 0.7, pitch: 0.8, delay: 0.3 }, { handname: DICTIONARY.k_all_hands ?? 'All Hands', chips: '...', mult: '...', level: '' });
-        event(d, 0.2, () => { d.sound('tarot1'); d.juiceUsed(0.8, 0.5); d.setPulse(true); });
-        d.updateHandText({ delay: 0 }, { mult: '+', StatusText: true });
-        event(d, 0.9, () => { d.sound('tarot1'); d.juiceUsed(0.8, 0.5); });
-        d.updateHandText({ delay: 0 }, { chips: '+', StatusText: true });
-        event(d, 0.9, () => { d.sound('tarot1'); d.juiceUsed(0.8, 0.5); d.setPulse(false); });
-        d.updateHandText({ sound: 'button', volume: 0.7, pitch: 0.9, delay: 0 }, { level: '+1' });
-        d.delay(1.3);
+        levelUpHand(d, { mult: '+', chips: '+', level: '+1' });
         d.updateHandText({ sound: 'button', volume: 0.7, pitch: 1.1, delay: 0 }, { mult: 0, chips: 0, handname: '', level: '' });
+    }
+
+    if (['Talisman', 'Deja Vu', 'Trance', 'Medium'].includes(name)) {
+        const target = d.highlighted[0];
+        event(d, 0, () => tarotJuice(d), 'immediate');
+        event(d, 0.1, () => { if (target) { d.refreshCard(target.card); d.sealPop(target.card); } });
+        d.delay(0.5);
+        event(d, 0.2, () => d.unhighlightAll());
+    }
+
+    if (name === 'Aura') {
+        const target = d.highlighted[0];
+        event(d, 0.4, () => {
+            if (target) { d.refreshCard(target.card); d.cardEditionPop(target.card); }
+            d.juiceUsed(0.3, 0.5);
+        });
+    }
+
+    if (name === 'Cryptid') event(d, 0, () => d.revealHand('default'), 'immediate');
+
+    if (name === 'Sigil' || name === 'Ouija') {
+        event(d, 0.4, () => tarotJuice(d));
+        flipAndChange(d, d.handCards, 0);
+        d.delay(0.5);
     }
 
     if (cfg.hand_type) {
@@ -115,12 +166,52 @@ export function queueUseConsumable(d: UseDeps, c: Consumable): void {
     }
 
     if (cfg.remove_card) {
-        event(d, 0.4, () => { d.sound('tarot1'); d.juiceUsed(0.3, 0.5); });
-        event(d, name === 'The Hanged Man' ? 0.2 : 0.1, () => d.destroyCards());
-        return;
+        event(d, 0.4, () => tarotJuice(d));
+        if (name === 'The Hanged Man') event(d, 0.2, () => d.destroyCards());
+        else if (name === 'Immolate') {
+            event(d, 0.1, () => d.destroyCards());
+            d.delay(0.5);
+            event(d, 0, () => d.releaseDollars(), 'immediate');
+        } else {
+            // Familiar / Grim / Incantation：毁一张，0.7 秒后造的牌带着幽灵色溶进来
+            event(d, 0.1, () => d.destroyCards());
+            event(d, 0.7, () => d.revealHand('spectral'));
+        }
+        d.delay(0.3);
     }
 
-    if (!cfg.mod_conv && !cfg.suit_conv && !cfg.hand_type && name !== 'Black Hole') {
-        event(d, 0.4, () => { d.sound('tarot1'); d.juiceUsed(0.3, 0.5); });
+    if (name === 'The Fool') {
+        event(d, 0.4, () => { if (d.hiddenConsumables() > 0) { d.sound('timpani'); d.revealConsumable(); d.juiceUsed(0.3, 0.5); } });
+        d.delay(0.6);
+    }
+    if (name === 'The Hermit' || name === 'Temperance') {
+        event(d, 0.4, () => { timpaniJuice(d); d.releaseDollars(); });
+        d.delay(0.6);
+    }
+    if (name === 'The Emperor' || name === 'The High Priestess') {
+        const n = d.hiddenConsumables();
+        for (let i = 0; i < n; i++) event(d, 0.4, () => { d.sound('timpani'); d.revealConsumable(); d.juiceUsed(0.3, 0.5); });
+        d.delay(0.6);
+    }
+    if (name === 'Judgement' || name === 'The Soul' || name === 'Wraith') {
+        event(d, 0.4, () => {
+            d.sound('timpani');
+            d.revealJokers();
+            d.juiceUsed(0.3, 0.5);
+            if (name === 'Wraith') d.releaseDollars();
+        });
+        d.delay(0.6);
+    }
+    if (name === 'Ankh') {
+        // 先溶掉别的（复制品还藏着），再让复制品溶进来
+        event(d, 0.75, () => d.revealJokers({ keepNew: true }), 'before');
+        event(d, 0.4, () => d.revealJokers({ materialize: true }), 'before');
+    }
+    if (name === 'The Wheel of Fortune' || name === 'Ectoplasm' || name === 'Hex') {
+        event(d, 0.4, () => {
+            if (d.jokerEditionChanged()) d.juiceUsed(0.3, 0.5);
+            else d.nope();
+        });
+        d.delay(0.6);
     }
 }

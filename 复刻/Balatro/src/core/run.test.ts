@@ -931,3 +931,23 @@ describe('买即用（BUY & USE）', () => {
         throw new Error('200 个 seed 里没有一个商店卖星球');
     });
 });
+
+describe('钱包只有一份（22 号票第四十三步抓到的）', () => {
+    it('盲注里卖小丑、用 The Hermit 挣的钱，过关之后还在', () => {
+        const run = new Run('TUTORIAL');
+        run.jokers.push(makeJoker('j_joker'));
+        const round = run.startRound();
+        const start = run.dollars;
+        const sold = run.sellJoker(0);
+        expect(round.dollars).toBe(start + sold);
+        run.consumables.push(makeConsumable('c_hermit'));
+        run.useConsumable(0);
+        const afterHermit = start + sold + Math.min(20, start + sold);
+        expect(round.dollars).toBe(afterHermit);
+        round.chips = round.requirement;
+        (round as unknown as { phase: string }).phase = 'won';
+        const { payout } = run.finishRound();
+        expect(run.dollars).toBe(afterHermit + payout.total);
+    });
+});
+

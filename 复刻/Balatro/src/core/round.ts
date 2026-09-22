@@ -114,6 +114,11 @@ export type RoundOptions = {
     jokers?: Joker[];
     /** 起手金钱。`Run` 层带过来 */
     dollars?: number;
+    /**
+     * 与 `Run` 共用的钱包（`G.GAME.dollars` 只有一份）。给了就读写它、忽略 `dollars`——
+     * 盲注里卖小丑、用 Hermit 之类走的是 `Run` 那边，计分挣的钱走这边，两边必须是同一个数
+     */
+    wallet?: { v: number };
     /** 本局累计出牌数。Loyalty Card / Supernova 之类跨回合的计数 */
     handsPlayed?: number;
     /** 牌型等级。跨回合持有，所以由 `Run` 层传进来 */
@@ -273,7 +278,13 @@ export class Round {
     discardsLeft: number;
     /** `G.GAME.chips`，本回合累计 */
     chips = 0;
-    dollars: number;
+    private readonly wallet: { v: number };
+    get dollars(): number {
+        return this.wallet.v;
+    }
+    set dollars(v: number) {
+        this.wallet.v = v;
+    }
     phase: RoundPhase = 'selecting';
     handsPlayedThisRound = 0;
 
@@ -324,7 +335,7 @@ export class Round {
     constructor(seed: string, fullDeck: Card[], options: RoundOptions = {}) {
         this.ante = options.ante ?? 1;
         this.jokers = options.jokers ?? [];
-        this.dollars = options.dollars ?? STARTING_PARAMS.dollars;
+        this.wallet = options.wallet ?? { v: options.dollars ?? STARTING_PARAMS.dollars };
         this.handsPlayed = options.handsPlayed ?? 0;
         this.hands = options.hands ?? initialHands();
         // `Four Fingers` 与 `Shortcut` 是小丑给的牌型判定松紧，

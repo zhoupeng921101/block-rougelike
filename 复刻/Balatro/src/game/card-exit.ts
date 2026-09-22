@@ -120,3 +120,38 @@ export function playExit(scene: Scene, target: ExitTarget, style: ExitStyle, onG
     };
     scene.events.on('update', tick);
 }
+
+/**
+ * `Card:start_materialize(colours, silent, timefac)`（`card.lua:2185`）：反过来的溶解——`dissolve` 从 1 线性缓到 0（`0.6·timefac` 秒），
+ * 弹一下，一阵同色碎屑（每 `0.025·t` 秒一颗、边长 0.25、速度 3、寿命 `0.7·t`，半程停出新的，`1.05·t` 后拆），
+ * 不 silent 就 `whoosh1` + `crumple1..5`。弹一下放在第一帧（新精灵要摆过一次才有缓动）
+ */
+export function playEnter(scene: Scene, target: ExitTarget, colours: Colour[], silent = false, timeFac = 1): void {
+    const t = 0.6 * timeFac;
+    const start = scene.time.now / 1000;
+    target.dissolve.amount = 1;
+    target.dissolve.colours = colours;
+    const parts = new Particles(scene, {
+        timer: 0.025 * t, scale: 0.25, speed: 3, lifespan: 0.7 * t,
+        attach: () => target.rect, colours, fill: true, depth: target.topDepth,
+    });
+    if (!silent) {
+        scene.sound.play('whoosh1', { rate: Math.random() * 0.1 + 0.6, volume: 0.3 });
+        scene.sound.play(`crumple${1 + Math.floor(Math.random() * 5)}`, { rate: Math.random() * 0.2 + 1.2, volume: 0.8 });
+    }
+    let juiced = false;
+    const tick = (time: number) => {
+        const age = time / 1000 - start;
+        if (!juiced) {
+            target.juiceUp();
+            juiced = true;
+        }
+        target.dissolve.amount = Math.max(0, 1 - age / t);
+        if (age > 0.5 * t) parts.max = 0;
+        if (age >= 1.05 * t) {
+            scene.events.off('update', tick);
+            parts.destroy();
+        }
+    };
+    scene.events.on('update', tick);
+}

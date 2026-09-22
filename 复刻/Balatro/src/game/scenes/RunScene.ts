@@ -72,7 +72,7 @@ import { numberFormat } from '../../ui/format';
 import { UIBox, UIT } from '../../ui/uibox';
 import { RED_DECK, WIN_ANTE } from '../../core/run';
 import { JokerSprite } from '../joker-sprite';
-import { type ExitStyle, type ExitTarget, destroyStyle, playExit } from '../card-exit';
+import { type ExitStyle, type ExitTarget, destroyStyle, playEnter, playExit } from '../card-exit';
 import { queueUseConsumable } from '../use-sequence';
 import { LOOK } from '../look';
 import { SETTINGS, masterGain, saveSettings, wobble } from '../settings';
@@ -329,6 +329,8 @@ export class RunScene extends Scene {
             ...Array.from({ length: 5 }, (_, i) => `crumple${i + 1}`),
             // 玻璃牌碎掉（`Card:shatter`）
             ...Array.from({ length: 6 }, (_, i) => `glass${i + 1}`),
+            // 版本（`set_edition`）、蜡封、造牌 / 给钱的定音鼓
+            'foil1', 'holo1', 'polychrome1', 'timpani', 'gold_seal',
         ]) {
             this.load.audio(key, `/assets/sounds/${key}.ogg`);
         }
@@ -717,7 +719,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             if (this.run.jokers.includes(s.joker)) s.destroy();
             else this.exitCard(s, this.vanishedJokerStyle(s.joker));
         }
-        this.jokerSprites = this.run.jokers.map((j) => {
+        this.jokerSprites = this.run.jokers.filter((j) => !this.hiddenJokers.has(j)).map((j) => {
             const s: JokerSprite = new JokerSprite(this, j, (joker) => this.pick(s, { kind: 'joker', joker }));
             this.attachPopup([s.shader], s, () => popupOfJoker(j, 'jokers'));
             return s;
@@ -798,7 +800,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             // 没登记的就是用掉了：`use_card` 里 `card:start_dissolve()`（`button_callbacks.lua:2370`）
             else this.exitCard(s, this.pendingExit.get(s.consumable) ?? { kind: 'dissolve' });
         }
-        this.consumableSprites = this.run.consumables.map((c) => {
+        this.consumableSprites = this.run.consumables.filter((c) => !this.hiddenConsumables.includes(c)).map((c) => {
             const s: ConsumableSprite = new ConsumableSprite(this, c, (con) => this.pick(s, { kind: 'consumable', consumable: con }));
             this.attachPopup([s.shader], s, () => popupOfConsumable(c, 'consumeables'));
             return s;
@@ -836,11 +838,35 @@ ${String(e instanceof Error ? e.message : e)}`)
     }
 
     /** 用消耗品之前记下表现要用的「之前」：选中的牌（按选中顺序）、各牌型的值、小丑区 */
-    private useSnapshot(): { highlighted: Card[]; hands: Record<string, { chips: number; mult: number; level: number }>; jokers: Joker[]; packKind?: string } {
+    private useSnapshot() {
         const hands: Record<string, { chips: number; mult: number; level: number }> = {};
         for (const [k, h] of Object.entries(this.run.hands)) hands[k] = { chips: h.chips, mult: h.mult, level: h.level };
-        // 包的种类要在用之前记：只剩一次选择的包，逻辑层用完当场就关了
-        return { highlighted: [...this.selected], hands, jokers: [...this.run.jokers], packKind: this.run.openPack?.center.kind };
+        const round = this.round;
+        return {
+            highlighted: [...this.selected],
+            hands,
+            jokers: [...this.run.jokers],
+            jokerEditions: new Map(this.run.jokers.map((j) => [j, j.edition] as const)),
+            consumables: [...this.run.consumables],
+            handCards: [...(this.run.packHand ?? round?.hand ?? [])],
+            dollars: round && this.run.state === 'playing' ? round.dollars : this.run.dollars - this.pendingPayout,
+            // 包的种类要在用之前记：只剩一次选择的包，逻辑层用完当场就关了
+            packKind: this.run.openPack?.center.kind,
+        };
+    }
+
+    /** 用消耗品期间还没演到的结果：新造的小丑 / 消耗品（按造的顺序）/ 手牌，与逻辑层已经改掉、还没 `ease_dollars` 的金额 */
+    private hiddenJokers = new Set<Joker>();
+    private hiddenConsumables: Consumable[] = [];
+    private hiddenCards = new Set<Card>();
+    private heldDollars = 0;
+
+    /** `set_edition` 的那一声（`card.lua:439`） */
+    private editionSound(edition: string | undefined): void {
+        if (edition === 'foil') this.sound.play('foil1', { rate: 1.2, volume: 0.4 });
+        if (edition === 'holo') this.sound.play('holo1', { rate: 1.2 * 1.58, volume: 0.4 });
+        if (edition === 'polychrome') this.sound.play('polychrome1', { rate: 1.2, volume: 0.7 });
+        if (edition === 'negative') this.sound.play('negative', { rate: 1.5, volume: 0.4 });
     }
 
     /** 飞在半路 / 停在出牌区的那张（`use_card` 的 `draw_card(G.hand, G.play)`），每帧摆 */
@@ -884,6 +910,17 @@ ${String(e instanceof Error ? e.message : e)}`)
         for (const [k, h] of Object.entries(this.run.hands)) handsAfter[k] = { chips: h.chips, mult: h.mult, level: h.level };
         this.registerDestroyedJokers(snap.jokers);
 
+        // 新造的先藏着、金额先按用之前的显示，到点再揭开
+        const logicalHand = () => this.run.packHand ?? this.round?.hand ?? [];
+        this.hiddenJokers = new Set(this.run.jokers.filter((j) => !snap.jokers.includes(j)));
+        this.hiddenConsumables = this.run.consumables.filter((c) => !snap.consumables.includes(c));
+        this.hiddenCards = new Set(logicalHand().filter((c) => !snap.handCards.includes(c)));
+        const nowDollars = this.round && this.run.state === 'playing' ? this.round.dollars : this.run.dollars - this.pendingPayout;
+        this.heldDollars = nowDollars - snap.dollars;
+        const handCards = handList().slice();
+        const entered = { jokers: false, hand: false };
+        const usedRect = () => used?.rect ?? { x: 0, y: 0, w: CARD_W, h: CARD_H };
+
         this.delayEvent(0.2);
         queueUseConsumable({
             queue: this.queue,
@@ -906,12 +943,81 @@ ${String(e instanceof Error ? e.message : e)}`)
                 list[i] = fresh;
                 const h = highlighted.indexOf(old);
                 if (h >= 0) highlighted[h] = fresh;
+                const hc = handCards.indexOf(old);
+                if (hc >= 0) handCards[hc] = fresh;
                 old.destroy();
             },
             unhighlightAll: () => this.selected.clear(),
             destroyCards: () => this.exitDestroyedHand([...this.sprites, ...this.packHandSprites], consumable.center.name),
             handsBefore: snap.hands,
             handsAfter,
+            handCards,
+            revealJokers: (opts = {}) => {
+                const fresh = [...this.hiddenJokers];
+                if (!opts.keepNew) this.hiddenJokers.clear();
+                this.rebuildJokers();
+                if (opts.materialize && !opts.keepNew) {
+                    entered.jokers = true;
+                    for (const j of fresh) {
+                        const sp = this.jokerSprites.find((x) => x.joker === j);
+                        if (sp) playEnter(this, sp, [C.RARITY[(j.center.rarity ?? 1) - 1] ?? C.RARITY[0]!]);
+                    }
+                }
+            },
+            revealConsumable: () => {
+                this.hiddenConsumables.shift();
+                this.rebuildConsumables();
+            },
+            hiddenConsumables: () => this.hiddenConsumables.length,
+            revealHand: (colours) => {
+                // 不整体重建：只把新牌的精灵插进它在逻辑层里的位置，原地溶进来（`create_playing_card` / `copy_card` + `emplace`）
+                const list = handList();
+                let first = true;
+                for (const card of logicalHand()) {
+                    if (!this.hiddenCards.has(card)) continue;
+                    this.hiddenCards.delete(card);
+                    const sp = this.handSprite(card, [], (c) => (this.run.packHand ? this.togglePackHand(c) : this.toggle(c)));
+                    sp.spawnFrom = null;
+                    const at = logicalHand().filter((c) => !this.hiddenCards.has(c)).indexOf(card);
+                    list.splice(Math.min(at, list.length), 0, sp);
+                    playEnter(this, sp, colours === 'spectral' ? [C.SECONDARY_SET.Spectral] : [C.GREEN], !first);
+                    first = false;
+                }
+                entered.hand = true;
+            },
+            releaseDollars: () => {
+                if (this.heldDollars !== 0) this.sound.play('coin1', { volume: 0.8 });
+                this.heldDollars = 0;
+            },
+            jokerEditionChanged: () => {
+                const changed = this.run.jokers.find((j) => snap.jokerEditions.has(j) && snap.jokerEditions.get(j) !== j.edition);
+                // Hex 溶掉的别的小丑也在这一拍
+                this.rebuildJokers();
+                if (!changed) return false;
+                const sp = this.jokerSprites.find((x) => x.joker === changed);
+                sp?.juiceUp(1, 0.5);
+                this.editionSound(changed.edition);
+                return true;
+            },
+            cardEditionPop: (card) => {
+                handList().find((x) => x.card === card)?.juiceUp(1, 0.5);
+                this.editionSound(card.edition);
+            },
+            sealPop: (card) => {
+                handList().find((x) => x.card === card)?.juiceUp(0.3, 0.3);
+                this.sound.play('gold_seal', { rate: 1.2, volume: 0.4 });
+            },
+            nope: () => {
+                // `attention_text{text = 'Nope!', scale = 1.3, hold = 1.4, backdrop_colour = Tarot}`，两声 `tarot2`
+                const tall = snap.packKind === 'Arcana' || snap.packKind === 'Spectral';
+                this.attentionTexts.push(new AttentionText(this, {
+                    text: DICTIONARY.k_nope_ex ?? 'Nope!', scale: 1.3, hold: 1.4, major: usedRect,
+                    backdropColour: C.SECONDARY_SET.Tarot, align: tall ? 'tm' : 'cm', offset: { x: 0, y: tall ? -0.2 : 0 },
+                }, this.mapping.pxPerTile / toPx(1), 60));
+                this.sound.play('tarot2', { rate: 1, volume: 0.4 });
+                this.time.delayedCall(60, () => this.sound.play('tarot2', { rate: 0.76, volume: 0.4 }));
+                used?.juiceUp(0.3, 0.5);
+            },
         }, consumable);
         this.queue.add(new GameEvent({ trigger: 'after', delay: 0.2, func: () => {
             if (used) {
@@ -925,14 +1031,18 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.hudState.tarot_interrupt_pulse = false;
             this.animating = false;
             this.selected.clear();
+            this.hiddenJokers.clear();
+            this.hiddenConsumables = [];
+            this.hiddenCards.clear();
+            this.heldDollars = 0;
             if (shop && this.shopUi === shop) shop.view.slideTo(0);
             if (pack && this.packUi === pack && this.run.openPack) pack.view.slideTo(0);
-            // 其余效果（造牌、给钱、换小丑……）在这里一次性刷出来
-            this.rebuildHand();
+            // 兜底：还没演到的结果在这里一次性刷出来。刚溶进来的区不重建（重建会把溶入动画截掉）
+            if (!entered.hand) this.rebuildHand();
             if (onDone) onDone();
             else {
-                if (this.run.openPack) this.rebuildPackCards();
-                this.rebuildJokers();
+                if (this.run.openPack && !entered.hand) this.rebuildPackCards();
+                if (!entered.jokers) this.rebuildJokers();
                 this.rebuildConsumables();
                 this.refresh();
             }
@@ -1164,7 +1274,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         });
         // 手牌区的开包分支（`cardarea.lua:441`）：发下来的牌抬到手牌区上方
         let drawn = 0;
-        this.packHandSprites = (this.run.packHand ?? []).map((c) => {
+        this.packHandSprites = (this.run.packHand ?? []).filter((c) => !this.hiddenCards.has(c)).map((c) => {
             const sprite = this.handSprite(c, oldPackHand, (card) => this.togglePackHand(card));
             if (sprite.spawnFrom) sprite.holdUntil = this.time.now / 1000 + 0.1 * drawn++;
             return sprite;
@@ -1541,6 +1651,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
         const item = this.run.shop?.items[index];
         const snap = this.useSnapshot();
+        snap.dollars -= this.run.shop?.itemCost(index) ?? 0;
         const consumable = this.run.buyAndUseConsumable(index, this.selectedInOrder());
         this.sound.play('coin1', { volume: 0.5 });
         // 买下的那张离开货架（价签一起拆，`card.children.price:remove()`），交给 `playUse`
@@ -2279,6 +2390,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             // **不改它**——边距是表现层的事，在 layout 时叠加
             let drawn = 0;
             for (const card of round.hand) {
+                if (this.hiddenCards.has(card)) continue;
                 const sprite = this.handSprite(card, old, (c) => this.toggle(c));
                 if (sprite.spawnFrom) sprite.holdUntil = this.time.now / 1000 + 0.1 * drawn++;
                 this.sprites.push(sprite);
@@ -3441,7 +3553,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         const round = this.round;
         const s = this.hudState;
         const inRound = run.state === 'playing' && round !== null;
-        s.dollars = inRound ? round.dollars : run.dollars - this.pendingPayout;
+        s.dollars = (inRound ? round.dollars : run.dollars - this.pendingPayout) - this.heldDollars;
         // `ease_dollars`：金额格上盖一块金（加）/ 红（减）色块、冒「+$N」（同一帧里的几笔合成一笔；`coin1` 由各处自己放）
         if (this.lastDollars !== null && s.dollars !== this.lastDollars) this.dollarsPopup(s.dollars - this.lastDollars);
         this.lastDollars = s.dollars;

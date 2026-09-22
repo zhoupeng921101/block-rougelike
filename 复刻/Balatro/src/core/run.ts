@@ -150,7 +150,14 @@ export class Run {
     firstShopBuffoon = false;
 
     ante = 1;
-    dollars: number = STARTING_PARAMS.dollars;
+    /** `G.GAME.dollars`：与当前 `Round` 共用这一个钱包（以前两边各一份，过关时 Round 那份把盲注里卖牌 / 用 Hermit 挣的钱盖掉了） */
+    private readonly wallet: { v: number } = { v: STARTING_PARAMS.dollars };
+    get dollars(): number {
+        return this.wallet.v;
+    }
+    set dollars(v: number) {
+        this.wallet.v = v;
+    }
     state: RunState = 'blind-select';
     /** 本 Ante 打到第几关（0 = 小盲注） */
     blindIndex = 0;
@@ -759,7 +766,7 @@ export class Run {
             ante: this.ante,
             blind,
             jokers: this.jokers,
-            dollars: this.dollars,
+            wallet: this.wallet,
             handsPlayed: this.handsPlayed,
             hands: this.hands,
             jokerFlags,
@@ -807,8 +814,7 @@ export class Run {
         // `state_events.lua:142`：过关时把剩下的弃牌攒起来（Garbage Tag）
         if (won) this.unusedDiscards += round.discardsLeft;
 
-        // `Round` 在结算里已经把小丑赚的钱写进它自己那份 dollars 了，先收回来
-        this.dollars = round.dollars;
+        // 钱不用收回来：`Round` 与 `Run` 共用一个钱包
         // **读回来，不是加一遍**——`evaluatePlay` 已经经 `gameView` 的 setter
         // 把每次出牌记进 `round.handsPlayed` 了
         this.handsPlayed = round.handsPlayed;
