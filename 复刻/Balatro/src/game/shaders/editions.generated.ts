@@ -1,11 +1,11 @@
 /**
- * 7 个叠加层 shader 的片元部分。**这个文件是生成的，不要手改**——
+ * 7 个叠加层 shader 与 Hologram 浮层（hologram）的片元部分。**这个文件是生成的，不要手改**——
  * 改 `tools/gen-edition-shaders.mjs` 然后重跑 `node tools/gen-edition-shaders.mjs`。
  *
  * 源：`参考/产物/Balatro_1.0.1o/资源/shaders/<name>.fs`。顶点部分共用 `DISSOLVE_VERT`（见生成器头注释）。
  */
 
-export type OverlayShader = 'holo' | 'foil' | 'polychrome' | 'negative' | 'negative_shine' | 'voucher' | 'booster';
+export type OverlayShader = 'holo' | 'foil' | 'polychrome' | 'negative' | 'negative_shine' | 'voucher' | 'booster' | 'hologram';
 
 export const OVERLAY_FRAGS: Record<OverlayShader, string> = {
     holo: /* glsl */ `
@@ -878,6 +878,136 @@ vec4 effect(vec4 colour, vec2 texture_coords)
     tex.a = tex.a*(0.8*max(min(1., max(0.,0.3*max(low*0.2, delta)+ min(max(maxfac*0.1,0.), 0.4)) ), 0.) + 0.15*maxfac*(0.1+delta));
 
     return dissolve_mask(tex*colour, texture_coords, uv);
+}
+
+void main ()
+{
+    vec4 c = effect(vec4(1.0), outTexCoord);
+    gl_FragColor = vec4(c.rgb * c.a, c.a);
+}
+`,
+    hologram: /* glsl */ `
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+
+varying vec2 outTexCoord;
+uniform sampler2D uMainSampler;
+
+// Phaser 上传的纹理是预乘 alpha、混合也按预乘（ONE, ONE_MINUS_SRC_ALPHA），原作 LÖVE 是非预乘。
+// 采样时还原成非预乘、按原文算，出口再乘回去——否则叠加层在透明像素上加的颜色会整块发亮
+vec4 texel_straight(vec2 uv)
+{
+    vec4 t = texture2D(uMainSampler, uv);
+    if (t.a > 0.0) t.rgb /= t.a;
+    return t;
+}
+
+uniform vec2 hologram;
+uniform float dissolve;
+uniform float time;
+uniform vec4 texture_details;
+uniform vec2 image_details;
+uniform bool shadow;
+uniform vec4 burn_colour_1;
+uniform vec4 burn_colour_2;
+
+vec4 dissolve_mask(vec4 tex, vec2 texture_coords, vec2 uv)
+{
+    if (dissolve < 0.001) {
+        return vec4(shadow ? vec3(0.,0.,0.) : tex.xyz, shadow ? tex.a*0.3: tex.a);
+    }
+
+    float adjusted_dissolve = (dissolve*dissolve*(3.-2.*dissolve))*1.02 - 0.01; //Adjusting 0.0-1.0 to fall to -0.1 - 1.1 scale so the mask does not pause at extreme values
+
+	float t = time * 10.0 + 2003.;
+	vec2 floored_uv = (floor((uv*texture_details.ba)))/max(texture_details.b, texture_details.a);
+    vec2 uv_scaled_centered = (floored_uv - 0.5) * 2.3 * max(texture_details.b, texture_details.a);
+	
+	vec2 field_part1 = uv_scaled_centered + 50.*vec2(sin(-t / 143.6340), cos(-t / 99.4324));
+	vec2 field_part2 = uv_scaled_centered + 50.*vec2(cos( t / 53.1532),  cos( t / 61.4532));
+	vec2 field_part3 = uv_scaled_centered + 50.*vec2(sin(-t / 87.53218), sin(-t / 49.0000));
+
+    float field = (1.+ (
+        cos(length(field_part1) / 19.483) + sin(length(field_part2) / 33.155) * cos(field_part2.y / 15.73) +
+        cos(length(field_part3) / 27.193) * sin(field_part3.x / 21.92) ))/2.;
+    vec2 borders = vec2(0.2, 0.8);
+
+    float res = (.5 + .5* cos( (adjusted_dissolve) / 82.612 + ( field + -.5 ) *3.14))
+    - (floored_uv.x > borders.y ? (floored_uv.x - borders.y)*(5. + 5.*dissolve) : 0.)*(dissolve)
+    - (floored_uv.y > borders.y ? (floored_uv.y - borders.y)*(5. + 5.*dissolve) : 0.)*(dissolve)
+    - (floored_uv.x < borders.x ? (borders.x - floored_uv.x)*(5. + 5.*dissolve) : 0.)*(dissolve)
+    - (floored_uv.y < borders.x ? (borders.x - floored_uv.y)*(5. + 5.*dissolve) : 0.)*(dissolve);
+
+    if (tex.a > 0.01 && burn_colour_1.a > 0.01 && !shadow && res < adjusted_dissolve + 0.8*(0.5-abs(adjusted_dissolve-0.5)) && res > adjusted_dissolve) {
+        if (!shadow && res < adjusted_dissolve + 0.5*(0.5-abs(adjusted_dissolve-0.5)) && res > adjusted_dissolve) {
+            tex.rgba = burn_colour_1.rgba;
+        } else if (burn_colour_2.a > 0.01) {
+            tex.rgba = burn_colour_2.rgba;
+        }
+    }
+
+    return vec4(shadow ? vec3(0.,0.,0.) : tex.xyz, res > adjusted_dissolve ? (shadow ? tex.a*0.3: tex.a) : .0);
+}
+
+vec4 effect(vec4 colour, vec2 texture_coords)
+{
+    //Glow effect
+    float glow = 0.;
+    const int glow_samples = 4;
+    int actual_glow_samples = 0;
+    float glow_dist = 0.0015;
+    float _a = 0.;
+
+     for (int i = -glow_samples; i <= glow_samples; ++i){
+            for (int j = -glow_samples; j <= glow_samples; ++j){
+                _a = texel_straight( texture_coords + (glow_dist)*vec2(float(i), float(j))).a;
+                if (_a < 0.9){
+                    actual_glow_samples += 1;
+                    glow = glow + _a;
+                }
+            }
+     }
+     glow /= 0.7*float(actual_glow_samples);
+    
+    //Create the horizontal glitch offset effects
+    float offset_l = 0.;
+    float offset_r = 0.;
+    float timefac = 1.0*hologram.g;
+    offset_l = -10.0*(-0.5+sin(timefac*0.512 + texture_coords.y*14.0)
+            + sin(-timefac*0.8233 + texture_coords.y*11.532)
+            + sin(timefac*0.333 + texture_coords.y*13.3)
+            + sin(-timefac*0.1112331 + texture_coords.y*4.044343));
+    offset_r = -10.0*(-0.5+sin(timefac*0.6924 + texture_coords.y*19.0)
+        + sin(-timefac*0.9661 + texture_coords.y*21.532)
+        + sin(timefac*0.4423 + texture_coords.y*30.3)
+        + sin(-timefac*0.13321312 + texture_coords.y*3.011));
+    if (offset_r >= 1.5 || offset_r <= 0.){offset_r = 0.;}
+    if (offset_l >= 1.5 || offset_l <= 0.){offset_l = 0.;}
+    texture_coords.x = texture_coords.x + 0.002*(-offset_l + offset_r);
+
+    vec4 tex = texel_straight( texture_coords);
+    if (tex.a > 0.999){tex = vec4(0.,0.,0.,0.);}
+    if (tex.a < 0.001){tex.rgb = vec3(0.,1.,1.);}
+    vec2 uv = (((texture_coords)*(image_details)) - texture_details.xy*texture_details.ba)/texture_details.ba;
+
+    if (uv.x >0.95 || uv.x < 0.05 || uv.y > 0.95 || uv.y < 0.05){
+        return vec4(0.,0.,0.,0.);
+    }
+
+    float light_strength = 0.4*(0.3*sin(2.*hologram.g) + 0.6 + 0.3*sin(hologram.r*3.) + 0.9);
+    vec4 final_col;
+    if (tex.a < 0.001){
+        final_col = tex*colour + vec4(0., 1., .5,0.6)*light_strength*(1.+abs(offset_l)+abs(offset_r))*glow;
+    }
+    else{
+        final_col = tex*colour + vec4(0., 0.3, 0.2,0.3)*light_strength*(1.+abs(offset_l)+abs(offset_r))*glow;
+    }
+    
+//
+    return dissolve_mask(final_col, texture_coords, uv);
 }
 
 void main ()

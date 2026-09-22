@@ -19,7 +19,7 @@ const SHADOW_HEIGHT = 0.1;
  * 传奇小丑与 Hologram 的 `soul_pos`（`floating_sprite`）。`draw_from` 以卡心为轴，额外缩放 `1 + scale_mod`、
  * 额外转 `rotate_mod`；先画一遍阴影模式（下移 `0.1 + 0.03·sin(1.8t)` tile），再画本体。两种的摆动幅度不同
  */
-export type FloatingKind = 'soul' | 'soul_pos';
+export type FloatingKind = 'soul' | 'soul_pos' | 'hologram';
 
 function floatingMods(kind: FloatingKind, t: number): { scale: number; rotate: number } {
     const frac = t - Math.floor(t);
@@ -39,7 +39,7 @@ export class PlacedLayers {
     /** `T` → `VT` 的缓动（`moveable.lua`）。第一次摆放时 `hard_set` 落定 */
     private motion: Motion | null = null;
     private depth = 10;
-    private floating: { kind: FloatingKind; shadow: GameObjects.Shader; body: GameObjects.Shader } | null = null;
+    private floating: { kind: FloatingKind; shadow: GameObjects.Shader | null; body: GameObjects.Shader } | null = null;
     private readonly onPostUpdate = (time: number, delta: number) => this.render(time / 1000, delta / 1000);
 
     constructor(
@@ -59,8 +59,16 @@ export class PlacedLayers {
         scene.events.on('postupdate', this.onPostUpdate);
     }
 
-    /** 加浮层。`quad` 是浮层自己那一格（尺寸同卡） */
+    /**
+     * 加浮层。`quad` 是浮层自己那一格（尺寸同卡）。
+     * Hologram（`card.lua:4524`）用 `hologram` shader 画、只画一遍（没有阴影那遍），摆动幅度 ×2，倾斜 ×1.5
+     */
     addFloating(scene: Scene, kind: FloatingKind, quad: QuadOptions): void {
+        if (kind === 'hologram') {
+            const tilt = quad.tilt;
+            this.floating = { kind, shadow: null, body: makeShaderQuad(scene, { ...quad, name: `${quad.name}_float`, shader: 'hologram', tilt: () => tilt() * 1.5 }) };
+            return;
+        }
         this.floating = {
             kind,
             shadow: makeShaderQuad(scene, { ...quad, name: `${quad.name}_fshadow`, tilt: () => 0, shadow: true, shader: 'dissolve' }),
@@ -116,10 +124,13 @@ export class PlacedLayers {
 
         const f = this.floating;
         if (f) {
-            const { scale, rotate } = floatingMods(f.kind, now);
+            const mods = floatingMods(f.kind === 'soul' ? 'soul' : 'soul_pos', now);
+            const m2 = f.kind === 'hologram' ? 2 : 1;
+            const scale = m2 * mods.scale;
+            const rotate = m2 * mods.rotate;
             const k = VT.scale * (1 + scale);
             // 阴影那遍 `_shadow_height = 0`：不错开、不缩，只是 `draw_from` 的 my 往下挪
-            f.shadow.setPosition(cx, cy + toPx(0.1 + 0.03 * Math.sin(1.8 * now))).setRotation(VT.r + rotate).setScale(k).setDepth(this.depth + 0.005);
+            f.shadow?.setPosition(cx, cy + toPx(0.1 + 0.03 * Math.sin(1.8 * now))).setRotation(VT.r + rotate).setScale(k).setDepth(this.depth + 0.005);
             f.body.setPosition(cx, cy).setRotation(VT.r + rotate).setScale(k).setDepth(this.depth + 0.006);
         }
     }
@@ -127,14 +138,14 @@ export class PlacedLayers {
     setVisible(v: boolean): void {
         this.layers.setVisible(v);
         this.shadow.setVisible(v);
-        this.floating?.shadow.setVisible(v);
+        this.floating?.shadow?.setVisible(v);
         this.floating?.body.setVisible(v);
     }
 
     destroy(): void {
         this.scene.events.off('postupdate', this.onPostUpdate);
         this.shadow.destroy();
-        this.floating?.shadow.destroy();
+        this.floating?.shadow?.destroy();
         this.floating?.body.destroy();
         this.floating = null;
     }

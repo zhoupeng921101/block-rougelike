@@ -32,7 +32,15 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(HERE, '../../../参考/产物/Balatro_1.0.1o/资源/shaders');
 const OUT = resolve(HERE, '../src/game/shaders/editions.generated.ts');
 
-const NAMES = ['holo', 'foil', 'polychrome', 'negative', 'negative_shine', 'voucher', 'booster'];
+const NAMES = ['holo', 'foil', 'polychrome', 'negative', 'negative_shine', 'voucher', 'booster', 'hologram'];
+
+/**
+ * `hologram.fs`（Hologram 的浮层）的发光采样是个 `int` 循环：上限 `glow_samples` 在原文里是普通变量，
+ * GLSL ES 1.0 要求循环上限是常量表达式，改成 `const int`。这几处 `int` 字面量是合法的，断言里放过
+ */
+const INT_OK = {
+    hologram: [/\bconst int glow_samples = 4;/g, /\bint actual_glow_samples = 0;/g, /actual_glow_samples \+= 1;/g],
+};
 
 function convert(name) {
     const src = readFileSync(resolve(SRC, `${name}.fs`), 'utf8').replace(/\r\n/g, '\n');
@@ -54,7 +62,8 @@ function convert(name) {
             /vec4 effect\(\s*vec4 colour,\s*Image texture,\s*vec2 texture_coords,\s*vec2 screen_coords\s*\)/,
             'vec4 effect(vec4 colour, vec2 texture_coords)',
         )
-        .replace(/Texel\(\s*texture\s*,/g, 'texel_straight(');
+        .replace(/Texel\(\s*texture\s*,/g, 'texel_straight(')
+        .replace(/\bint glow_samples = 4;/, 'const int glow_samples = 4;');
 
     for (const bad of ['Image', 'Texel', 'screen_coords', 'extern', 'love_']) {
         if (body.includes(bad)) throw new Error(`${name}.fs：转换后还剩 \`${bad}\``);
@@ -64,7 +73,8 @@ function convert(name) {
     }
 
     // 整数字面量：去掉注释与 `[n]` 下标之后，不能再有不带小数点的数字
-    const code = body.replace(/\/\/.*$/gm, '').replace(/\[\d+\]/g, '[_]');
+    let code = body.replace(/\/\/.*$/gm, '').replace(/\[\d+\]/g, '[_]');
+    for (const re of INT_OK[name] ?? []) code = code.replace(re, '');
     const ints = code.match(/(?<![\w.])\d+(?![\w.])/g);
     if (ints) throw new Error(`${name}.fs：有整数字面量 ${[...new Set(ints)].join(', ')}，GLSL ES 1.0 不会隐式转浮点`);
 
@@ -101,7 +111,7 @@ const entries = NAMES.map((n) => `    ${n}: /* glsl */ \`\n${convert(n)}\`,`).jo
 writeFileSync(
     OUT,
     `/**
- * 7 个叠加层 shader 的片元部分。**这个文件是生成的，不要手改**——
+ * 7 个叠加层 shader 与 Hologram 浮层（hologram）的片元部分。**这个文件是生成的，不要手改**——
  * 改 \`tools/gen-edition-shaders.mjs\` 然后重跑 \`node tools/gen-edition-shaders.mjs\`。
  *
  * 源：\`参考/产物/Balatro_1.0.1o/资源/shaders/<name>.fs\`。顶点部分共用 \`DISSOLVE_VERT\`（见生成器头注释）。

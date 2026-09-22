@@ -87,8 +87,12 @@ export function makeShaderQuad(scene: Scene, opts: QuadOptions): GameObjects.Sha
                 const d = opts.dissolve;
                 setUniform('dissolve', Math.abs(d?.amount ?? 0));
                 setUniform('time', opts.cardTime);
-                setUniform('texture_details', [pos.x, pos.y, atlas.frameW, atlas.frameH]);
-                setUniform('image_details', [atlas.w, atlas.h]);
+                // Phaser 的 `outTexCoord.y` 与 LÖVE 相反（13 号票 §4：`y_phaser = 1 − y_löve`）。原文只在
+                // `uv = (tc·image_details − texture_details.xy·texture_details.ba)/texture_details.ba` 这一行用这两个，
+                // 所以喂 `image_details.y = −H`、`texture_details.y = pos.y − H/frameH`，算出来的 uv 就与原作一致：
+                // `((1 − tc.y)·H − pos.y·frameH)/frameH`。以前没翻，uv.y 整个在格子外——Hologram 的边框判定把整张判成框外
+                setUniform('texture_details', [pos.x, pos.y - atlas.h / atlas.frameH, atlas.frameW, atlas.frameH]);
+                setUniform('image_details', [atlas.w, -atlas.h]);
                 setUniform('shadow', opts.shadow ?? false);
                 setUniform('burn_colour_1', d?.colours[0] ?? [0, 0, 0, 0]);
                 setUniform('burn_colour_2', d?.colours[1] ?? [0, 0, 0, 0]);
