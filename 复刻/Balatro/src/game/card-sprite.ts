@@ -105,6 +105,8 @@ export class CardSprite {
         private readonly scene: Scene,
         readonly card: Card,
         private readonly onClick: (card: Card) => void,
+        /** 图鉴的强化 / 蜡封页：`G.P_CARDS.empty` 当正面——只画底板（与蜡封），不画点数花色 */
+        private readonly opts: { noFront?: boolean } = {},
     ) {
         const pos = atlasPos(card);
         const w = toPx(CARD_W);
@@ -243,13 +245,13 @@ export class CardSprite {
         T.x = p.x;
         T.y = p.y;
         T.r = p.r;
-        this.depth = 10 + index;
+        this.depth = this.depthBase.card + index;
         const d = this.depth;
         this.baseLayers.setDepth(d);
         this.frontLayers.setDepth(d + 0.1);
         this.seal?.setDepth(d + 0.2);
         this.back.setDepth(d + 0.3);
-        this.shadow.setDepth(1 + index * 0.001);
+        this.shadow.setDepth(this.depthBase.shadow + index * 0.001);
         this.prevX = p.x;
         this.applyFacing();
         this.render(this.scene.time.now / 1000, 0);
@@ -311,7 +313,7 @@ export class CardSprite {
         this.baseLayers.setVisible(!faceDown);
         // **石头牌不画正面**（`card.lua:4426` 那一串 `ability.effect ~= 'Stone Card'`）——
         // 它没有点数也没有花色，画出来就是在骗人。正面的版本叠加层也跟着不画（原文同一个条件）
-        this.frontLayers.setVisible(!faceDown && !isStone(this.card));
+        this.frontLayers.setVisible(!faceDown && !isStone(this.card) && !this.opts.noFront);
         this.seal?.setVisible(!faceDown);
     }
 
@@ -344,6 +346,17 @@ export class CardSprite {
             this.motion.wScale = from.motion.wScale;
         }
         this.applyFacing();
+    }
+
+    /** 卡面尺寸（像素），与小丑 / 消耗品精灵同一个口径（排版要） */
+    readonly w = toPx(CARD_W);
+    readonly h = toPx(CARD_H);
+
+    /** 卡与阴影的基准深度（图鉴里压在 overlay 之上） */
+    private depthBase = { card: 10, shadow: 1 };
+
+    setBaseDepth(card: number, shadow: number): void {
+        this.depthBase = { card, shadow };
     }
 
     /** `Card:juice_up(scale, rot)`，参数缺省即原作缺省 */

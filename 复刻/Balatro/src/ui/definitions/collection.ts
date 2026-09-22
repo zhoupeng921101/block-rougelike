@@ -7,7 +7,7 @@
  */
 import { CARD_H, CARD_W } from '../../game/coords';
 import { C } from '../colours';
-import { DICTIONARY } from '../lang.generated';
+import { DICTIONARY, ML_DICTIONARY } from '../lang.generated';
 import { P_CENTERS } from '../descriptions.generated';
 import { type UINodeDef, UIT } from '../uibox';
 import type { EmptyObject } from './hud';
@@ -62,7 +62,7 @@ export type CollectionArea = EmptyObject & { collectionArea: true; row: number; 
 
 /** 一页的形状：几行卡区、翻页选项（没有就是一页装完，如 Planet） */
 export type CollectionPageSpec = {
-    kind: 'jokers' | 'tarots' | 'planets' | 'spectrals' | 'vouchers' | 'boosters';
+    kind: 'jokers' | 'tarots' | 'planets' | 'spectrals' | 'vouchers' | 'boosters' | 'enhancements' | 'seals' | 'editions';
     rows: Array<{ w: number; h: number; limit: number }>;
     /** 行外层的 padding（Jokers 0.07，消耗品 0） */
     rowPadding: number;
@@ -72,6 +72,10 @@ export type CollectionPageSpec = {
     set: string;
     /** 卡区的摆法：`title` 或 `voucher`（奇偶交错） */
     areaType?: 'title' | 'voucher';
+    /** 一页装完、下面没有翻页（强化 / 蜡封 / 版本） */
+    noPager?: boolean;
+    /** 框下面的说明（`create_UIBox_generic_options{infotip = …}`） */
+    infotip?: readonly string[];
 };
 
 export const COLLECTION_PAGES: Record<CollectionPageSpec['kind'], CollectionPageSpec> = {
@@ -111,7 +115,35 @@ export const COLLECTION_PAGES: Record<CollectionPageSpec['kind'], CollectionPage
         rows: [1, 2].map(() => ({ w: 5.25 * CARD_W, h: 1.3 * CARD_H, limit: 4 })),
         index: (p, j, i) => i + (j - 1) * 4 + 8 * (p - 1),
     },
+    // `_enhancements`：两行 4，`c_base` 换成强化底板、正面是 `P_CARDS.empty`
+    enhancements: {
+        kind: 'enhancements', set: 'Enhanced', rowPadding: 0, pages: 1, noPager: true, infotip: ML_DICTIONARY.ml_edition_seal_enhancement_explanation,
+        rows: [1, 2].map(() => ({ w: 4.25 * CARD_W, h: 1.03 * CARD_H, limit: 4 })),
+        index: (_p, j, i) => i + (j - 1) * 4,
+    },
+    // `_seals`：一行 4 张底板，各上一种蜡封
+    seals: {
+        kind: 'seals', set: 'Seal', rowPadding: 0, pages: 1, noPager: true, infotip: ML_DICTIONARY.ml_edition_seal_enhancement_explanation,
+        rows: [{ w: 4.25 * CARD_W, h: 1.03 * CARD_H, limit: 4 }],
+        index: (_p, _j, i) => i,
+    },
+    // `_editions`：一行 5（`e_base` 起），画的是 Joker 图集 {0,0}，发现了才上版本
+    editions: {
+        kind: 'editions', set: 'Edition', rowPadding: 0, pages: 1, noPager: true, infotip: ML_DICTIONARY.ml_edition_seal_enhancement_explanation,
+        rows: [{ w: 5.3 * CARD_W, h: 1.03 * CARD_H, limit: 5 }],
+        index: (_p, _j, i) => i,
+    },
 };
+
+/** `G.P_CENTER_POOLS.Seal`（`P_SEALS` 按 order） */
+export const SEAL_POOL = ['Gold', 'Red', 'Blue', 'Purple'];
+
+/** `overlay_infotip`：框下面的几行说明（0.45、带阴影） */
+export function overlayInfotip(rows: readonly string[]): UINodeDef {
+    return { n: UIT.ROOT, config: { align: 'cm', colour: C.CLEAR, padding: 0.1 }, nodes: rows.map((v) => ({ n: UIT.R, config: { align: 'cm' }, nodes: [
+        { n: UIT.T, config: { text: v, colour: C.UI.TEXT_LIGHT, scale: 0.45, shadow: true } },
+    ] })) };
+}
 
 /** 各个分页（`back_func = 'your_collection'`）：黑底里几行卡区，下面翻页 */
 export function collectionPage(spec: CollectionPageSpec, onPage: (page: number) => void): UINodeDef {
@@ -123,6 +155,7 @@ export function collectionPage(spec: CollectionPageSpec, onPage: (page: number) 
         ? { n: UIT.R, config: { align: 'cm', r: 0.1, colour: C.BLACK, emboss: 0.05 }, nodes: rows }
         : { n: UIT.R, config: { align: 'cm', minw: 2.5, padding: 0.1, r: 0.1, colour: C.BLACK, emboss: 0.05 }, nodes: rows };
     const options = Array.from({ length: spec.pages }, (_, i) => `${loc('k_page')} ${i + 1}/${spec.kind === 'spectrals' ? Math.floor(18 / 9) : spec.pages}`);
+    if (spec.noPager) return genericOptions({ backFunc: 'your_collection', contents: [table] });
     const footer: UINodeDef = spec.kind === 'planets'
         ? { n: UIT.R, config: { align: 'cm', padding: 0.7 }, nodes: [] }
         : { n: UIT.R, config: { align: 'cm', padding: spec.kind === 'spectrals' ? 0 : undefined }, nodes: [

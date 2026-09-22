@@ -31,7 +31,7 @@ export class DeckSprite {
      */
     constructor(
         private readonly scene: Scene,
-        private readonly opts: { deckHeight?: number; thinDraw?: number; mainDeck?: boolean; depth?: number } = {},
+        private readonly opts: { deckHeight?: number; thinDraw?: number; mainDeck?: boolean; depth?: number; scale?: number; frame?: number } = {},
     ) {}
 
     private get height(): number {
@@ -41,6 +41,12 @@ export class DeckSprite {
     destroy(): void {
         for (const q of this.quads) q.destroy();
         this.quads.length = 0;
+    }
+
+    /** 换牌背（图鉴翻牌组）：已建的都换帧 */
+    setFrame(frame: number): void {
+        this.opts.frame = frame;
+        for (const q of this.quads) q.setFrame(frame);
     }
 
     /** 最上面那张（`G.deck.cards[1]`）的碰撞矩形；牌堆空了没有 */
@@ -59,10 +65,12 @@ export class DeckSprite {
         const H = this.height;
         const base = this.opts.mainDeck === false ? n / 2 : n;
         const depth = this.opts.depth ?? 5;
+        const cw = CARD_W * (this.opts.scale ?? 1);
+        const ch = CARD_H * (this.opts.scale ?? 1);
         for (let i = n; i >= 1; i--) if (i === 1 || i % thin === 0 || i === n) drawn.push(i);
         while (this.quads.length < drawn.length) {
-            const q = this.scene.add.image(0, 0, 'centers', BACK_FRAME);
-            q.setDisplaySize(toPx(CARD_W) * CARD_SCALE, toPx(CARD_H) * CARD_SCALE);
+            const q = this.scene.add.image(0, 0, 'centers', this.opts.frame ?? BACK_FRAME);
+            q.setDisplaySize(toPx(cw) * CARD_SCALE, toPx(ch) * CARD_SCALE);
             this.quads.push(q);
         }
         const spAreaX = cardShadowParallaxX(area.x, area.w);
@@ -70,13 +78,13 @@ export class DeckSprite {
             const k = drawn[j];
             q.setVisible(k !== undefined);
             if (k === undefined) return;
-            let x = area.x + 0.5 * (area.w - CARD_W) + spAreaX * H * (base - k);
-            const y = area.y + 0.5 * (area.h - CARD_H) - 1.5 * H * (base - k);
-            x += cardShadowParallaxX(x, CARD_W) / 30;
+            let x = area.x + 0.5 * (area.w - cw) + spAreaX * H * (base - k);
+            const y = area.y + 0.5 * (area.h - ch) - 1.5 * H * (base - k);
+            x += cardShadowParallaxX(x, cw) / 30;
             // 先画的在下面：深度随绘制顺序递增。rank 就是下标 k，前三张不乘色
             const grey = k > 3 ? 0.5 + ((n - k) % 7) / 50 : 1;
             const c = Math.round(grey * 255);
-            q.setPosition(toPx(x + CARD_W / 2), toPx(y + CARD_H / 2)).setDepth(depth + j * 0.01).setTint((c << 16) | (c << 8) | c);
+            q.setPosition(toPx(x + cw / 2), toPx(y + ch / 2)).setDepth(depth + j * 0.01).setTint((c << 16) | (c << 8) | c);
         });
     }
 }

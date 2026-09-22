@@ -13,7 +13,7 @@ import { GameObjects, Scene, Textures, type Types } from 'phaser';
 
 import { BLIND_CENTERS } from '../../core/blinds';
 import type { Card } from '../../core/card';
-import { makeStandardDeck, resetCardCounters } from '../../core/card';
+import { makeBase, makeStandardDeck, resetCardCounters } from '../../core/card';
 import { EventManager, GameEvent } from '../../core/event-queue';
 import { BOOSTER_CENTERS } from '../../core/boosters';
 import { isBoosterImplemented } from '../../core/booster-open';
@@ -74,7 +74,8 @@ import { RED_DECK, WIN_ANTE } from '../../core/run';
 import { JokerSprite } from '../joker-sprite';
 import { type ExitStyle, type ExitTarget, destroyStyle, playEnter, playExit } from '../card-exit';
 import { queueUseConsumable } from '../use-sequence';
-import { type CollectionArea, type CollectionPageSpec, type CollectionTallies, COLLECTION_PAGES, centerPool, collectionPage, yourCollection } from '../../ui/definitions/collection';
+import { BACK_POOL, backNameText, backPos, backUi, blindPopup, blindsPage, decksPage, tagsPage } from '../../ui/definitions/collection-misc';
+import { type CollectionArea, type CollectionPageSpec, type CollectionTallies, COLLECTION_PAGES, SEAL_POOL, centerPool, collectionPage, overlayInfotip, yourCollection } from '../../ui/definitions/collection';
 import { discover, discoverTally, isDiscovered } from '../profile';
 import { alignTitle, alignVoucher } from '../align-cards';
 import { makeJoker as makeJokerInstance } from '../../core/jokers';
@@ -1779,17 +1780,19 @@ ${String(e instanceof Error ? e.message : e)}`)
     /**
      * 标签的提示框（`Tag:generate_UI` 的 `hover`）：`get_uibox_table` → `card_h_popup`，`cl` 挂在精灵左边、再左移 0.1
      */
-    private showTagPopup(target: { readonly rect: Rect }, key: string, orbital: string | undefined): void {
+    private showTagPopup(target: { readonly rect: Rect }, key: string, orbital: string | undefined, hide = false): void {
         this.hidePopup();
         const run = this.run;
         const g = popupGame(run, LOOK.mobileUi);
-        const aut = tagAbilityTable(key, orbital, { handsPlayed: run.round?.handsPlayed ?? run.handsPlayed, unusedDiscards: run.unusedDiscards, skips: run.skips }, g);
+        const aut = tagAbilityTable(key, orbital, { handsPlayed: run.round?.handsPlayed ?? run.handsPlayed, unusedDiscards: run.unusedDiscards, skips: run.skips }, g, hide);
         const card: PopupCard = { centerKey: key, ability: { set: 'Tag', name: TAG_CENTERS[key]?.name } };
         const major = { T: { ...target.rect } };
         const box = new UIBox(cardHPopup(card, aut), { align: 'cl', offset: { x: -0.1, y: 0 }, major });
-        const views = [new UIBoxView(this, box, 90)];
+        // overlay（图鉴）里的标签，提示框压在 overlay 之上
+        const depth = this.overlay ? 210 : 90;
+        const views = [new UIBoxView(this, box, depth)];
         const info = infoBoxes(aut);
-        if (info) views.push(new UIBoxView(this, new UIBox(info, { align: 'cl', offset: { x: -0.03, y: 0 }, major: box.getById('h_popup_main')!.asMajor }), 90));
+        if (info) views.push(new UIBoxView(this, new UIBox(info, { align: 'cl', offset: { x: -0.03, y: 0 }, major: box.getById('h_popup_main')!.asMajor }), depth));
         for (const v of views) v.setResolution(this.mapping.pxPerTile / toPx(1));
         this.popup = { sprite: target as unknown as Pickable, major, views };
         this.sound.play('paper1', { rate: Math.random() * 0.1 + 0.55, volume: 0.42 });
@@ -1801,14 +1804,14 @@ ${String(e instanceof Error ? e.message : e)}`)
      */
     private tagHoverZones: Array<{ zone: GameObjects.Zone; target: { readonly rect: Rect } }> = [];
 
-    private addTagHover(rect: () => Rect, key: string, orbital: () => string | undefined, sprite: TagSpriteObject, juice?: () => void): void {
+    private addTagHover(rect: () => Rect, key: string, orbital: () => string | undefined, sprite: TagSpriteObject, juice?: () => void, opts: { depth?: number; hide?: boolean } = {}): void {
         const target = { get rect() { return rect(); } };
-        const zone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(43);
+        const zone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(opts.depth ?? 43);
         // `tag_sprite.hover`：`hover_tilt = 3`、`juice_up(0.05, 0.02)` 弹一下、两声，出提示框；`stop_hover` 把倾斜收回 0
         zone.on('pointerover', () => {
             sprite.hoverTilt = 3;
             juice?.();
-            this.showTagPopup(target, key, orbital());
+            this.showTagPopup(target, key, orbital(), opts.hide);
         });
         zone.on('pointerout', () => {
             sprite.hoverTilt = 0;
@@ -2682,8 +2685,9 @@ ${String(e instanceof Error ? e.message : e)}`)
     private closeOverlay(): void {
         if (!this.overlay) return;
         this.closeRunSetupExtras();
-        this.clearCollectionCards();
+        this.closeCollectionExtras();
         this.collection = null;
+        this.closeCollectionMisc();
         this.hidePopup();
         this.overlay.view.destroy();
         this.overlay.blocker.destroy();
@@ -2974,13 +2978,24 @@ ${String(e instanceof Error ? e.message : e)}`)
     }
 
     /** 图鉴分页开着时：哪一页、第几页、卡 */
-    private collection: { spec: CollectionPageSpec; page: number; cards: Array<{ sprite: JokerSprite | ConsumableSprite | VoucherSprite | BoosterSprite; row: number }> } | null = null;
+    private collection: {
+        spec: CollectionPageSpec; page: number;
+        cards: Array<{ sprite: JokerSprite | ConsumableSprite | VoucherSprite | BoosterSprite | CardSprite; row: number }>;
+        /** `overlay_infotip`：挂在框底下（`overlay_menu_infotip` 那个零尺寸节点，`bm`） */
+        infotip: { view: UIBoxView; major: { T: Rect } } | null;
+    } | null = null;
 
     private openCollectionPage(kind: CollectionPageSpec['kind']): void {
         const spec = COLLECTION_PAGES[kind];
         const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
         this.mountOverlay(collectionPage(spec, (page) => this.fillCollection(page)), bg, 0.7);
-        this.collection = { spec, page: 1, cards: [] };
+        this.collection = { spec, page: 1, cards: [], infotip: null };
+        if (spec.infotip) {
+            const major = { T: { x: 0, y: 0, w: 0, h: 0 } };
+            const view = new UIBoxView(this, new UIBox(overlayInfotip(spec.infotip), { align: 'bm', offset: { x: 0, y: 0 }, major }), 201);
+            view.setResolution(this.mapping.pxPerTile / toPx(1));
+            this.collection.infotip = { view, major };
+        }
         this.fillCollection(1);
     }
 
@@ -2992,6 +3007,112 @@ ${String(e instanceof Error ? e.message : e)}`)
         c.cards = [];
     }
 
+    /** 图鉴的 Decks / Tags / Blinds 页开着时的东西 */
+    private collectionMisc: {
+        deck?: { index: number; sprite: DeckSprite };
+        tagTargets?: Set<object>;
+        blinds?: { zones: GameObjects.Zone[]; popup: { view: UIBoxView; major: { T: Rect } } | null };
+    } | null = null;
+
+    private closeCollectionMisc(): void {
+        const m = this.collectionMisc;
+        if (!m) return;
+        m.deck?.sprite.destroy();
+        if (m.tagTargets) this.clearTagHovers((t) => m.tagTargets!.has(t));
+        for (const z of m.blinds?.zones ?? []) z.destroy();
+        m.blinds?.popup?.view.destroy();
+        this.collectionMisc = null;
+    }
+
+    /** `your_collection_decks`：选项循环翻牌组，换牌背、名字、说明 */
+    private openCollectionDecks(index = 0): void {
+        const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
+        const frameOf = (i: number) => { const p = backPos(BACK_POOL[i]!); return p.y * 7 + p.x; };
+        const o = this.mountOverlay(decksPage(index, LOOK.mobileUi, (i) => {
+            const box = o.view.box;
+            const key = BACK_POOL[i]!;
+            for (const el of box.root.walk()) {
+                if (el.config.id === 'deck_name') box.replaceObject(el, backNameText(key));
+                if (el.config.id === 'deck_ui') box.replaceObject(el, new UIBox(backUi(key, LOOK.mobileUi), { offset: { x: 0, y: 0 } }));
+            }
+            this.collectionMisc?.deck?.sprite.setFrame(frameOf(i));
+        }), bg, 0.7);
+        this.collectionMisc = { deck: { index, sprite: new DeckSprite(this, { scale: 1.2, depth: 201, mainDeck: false, frame: frameOf(index) }) } };
+    }
+
+    /** `your_collection_tags`：悬停照 `Tag:generate_UI` 的 hover（倾斜、弹一下、两声、提示框；没发现的藏描述） */
+    private openCollectionTags(): void {
+        const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
+        const { def, sprites } = tagsPage((k) => isDiscovered(k));
+        const o = this.mountOverlay(def, bg, 0.7);
+        const targets = new Set<object>();
+        for (const { key, sprite } of sprites) {
+            const el = [...o.view.box.root.walk()].find((e) => e.config.object === sprite);
+            if (!el) continue;
+            this.addTagHover(() => ({ x: el.x + o.view.slideOffset.x, y: el.y + o.view.slideOffset.y, w: el.T.w, h: el.T.h }), key, () => undefined, sprite,
+                () => o.view.juiceObject(sprite, this.time.now / 1000, 0.05, 0.02), { depth: 203, hide: !isDiscovered(key) });
+            targets.add(this.tagHoverZones[this.tagHoverZones.length - 1]!.target);
+        }
+        this.collectionMisc = { tagTargets: targets };
+    }
+
+    /** `your_collection_blinds`：悬停弹一下、`chips1`、`create_UIBox_blind_popup`（`cl`、左移 0.1） */
+    private openCollectionBlinds(): void {
+        const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
+        const { def, chips } = blindsPage((k) => isDiscovered(k));
+        const o = this.mountOverlay(def, bg, 0.7);
+        const zones: GameObjects.Zone[] = [];
+        const state: NonNullable<NonNullable<RunScene['collectionMisc']>['blinds']> = { zones, popup: null };
+        for (const { key, chip } of chips) {
+            const el = [...o.view.box.root.walk()].find((e) => e.config.object === chip);
+            if (!el) continue;
+            const zone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(203);
+            (zone as GameObjects.Zone & { uiEl?: UIElement }).uiEl = el;
+            zone.on('pointerover', () => {
+                o.view.juiceObject(chip, this.time.now / 1000, 0.05, 0.02);
+                this.sound.play('chips1', { rate: Math.random() * 0.1 + 0.55, volume: 0.12 });
+                state.popup?.view.destroy();
+                const major = { T: { x: el.x, y: el.y, w: el.T.w, h: el.T.h } };
+                const view = new UIBoxView(this, new UIBox(blindPopup(key, isDiscovered(key)), { align: 'cl', offset: { x: -0.1, y: 0 }, major }), 210);
+                view.setResolution(this.mapping.pxPerTile / toPx(1));
+                state.popup = { view, major };
+            });
+            zone.on('pointerout', () => { state.popup?.view.destroy(); state.popup = null; });
+            zones.push(zone);
+        }
+        this.collectionMisc = { blinds: state };
+    }
+
+    /** 每帧：牌堆预览跟着格子；盲注悬停区与提示框跟着 overlay 的滑动 */
+    private followCollectionMisc(now: number): void {
+        const m = this.collectionMisc;
+        const o = this.overlay;
+        if (!m || !o) return;
+        const slide = o.view.slideOffset;
+        if (m.deck) {
+            const el = [...o.view.box.root.walk()].find((e) => (e.config.object as { collectionDeck?: boolean } | undefined)?.collectionDeck);
+            if (el) m.deck.sprite.update({ x: el.x + slide.x, y: el.y + slide.y, w: el.T.w, h: el.T.h }, 52);
+        }
+        if (m.blinds) {
+            for (const z of m.blinds.zones) {
+                const el = (z as GameObjects.Zone & { uiEl?: UIElement }).uiEl!;
+                z.setPosition(toPx(el.x + slide.x), toPx(el.y + slide.y)).setSize(toPx(el.T.w), toPx(el.T.h));
+                z.input!.hitArea.setTo(0, 0, toPx(el.T.w), toPx(el.T.h));
+            }
+            const p = m.blinds.popup;
+            if (p) {
+                p.view.box.followMajor();
+                p.view.update(now);
+            }
+        }
+    }
+
+    /** 拆图鉴分页的额外东西（框下说明） */
+    private closeCollectionExtras(): void {
+        this.clearCollectionCards();
+        this.collection?.infotip?.view.destroy();
+    }
+
     /**
      * `your_collection_*_page`：拆掉这一页的卡、按页码从池子里取、造卡放进各行。图鉴里的卡没有 `bypass_discovery_center`：
      * 没解锁的小丑画锁、没发现的画问号，提示框相应是 Locked（解锁条件）/ Undiscovered（藏描述）
@@ -3001,14 +3122,43 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (!c) return;
         this.clearCollectionCards();
         c.page = page;
-        const pool = centerPool(c.spec.set);
+        const pool = c.spec.set === 'Seal' ? SEAL_POOL : c.spec.set === 'Edition' ? ['e_base', 'e_foil', 'e_holo', 'e_polychrome', 'e_negative'] : centerPool(c.spec.set);
         c.spec.rows.forEach((row, j) => {
             for (let i = 1; i <= row.limit; i++) {
                 const key = pool[c.spec.index(page, j + 1, i) - 1];
                 if (!key) break;
-                const center = P_CENTERS[key]!;
-                const locked = center.unlocked === false;
+                const center = P_CENTERS[key];
+                const locked = center?.unlocked === false;
                 const discovered = isDiscovered(key);
+                if (c.spec.set === 'Enhanced' || c.spec.set === 'Seal') {
+                    // `Card(…, G.P_CARDS.empty, center)`：只画底板；蜡封页是 `c_base` 上 `set_seal`
+                    // 不走 `makeCard`：那会推进 `sort_id`（洗牌的规范序），图鉴里的展示牌不能影响对局
+                    const card: Card = {
+                        key: 'S_A', base: makeBase('Spades', 'Ace'), sort_id: 0, unique_val: 0, debuff: false, played_this_ante: false,
+                        forced_selection: false, facing: 'front', perma_bonus: 0, enhancement: null, T: { x: 0, y: 0, w: 0, h: 0 },
+                    };
+                    if (c.spec.set === 'Enhanced') card.enhancement = key as Card['enhancement'];
+                    else card.seal = key as Card['seal'];
+                    const sp = new CardSprite(this, card, () => undefined, { noFront: true });
+                    sp.setBaseDepth(202, 201);
+                    const pc = c.spec.set === 'Enhanced'
+                        ? popupOfCenter(key, 'other')
+                        : { ...popupOfCenter('c_base', 'other'), seal: key };
+                    this.attachPopup(sp.hoverTargets, sp, () => pc);
+                    c.cards.push({ sprite: sp, row: j + 1 });
+                    continue;
+                }
+                if (c.spec.set === 'Edition') {
+                    // `G.P_CENTERS.e_*` 的 `atlas = 'Joker', pos = {0,0}`：画的就是 Joker 那张；发现了才 `set_edition`（静音）。建出来时溶入
+                    const joker = makeJokerInstance('j_joker');
+                    if (discovered && key !== 'e_base') joker.edition = key.slice(2) as Joker['edition'];
+                    const sp = new JokerSprite(this, joker, () => undefined, discovered ? undefined : 'undiscovered');
+                    sp.setBaseDepth(202, 201);
+                    playEnter(this, sp, [C.GREEN], i > 1);
+                    this.attachPopup([sp.shader], sp, () => ({ ...popupOfCenter(key, 'other'), display: discovered ? undefined : 'Undiscovered' }));
+                    c.cards.push({ sprite: sp, row: j + 1 });
+                    continue;
+                }
                 if (c.spec.set === 'Voucher') {
                     const vc = VOUCHER_CENTERS[key]!;
                     const display = locked ? 'locked' as const : !discovered ? 'undiscovered' as const : undefined;
@@ -3045,6 +3195,12 @@ ${String(e instanceof Error ? e.message : e)}`)
         const o = this.overlay;
         if (!c || !o) return;
         const slide = o.view.slideOffset;
+        if (c.infotip) {
+            const el = o.view.box.getById('overlay_menu_infotip');
+            if (el) Object.assign(c.infotip.major.T, { x: el.x + slide.x, y: el.y + slide.y, w: el.T.w, h: el.T.h });
+            c.infotip.view.box.followMajor();
+            c.infotip.view.update(now);
+        }
         for (const el of o.view.box.root.walk()) {
             const area = el.config.object as CollectionArea | undefined;
             if (!area?.collectionArea) continue;
@@ -3262,6 +3418,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.followRunInfoHovers(now);
         this.followRunSetup(now);
         this.followCollection(now);
+        this.followCollectionMisc(now);
     }
 
     private onOverlayButton(name: string, el?: UIElement): void {
@@ -3311,7 +3468,14 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.openCollection();
             return;
         }
-        const page = /^your_collection_(jokers|tarots|planets|spectrals|vouchers|boosters)$/.exec(name)?.[1] as CollectionPageSpec['kind'] | undefined;
+        if (name === 'your_collection_decks' || name === 'your_collection_tags' || name === 'your_collection_blinds') {
+            this.closeOverlay();
+            if (name === 'your_collection_decks') this.openCollectionDecks();
+            else if (name === 'your_collection_tags') this.openCollectionTags();
+            else this.openCollectionBlinds();
+            return;
+        }
+        const page = /^your_collection_(jokers|tarots|planets|spectrals|vouchers|boosters|enhancements|seals|editions)$/.exec(name)?.[1] as CollectionPageSpec['kind'] | undefined;
         if (page) {
             this.closeOverlay();
             this.openCollectionPage(page);

@@ -335,7 +335,7 @@ export type TagPopupGame = { handsPlayed: number; unusedDiscards: number; skips:
  * `tag.lua:546` 的 `Tag:get_uibox_table`：按标签名填 `loc_vars`，再 `generate_card_ui(G.P_TAGS[key], nil, loc_vars, 'Tag')`。
  * `hide_ability` 在 1.0.1o 里从没被赋值，所以恒按已发现画。Orbital 没有掷过牌型时显示 `[poker hand]`
  */
-export function tagAbilityTable(key: string, orbitalHand: string | undefined, t: TagPopupGame, g: PopupGame): CardUi {
+export function tagAbilityTable(key: string, orbitalHand: string | undefined, t: TagPopupGame, g: PopupGame, hideAbility = false): CardUi {
     const c = center(key);
     const cfg = c.config as Record<string, number>;
     let locVars: Array<string | number> = [];
@@ -349,7 +349,8 @@ export function tagAbilityTable(key: string, orbitalHand: string | undefined, t:
         case 'Orbital Tag': locVars = [orbitalHand ?? `[${locMisc('k_poker_hand')}]`, cfg.levels!]; break;
         case 'Economy Tag': locVars = [cfg.max!]; break;
     }
-    return generateCardUi(c, null, locVars, 'Tag', undefined, false, undefined, undefined, g);
+    // 图鉴里没发现的标签 `hide_ability`：Undiscovered、藏描述（`tag.lua:560`）
+    return generateCardUi(c, null, locVars, hideAbility ? 'Undiscovered' : 'Tag', undefined, hideAbility, undefined, undefined, g);
 }
 
 // ————————————————————————————————————————————————————————————————
