@@ -446,20 +446,37 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
         this.run.rerollBoss();
         this.sound.play('other1', { volume: 0.5 });
-        // `reroll_boss`：只换 Boss 那张卡（`G.blind_select_opts.boss` 重建、塞回原来的 O 节点），别的卡不动。
-        // 原作旧卡滑出、0.3 秒后新卡从下面滑上来——界面的滑入动画还没做，这里直接换
+        // `reroll_boss`（`button_callbacks.lua:2910`）：只换 Boss 那张卡，别的卡不动。旧卡 offset 改到 20 滑下去；
+        // 0.3 秒后拆掉、按新 Boss 重建塞回原来的 O 节点，offset `ROOM.T.y+9` → 0 从下面滑上来。
+        // 整个过程 `locks.boss_reroll` 锁住输入，新卡放进去 0.5 秒后才解
         const b = this.blindSelectState;
+        const views = this.blindSelectViews;
         const old = b?.opts.Boss;
         const el = old && [...b.select.root.walk()].find((e) => e.config.object === old);
-        if (b && el) {
+        if (!b || !views || !el || !old) {
+            this.showBlindSelect();
+            return;
+        }
+        this.bossRerollLock = true;
+        views.select.childView(old)?.slideTo(20);
+        this.time.delayedCall(300, () => {
+            if (this.blindSelectState !== b) {
+                this.bossRerollLock = false;
+                return;
+            }
             b.state.choices.Boss = this.run.bossKey;
             const box = blindChoiceBox('Boss', b.state, b.loc, b.funcs);
             b.opts.Boss = box;
             b.select.replaceObject(el, box);
+            views.select.childView(box)?.slideFrom(9);
             // 重掷之后会再轮一次 `new_blind_choice`，标签可能开出一个包
             this.showBlindSelect(false);
-        } else this.showBlindSelect();
+            this.time.delayedCall(500, () => { this.bossRerollLock = false; });
+        });
     }
+
+    /** `G.CONTROLLER.locks.boss_reroll`：重掷 Boss 的动画期间不接受点击 */
+    private bossRerollLock = false;
 
     /**
      * 「下一关」按钮：
@@ -730,11 +747,13 @@ ${String(e instanceof Error ? e.message : e)}`)
      * 离场中的界面：原作把 offset 改到屏幕外、等它滑走再 `remove()`。复刻件把视图（与跟着它的卡）交给这里，
      * 每帧推进，滑到位或 1.5 秒后销毁。`step` 返回 true 表示可以销毁了
      */
-    private retiring: Array<{ step: (now: number) => boolean; destroy: () => void; start: number }> = [];
+    private retiring: Array<{ step: (now: number) => boolean; destroy: () => void; start: number; maxAge: number }> = [];
 
-    private retire(views: UIBoxView[], extra: { step?: (now: number) => void; destroy?: () => void } = {}): void {
+    /** `maxAge`：原作到点就 `remove()` 的（关包 0.2 秒），不等滑完 */
+    private retire(views: UIBoxView[], extra: { step?: (now: number) => void; destroy?: () => void; maxAge?: number } = {}): void {
         this.retiring.push({
             start: this.time.now / 1000,
+            maxAge: extra.maxAge ?? 1.5,
             step: (now) => {
                 for (const v of views) v.update(now);
                 extra.step?.(now);
@@ -749,7 +768,7 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     private stepRetiring(now: number): void {
         this.retiring = this.retiring.filter((r) => {
-            if (!r.step(now) && now - r.start < 1.5) return true;
+            if (!r.step(now) && now - r.start < r.maxAge) return true;
             r.destroy();
             return false;
         });
@@ -802,6 +821,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.shopSprites = [];
         for (const s of this.packSprites) s.destroy();
         this.packSprites = [];
+        if (!this.run.openPack) this.retirePack();
         this.clearPackCards();
         for (const s of this.shopConsumableSprites) s.destroy();
         this.shopConsumableSprites = [];
@@ -847,8 +867,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         // 发下来的手牌接着上一版精灵的缓动走（挑牌 / 用塔罗之后整个重建）
         const oldPackHand = this.packHandSprites;
         this.packHandSprites = [];
-        this.clearPackCards();
         const pack = this.run.openPack;
+        if (!pack) this.retirePack();
+        this.clearPackCards();
         // `end_consumeable`：粒子淡出 1 秒后移除
         if (this.packFx && this.packFx.pack !== pack) {
             for (const p of this.packFx.systems) p.fadeOutAndRemove(1);
@@ -945,21 +966,46 @@ ${String(e instanceof Error ? e.message : e)}`)
     /** `align_cards` 的 consumeable 分支，每帧摆（没选中的牌上下浮动） */
     private layoutPackCards(real = this.time.now / 1000): void {
         if (!this.packUi) return;
-        const U = toPx(1);
-        const sprites = this.packCardSprites;
-        const size = (s: JokerSprite | ConsumableSprite | CardSprite) =>
-            s instanceof CardSprite ? { w: CARD_W, h: CARD_H } : { w: s.w / U, h: s.h / U };
-        let label = 0;
-        alignConsumeable({ ...this.packUi.rect, y: this.packUi.rect.y + this.packUi.view.slideOffset.y }, sprites.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX, ...size(s) })), real)
-            .forEach((p, i) => {
-                const s = sprites[i]!;
-                s.place(p, i);
-                if (s instanceof CardSprite) this.packLabels[label++]?.setPosition(toPx(p.x), toPx(p.y + CARD_H + 0.1));
-            });
+        this.placePackCards(this.packUi, this.packCardSprites, this.packLabels, real);
         const hand = this.packHandSprites;
         for (const s of hand) s.highlighted = this.selected.has(s.card);
         alignPackHand(this.areas.hand, hand.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX })), this.run.packHand?.length ?? 0, real)
             .forEach((p, i) => hand[i]!.place(p, i));
+    }
+
+    private placePackCards(ui: NonNullable<RunScene['packUi']>, sprites: RunScene['packCardSprites'], labels: GameObjects.Text[], real: number): void {
+        const U = toPx(1);
+        const size = (s: JokerSprite | ConsumableSprite | CardSprite) =>
+            s instanceof CardSprite ? { w: CARD_W, h: CARD_H } : { w: s.w / U, h: s.h / U };
+        let label = 0;
+        alignConsumeable({ ...ui.rect, y: ui.rect.y + ui.view.slideOffset.y }, sprites.map((s) => ({ highlighted: s.highlighted, prevX: s.prevX, ...size(s) })), real)
+            .forEach((p, i) => {
+                const s = sprites[i]!;
+                s.place(p, i);
+                if (s instanceof CardSprite) labels[label++]?.setPosition(toPx(p.x), toPx(p.y + CARD_H + 0.1));
+            });
+    }
+
+    /**
+     * 关包（`end_consumeable`，`button_callbacks.lua:2682`）：外框 offset 改到 `ROOM.T.y+9` 往下滑，
+     * 0.2 秒后连同没挑走的牌一起拆
+     */
+    private retirePack(): void {
+        const ui = this.packUi;
+        if (!ui) return;
+        const sprites = this.packCardSprites;
+        const labels = this.packLabels;
+        this.packUi = null;
+        this.packCardSprites = [];
+        this.packLabels = [];
+        this.hidePopup();
+        if (this.picked?.where.kind === 'pack') this.unpick();
+        ui.view.slideTo(11.2);
+        this.retire([ui.view], {
+            maxAge: 0.2,
+            step: (now) => this.placePackCards(ui, sprites, labels, now),
+            destroy: () => { for (const o of [...sprites, ...labels]) o.destroy(); },
+        });
     }
 
     /**
@@ -1054,6 +1100,10 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (this.run.openPack) {
             this.shopUi.view.slideFrom(prevShop ? prevShop.offset : 16.3).slideTo(16.3);
             this.shopShownFor = null;
+        } else if (prevShop && prevShop.shop === null) {
+            // 关包回来：`end_consumeable` 等外框滑走（0.2 秒）、手牌收回牌堆（再 0.2 秒）之后才把 offset 还原
+            const view = this.shopUi.view.slideFrom(prevShop.offset).slideTo(16.3);
+            this.time.delayedCall(400, () => view.slideTo(0));
         } else this.shopUi.view.slideFrom(prevShop && prevShop.shop === shop ? prevShop.offset : 16.3);
         if (!this.run.openPack) this.shopShownFor = shop;
         this.shopUi.sign.slideFrom(this.signShownFor === shop ? prevShop?.sign ?? 0 : -15);
@@ -2055,6 +2105,7 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     private onUIButton(name: string): void {
         const round = this.round;
+        if (this.bossRerollLock) return;
         if (name === 'select_blind') {
             this.doNext();
             return;

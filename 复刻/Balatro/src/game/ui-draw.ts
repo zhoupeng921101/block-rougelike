@@ -136,7 +136,13 @@ export class UIBoxView {
     private builtVersion = -1;
 
     private build(): void {
-        for (const v of this.views) v.child?.destroy();
+        // 嵌套的 UIBox 没换的，接着用原来的视图（它自己的滑动状态不丢）；换掉的才销毁
+        const keep = new Map<UIBox, UIBoxView>();
+        for (const v of this.views) {
+            if (!v.child) continue;
+            keep.set(v.child.box, v.child);
+            this.container.remove(v.child.container, false);
+        }
         this.container.removeAll(true);
         this.views = [];
         this.viewOf.clear();
@@ -155,7 +161,8 @@ export class UIBoxView {
             } else if (el.UIT === UIT.O && cfg.object instanceof DynaText) {
                 view.letters = [];
             } else if (el.UIT === UIT.O && cfg.object instanceof UIBox) {
-                view.child = new UIBoxView(this.scene, cfg.object, 0, this.onButton);
+                view.child = keep.get(cfg.object) ?? new UIBoxView(this.scene, cfg.object, 0, this.onButton);
+                keep.delete(cfg.object);
                 this.container.add(view.child.container);
             } else if (el.UIT === UIT.O && ['blind', 'blind_chip', 'shop_sign'].includes((cfg.object as { kind?: string } | undefined)?.kind ?? '')) {
                 const tex = (cfg.object as unknown as { kind: string }).kind === 'shop_sign' ? 'shop_sign' : 'blind_chips';
@@ -187,8 +194,21 @@ export class UIBoxView {
             this.views.push(view);
             this.viewOf.set(el, view);
         }
+        for (const c of keep.values()) c.destroy();
         this.setResolution(this.resolution);
         this.orderDirty = true;
+    }
+
+    /** 嵌套在这块里的某个 UIBox 的视图（结构改过就先重建），给它单独挂滑动用 */
+    childView(box: UIBox): UIBoxView | undefined {
+        if (this.box.version !== this.builtVersion) this.build();
+        for (const v of this.views) {
+            if (!v.child) continue;
+            if (v.child.box === box) return v.child;
+            const deep = v.child.childView(box);
+            if (deep) return deep;
+        }
+        return undefined;
     }
 
     private viewOf = new Map<UIElement, ElementView>();
