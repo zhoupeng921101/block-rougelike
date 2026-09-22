@@ -75,6 +75,8 @@ function syncFontPx(t: GameObjects.Text, fontPx: number): void {
 }
 
 type ElementView = {
+    /** 场景挂上来的显示对象（`attach`），按元素在树里的位置参与排序 */
+    extra?: GameObjects.GameObject;
     el: UIElement;
     /** 按钮的命中区（只给定义里带 `button` 的元素建；点到按钮里的字也落在它上面） */
     zone?: GameObjects.Zone;
@@ -209,6 +211,18 @@ export class UIBoxView {
         if (this.passThrough) for (const v of this.views) v.zone?.disableInteractive();
     }
 
+    /**
+     * 把一个显示对象挂到某个元素上：放进这块的容器（跟着滑动），按元素在树里的位置排先后。
+     * 分数火焰就是这样插在筹码格的底框之后、数字之前的
+     */
+    attach(el: UIElement, obj: GameObjects.GameObject): void {
+        const v = this.viewOf.get(el);
+        if (!v) return;
+        v.extra = obj;
+        this.container.add(obj);
+        this.orderDirty = true;
+    }
+
     /** 嵌套在这块里的某个 UIBox 的视图（结构改过就先重建），给它单独挂滑动用 */
     childView(box: UIBox): UIBoxView | undefined {
         if (this.box.version !== this.builtVersion) this.build();
@@ -229,7 +243,7 @@ export class UIBoxView {
     /** 一个元素自己的显示对象，先画的在前 */
     private own(v: ElementView): GameObjects.GameObject[] {
         const out: Array<GameObjects.GameObject | null | undefined> = [
-            v.gfx, v.imageShadow, v.image, v.blindChip?.shadow, v.blindChip?.main, v.text?.shadow, v.text?.main,
+            v.gfx, v.extra, v.imageShadow, v.image, v.blindChip?.shadow, v.blindChip?.main, v.text?.shadow, v.text?.main,
             ...(v.letters ?? []).flatMap((l) => [l.shadow, l.main]), v.child?.container, v.zone,
         ];
         return out.filter((o): o is GameObjects.GameObject => !!o);

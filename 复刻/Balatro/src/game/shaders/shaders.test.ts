@@ -21,6 +21,7 @@ import { BACKGROUND_FRAG, BACKGROUND_VERT } from './background';
 import { CRT_FRAG, CRT_VERT } from './crt';
 import { DISSOLVE_FRAG, DISSOLVE_VERT } from './dissolve';
 import { OVERLAY_FRAGS } from './editions.generated';
+import { FLAME_FRAG } from './flame';
 
 const BIN = join(
     process.cwd(),
@@ -49,6 +50,7 @@ describe('shader 按 GLSL ES 1.00 编译', () => {
         ['background', 'vert', BACKGROUND_VERT],
         ['crt', 'frag', CRT_FRAG],
         ['crt', 'vert', CRT_VERT],
+        ['flame', 'frag', FLAME_FRAG],
         ...Object.entries(OVERLAY_FRAGS).map(([n, src]) => [n, 'frag', src] as [string, 'frag', string]),
     ];
 

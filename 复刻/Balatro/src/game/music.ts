@@ -27,6 +27,9 @@ export type MusicState = {
     /** `G.GAME.current_round.current_hand.chips × mult` 与 `G.GAME.blind.chips` */
     earned: number;
     required: number;
+    /** `score_intensity.flames` 与两团火的 `change` 之和（`ambientFire1..3`） */
+    flames: number;
+    fireChange: number;
 };
 
 /** `modulate_sound` 里挑音轨那一段 */
@@ -48,10 +51,17 @@ export function organIntensity(earned: number, required: number): number {
 
 type Track = { sound: Sound.WebAudioSound; volume: number };
 
+/** `G.ARGS.ambient_sounds` 的四条：音量每帧按各自的式子走，音高固定 */
+const AMBIENT: Array<{ key: string; per: number; vol: (prev: number, dt: number, s: MusicState) => number }> = [
+    { key: 'ambientFire2', per: 1.05, vol: (v, dt, s) => v * (1 - dt) + dt * 0.9 * (s.flames > 0.3 ? 1 : s.flames / 0.3) },
+    { key: 'ambientFire1', per: 1.1, vol: (v, dt, s) => v * (1 - dt) + dt * 0.8 * (s.flames > 0.3 ? (s.flames - 0.3) / 0.7 : 0) },
+    { key: 'ambientFire3', per: 1, vol: (v, dt, s) => v * (1 - dt) + dt * 0.4 * s.fireChange },
+    { key: 'ambientOrgan1', per: 0.7, vol: (v, dt, s) => v * (1 - dt) + dt * 0.6 * organIntensity(s.earned, s.required) },
+];
+
 export class Music {
     private tracks: Track[] | null = null;
-    private organ: Sound.WebAudioSound | null = null;
-    private organVolume = 0;
+    private ambient = new Map<string, { sound: Sound.WebAudioSound | null; volume: number }>();
     private pitchMod = 1;
     private lastT = -1;
 
@@ -87,15 +97,18 @@ export class Music {
             t.sound.setRate(0.7 * this.pitchMod);
         });
 
-        // `AMBIENT`：音量从 0 起来才开始放，放着就只改音量
-        this.organVolume = this.organVolume * (1 - dt) + dt * 0.6 * organIntensity(s.earned, s.required);
-        if (this.scene.cache.audio.exists('ambientOrgan1')) {
-            if (this.organVolume > 0.001 && (!this.organ || !this.organ.isPlaying)) {
-                this.organ?.destroy();
-                this.organ = this.scene.sound.add('ambientOrgan1') as Sound.WebAudioSound;
-                this.organ.play({ volume: this.organVolume, rate: 0.7 });
+        // `AMBIENT`：音量起来了（> 0）才开始放，放着就只改音量，播完音量还在就再放
+        for (const a of AMBIENT) {
+            const cur = this.ambient.get(a.key) ?? { sound: null, volume: 0 };
+            cur.volume = a.vol(cur.volume, dt, s);
+            this.ambient.set(a.key, cur);
+            if (!this.scene.cache.audio.exists(a.key)) continue;
+            if (cur.volume > 0.001 && (!cur.sound || !cur.sound.isPlaying)) {
+                cur.sound?.destroy();
+                cur.sound = this.scene.sound.add(a.key) as Sound.WebAudioSound;
+                cur.sound.play({ volume: cur.volume, rate: a.per });
             }
-            this.organ?.setVolume(this.organVolume);
+            cur.sound?.setVolume(cur.volume);
         }
     }
 }

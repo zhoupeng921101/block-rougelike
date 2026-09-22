@@ -47,6 +47,9 @@ import { createButtons } from '../../ui/definitions/buttons';
 import { deckPreview, viewDeckLabel } from '../../ui/definitions/deck-preview';
 import { MUSIC_KEYS, Music, desiredTrack } from '../music';
 import { AttentionText } from '../attention-text';
+import { FlameState, flamesIntensity } from '../flames';
+import { FLAME_FRAG } from '../shaders/flame';
+import { DISSOLVE_VERT } from '../shaders/dissolve';
 import { hudFuncs } from '../../ui/definitions/hud-funcs';
 
 /** `localize{type = 'variable', key, vars = {v}}` 的单变量版 */
@@ -245,8 +248,6 @@ export class RunScene extends Scene {
     /** 正在播放出牌动画时不接受输入 */
     private animating = false;
     /** 计分过程中的实时累加器，只用于显示 */
-    private liveChips = 0;
-    private liveMult = 0;
 
     private hud!: GameObjects.Text;
     private handPreview!: GameObjects.Text;
@@ -354,7 +355,8 @@ export class RunScene extends Scene {
         ), 41);
         this.deckSprite = new DeckSprite(this);
         this.music = new Music(this);
-        for (const key of [...MUSIC_KEYS, 'ambientOrgan1']) this.load.audio(key, `/assets/sounds/${key}.ogg`);
+        for (const key of [...MUSIC_KEYS, 'ambientOrgan1', 'ambientFire1', 'ambientFire2', 'ambientFire3']) this.load.audio(key, `/assets/sounds/${key}.ogg`);
+        this.createFlames();
         this.load.start();
         this.deckZone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(6);
         this.deckZone.on('pointerover', () => { this.deckHovered = true; });
@@ -1619,8 +1621,6 @@ ${String(e instanceof Error ? e.message : e)}`)
 
         this.animating = true;
         this.selected.clear();
-        this.liveChips = out.baseChips;
-        this.liveMult = out.baseMult;
         // 回合分数在逻辑层已经加上了，显示上照 `ease_chips` 在最后才缓过去
         this.shownRoundChips = { v: chipsBefore };
         const hand = this.hudState.current_round.current_hand;
@@ -1894,11 +1894,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         const hand = this.hudState.current_round.current_hand;
         if (vals.chips !== undefined) {
             hand.chips = vals.chips;
-            this.liveChips = vals.chips;
         }
         if (vals.mult !== undefined && hand.mult !== vals.mult) {
             hand.mult = vals.mult;
-            this.liveMult = vals.mult;
             this.hudView.juiceElement(this.hudView.box.getById('hand_mult_area'), this.time.now / 1000);
         }
         if (vals.handname !== undefined && hand.handname !== vals.handname) {
@@ -2872,15 +2870,66 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.attentionTexts = this.attentionTexts.filter((a) => !a.done);
     }
 
+    /** 两团分数火：状态、贴片、挂在哪个元素上 */
+    private flames: Array<{ state: FlameState; quad: GameObjects.Shader; el: UIElement }> = [];
+    private flameLastT = -1;
+
+    /**
+     * `flame_handler`：筹码格与倍率格各一张 2.5×2.5 的 `flame` 贴片，`bmi` 挂在格子底部，画在底框之后、数字之前。
+     * 主色是格子本色，火舌尖的亮色是它与黄的混色（`UI_CHIPLICK` / `UI_MULTLICK`）
+     */
+    private createFlames(): void {
+        const lick = (c: Colour): Colour => [0, 1, 2].map((i) => Math.min(Math.max((c[i]! * 0.5 + [1, 1, 0][i]! * 0.5 + 0.1) ** 2, 0.1), 1)).concat(1) as Colour;
+        [['flame_chips', C.UI_CHIPS], ['flame_mult', C.UI_MULT]].forEach(([id, colour], i) => {
+            const el = this.hudView.box.getById(id as string);
+            if (!el) return;
+            const state = new FlameState(this.time.now / 1000);
+            const c1 = colour as Colour;
+            const c2 = lick(c1);
+            const quad = this.add.shader({
+                name: `flame_${id}`, fragmentSource: FLAME_FRAG, vertexSource: DISSOLVE_VERT,
+                setupUniforms: (u: (n: string, v: unknown) => void) => {
+                    u('time', state.timer);
+                    u('amount', state.realIntensity);
+                    u('texture_details', [0, -1, 1, 1]);
+                    u('image_details', [1, -1]);
+                    u('colour_1', c1);
+                    u('colour_2', c2);
+                    u('id', 1000 + i * 7.3);
+                    u('mouse_screen_pos', [0, 0]);
+                    u('hovering', 0);
+                    u('screen_scale', 1);
+                    u('uScreenSize', [this.scale.width, this.scale.height]);
+                },
+            }, 0, 0, toPx(2.5), toPx(2.5));
+            this.hudView.attach(el, quad);
+            this.flames.push({ state, quad, el });
+        });
+    }
+
+    /** 每帧：按本手分推进两团火、把贴片摆到格子底部 */
+    private syncFlames(now: number, earned: number, required: number): void {
+        const dt = this.flameLastT < 0 ? 0 : Math.min(now - this.flameLastT, 0.1);
+        this.flameLastT = now;
+        for (const f of this.flames) {
+            f.state.step(dt, earned, required, !!this.run.openPack);
+            const box = f.el.parent!;
+            f.quad.setPosition(toPx(box.x + box.T.w / 2), toPx(box.y + box.T.h - 1.25));
+        }
+    }
+
     /** `modulate_sound`：挑音轨、游戏结束降调、管风琴跟着本手分数 */
     private syncMusic(now: number): void {
         const run = this.run;
         const round = this.round;
         if (this.packFade && now > this.packFade.until) this.packFade = null;
         const blindKey = run.state === 'playing' ? run.blindKey : this.roundEval?.blindHeld ? this.roundEval.last.blindKey : null;
+        // `score_intensity.earned_score`：本手那格的筹码 × 倍率（选牌预览时也算）
         const hand = this.hudState.current_round.current_hand;
-        const earned = this.animating && round ? this.liveChips * this.liveMult
-            : (Number(String(hand.chip_text).replace(/,/g, '')) || 0) * (Number(String(hand.mult_text).replace(/,/g, '')) || 0);
+        const earned = typeof hand.chips === 'number' && typeof hand.mult === 'number' ? hand.chips * hand.mult : 0;
+        const required = round?.requirement ?? 0;
+        this.syncFlames(now, earned, required);
+        const chipFlame = this.flames[0]?.state;
         this.music.update(now, {
             track: desiredTrack({
                 packKind: run.openPack?.center.kind ?? null,
@@ -2890,7 +2939,9 @@ ${String(e instanceof Error ? e.message : e)}`)
             }),
             gameOver: this.runOver,
             earned,
-            required: round?.requirement ?? 0,
+            required,
+            flames: chipFlame ? flamesIntensity(chipFlame) : 0,
+            fireChange: this.flames.reduce((a, f) => a + f.state.change, 0),
         });
     }
 
