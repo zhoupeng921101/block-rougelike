@@ -17,7 +17,7 @@ import { DynaText } from '../ui/dynatext';
 import type { SpriteObject } from '../ui/definitions/hud';
 import { EN_FONT } from '../ui/font';
 import { TILESIZE, UIT, UIBox, type UIElement } from '../ui/uibox';
-import { TILE_W, toPx } from './coords';
+import { TILE_H, TILE_W, toPx } from './coords';
 import { Motion } from './moveable';
 
 /** 世界像素 / 原作画矩形时的顶点单位（1/TILESIZE tile） */
@@ -351,6 +351,12 @@ export class UIBoxView {
             const obj = el.config.object;
             if (obj instanceof DynaText) {
                 obj.update();
+                // `text.lua:195`：刚冒头的字放一声 `paper1`（屏幕外的不出声）
+                for (const pitch of obj.popStep(timeSeconds)) {
+                    if (this.container.visible && el.x > -2 && el.y > -2 && el.x < TILE_W + 2 && el.y < TILE_H + 2) {
+                        this.scene.sound.play('paper1', { rate: pitch, volume: 1 });
+                    }
+                }
                 if (obj.resized) {
                     obj.resized = false;
                     resized = true;
@@ -600,17 +606,21 @@ export class UIBoxView {
             const l = letters[k0]!;
             // 字体像素 → 世界像素：字号 toPx(scale) 对应 renderScale
             const fontToWorld = toPx(d.scale) / d.font.renderScale;
+            // `text.lua:268`：字按弹入进度以格子中心缩放
+            const pop = letter.popIn;
             const place = (txt: GameObjects.Text, ax0: number, ay0: number) => {
                 // `text_rot`：整串绕 DynaText 的中心转（`prep_draw` 按 `T.r` 旋转）
                 const ax = R ? rcx + (ax0 - rcx) * Math.cos(R) - (ay0 - rcy) * Math.sin(R) : ax0;
                 const ay = R ? rcy + (ax0 - rcx) * Math.sin(R) + (ay0 - rcy) * Math.cos(R) : ay0;
                 const r = rl + R;
+                const k = fontToWorld * pop;
                 txt.setText(letter.char)
                     .setOrigin(0, 0)
                     .setRotation(r)
+                    .setScale(pop)
                     .setPosition(
-                        toPx(ax) - (oxFont * Math.cos(r) - oyFont * Math.sin(r)) * fontToWorld,
-                        toPx(ay) - (oxFont * Math.sin(r) + oyFont * Math.cos(r)) * fontToWorld,
+                        toPx(ax) - (oxFont * Math.cos(r) - oyFont * Math.sin(r)) * k,
+                        toPx(ay) - (oxFont * Math.sin(r) + oyFont * Math.cos(r)) * k,
                     );
             };
             if (l.shadow) {
@@ -626,4 +636,28 @@ export class UIBoxView {
 
 function css(c: Colour): string {
     return `#${rgb(c).toString(16).padStart(6, '0')}`;
+}
+
+/** 一块界面里（连同嵌套的 UIBox）所有的 DynaText，按遍历顺序 */
+export function dynaTextsOf(box: UIBox): DynaText[] {
+    const out: DynaText[] = [];
+    for (const el of box.root.walk()) {
+        const obj = el.config.object;
+        if (obj instanceof DynaText) out.push(obj);
+        else if (obj instanceof UIBox) out.push(...dynaTextsOf(obj));
+    }
+    return out;
+}
+
+/**
+ * 复刻件整块重建的界面（原作是同一个 UIBox、字不会再弹一遍）：新建的 DynaText 按顺序接过字相同的旧对象的弹入进度
+ */
+export function inheritPop(prev: DynaText[], next: DynaText[]): void {
+    let j = 0;
+    for (const d of next) {
+        const k = prev.findIndex((p, i) => i >= j && p.text === d.text);
+        if (k < 0) continue;
+        d.inheritPop(prev[k]!);
+        j = k + 1;
+    }
 }

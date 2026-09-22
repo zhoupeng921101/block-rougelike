@@ -30,7 +30,8 @@ import { CardSprite } from '../card-sprite';
 import { BoosterSprite } from '../booster-sprite';
 import { ConsumableSprite } from '../consumable-sprite';
 import { CANVAS_H, CANVAS_W, CARD_H, CARD_W, TILE_H, TILE_W, roomMapping, toPx } from '../coords';
-import { UIBoxView, UI_FONT_FAMILY } from '../ui-draw';
+import { UIBoxView, UI_FONT_FAMILY, dynaTextsOf, inheritPop } from '../ui-draw';
+import type { DynaText } from '../../ui/dynatext';
 import { makeRoomJuice, stepRoomJuice } from '../room-juice';
 import { Particles } from '../particles';
 import type { OpenPack } from '../../core/booster-open';
@@ -861,6 +862,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     /** 开包界面上一次对应的包与滑动位置（挑牌重建时不重滑） */
     private packShownFor: object | null = null;
     private packSlide = 0;
+    private packTexts: DynaText[] = [];
 
     private rebuildPackCards(): void {
         this.packSlide = this.packUi?.view.slideOffset.y ?? 0;
@@ -892,6 +894,9 @@ ${String(e instanceof Error ? e.message : e)}`)
                 e.config.button = ok ? 'skip_booster' : undefined;
             },
         });
+        const texts = dynaTextsOf(box);
+        if (this.packShownFor === pack) inheritPop(this.packTexts, texts);
+        this.packTexts = texts;
         const view = new UIBoxView(this, box, 0.5, (name) => this.onUIButton(name));
         view.setResolution(this.mapping.pxPerTile / toPx(1));
         // 新开的包从下面滑上来（offset `ROOM.T.y+9` → −2.2）；挑牌重建时接着上一版的位置
@@ -1072,10 +1077,15 @@ ${String(e instanceof Error ? e.message : e)}`)
     private shopShownFor: object | null = null;
     private signShownFor: object | null = null;
 
+    /** 上一版商店外框与各格价签里的 DynaText（价签按商品对象认），重建时接着弹入进度走 */
+    private shopTexts: { shop: object | null; box: DynaText[]; tags: Map<object, DynaText[]> } = { shop: null, box: [], tags: new Map() };
+
     private rebuildShop(): void {
         const prevShop = this.shopUi ? { shop: this.shopShownFor, offset: this.shopUi.view.slideOffset.y, sign: this.shopUi.sign.slideOffset.y } : null;
         this.clearShop();
         const shop = this.run.shop;
+        const prevTexts = this.shopTexts.shop === shop ? this.shopTexts : { shop, box: [], tags: new Map<object, DynaText[]>() };
+        this.shopTexts = { shop, box: [], tags: new Map() };
         if (!shop || this.roundEval) return;
         const U = toPx(1);
 
@@ -1095,6 +1105,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         const sign = new UIBox(createShopSign(), { align: 'cm', offset: { x: 0, y: 0 }, major: this.hudView.box.getById('row_blind')!.asMajor });
         const onButton = (name: string) => this.onUIButton(name);
         this.shopUi = { view: new UIBoxView(this, box, 0.5, onButton), sign: new UIBoxView(this, sign, 41), tags: [] };
+        this.shopTexts.box = [...dynaTextsOf(box), ...dynaTextsOf(sign)];
+        inheritPop(prevTexts.box, this.shopTexts.box);
         for (const v of [this.shopUi.view, this.shopUi.sign]) v.setResolution(this.mapping.pxPerTile / U);
         // 开包时商店滑到下面（`ROOM.T.y+11`），关包回来再滑上来；招牌只在新商店时从上面（−15）落下
         if (this.run.openPack) {
@@ -1121,9 +1133,12 @@ ${String(e instanceof Error ? e.message : e)}`)
          * 一格商品：精灵、所在区域、价签（`create_shop_card_ui` 的 t1：挂在卡上，`tm`、下压 0.38，补充包 0.5）。
          * 价签是卡的 child、先于卡面画：卡盖住价签的下半截（深度在外框之上、卡与卡的阴影之下）
          */
-        const slot = (group: ShopSlot['group'], index: number, sprite: Pickable, area: Rect, w: number, h: number, cost: number, done: boolean) => {
+        const slot = (group: ShopSlot['group'], index: number, sprite: Pickable, area: Rect, w: number, h: number, cost: number, done: boolean, item: object) => {
             const tagMajor = { T: { x: area.x, y: area.y, w, h } };
             const t = new UIBox(priceTag({ cost }), { align: 'tm', offset: { x: 0, y: group === 'packs' ? 0.5 : 0.38 }, major: tagMajor });
+            const texts = dynaTextsOf(t);
+            inheritPop(prevTexts.tags.get(item) ?? [], texts);
+            this.shopTexts.tags.set(item, texts);
             const tagView = new UIBoxView(this, t, 0.8);
             tagView.setResolution(this.mapping.pxPerTile / U);
             this.shopUi!.tags.push(tagView);
@@ -1140,18 +1155,18 @@ ${String(e instanceof Error ? e.message : e)}`)
                 const s = new JokerSprite(this, item.joker, () => this.pick(s, { kind: 'shop', index: i }));
                 this.attachPopup([s.shader], s, () => popupOfJoker(item.joker, 'shop'), true);
                 this.shopSprites.push(s);
-                slot('items', i, s, itemsArea, s.w / U, s.h / U, shop.itemCost(i), isJokerImplemented(item.joker.key));
+                slot('items', i, s, itemsArea, s.w / U, s.h / U, shop.itemCost(i), isJokerImplemented(item.joker.key), item);
             } else if (item.kind === 'consumable') {
                 const s = new ConsumableSprite(this, item.consumable, () => this.pick(s, { kind: 'shop', index: i }));
                 this.attachPopup([s.shader], s, () => popupOfConsumable(item.consumable, 'shop'), true);
                 this.shopConsumableSprites.push(s);
-                slot('items', i, s, itemsArea, CARD_W, CARD_H, shop.itemCost(i), isConsumableImplemented(item.consumable.key));
+                slot('items', i, s, itemsArea, CARD_W, CARD_H, shop.itemCost(i), isConsumableImplemented(item.consumable.key), item);
             } else {
                 // Magic Trick 的扑克牌
                 const s = new CardSprite(this, item.card, () => this.pick(s, { kind: 'shop', index: i }));
                 this.attachPopup(s.hoverTargets, s, () => popupOfCard(item.card, 'shop'), true);
                 this.shopCardSprites.push(s);
-                slot('items', i, s, itemsArea, CARD_W, CARD_H, shop.itemCost(i), true);
+                slot('items', i, s, itemsArea, CARD_W, CARD_H, shop.itemCost(i), true, item);
             }
         });
 
@@ -1161,7 +1176,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             const s = new VoucherSprite(this, v.center, () => this.pick(s, { kind: 'voucher', index: i }));
             this.attachPopup([s.shader], s, () => popupOfCenter(v.key, 'shop'), true);
             this.voucherSprites.push(s);
-            slot('vouchers', i, s, voucherArea, CARD_W, CARD_H, shop.voucherCost(i), true);
+            slot('vouchers', i, s, voucherArea, CARD_W, CARD_H, shop.voucherCost(i), true, v);
         });
 
         // 补充包：买掉的那一格从区域里拿走，剩下的重新居中（原作 `remove_card` 之后 `align_cards`）
@@ -1171,7 +1186,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             const s = new BoosterSprite(this, p.center, () => this.pick(s, { kind: 'booster', index: i }));
             this.attachPopup([s.shader], s, () => popupOfCenter(p.key, 'shop'), true);
             this.packSprites.push(s);
-            slot('packs', i, s, packArea, CARD_W * 1.27, CARD_H * 1.27, shop.packCost(i), isBoosterImplemented(p.key, BOOSTER_CENTERS));
+            slot('packs', i, s, packArea, CARD_W * 1.27, CARD_H * 1.27, shop.packCost(i), isBoosterImplemented(p.key, BOOSTER_CENTERS), p);
         });
         this.layoutShop();
     }

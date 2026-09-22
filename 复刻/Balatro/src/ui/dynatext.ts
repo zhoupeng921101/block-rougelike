@@ -3,7 +3,7 @@
  *
  * 宽度是**逐字**量出来再相加的（`FONT:getWidth(c)`），所以与整串量的结果一样（这款字体没有字距），
  * 高度是 `getHeight × TEXT_HEIGHT_SCALE`。`maxw` 超了就按比例缩 `scale` 再量一遍。
- * 弹入（pop_in）、弹跳（bump）、漂浮（float）、旋转（rotate）这些动画参数先只记下来，绘制那边再用。
+ * 弹入（pop_in）的进度在这里算（`align_letters` 那一支，`popStep`），弹跳 / 漂浮 / 旋转由绘制那边按时间算。
  */
 import type { Colour } from './colours';
 import { EN_FONT, type FontSpec, fontHeight, fontWidth } from './font';
@@ -31,7 +31,14 @@ export type DynaTextConfig = {
     bump_amount?: number;
     /** `text.lua:46`：整串绕自己中心转（`T.r`），弧度。SKIPPED 戳是 −0.35 */
     text_rot?: number;
+    /** `text.lua:24`：建好后隔多少秒开始逐字弹入（缺省不弹，字一出现就是满的） */
     pop_in?: number;
+    /** 每秒弹 `#string·pop_in_rate` 个字（缺省 3） */
+    pop_in_rate?: number;
+    /** 字变了也重新弹一遍（缺省只在建好时弹） */
+    reset_pop_in?: boolean;
+    /** 弹字音效的音高偏移 */
+    pitch_shift?: number;
     /** 绘制时整串再挪多少（字体像素，`text.lua:17` 的 `text_offset`），不进布局 */
     x_offset?: number;
     y_offset?: number;
@@ -45,6 +52,8 @@ export type DynaLetter = {
     partScale: number;
     /** 这一段自己的颜色（`text.lua:122` 的 `let_tab.colour`），盖过 `colours` 的轮换 */
     colour?: Colour;
+    /** `letter.pop_in`：0 → 1，绘制时字按它缩放（先平方再用） */
+    popIn: number;
 };
 
 export class DynaText implements UIObject {
@@ -57,11 +66,24 @@ export class DynaText implements UIObject {
     /** 尺寸变了，所在的 UIBox 要重排（原作的 `ui_object_updated`） */
     resized = false;
 
+    /**
+     * `self.config.pop_in`：弹入进行中时是开始前的延迟，弹完置空。
+     * 原作直接改 config，这里另存一份，免得定义表被共享时互相影响
+     */
+    popDelay: number | undefined;
+    /** `created_time`：弹入的计时起点。原作是建对象那一刻；复刻件在第一次 `popStep` 时定（同一帧） */
+    createdTime: number | null = null;
+    /** `start_pop_in` / `reset_pop_in`：下一次 `update` 换字时要不要重新弹 */
+    private resetPopIn = false;
+
     constructor(readonly config: DynaTextConfig) {
         this.scale = config.scale ?? 1;
         this.font = config.font ?? EN_FONT;
+        this.popDelay = config.pop_in;
+        this.resetPopIn = config.pop_in !== undefined;
         this.update(true);
         if (config.maxw !== undefined && this.T.w > config.maxw) {
+            this.resetPopIn = config.pop_in !== undefined;
             this.scale *= config.maxw / this.T.w;
             this.update(true);
         }
@@ -88,6 +110,15 @@ export class DynaText implements UIObject {
         }
         if (!firstPass && str === this.text) return false;
         this.text = str;
+        // `text.lua:95`：建好时（`start_pop_in`）或配了 `reset_pop_in` 才重新弹，否则字一换就是满的
+        const reset = this.resetPopIn || !!this.config.reset_pop_in;
+        this.resetPopIn = false;
+        if (!reset) this.popDelay = undefined;
+        else {
+            this.popDelay ??= 0;
+            this.createdTime = null;
+        }
+        const old = this.letters;
 
         const fs = this.font.FONTSCALE;
         const spacing = this.config.spacing ?? 0;
@@ -98,7 +129,9 @@ export class DynaText implements UIObject {
             // tx / (FONTSCALE*TILESCALE)：字体像素 × scale，再加 spacing 那一项
             const dx = fontWidth(char, this.font) * this.scale * partScale + 2.7 * spacing;
             const dy = fontHeight(this.font) * this.scale * partScale * this.font.TEXT_HEIGHT_SCALE;
-            this.letters.push({ char, dims: { x: dx, y: dy }, partScale, colour: partColour });
+            // `text.lua:119`：头一遍沿用旧字的进度（maxw 缩过再量一遍），没有就看配没配 pop_in；之后换字恒为满
+            const popIn = firstPass ? (old[this.letters.length]?.popIn ?? (this.popDelay !== undefined ? 0 : 1)) : 1;
+            this.letters.push({ char, dims: { x: dx, y: dy }, partScale, colour: partColour, popIn });
             w += (dx * fs) / TILESIZE;
             h = Math.max(h, (dy * fs) / TILESIZE);
         }
@@ -107,5 +140,49 @@ export class DynaText implements UIObject {
         this.T.h = h;
         if (changed && !firstPass) this.resized = true;
         return changed;
+    }
+
+    /**
+     * `text.lua:191`：`align_letters` 的弹入一支。第 k 个字的进度 `((now − pop_in − created)·#string·rate − k + 1)²`，
+     * 夹在 [0, 1]；最后一个字满了就停（`config.pop_in = nil`）。
+     * 返回这一帧**刚冒头**的字要放的 `paper1` 音高（`silent` 时为空；超过 10 个字的只有偶数位出声）
+     */
+    popStep(now: number, random: () => number = Math.random): number[] {
+        this.createdTime ??= now;
+        const delay = this.popDelay;
+        if (delay === undefined) return [];
+        const n = this.text.length;
+        const rate = this.config.pop_in_rate ?? 3;
+        const sounds: number[] = [];
+        this.letters.forEach((letter, k0) => {
+            const k = k0 + 1;
+            const prev = letter.popIn;
+            const p = Math.min(1, Math.max((now - delay - this.createdTime!) * n * rate - k + 1, 0));
+            letter.popIn = p * p;
+            if (prev <= 0 && letter.popIn > 0 && !this.config.silent && (n < 10 || k % 2 === 0)) {
+                sounds.push(0.45 + 0.05 * random() + (0.3 / n) * k + (this.config.pitch_shift ?? 0));
+            }
+        });
+        const last = this.letters[this.letters.length - 1];
+        if (!last || last.popIn >= 1) this.popDelay = undefined;
+        return sounds;
+    }
+
+    /** `DynaText:pop_in`：从头再弹一遍 */
+    popIn(delay = 0): void {
+        this.popDelay = delay;
+        this.createdTime = null;
+        for (const l of this.letters) l.popIn = 0;
+    }
+
+    /**
+     * 复刻件会把同一块界面整个重建（买卖、重掷之后的商店），原作那个 DynaText 是同一个对象、不会再弹一遍。
+     * 新建的这个接过旧的进度（字一样才接）
+     */
+    inheritPop(from: DynaText): void {
+        if (from.text !== this.text) return;
+        this.popDelay = from.popDelay;
+        this.createdTime = from.createdTime;
+        this.letters.forEach((l, i) => { l.popIn = from.letters[i]?.popIn ?? 1; });
     }
 }
