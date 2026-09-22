@@ -271,6 +271,12 @@ export class CardSprite {
         const m = this.motion;
         if (!m) return;
         m.step(dt, now);
+        if (this.flipTo && m.wScale <= 0) {
+            this.shownFacing = this.flipTo;
+            this.flipTo = null;
+            m.pinchX = false;
+            this.applyFacing();
+        }
         const VT = m.VT;
         const cx = toPx(VT.x + CARD_W / 2);
         const cy = toPx(VT.y + CARD_H / 2);
@@ -300,7 +306,7 @@ export class CardSprite {
      * 而一张牌可能在 Boss 被 disable 之后翻回正面。
      */
     private applyFacing(): void {
-        const faceDown = this.card.facing === 'back';
+        const faceDown = (this.shownFacing ?? this.card.facing) === 'back';
         this.back.setVisible(faceDown);
         this.baseLayers.setVisible(!faceDown);
         // **石头牌不画正面**（`card.lua:4426` 那一串 `ability.effect ~= 'Stone Card'`）——
@@ -313,6 +319,31 @@ export class CardSprite {
     pop(amount?: number): void {
         if (amount === undefined) this.motion?.cardJuiceUp(this.scene.time.now / 1000, 0.6, 0.1);
         else this.motion?.cardJuiceUp(this.scene.time.now / 1000, amount);
+    }
+
+    /**
+     * `Card:flip` 的画面那一半（`sprite_facing`）：塔罗改牌时翻过去、换牌面、再翻回来。
+     * 逻辑层的 `facing` 不动（改牌的塔罗翻两次，净效果为零），画的是这里的覆盖值
+     */
+    shownFacing: 'front' | 'back' | null = null;
+    private flipTo: 'front' | 'back' | null = null;
+
+    /** 横向捏到 0（`pinch.x`），那一刻换面、再撑开（`Card:update` 的 `flipping`） */
+    flip(): void {
+        const now = this.shownFacing ?? this.card.facing ?? 'front';
+        this.flipTo = now === 'back' ? 'front' : 'back';
+        if (this.motion) this.motion.pinchX = true;
+    }
+
+    /** 换精灵时接着上一张的翻面状态（翻到背面时换牌面，新精灵也得是背面、宽度也接着） */
+    adoptFacing(from: CardSprite): void {
+        this.shownFacing = from.shownFacing;
+        this.flipTo = from.flipTo;
+        if (this.motion && from.motion) {
+            this.motion.pinchX = from.motion.pinchX;
+            this.motion.wScale = from.motion.wScale;
+        }
+        this.applyFacing();
     }
 
     /** `Card:juice_up(scale, rot)`，参数缺省即原作缺省 */

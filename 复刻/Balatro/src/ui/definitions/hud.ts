@@ -34,6 +34,8 @@ export type HudState = {
         };
     };
     round_resets: { ante: number };
+    /** `G.TAROT_INTERRUPT_PULSE`：星球升级那一段里筹码 / 倍率换值时不 `text_super_juice` */
+    tarot_interrupt_pulse?: boolean;
 };
 
 export function makeHudState(): HudState {

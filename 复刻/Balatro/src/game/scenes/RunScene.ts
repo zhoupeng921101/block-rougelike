@@ -73,6 +73,7 @@ import { UIBox, UIT } from '../../ui/uibox';
 import { RED_DECK, WIN_ANTE } from '../../core/run';
 import { JokerSprite } from '../joker-sprite';
 import { type ExitStyle, type ExitTarget, destroyStyle, playExit } from '../card-exit';
+import { queueUseConsumable } from '../use-sequence';
 import { LOOK } from '../look';
 import { SETTINGS, masterGain, saveSettings, wobble } from '../settings';
 import { type SettingsHooks, controlFuncs, handleControlButton, optionsMenu, settingsMenu } from '../../ui/definitions/options';
@@ -97,6 +98,9 @@ import { MiniCard } from '../mini-card';
  * `random_string(8)`（`misc_functions.lua:273`）：三成是 1–9，其余 A–N 与 P–Z 各半（没有 O 与 0）。
  * 原作不指定种子的开局用它；随机源是无种子的 `math.random`
  */
+/** `update_hand_text` 的 `vals`：数值或字串（Black Hole 的 `...` / `+`），`StatusText` 时在那一格上冒增量 */
+type HandTextVals = { chips?: number | string; mult?: number | string; handname?: string; level?: number | string; chip_total?: number; StatusText?: boolean };
+
 function randomSeed(): string {
     const range = (a: string, b: string) => String.fromCharCode(a.charCodeAt(0) + Math.floor(Math.random() * (b.charCodeAt(0) - a.charCodeAt(0) + 1)));
     let out = '';
@@ -822,18 +826,118 @@ ${String(e instanceof Error ? e.message : e)}`)
             return;
         }
 
-        const jokersBefore = [...this.run.jokers];
+        const snap = this.useSnapshot();
         this.run.useConsumable(index, highlighted);
-        this.sound.play('tarot1', { volume: 0.6 });
-        this.selected.clear();
-        this.registerDestroyedJokers(jokersBefore);
-        this.exitDestroyedHand([...this.sprites, ...this.packHandSprites], consumable.center.name);
-        // 塔罗会换点数 / 换花色 / 换强化 / 销毁手牌，**整个手牌区要重建**（开包时的手牌也是）
-        this.rebuildHand();
-        if (this.run.openPack) this.rebuildPackCards();
-        this.rebuildJokers();
-        this.rebuildConsumables();
-        this.refresh();
+        const used = this.consumableSprites.find((s) => s.consumable === consumable);
+        // 用的那张离开消耗品区（`area:remove_card`），交给 `playUse` 飞走、溶掉
+        this.consumableSprites = this.consumableSprites.filter((s) => s !== used);
+        if (this.picked?.where.kind === 'consumable') this.unpick();
+        this.playUse(used, consumable, snap);
+    }
+
+    /** 用消耗品之前记下表现要用的「之前」：选中的牌（按选中顺序）、各牌型的值、小丑区 */
+    private useSnapshot(): { highlighted: Card[]; hands: Record<string, { chips: number; mult: number; level: number }>; jokers: Joker[]; packKind?: string } {
+        const hands: Record<string, { chips: number; mult: number; level: number }> = {};
+        for (const [k, h] of Object.entries(this.run.hands)) hands[k] = { chips: h.chips, mult: h.mult, level: h.level };
+        // 包的种类要在用之前记：只剩一次选择的包，逻辑层用完当场就关了
+        return { highlighted: [...this.selected], hands, jokers: [...this.run.jokers], packKind: this.run.openPack?.center.kind };
+    }
+
+    /** 飞在半路 / 停在出牌区的那张（`use_card` 的 `draw_card(G.hand, G.play)`），每帧摆 */
+    private usingCard: { sprite: ConsumableSprite; inPack: boolean } | null = null;
+
+    private placeUsing(real: number): void {
+        const u = this.usingCard;
+        if (!u) return;
+        if (u.inPack) {
+            // 开包时：`T` 直接设到手牌区中间偏上 0.5
+            const h = this.areas.hand;
+            u.sprite.place({ x: h.x + h.w / 2 - CARD_W / 2, y: h.y + h.h / 2 - CARD_H / 2 - 0.5, r: 0 }, 30);
+        } else {
+            const p = alignPlay(this.areas.play, [{ highlighted: false, prevX: u.sprite.prevX }], 5)[0]!;
+            u.sprite.place(p, 30);
+        }
+        void real;
+    }
+
+    /**
+     * `G.FUNCS.use_card` 的表现：商店 / 开包界面让开（`offset.y = ROOM.T.y + 29`），用的那张飞到出牌区，
+     * `delay(0.2)`，`use_consumeable` 的那一段（`use-sequence.ts`），0.2 秒后溶掉，再 0.1 秒收尾：界面回来、放开输入、刷新各区
+     */
+    private playUse(used: ConsumableSprite | undefined, consumable: Consumable, snap: ReturnType<RunScene['useSnapshot']>, onDone?: () => void): void {
+        this.animating = true;
+        this.tarotInterrupt = true;
+        this.hidePopup();
+        // `G.STATE` 是奥秘 / 天体 / 幽灵包时停在手牌区上方，否则进出牌区
+        const inPack = ['Arcana', 'Celestial', 'Spectral'].includes(snap.packKind ?? '');
+        if (used) this.usingCard = { sprite: used, inPack };
+        const shop = this.shopUi;
+        shop?.view.slideTo(34.3);
+        const pack = this.packUi;
+        pack?.view.slideTo(31.2);
+
+        const handList = () => (this.run.packHand ? this.packHandSprites : this.sprites);
+        const highlighted = snap.highlighted
+            .map((c) => handList().find((s) => s.card === c))
+            .filter((s): s is CardSprite => !!s);
+        const handsAfter: Record<string, { chips: number; mult: number; level: number }> = {};
+        for (const [k, h] of Object.entries(this.run.hands)) handsAfter[k] = { chips: h.chips, mult: h.mult, level: h.level };
+        this.registerDestroyedJokers(snap.jokers);
+
+        this.delayEvent(0.2);
+        queueUseConsumable({
+            queue: this.queue,
+            sound: (key, rate = 1, volume = 1) => this.sound.play(key, { rate, volume }),
+            delay: (t) => this.delayEvent(t),
+            updateHandText: (config, vals) => this.updateHandText(config, vals),
+            juiceUsed: (a, r) => used?.juiceUp(a, r),
+            setPulse: (on) => { this.hudState.tarot_interrupt_pulse = on; },
+            highlighted,
+            refreshCard: (card) => {
+                const list = handList();
+                const i = list.findIndex((s) => s.card === card);
+                if (i < 0) return;
+                const old = list[i]!;
+                const fresh = new CardSprite(this, card, (c) => (this.run.packHand ? this.togglePackHand(c) : this.toggle(c)));
+                this.attachPopup(fresh.hoverTargets, fresh, () => popupOfCard(card, this.run.packHand ? 'pack' : 'hand'));
+                fresh.adoptMotion(old);
+                fresh.place({ x: old.rect.x, y: old.rect.y, r: 0 }, i);
+                fresh.adoptFacing(old);
+                list[i] = fresh;
+                const h = highlighted.indexOf(old);
+                if (h >= 0) highlighted[h] = fresh;
+                old.destroy();
+            },
+            unhighlightAll: () => this.selected.clear(),
+            destroyCards: () => this.exitDestroyedHand([...this.sprites, ...this.packHandSprites], consumable.center.name),
+            handsBefore: snap.hands,
+            handsAfter,
+        }, consumable);
+        this.queue.add(new GameEvent({ trigger: 'after', delay: 0.2, func: () => {
+            if (used) {
+                this.usingCard = null;
+                this.exitCard(used, { kind: 'dissolve' });
+            }
+            return true;
+        } }));
+        this.queue.add(new GameEvent({ trigger: 'after', delay: 0.1, func: () => {
+            this.tarotInterrupt = false;
+            this.hudState.tarot_interrupt_pulse = false;
+            this.animating = false;
+            this.selected.clear();
+            if (shop && this.shopUi === shop) shop.view.slideTo(0);
+            if (pack && this.packUi === pack && this.run.openPack) pack.view.slideTo(0);
+            // 其余效果（造牌、给钱、换小丑……）在这里一次性刷出来
+            this.rebuildHand();
+            if (onDone) onDone();
+            else {
+                if (this.run.openPack) this.rebuildPackCards();
+                this.rebuildJokers();
+                this.rebuildConsumables();
+                this.refresh();
+            }
+            return true;
+        } }));
     }
 
     /** 点不动的时候给一句人话。没实现与「局面不允许」要分开说 */
@@ -1161,25 +1265,26 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.time.delayedCall(1400, () => this.message.setText(''));
             return;
         }
-        const jokersBefore = [...this.run.jokers];
-        // 包里的塔罗 / 星球 / 幽灵是当场用掉的：那张 `start_dissolve()`（`use_card` 的末尾），别让重建包时拆掉
-        const used = card.kind === 'consumable' ? this.packCardSprites[index] : undefined;
+        const snap = this.useSnapshot();
+        const sprite = card.kind === 'consumable' ? this.packCardSprites[index] : undefined;
         this.run.takeFromPack(index, highlighted);
-        this.selected.clear();
-        if (used && card.kind === 'consumable' && !this.run.consumables.includes(card.consumable)) {
+        const refresh = () => {
+            this.rebuildJokers();
+            this.rebuildConsumables();
+            if (!this.run.openPack) this.rebuildShop();
+            this.rebuildPackCards();
+            this.refresh();
+        };
+        // 包里的塔罗 / 星球 / 幽灵是当场用掉的（`use_card`），走和消耗品区一样的表现
+        if (card.kind === 'consumable' && !this.run.consumables.includes(card.consumable)) {
+            const used = sprite instanceof ConsumableSprite ? sprite : undefined;
             this.packCardSprites = this.packCardSprites.filter((s) => s !== used);
-            this.exitCard(used, { kind: 'dissolve' });
+            this.playUse(used, card.consumable, snap, refresh);
+            return;
         }
-        if (card.kind === 'consumable') {
-            this.registerDestroyedJokers(jokersBefore);
-            this.exitDestroyedHand([...this.sprites, ...this.packHandSprites], card.consumable.center.name);
-        }
-        this.sound.play(card.kind === 'consumable' ? 'tarot1' : 'card1', { volume: 0.5 });
-        this.rebuildJokers();
-        this.rebuildConsumables();
-        if (!this.run.openPack) this.rebuildShop();
-        this.rebuildPackCards();
-        this.refresh();
+        this.selected.clear();
+        this.sound.play('card1', { volume: 0.5 });
+        refresh();
     }
 
     private doSkipPack(): void {
@@ -1434,14 +1539,26 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.sound.play('cancel', { volume: 0.4 });
             return;
         }
-        this.run.buyAndUseConsumable(index, this.selectedInOrder());
-        this.selected.clear();
+        const item = this.run.shop?.items[index];
+        const snap = this.useSnapshot();
+        const consumable = this.run.buyAndUseConsumable(index, this.selectedInOrder());
         this.sound.play('coin1', { volume: 0.5 });
-        this.sound.play('tarot1', { volume: 0.6 });
-        this.rebuildJokers();
-        this.rebuildConsumables();
-        this.rebuildShop();
-        this.refresh();
+        // 买下的那张离开货架（价签一起拆，`card.children.price:remove()`），交给 `playUse`
+        const used = item?.kind === 'consumable' ? this.shopConsumableSprites.find((s) => s.consumable === item.consumable) : undefined;
+        this.shopConsumableSprites = this.shopConsumableSprites.filter((s) => s !== used);
+        // 价签还挂在 `shopUi.tags` 里每帧更新，先藏起来，重建商店时一起拆
+        this.shopSlots = this.shopSlots.filter((slot) => {
+            if (slot.sprite !== used) return true;
+            slot.tagView.setVisible(false);
+            slot.warn?.setVisible(false);
+            return false;
+        });
+        this.playUse(used, consumable, snap, () => {
+            this.rebuildJokers();
+            this.rebuildConsumables();
+            this.rebuildShop();
+            this.refresh();
+        });
     }
 
     /** 选中消耗品后按 SELL */
@@ -1996,7 +2113,7 @@ ${String(e instanceof Error ? e.message : e)}`)
      * 只写数值；显示由 HUD 的 `*_UI_set` 每帧同步
      */
     private updateHandText(config: { delay?: number; immediate?: boolean; sound?: string; volume?: number; pitch?: number; nopulse?: boolean },
-        vals: { chips?: number; mult?: number; handname?: string; level?: number | ''; chip_total?: number }): void {
+        vals: HandTextVals): void {
         this.queue.add(new GameEvent({
             trigger: 'before', blockable: !config.immediate, delay: config.delay ?? 0.8,
             func: () => {
@@ -2007,14 +2124,32 @@ ${String(e instanceof Error ? e.message : e)}`)
         }));
     }
 
-    private applyHandText(vals: { chips?: number; mult?: number; handname?: string; level?: number | ''; chip_total?: number }, config: { nopulse?: boolean }): void {
+    /** `G.TAROT_INTERRUPT`：用消耗品期间倍率换值不弹那一格 */
+    private tarotInterrupt = false;
+
+    private applyHandText(vals: HandTextVals, config: { nopulse?: boolean }): void {
         const hand = this.hudState.current_round.current_hand;
-        if (vals.chips !== undefined) {
+        // `StatusText`：在那一格上盖一块色、冒增量（`+3` / `-1`；给的是字串就冒字串本身）。增量为负时底色偏红
+        const status = (id: string, from: number | string, to: number | string, base: Colour, coverAlign: string) => {
+            const numeric = typeof from === 'number' && typeof to === 'number';
+            const d = numeric ? (to as number) - (from as number) : 0;
+            const text = typeof to === 'string' ? to : d > 0 ? `+${d}` : `${d}`;
+            const col = d < 0 ? C.RED : C.GREEN;
+            const el = this.hudView.box.getById(id)?.parent;
+            if (!el) return;
+            this.attentionTexts.push(new AttentionText(this, {
+                text, scale: 0.8, hold: 1, align: 'cm', emboss: 0.05, coverAlign,
+                major: () => ({ x: el.x, y: el.y, w: el.T.w, h: el.T.h }), cover: true, coverColour: mixColours(base, col, 0.1),
+            }, this.mapping.pxPerTile / toPx(1), 45));
+        };
+        if (vals.chips !== undefined && hand.chips !== vals.chips) {
+            if (vals.StatusText) status('hand_chips', hand.chips, vals.chips, C.CHIPS, 'cr');
             hand.chips = vals.chips;
         }
         if (vals.mult !== undefined && hand.mult !== vals.mult) {
+            if (vals.StatusText) status('hand_mult', hand.mult, vals.mult, C.MULT, 'cl');
             hand.mult = vals.mult;
-            this.hudView.juiceElement(this.hudView.box.getById('hand_mult_area'), this.time.now / 1000);
+            if (!this.tarotInterrupt) this.hudView.juiceElement(this.hudView.box.getById('hand_mult_area'), this.time.now / 1000);
         }
         if (vals.handname !== undefined && hand.handname !== vals.handname) {
             hand.handname = vals.handname;
@@ -2030,7 +2165,8 @@ ${String(e instanceof Error ? e.message : e)}`)
                 hand.hand_level = text;
                 const el = this.hudView.box.getById('hand_level');
                 if (el && vals.level !== '') {
-                    el.config.colour = C.HAND_LEVELS[Math.min(vals.level as number, 7)]!;
+                    // 字串（Black Hole 的 `+1`）用第一级的颜色
+                    el.config.colour = C.HAND_LEVELS[typeof vals.level === 'number' ? Math.min(vals.level, 7) : 1]!;
                     this.hudView.juiceElement(el, this.time.now / 1000);
                 }
             }
@@ -3056,6 +3192,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.roundEval?.view.update(time / 1000);
         this.roundEval?.cashView?.update(time / 1000);
         this.placeCards(time / 1000);
+        this.placeUsing(time / 1000);
         // 牌堆：盲注里是剩余张数，盲注外整副牌都在牌堆里
         this.deckSprite.update(this.areas.deck, this.deckCount());
         this.syncDeckPreview(time / 1000);

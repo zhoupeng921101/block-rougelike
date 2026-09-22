@@ -113,6 +113,7 @@ export class Motion {
 
         // `moveable.lua:440`：pinch 放在 move 之后
         if (this.pinchX && this.wScale > 0) this.wScale = Math.max(0, this.wScale - 8 * dt);
+        else if (!this.pinchX && this.wScale < 1) this.wScale = Math.min(1, this.wScale + 8 * dt);
 
         // move_scale
         const desScale = T.scale + (this.hovered ? 0.05 : 0) + (this.juice ? this.juice.scale : 0);

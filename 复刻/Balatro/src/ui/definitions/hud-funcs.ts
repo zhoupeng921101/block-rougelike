@@ -41,7 +41,7 @@ export function hudFuncs(state: HudState): UIFuncs {
             const d = e.config.object as DynaText;
             d.scale = typeof hand.chips === 'number' ? scaleNumber(hand.chips, 0.9, 1000) : 0.9;
             d.update();
-            superJuice(e, digits(hand.chips));
+            if (!state.tarot_interrupt_pulse) superJuice(e, digits(hand.chips));
             e.box.recalculate();
         },
         /** `:2020`：倍率 */
@@ -52,7 +52,7 @@ export function hudFuncs(state: HudState): UIFuncs {
             const d = e.config.object as DynaText;
             d.scale = typeof hand.mult === 'number' ? scaleNumber(hand.mult, 0.9, 1000) : 0.9;
             d.update();
-            superJuice(e, digits(hand.mult));
+            if (!state.tarot_interrupt_pulse) superJuice(e, digits(hand.mult));
             e.box.recalculate();
         },
         /** `:2040`：这一手的总分（< 1 时不显示）；变大时才 juice */
