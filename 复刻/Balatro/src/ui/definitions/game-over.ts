@@ -16,6 +16,7 @@ import type { Rect, UINodeDef, UIObject } from '../uibox';
 import { UIT } from '../uibox';
 import type { BlindChipObject } from './blind-select';
 import { scoreNumberScale } from './blind-select';
+import { uiboxButton } from './ui-button';
 import type { SpriteObject } from './hud';
 
 const loc = (key: string) => DICTIONARY[key] ?? 'ERROR';
@@ -151,40 +152,6 @@ export function roundScoresRow(s: GameOverState, score: Score, textColour?: Colo
                 { n: UIT.C, config: { align: 'cm', padding: 0.05, r: 0.1, minw: scoreW }, nodes: scoreTab },
             ] },
         ] },
-    ] };
-}
-
-type ButtonArgs = {
-    button?: string;
-    id?: string;
-    label?: string[];
-    colour?: Colour;
-    textColour?: Colour;
-    minw?: number;
-    maxw?: number;
-    minh?: number;
-    scale?: number;
-    shadow?: boolean;
-    padding?: number;
-    col?: boolean;
-};
-
-/** `UIBox_button`（不带 `count` / `choice` 的那部分） */
-export function uiboxButton(args: ButtonArgs): UINodeDef {
-    const button = args.button ?? 'exit_overlay_menu';
-    const colour = args.colour ?? C.RED;
-    const label = args.label ?? ['LABEL'];
-    const minw = args.minw ?? 2.7;
-    let maxw = args.maxw ?? minw - 0.2;
-    if (minw < maxw) maxw = minw - 0.2;
-    const minh = args.minh ?? 0.9;
-    const scale = args.scale ?? 0.5;
-    const textColour = args.textColour ?? C.UI.TEXT_LIGHT;
-    const labelNodes: UINodeDef[] = label.map((v) => ({ n: UIT.R, config: { align: 'cm', padding: 0, minw, maxw }, nodes: [
-        { n: UIT.T, config: { text: v, scale, colour: textColour, shadow: args.shadow } },
-    ] }));
-    return { n: args.col ? UIT.C : UIT.R, config: { align: 'cm' }, nodes: [
-        { n: UIT.C, config: { align: 'cm', padding: args.padding ?? 0, r: 0.1, hover: true, colour, button, minh, shadow: true, id: args.id }, nodes: labelNodes },
     ] };
 }
 

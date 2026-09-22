@@ -21,6 +21,7 @@ import { numberFormat } from '../format';
 import { BLIND_TEXT, DICTIONARY } from '../lang.generated';
 import { type Rect, UIBox, type UIElement, type UIFuncs, type UINodeDef, type UIObject, UIT } from '../uibox';
 import { type SpriteObject, stakeSprite } from './hud';
+import { uiboxButton } from './ui-button';
 
 const loc = (key: string) => DICTIONARY[key] ?? 'ERROR';
 
@@ -188,8 +189,11 @@ export type BlindSelect = {
     prompt: UIBox;
 };
 
-/** 「Choose your / next Blind」（`G.blind_prompt_box`），挂在左侧面板的 `row_blind` 上 */
-export function createBlindPrompt(): UINodeDef {
+/**
+ * 「Choose your / next Blind」（`G.blind_prompt_box`），挂在左侧面板的 `row_blind` 上。
+ * 兑换过 Director's Cut（或 Retcon）时下面多一个「Reroll Boss $10」（`reroll_boss_button` 每帧置灰）
+ */
+export function createBlindPrompt(rerollBoss = false): UINodeDef {
     return { n: UIT.ROOT, config: { align: 'cm', colour: C.CLEAR, padding: 0.2 }, nodes: [
         { n: UIT.R, config: { align: 'cm' }, nodes: [
             { n: UIT.O, config: { object: new DynaText({ string: [loc('ph_choose_blind_1')], colours: [C.WHITE], shadow: true, bump: true, scale: 0.6, pop_in: 0.5, maxw: 5 }), id: 'prompt_dynatext1' } },
@@ -197,6 +201,7 @@ export function createBlindPrompt(): UINodeDef {
         { n: UIT.R, config: { align: 'cm' }, nodes: [
             { n: UIT.O, config: { object: new DynaText({ string: [loc('ph_choose_blind_2')], colours: [C.WHITE], shadow: true, bump: true, scale: 0.7, pop_in: 0.5, maxw: 5, silent: true }), id: 'prompt_dynatext2' } },
         ] },
+        rerollBoss ? uiboxButton({ label: [loc('b_reroll_boss'), `${loc('$')}10`], button: 'reroll_boss', func: 'reroll_boss_button' }) : null,
     ] };
 }
 

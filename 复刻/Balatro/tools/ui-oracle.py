@@ -306,6 +306,20 @@ def main():
     for k in ['small', 'big', 'boss']:
         cases.append({'name': f'blind_choice_{k}', **to_py(lua.eval(f'DUMP(G.blind_select_opts.{k})'))})
     cases.append({'name': 'blind_prompt', **to_py(lua.eval('DUMP(G.blind_prompt_box)'))})
+    # 兑换过 Director's Cut：提示框下面多一个 UIBox_button（Reroll Boss / $10）
+    lua.execute(r'''
+      G.GAME.used_vouchers = { v_directors_cut = true }
+      G.GAME.bankrupt_at = 0
+      create_UIBox_blind_select()
+      G.blind_prompt_box.alignment.offset.y = 0
+      G.blind_prompt_box.alignment.prev_type = ''
+      G.blind_prompt_box:align_to_major()
+      G.blind_prompt_box.T.x = G.blind_prompt_box.role.major.T.x + G.blind_prompt_box.role.offset.x
+      G.blind_prompt_box.T.y = G.blind_prompt_box.role.major.T.y + G.blind_prompt_box.role.offset.y
+      G.blind_prompt_box.UIRoot:initialize_VT()
+      G.GAME.used_vouchers = {}
+    ''')
+    cases.append({'name': 'blind_prompt_reroll', **to_py(lua.eval('DUMP(G.blind_prompt_box)'))})
 
     # 回合结算：create_UIBox_round_evaluation 挂在手牌区下（game.lua:3678，offset 落定在 -7.8），
     # 再用原文 add_round_eval_row 一行行加（common_events.lua 原样加载，事件排队后按序执行、delay 空转）。

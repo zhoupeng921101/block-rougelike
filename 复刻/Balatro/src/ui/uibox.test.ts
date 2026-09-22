@@ -142,6 +142,8 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
         });
         const prompt = new UIBox(createBlindPrompt(), { align: 'cm', offset: { x: 0, y: 0 }, major: hud.getById('row_blind')!.asMajor });
         expectSame(dump(prompt), cases.find((c) => c.name === 'blind_prompt')!.elements);
+        const reroll = new UIBox(createBlindPrompt(true), { align: 'cm', offset: { x: 0, y: 0 }, major: hud.getById('row_blind')!.asMajor });
+        expectSame(dump(reroll), cases.find((c) => c.name === 'blind_prompt_reroll')!.elements);
     });
 
     /**

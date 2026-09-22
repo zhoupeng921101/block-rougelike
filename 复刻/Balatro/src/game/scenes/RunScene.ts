@@ -227,8 +227,6 @@ export class RunScene extends Scene {
     private rerollBtn!: GameObjects.Text;
     /** 盲注选择界面上的「跳过盲注」（调试按钮；卡片上的 Skip Blind 接管之后只在标签开包时露出来） */
     private skipBlindBtn!: GameObjects.Text;
-    /** Director's Cut：盲注选择界面上花 $10 重掷 Boss */
-    private rerollBossBtn!: GameObjects.Text;
 
     constructor() {
         super('Run');
@@ -352,7 +350,6 @@ export class RunScene extends Scene {
         this.nextBtn = this.makeButton(toPx(9.8), toPx(10.2), '下一关', '#3c6ea5', () => this.doNext());
         this.rerollBtn = this.makeButton(toPx(12.2), toPx(10.2), '重掷', '#8a5fb0', () => this.doReroll());
         this.skipBlindBtn = this.makeButton(toPx(17.0), toPx(10.2), '跳过盲注', '#a07a2c', () => this.doSkipBlind());
-        this.rerollBossBtn = this.makeButton(toPx(17.0), toPx(9.2), '重掷 Boss $10', '#b5462f', () => this.doRerollBoss());
 
         // 开局先进盲注选择（原作如此）：能看到这一格跳过给什么标签，再决定打还是跳
         this.showBlindSelect();
@@ -1486,13 +1483,21 @@ ${String(e instanceof Error ? e.message : e)}`)
         const select = new UIBox(def, { align: 'bmi', offset: { x: 0, y: 29 }, major: { T: hand } });
         select.config.offset = { x: 0, y: 0.8 - (hand.y - this.areas.jokers.y) + select.T.h };
         select.realign();
-        const prompt = new UIBox(createBlindPrompt(), {
+        const prompt = new UIBox(createBlindPrompt(run.vouchers.directorsCut), {
             align: 'cm', offset: { x: 0, y: 0 }, major: this.hudView.box.getById('row_blind')!.asMajor,
+        }, {
+            // `button_callbacks.lua:2894`：钱够且这个 Ante 还没重掷过才亮；灰掉时两行字的阴影也去掉
+            reroll_boss_button: (e: UIElement) => {
+                const ok = run.canRerollBoss && !this.animating;
+                e.config.colour = ok ? C.RED : C.UI.BACKGROUND_INACTIVE;
+                e.config.button = ok ? 'reroll_boss' : undefined;
+                for (const row of e.children) if (row.children[0]) row.children[0].config.shadow = ok;
+            },
         });
         const onButton = (name: string) => this.onUIButton(name);
         this.blindSelectViews = {
             select: new UIBoxView(this, select, 30, onButton),
-            prompt: new UIBoxView(this, prompt, 41),
+            prompt: new UIBoxView(this, prompt, 41, onButton),
         };
         for (const v of Object.values(this.blindSelectViews)) v.setResolution(this.mapping.pxPerTile / toPx(1));
     }
@@ -1625,6 +1630,10 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
         if (name === 'skip_blind') {
             this.doSkipBlind();
+            return;
+        }
+        if (name === 'reroll_boss') {
+            this.doRerollBoss();
             return;
         }
         if (name === 'cash_out') {
@@ -1763,9 +1772,6 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.animating || run.openPack || (!inShop && !inSelect && !done) ? 0.3 : 1,
         );
         this.skipBlindBtn.setAlpha(run.canSkipBlind && !this.animating ? 1 : 0.3);
-        // 没兑换 Director's Cut 就整个藏起来，免得多一个永远灰着的按钮
-        this.rerollBossBtn.setVisible(run.vouchers.directorsCut && run.state === 'blind-select');
-        this.rerollBossBtn.setAlpha(run.canRerollBoss && !this.animating ? 1 : 0.3);
         this.rerollBtn.setAlpha(inShop && !this.animating && !this.run.openPack ? 1 : 0.3);
         // 选牌时这排调试按钮全藏起来：原作的出牌 / 排序 / 弃牌已经在手牌下面了（`G.buttons`）
         const choosing = run.state === 'playing' && round?.phase === 'selecting';
@@ -1781,7 +1787,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (this.roundEval) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn]) b.setVisible(false);
         // 商店里 Next Round / Reroll 由商店 UI 接管；开包时的 Skip 在开包界面上
         if (inShop || run.openPack) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn]) b.setVisible(false);
-        if (this.runOver) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn, this.rerollBossBtn]) b.setVisible(false);
+        if (this.runOver) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn]) b.setVisible(false);
 
         if (run.state === 'game-over' || round?.phase === 'lost') {
             this.message.setText('');
