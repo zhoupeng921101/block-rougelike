@@ -339,10 +339,20 @@ export class UIBoxView {
         this.container.setPosition(toPx(o.x), toPx(o.y));
     }
 
+    /** O 节点里对象自己的「弹一下」（`Moveable:juice_up`）：只取 `VT.scale` 与 `VT.r` 画 */
+    private juices = new Map<object, Motion>();
+
+    juiceObject(obj: object, now: number, amount: number, rotAmt?: number): void {
+        const m = this.juices.get(obj) ?? new Motion({ x: 0, y: 0, r: 0, scale: 1 });
+        m.juiceUp(now, amount, rotAmt);
+        this.juices.set(obj, m);
+    }
+
     update(timeSeconds: number): void {
         const dt = this.lastT < 0 ? 0 : timeSeconds - this.lastT;
         this.lastT = timeSeconds;
         if (this.slide && dt > 0) this.slide.step(dt, timeSeconds);
+        if (dt > 0) for (const m of this.juices.values()) m.step(dt, timeSeconds);
         this.applySlide();
         if (this.box.version !== this.builtVersion) this.build();
         this.box.followMajor();
@@ -500,7 +510,7 @@ export class UIBoxView {
             const obj = cfg.object as HudBlind | BlindChipObject | ShopSignObject;
             if (obj.kind === 'blind') {
                 const center = obj.key ? BLIND_CENTERS[obj.key] : undefined;
-                this.drawBlindChip(v.blindChip, center?.pos ?? null, el.x, el.y, w, h, t, 0.1, true);
+                this.drawBlindChip(v.blindChip, center?.pos ?? null, el.x, el.y, w, h, t, 0.1, true, BLIND_CHIP_FRAMES, this.juices.get(obj)?.VT);
             } else if (obj.kind === 'shop_sign') {
                 // `game.lua:979`：`shop_sign` 图集一行 4 帧
                 this.drawBlindChip(v.blindChip, { x: 0, y: 0 }, el.x, el.y, w, h, t, obj.shadowHeight, false, 4);
@@ -535,12 +545,18 @@ export class UIBoxView {
      * 缩到 `1 − 0.2·shadow_height`（`sprite.lua:76`）。帧 = `floor(10·t) % 21`（`AnimatedSprite:animate`）。
      * `pos` 为空（没有盲注）时不画
      */
-    private drawBlindChip(chip: { shadow: GameObjects.Image; main: GameObjects.Image }, pos: { x: number; y: number } | null, x: number, y: number, w: number, h: number, t: number, shadowHeight: number, sway: boolean, frames = BLIND_CHIP_FRAMES): void {
+    private drawBlindChip(chip: { shadow: GameObjects.Image; main: GameObjects.Image }, pos: { x: number; y: number } | null, x: number, y: number, w0: number, h0: number, t: number, shadowHeight: number, sway: boolean, frames = BLIND_CHIP_FRAMES, juice?: { scale: number; r: number }): void {
         chip.main.setVisible(!!pos);
         chip.shadow.setVisible(!!pos);
         if (!pos) return;
         const frame = pos.y * frames + (Math.floor(ANIMATION_FPS * t) % frames);
-        const r = sway ? 0.02 * Math.sin(2 * t + x) : 0;
+        const r = (sway ? 0.02 * Math.sin(2 * t + x) : 0) + (juice?.r ?? 0);
+        // 弹一下以中心缩放
+        const js = juice?.scale ?? 1;
+        const w = w0 * js;
+        const h = h0 * js;
+        x += (w0 - w) / 2;
+        y += (h0 - h) / 2;
         const sp = shadowParallax(x, w);
         const cx = x + w / 2;
         const cy = y + h / 2;

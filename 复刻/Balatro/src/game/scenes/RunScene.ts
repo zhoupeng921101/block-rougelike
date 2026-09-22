@@ -44,6 +44,7 @@ import { popupGame, popupOfCard, popupOfCenter, popupOfConsumable, popupOfJoker 
 import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
 import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
+import { deckPreview } from '../../ui/definitions/deck-preview';
 import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/definitions/hud-blind';
 import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
 import { type BlindSelectState, type BlindType, blindChoiceBox, blindChoiceFuncs, cardAlert, currentBlinds, createBlindPrompt, createBlindSelect, hudTag } from '../../ui/definitions/blind-select';
@@ -215,6 +216,16 @@ export class RunScene extends Scene {
     /** 已经算进 `run.dollars`、但还没按 Cash Out 的那笔（左侧 $ 要扣掉它显示） */
     private pendingPayout = 0;
     private deckSprite!: DeckSprite;
+    /** 牌堆最上面那张的悬停区（`G.deck.cards[1].states.collide`） */
+    private deckZone!: GameObjects.Zone;
+    private deckHovered = false;
+    private blindChipZone!: GameObjects.Zone;
+
+    private hudBlindChip(): UIElement | undefined {
+        return [...this.hudBlindView.box.root.walk()].find((e) => (e.config.object as { kind?: string } | undefined)?.kind === 'blind');
+    }
+    /** `G.deck_preview`：选牌时悬停牌堆弹出的剩余牌表 */
+    private deckPreview: UIBoxView | null = null;
     /** 已经打到出牌区的牌（`G.play`），逐帧按 `alignPlay` 摆；其余手牌按 `alignHand` */
     private readonly inPlay = new Set<CardSprite>();
     private readonly areas = cardAreas();
@@ -327,6 +338,17 @@ export class RunScene extends Scene {
             hudBlindFuncs(this.hudBlindState),
         ), 41);
         this.deckSprite = new DeckSprite(this);
+        this.deckZone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(6);
+        this.deckZone.on('pointerover', () => { this.deckHovered = true; });
+        this.deckZone.on('pointerout', () => { this.deckHovered = false; });
+        // `Blind:hover`（`blind.lua:428`）：左上盲注筹码悬停只弹一下、响一声（没有提示框）
+        this.blindChipZone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(43);
+        this.blindChipZone.on('pointerover', () => {
+            const el = this.hudBlindChip();
+            if (!el || !this.hudBlindView.container.visible || !(el.config.object as { key?: string }).key) return;
+            this.hudBlindView.juiceObject(el.config.object!, this.time.now / 1000, 0.05, 0.02);
+            this.sound.play('chips1', { rate: Math.random() * 0.1 + 0.55, volume: 0.12 });
+        });
 
         const areas = this.areas;
         const areaAlign = { jokers: 'cl', consumeables: 'cr', hand: 'cm', deck: 'cr' } as const;
@@ -2365,6 +2387,42 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.placeCards(time / 1000);
         // 牌堆：盲注里是剩余张数，盲注外整副牌都在牌堆里
         this.deckSprite.update(this.areas.deck, this.deckCount());
+        this.syncDeckPreview(time / 1000);
+    }
+
+    /**
+     * `Game:update_selecting_hand`（`game.lua:3371`）：选牌时悬停牌堆最上面那张，建 `G.deck_preview`
+     * （挂手牌区 `tm`、上移 0.8），同时藏起出牌 / 弃牌按钮；移开就拆、按钮回来
+     */
+    private syncDeckPreview(now: number): void {
+        const chip = this.hudBlindChip();
+        if (chip) {
+            const o = this.hudBlindView.slideOffset;
+            this.blindChipZone.setPosition(toPx(chip.x + o.x), toPx(chip.y + o.y)).setSize(toPx(chip.T.w), toPx(chip.T.h));
+            this.blindChipZone.input!.hitArea.setTo(0, 0, toPx(chip.T.w), toPx(chip.T.h));
+        }
+        const top = DeckSprite.topRect(this.areas.deck, this.deckCount());
+        if (top) {
+            this.deckZone.setPosition(toPx(top.x), toPx(top.y)).setSize(toPx(top.w), toPx(top.h));
+            this.deckZone.input!.hitArea.setTo(0, 0, toPx(top.w), toPx(top.h));
+        } else this.deckHovered = false;
+        const round = this.round;
+        const want = this.deckHovered && !!round && this.run.state === 'playing' && round.phase === 'selecting' && !this.overlay && !this.run.openPack;
+        if (want && !this.deckPreview) {
+            const box = new UIBox(deckPreview({
+                playingCards: this.run.fullDeck,
+                inDeck: new Set(round.deck),
+                wheelFlipped: new Set(round.hand.filter((c) => c.facing === 'back')),
+                smeared: this.run.jokers.some((j) => j.key === 'j_smeared' && !j.debuff),
+            }), { align: 'tm', offset: { x: 0, y: -0.8 }, major: { T: this.areas.hand } });
+            this.deckPreview = new UIBoxView(this, box, 46);
+            this.deckPreview.setResolution(this.mapping.pxPerTile / toPx(1));
+        } else if (!want && this.deckPreview) {
+            this.deckPreview.destroy();
+            this.deckPreview = null;
+        }
+        this.buttonsView?.setVisible(!this.deckPreview);
+        this.deckPreview?.update(now);
     }
 
     /** `add_tag` / `Tag:remove`：第一个 `bri` 挂房间（x 外移 0.7），之后每个 `tm` 叠在上一个上面 */

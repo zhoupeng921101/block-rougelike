@@ -27,6 +27,14 @@ export class DeckSprite {
 
     constructor(private readonly scene: Scene) {}
 
+    /** 最上面那张（`G.deck.cards[1]`）的碰撞矩形；牌堆空了没有 */
+    static topRect(area: Rect, n: number): Rect | null {
+        if (n <= 0) return null;
+        let x = area.x + 0.5 * (area.w - CARD_W) + cardShadowParallaxX(area.x, area.w) * DECK_HEIGHT * (n - 1);
+        x += cardShadowParallaxX(x, CARD_W) / 30;
+        return { x, y: area.y + 0.5 * (area.h - CARD_H) - 1.5 * DECK_HEIGHT * (n - 1), w: CARD_W, h: CARD_H };
+    }
+
     /** 每帧：`n` 是牌堆里还剩几张，`area` 是 `G.deck` 的区域 */
     update(area: Rect, n: number): void {
         // 要画的下标（1 起），按原作从最后一张往前画的顺序

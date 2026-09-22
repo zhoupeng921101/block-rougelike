@@ -21,6 +21,8 @@ import { hudBlindFuncs } from './definitions/hud-blind-funcs';
 import { makeHudState, createHud } from './definitions/hud';
 import { type Tab, changeTab, currentHands, handTip, popupTooltip, runInfo, usedVouchers } from './definitions/run-info';
 import { HAND_DESCRIPTIONS } from './descriptions.generated';
+import { deckPreview } from './definitions/deck-preview';
+import { type Card, type Suit, type Value, cardKey, makeCard } from '../core/card';
 import { VOUCHER_CENTERS } from '../core/vouchers';
 import { initialHands } from '../core/scoring';
 import oracle from './oracle.generated.json';
@@ -272,5 +274,39 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
         const box = new UIBox(popupTooltip(HAND_DESCRIPTIONS.Pair!, handTip('Pair', true).def), { align: 'bm', offset: { x: 0, y: 0.1 }, major: { T: { x: 6, y: 3, w: 11.7, h: 0.62 } } });
         expectSame(dump(box), cases.find((c) => c.name === 'hand_tip')!.elements);
     });
-});
 
+    /** 与 `ui-oracle.py` 里同一副牌：每第 6 张（前 48 张里）在手里，其余在牌堆 */
+    function previewDeck(mixed: boolean) {
+        const values: Value[] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'Jack', 'Queen', 'King', 'Ace'];
+        const playingCards: Card[] = [];
+        const inDeck = new Set<Card>();
+        const wheelFlipped = new Set<Card>();
+        const add = (suit: Suit, value: Value, deck: boolean, enhancement: string | null = null) => {
+            const c = makeCard(cardKey(suit, value), suit, value);
+            c.enhancement = enhancement;
+            playingCards.push(c);
+            if (deck) inDeck.add(c);
+            return c;
+        };
+        let n = 0;
+        for (const suit of ['Spades', 'Hearts', 'Clubs', 'Diamonds'] as Suit[]) {
+            for (const v of values) {
+                n++;
+                add(suit, v, !(n % 6 === 0 && n <= 48));
+            }
+        }
+        if (mixed) {
+            add('Hearts', '5', true, 'm_stone');
+            add('Clubs', '9', false, 'm_stone');
+            add('Spades', 'Queen', true, 'm_wild');
+            wheelFlipped.add(playingCards[5]!);
+            wheelFlipped.add(playingCards[11]!);
+        }
+        return { playingCards, inDeck, wheelFlipped, smeared: false };
+    }
+
+    it.each([['deck_preview', false], ['deck_preview_mixed', true]] as const)('%s：悬停牌堆的剩余牌表', (name, mixed) => {
+        const box = new UIBox(deckPreview(previewDeck(mixed)), { align: 'tm', offset: { x: 0, y: -0.8 }, major: { T: { x: 0, y: 0, w: 21, h: 11.2 } } });
+        expectSame(dump(box), cases.find((c) => c.name === name)!.elements);
+    });
+});

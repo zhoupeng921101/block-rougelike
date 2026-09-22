@@ -637,6 +637,61 @@ def main():
     ''')
     cases.append({'name': 'hand_tip', **to_py(lua.eval('DUMP(TIP)'))})
 
+    # 悬停牌堆的 deck_preview（UI_definitions.lua:498）。一副标准牌：点数 id 2..14、四花色；
+    # 用例一：摸走 8 张（手里）；用例二：再加两张石头牌（一张在牌堆）、一张万能牌、两张盖着摸进手里的
+    lua.globals().VDICT = lua.table_from({
+        'deck_preview_wheel_plural': 'Numbers may be lower due to the #1# cards drawn face down',
+        'deck_preview_wheel_singular': 'Numbers may be lower due to the #1# card drawn face down',
+    })
+    lua.execute(r'''
+      G.C.SUITS = { Hearts = HEX('FE5F55'), Diamonds = HEX('FE5F55'), Spades = HEX('374649'), Clubs = HEX('424e54') }
+      G.C.UI.TRANSPARENT_LIGHT = HEX('eeeeee22')
+      G.ASSET_ATLAS = setmetatable({}, {__index = function() return {} end})
+      G.SETTINGS.colourblind_option = false
+      G.deck = {}; G.hand = {}
+      local plain = localize
+      localize = function(a)
+        if type(a) == 'table' then return (VDICT[a.key]:gsub('#1#', tostring(a.vars[1]))) end
+        return plain(a)
+      end
+      local SN = { Spades = 4, Hearts = 3, Clubs = 2, Diamonds = 1 }
+      function PCARD(suit, id, area, effect, name)
+        local c = { base = { suit = suit, id = id }, ability = { effect = effect or '', name = name or '' }, area = area, debuff = false }
+        c.get_nominal = function(self) return SN[suit] * 100 + id end
+        c.is_suit = function(self, s)
+          if self.debuff then return end
+          if self.ability.effect == 'Stone Card' then return false end
+          if self.ability.name == 'Wild Card' then return true end
+          return self.base.suit == s
+        end
+        return c
+      end
+      function DECK(extra)
+        G.playing_cards = {}
+        local n = 0
+        for _, suit in ipairs({'Spades', 'Hearts', 'Clubs', 'Diamonds'}) do
+          for id = 2, 14 do
+            n = n + 1
+            G.playing_cards[#G.playing_cards + 1] = PCARD(suit, id, (n % 6 == 0 and n <= 48) and G.hand or G.deck)
+          end
+        end
+        if extra then extra() end
+      end
+      DECK()
+      PREVIEW1 = UIBox{ definition = G.UIDEF.deck_preview(), config = { align = 'tm', offset = {x = 0, y = -0.8}, major = G.ROOM_ATTACH } }
+      DECK(function()
+        local pc = G.playing_cards
+        pc[#pc + 1] = PCARD('Hearts', 5, G.deck, 'Stone Card')
+        pc[#pc + 1] = PCARD('Clubs', 9, G.hand, 'Stone Card')
+        pc[#pc + 1] = PCARD('Spades', 12, G.deck, '', 'Wild Card')
+        pc[6].ability.wheel_flipped = true
+        pc[12].ability.wheel_flipped = true
+      end)
+      PREVIEW2 = UIBox{ definition = G.UIDEF.deck_preview(), config = { align = 'tm', offset = {x = 0, y = -0.8}, major = G.ROOM_ATTACH } }
+    ''')
+    cases.append({'name': 'deck_preview', **to_py(lua.eval('DUMP(PREVIEW1)'))})
+    cases.append({'name': 'deck_preview_mixed', **to_py(lua.eval('DUMP(PREVIEW2)'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 
