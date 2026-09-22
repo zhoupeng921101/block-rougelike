@@ -124,6 +124,11 @@ export type Joker = {
      * 复刻件照这个语义：标记、跑完整趟、再删。
      */
     getting_sliced?: boolean;
+    /**
+     * 谁判的死刑。只给表现层用：原作两者的退场烧边色不同
+     * （Madness `start_dissolve({RED}, nil, 1.6)`，Ceremonial Dagger `{HEX('57ecab')}`，`card.lua:2518` / `:2577`）
+     */
+    sliced_by?: 'Madness' | 'Ceremonial Dagger';
 };
 
 /**

@@ -16,7 +16,7 @@ import type { Consumable } from '../core/consumables';
 import type { Placed } from './align-cards';
 import { CARD_H, CARD_W, toPx } from './coords';
 import { PlacedLayers } from './placed-layers';
-import { LayeredQuad, cardTimeOf, makeClickable } from './shader-quad';
+import { type DissolveState, LayeredQuad, cardTimeOf, makeClickable } from './shader-quad';
 
 export class ConsumableSprite {
     private hoverTilt = 0;
@@ -28,6 +28,8 @@ export class ConsumableSprite {
     readonly h = toPx(CARD_H);
     /** 被选中（消耗品区里待用／待卖） */
     highlighted = false;
+    /** `Card.dissolve` / `dissolve_colours`：卖掉、用掉、被毁时由 `card-exit.ts` 缓动 */
+    readonly dissolve: DissolveState = { amount: 0, colours: [] };
 
     constructor(
         scene: Scene,
@@ -46,6 +48,7 @@ export class ConsumableSprite {
             w: this.w,
             h: this.h,
             tilt: () => this.hoverTilt,
+            dissolve: this.dissolve,
         };
         this.layers = new LayeredQuad(scene, quad, 2, { edition: consumable.edition, set: consumable.center.set });
         this.placed = new PlacedLayers(scene, this.layers, quad, CARD_W, CARD_H);
@@ -89,6 +92,29 @@ export class ConsumableSprite {
     /** 计分时弹一下：`card_eval_status_text` 的 `juice_up(0.6, 0.1)`（`common_events.lua:896`） */
     pop(): void {
         this.placed.juiceUp(0.6, 0.1);
+    }
+
+    /** 退场（`card-exit.ts`）要的那几样 */
+    get topDepth(): number {
+        return this.placed.topDepth;
+    }
+
+    juiceUp(amount?: number, rot?: number): void {
+        this.placed.juiceUp(amount, rot);
+    }
+
+    pinch(): void {
+        this.placed.pinch();
+    }
+
+    setTargetR(r: number): void {
+        this.placed.setTargetR(r);
+    }
+
+    disableInput(): void {
+        this.shader.disableInteractive();
+        this.hoverTilt = 0;
+        this.placed.hovered = false;
     }
 
     destroy(): void {

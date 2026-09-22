@@ -72,6 +72,7 @@ import { numberFormat } from '../../ui/format';
 import { UIBox, UIT } from '../../ui/uibox';
 import { RED_DECK, WIN_ANTE } from '../../core/run';
 import { JokerSprite } from '../joker-sprite';
+import { type ExitStyle, type ExitTarget, destroyStyle, playExit } from '../card-exit';
 import { LOOK } from '../look';
 import { VoucherSprite } from '../voucher-sprite';
 import { BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
@@ -317,6 +318,8 @@ export class RunScene extends Scene {
             'negative', 'whoosh2', 'win', 'whoosh1', 'paper1', 'tarot2', 'multhit2', 'cardFan2', 'foil2',
             ...Array.from({ length: 11 }, (_, i) => `voice${i + 1}`),
             ...Array.from({ length: 5 }, (_, i) => `crumple${i + 1}`),
+            // 玻璃牌碎掉（`Card:shatter`）
+            ...Array.from({ length: 6 }, (_, i) => `glass${i + 1}`),
         ]) {
             this.load.audio(key, `/assets/sounds/${key}.ogg`);
         }
@@ -588,7 +591,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
 
         // 手牌收进弃牌堆（`draw_from_hand_to_discard`）。`finishRound` 已经把 `run.round` 置空
-        for (const sprite of this.sprites) sprite.destroy();
+        this.destroyUnlessExiting(this.sprites);
         this.sprites = [];
         this.selected.clear();
         this.rebuildJokers(); // end_of_round 可能吃掉小丑（Popcorn / Gros Michel）
@@ -695,7 +698,10 @@ ${String(e instanceof Error ? e.message : e)}`)
     private rebuildJokers(): void {
         this.hidePopup();
         if (this.picked?.where.kind === 'joker') this.unpick();
-        for (const s of this.jokerSprites) s.destroy();
+        for (const s of this.jokerSprites) {
+            if (this.run.jokers.includes(s.joker)) s.destroy();
+            else this.exitCard(s, this.vanishedJokerStyle(s.joker));
+        }
         this.jokerSprites = this.run.jokers.map((j) => {
             const s: JokerSprite = new JokerSprite(this, j, (joker) => this.pick(s, { kind: 'joker', joker }));
             this.attachPopup([s.shader], s, () => popupOfJoker(j, 'jokers'));
@@ -715,11 +721,50 @@ ${String(e instanceof Error ? e.message : e)}`)
         place(this.consumableSprites, this.areas.consumeables, true);
     }
 
+    /** 卖掉 / 用掉的卡由调用方先登记退场方式；没登记的在 `vanishedJokerStyle` 里按来路推断 */
+    private readonly pendingExit = new WeakMap<object, ExitStyle>();
+
+    /**
+     * 从小丑区消失的小丑怎么退场：
+     * 卖掉 `start_dissolve({GOLD})`（`card.lua:1611`，调用方登记）；Madness / Ceremonial Dagger 切掉的
+     * `start_dissolve({RED} / {57ecab}, nil, 1.6)`；Mr. Bones 救命后 `start_dissolve()`；
+     * 剩下的都是吃完 / 灭绝（Gros Michel、Popcorn、Ice Cream……）——歪一下、捏扁
+     */
+    private vanishedJokerStyle(j: Joker): ExitStyle {
+        const registered = this.pendingExit.get(j);
+        if (registered) return registered;
+        if (j.sliced_by === 'Madness') return { kind: 'dissolve', colours: [C.RED], timeFac: 1.6 };
+        if (j.sliced_by === 'Ceremonial Dagger') return { kind: 'dissolve', colours: [HEX('57ecab')], timeFac: 1.6 };
+        if (j.ability.name === 'Mr. Bones') return { kind: 'dissolve' };
+        return { kind: 'eaten' };
+    }
+
+    /**
+     * 消耗品毁掉的手牌（The Hanged Man / Immolate / Familiar / Grim / Incantation，`card.lua:1284` 起）：
+     * 玻璃牌 `shatter()`、别的 `start_dissolve(nil, silent)`。`silent` 照各分支原文——
+     * Familiar 那一族是 `i ~= #destroyed`（只有一张，出声），其余是 `i == #highlighted`（倒序遍历里第一张不出声）
+     */
+    private exitDestroyedHand(old: CardSprite[], consumableName: string): void {
+        const gone = old.filter((s) => !this.run.fullDeck.includes(s.card));
+        const familiar = ['Familiar', 'Grim', 'Incantation'].includes(consumableName);
+        gone.forEach((s, i) => {
+            const silent = familiar ? i !== gone.length - 1 : i === gone.length - 1;
+            this.exitCard(s, destroyStyle(s.card.enhancement, silent), () => this.dropHandSprite(s));
+        });
+    }
+
+    /** Ankh / Hex 毁掉的小丑：`start_dissolve(nil, _first_dissolve)`——第一张出声，之后的静音（`card.lua:1440` / `:1492`） */
+    private registerDestroyedJokers(before: Joker[]): void {
+        before.filter((j) => !this.run.jokers.includes(j))
+            .forEach((j, i) => this.pendingExit.set(j, { kind: 'dissolve', silent: i > 0 }));
+    }
+
     /** 选中小丑后按 SELL（`sell_card`）。能不能卖由按钮的 `can_sell_card` 管：出牌结算中不行 */
     private onJokerClick(joker: Joker): void {
         if (this.animating) return;
         const index = this.run.jokers.indexOf(joker);
         if (index < 0) return;
+        this.pendingExit.set(joker, { kind: 'dissolve', colours: [C.GOLD] });
         this.run.sellJoker(index);
         this.sound.play('coin3', { volume: 0.5 });
         this.rebuildJokers();
@@ -733,7 +778,11 @@ ${String(e instanceof Error ? e.message : e)}`)
     private rebuildConsumables(): void {
         this.hidePopup();
         if (this.picked?.where.kind === 'consumable') this.unpick();
-        for (const s of this.consumableSprites) s.destroy();
+        for (const s of this.consumableSprites) {
+            if (this.run.consumables.includes(s.consumable)) s.destroy();
+            // 没登记的就是用掉了：`use_card` 里 `card:start_dissolve()`（`button_callbacks.lua:2370`）
+            else this.exitCard(s, this.pendingExit.get(s.consumable) ?? { kind: 'dissolve' });
+        }
         this.consumableSprites = this.run.consumables.map((c) => {
             const s: ConsumableSprite = new ConsumableSprite(this, c, (con) => this.pick(s, { kind: 'consumable', consumable: con }));
             this.attachPopup([s.shader], s, () => popupOfConsumable(c, 'consumeables'));
@@ -762,9 +811,12 @@ ${String(e instanceof Error ? e.message : e)}`)
             return;
         }
 
+        const jokersBefore = [...this.run.jokers];
         this.run.useConsumable(index, highlighted);
         this.sound.play('tarot1', { volume: 0.6 });
         this.selected.clear();
+        this.registerDestroyedJokers(jokersBefore);
+        this.exitDestroyedHand([...this.sprites, ...this.packHandSprites], consumable.center.name);
         // 塔罗会换点数 / 换花色 / 换强化 / 销毁手牌，**整个手牌区要重建**（开包时的手牌也是）
         this.rebuildHand();
         if (this.run.openPack) this.rebuildPackCards();
@@ -949,7 +1001,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.packFx = null;
         }
         if (!pack) {
-            for (const s of oldPackHand) s.destroy();
+            this.destroyUnlessExiting(oldPackHand);
             return;
         }
         if (!this.packFx) this.packFx = { pack, systems: this.makePackParticles(pack.center.kind) };
@@ -1002,7 +1054,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             if (sprite.spawnFrom) sprite.holdUntil = this.time.now / 1000 + 0.1 * drawn++;
             return sprite;
         });
-        for (const s of oldPackHand) s.destroy();
+        this.destroyUnlessExiting(oldPackHand);
         this.layoutPackCards();
     }
 
@@ -1098,8 +1150,19 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.time.delayedCall(1400, () => this.message.setText(''));
             return;
         }
+        const jokersBefore = [...this.run.jokers];
+        // 包里的塔罗 / 星球 / 幽灵是当场用掉的：那张 `start_dissolve()`（`use_card` 的末尾），别让重建包时拆掉
+        const used = card.kind === 'consumable' ? this.packCardSprites[index] : undefined;
         this.run.takeFromPack(index, highlighted);
         this.selected.clear();
+        if (used && card.kind === 'consumable' && !this.run.consumables.includes(card.consumable)) {
+            this.packCardSprites = this.packCardSprites.filter((s) => s !== used);
+            this.exitCard(used, { kind: 'dissolve' });
+        }
+        if (card.kind === 'consumable') {
+            this.registerDestroyedJokers(jokersBefore);
+            this.exitDestroyedHand([...this.sprites, ...this.packHandSprites], card.consumable.center.name);
+        }
         this.sound.play(card.kind === 'consumable' ? 'tarot1' : 'card1', { volume: 0.5 });
         this.rebuildJokers();
         this.rebuildConsumables();
@@ -1374,6 +1437,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     private sellConsumable(consumable: Consumable): void {
         const index = this.run.consumables.indexOf(consumable);
         if (this.animating || index < 0) return;
+        this.pendingExit.set(consumable, { kind: 'dissolve', colours: [C.GOLD] });
         this.run.sellConsumable(index);
         this.sound.play('coin3', { volume: 0.5 });
         this.rebuildConsumables();
@@ -1744,6 +1808,15 @@ ${String(e instanceof Error ? e.message : e)}`)
                 percent += delta;
             }
             scoring.forEach((sp, i) => this.highlightCard(sp, (i + 1 - 0.999) / (scoring.length - 0.998), 'down'));
+            // `state_events.lua:1006`：放下之后，每张毁掉的牌一个事件——玻璃牌 `shatter()`、别的 `start_dissolve()`。
+            // 退场是非阻塞的，跟后面的事件并行；卡在出牌区里溶完才摘掉（原作 `remove` 时才离开 `G.play`）
+            for (const sp of sprites) {
+                if (!out.destroyed.includes(sp.card)) continue;
+                this.queue.add(new GameEvent({ trigger: 'immediate', func: () => {
+                    this.exitCard(sp, destroyStyle(sp.card.enhancement), () => this.dropHandSprite(sp));
+                    return true;
+                } }));
+            }
         }
 
         // `:1045`：本手总分挪到牌型名那一格，筹码 × 倍率清零
@@ -1774,15 +1847,33 @@ ${String(e instanceof Error ? e.message : e)}`)
         const kept = sprites.filter((sp) => !out.destroyed.includes(sp.card));
         kept.forEach((sp, i) => this.drawCardEvent((i + 1) * 100 / kept.length, 'down', () => this.sendToDiscard(sp)));
         this.queue.add(new GameEvent({ trigger: 'immediate', func: () => {
-            for (const sp of sprites) if (out.destroyed.includes(sp.card)) {
-                this.inPlay.delete(sp);
-                this.sprites = this.sprites.filter((x) => x !== sp);
-                sp.destroy();
-            }
             this.shownRoundChips = null;
             return true;
         } }));
         this.drawFromDeckToHand();
+    }
+
+    /** 正在放退场动画的精灵：各处整体重建时别提前拆它们，由 `playExit` 到点拆 */
+    private readonly exiting = new Set<ExitTarget>();
+
+    private exitCard(sp: ExitTarget, style: ExitStyle, onGone?: () => void): void {
+        if (this.exiting.has(sp)) return;
+        this.exiting.add(sp);
+        playExit(this, sp, style, () => {
+            this.exiting.delete(sp);
+            onGone?.();
+        });
+    }
+
+    /** 整体重建时拆旧精灵：退场中的留给 `playExit` */
+    private destroyUnlessExiting(sprites: Iterable<ExitTarget>): void {
+        for (const s of sprites) if (!this.exiting.has(s)) s.destroy();
+    }
+
+    /** 退场动画放完的牌：从手牌 / 出牌区摘掉（`playExit` 已经拆了精灵） */
+    private dropHandSprite(sp: CardSprite): void {
+        this.inPlay.delete(sp);
+        this.sprites = this.sprites.filter((x) => x !== sp);
     }
 
     /** 飞向弃牌堆的牌（屏幕外右边），飞够了就拆 */
@@ -2009,7 +2100,10 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.animating = true;
         this.selected.clear();
         this.updateHandText({ immediate: true, nopulse: true, delay: 0 }, { mult: 0, chips: 0, level: '', handname: '' });
-        const sprites = cards.map((c) => this.sprites.find((s) => s.card === c)).filter((s): s is CardSprite => !!s);
+        const all = cards.map((c) => this.sprites.find((s) => s.card === c)).filter((s): s is CardSprite => !!s);
+        // `state_events.lua:433`：小丑回了 `remove`（Trading Card）的那张当场碎 / 溶，留在手里直到移除，不去弃牌堆
+        const sprites = all.filter((sp) => this.run.fullDeck.includes(sp.card));
+        for (const sp of all) if (!sprites.includes(sp)) this.exitCard(sp, destroyStyle(sp.card.enhancement), () => this.dropHandSprite(sp));
         sprites.forEach((sp, i) => this.drawCardEvent((i + 1) * 100 / sprites.length, 'down', () => this.sendToDiscard(sp)));
         this.easeHudCount('discard_UI_count', -1);
         this.drawFromDeckToHand();
@@ -2024,6 +2118,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     private rebuildHand(): void {
         this.hidePopup();
         const old = this.sprites;
+        const wasInPlay = new Set(this.inPlay);
         this.sprites = [];
         this.inPlay.clear();
 
@@ -2038,7 +2133,13 @@ ${String(e instanceof Error ? e.message : e)}`)
                 this.sprites.push(sprite);
             }
         }
-        for (const s of old) s.destroy();
+        // 退场中的牌还占着原来的位置（原作 `remove` 时才离开区，别的牌那时才合拢），到点由 `dropHandSprite` 摘掉
+        old.forEach((sp, i) => {
+            if (!this.exiting.has(sp)) return;
+            this.sprites.splice(Math.min(i, this.sprites.length), 0, sp);
+            if (wasInPlay.has(sp)) this.inPlay.add(sp);
+        });
+        this.destroyUnlessExiting(old);
         this.layout();
     }
 

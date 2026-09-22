@@ -21,6 +21,12 @@ export class Motion {
     private juice: Juice | null = null;
     /** `states.hover.is`（`zoom` 的卡悬停时大 0.05） */
     hovered = false;
+    /**
+     * `pinch.x`（`moveable.lua:435`）：置位后 `VT.w` 每帧减 `8·dt·T.w`，直到 0——被吃掉的小丑（Gros Michel、Popcorn……）横向捏扁。
+     * 复刻件的宽度不进 `Transform`，这里只记 `VT.w / T.w`，画的时候乘到横向缩放上
+     */
+    pinchX = false;
+    wScale = 1;
 
     constructor(t: Transform) {
         this.T = { ...t };
@@ -104,6 +110,9 @@ export class Motion {
             VT.r += v.r;
         }
         if (Math.abs(VT.r - T.r) < 0.001 && Math.abs(v.r) < 0.001) { VT.r = T.r; v.r = 0; }
+
+        // `moveable.lua:440`：pinch 放在 move 之后
+        if (this.pinchX && this.wScale > 0) this.wScale = Math.max(0, this.wScale - 8 * dt);
 
         // move_scale
         const desScale = T.scale + (this.hovered ? 0.05 : 0) + (this.juice ? this.juice.scale : 0);

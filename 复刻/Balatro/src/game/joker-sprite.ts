@@ -15,7 +15,7 @@ import type { Joker } from '../core/jokers';
 import type { Placed } from './align-cards';
 import { CARD_H, CARD_W, toPx } from './coords';
 import { PlacedLayers } from './placed-layers';
-import { JOKER_ATLAS, LayeredQuad, cardTimeOf, makeClickable } from './shader-quad';
+import { type DissolveState, JOKER_ATLAS, LayeredQuad, cardTimeOf, makeClickable } from './shader-quad';
 
 /**
  * `card.lua:238-257` 的那四条尺寸特例。
@@ -54,6 +54,8 @@ export class JokerSprite {
     readonly h: number;
     /** 被选中（商店里待买／小丑区里待卖） */
     highlighted = false;
+    /** `Card.dissolve` / `dissolve_colours`：卖掉、用掉、被毁时由 `card-exit.ts` 缓动 */
+    readonly dissolve: DissolveState = { amount: 0, colours: [] };
 
     constructor(
         scene: Scene,
@@ -73,6 +75,7 @@ export class JokerSprite {
             cardTime: cardTimeOf(joker.center.order),
             w, h,
             tilt: () => this.hoverTilt,
+            dissolve: this.dissolve,
         };
         this.layers = new LayeredQuad(scene, quad, 2, { edition: joker.edition, debuff: joker.debuff });
         this.placed = new PlacedLayers(scene, this.layers, quad, w / toPx(1), h / toPx(1));
@@ -116,6 +119,29 @@ export class JokerSprite {
     pop(amount?: number): void {
         if (amount === undefined) this.placed.juiceUp(0.6, 0.1);
         else this.placed.juiceUp(amount);
+    }
+
+    /** 退场（`card-exit.ts`）要的那几样 */
+    get topDepth(): number {
+        return this.placed.topDepth;
+    }
+
+    juiceUp(amount?: number, rot?: number): void {
+        this.placed.juiceUp(amount, rot);
+    }
+
+    pinch(): void {
+        this.placed.pinch();
+    }
+
+    setTargetR(r: number): void {
+        this.placed.setTargetR(r);
+    }
+
+    disableInput(): void {
+        this.shader.disableInteractive();
+        this.hoverTilt = 0;
+        this.placed.hovered = false;
     }
 
     destroy(): void {

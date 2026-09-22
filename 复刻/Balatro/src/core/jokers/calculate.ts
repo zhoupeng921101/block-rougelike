@@ -970,7 +970,10 @@ const SETTING_BLIND: Record<string, Handler> = {
         const victim = destructable.length > 0
             ? destructable[game.pseudorandom('madness', 1, destructable.length) - 1]
             : undefined;
-        if (victim && !(context.blueprint_card ?? self).getting_sliced) game.sliceJoker(victim);
+        if (victim && !(context.blueprint_card ?? self).getting_sliced) {
+            game.sliceJoker(victim);
+            victim.sliced_by = 'Madness';
+        }
         return { message: `X${self.ability.x_mult}`, card: self };
     },
 
@@ -1000,6 +1003,7 @@ const SETTING_BLIND: Record<string, Handler> = {
         const right = i >= 0 ? game.jokers[i + 1] : undefined;
         if (!right || self.getting_sliced || right.getting_sliced) return null;
         game.sliceJoker(right);
+        right.sliced_by = 'Ceremonial Dagger';
         game.jokerBuffer -= 1;
         // 原文加 mult 是入队的，但读的卖价与现在同一个值，同一趟里也没人读这张的 mult
         self.ability.mult += right.sell_cost * 2;

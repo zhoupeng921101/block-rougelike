@@ -101,6 +101,21 @@ export class PlacedLayers {
         if (this.motion) this.motion.hovered = v;
     }
 
+    /** 最上面那层的深度：退场碎屑画在它之上 */
+    get topDepth(): number {
+        return this.depth + 0.4;
+    }
+
+    /** `children.center.pinch.x = true` */
+    pinch(): void {
+        if (this.motion) this.motion.pinchX = true;
+    }
+
+    /** 直接改转角目标（`self.T.r = -0.2`） */
+    setTargetR(r: number): void {
+        if (this.motion) this.motion.T.r = r;
+    }
+
     /** `Card:juice_up`：计分、买下、用掉时弹一下（参数是卡牌版的，内部 ×0.4） */
     juiceUp(amount?: number, rot?: number): void {
         this.motion?.cardJuiceUp(this.scene.time.now / 1000, amount, rot);
@@ -113,12 +128,13 @@ export class PlacedLayers {
         const VT = m.VT;
         const cx = toPx(VT.x + this.wTiles / 2);
         const cy = toPx(VT.y + this.hTiles / 2);
-        for (const q of this.layers.quads) q.setScale(VT.scale);
+        // `pinch.x` 只缩横向（`VT.w`）
+        for (const q of this.layers.quads) q.setScale(VT.scale * m.wScale, VT.scale);
         this.layers.setPosition(cx, cy);
         this.layers.setRotation(VT.r);
         // `sprite.lua:76`：阴影从 VT 往视差反方向错开（视差按 T 算，`calculate_parrallax`），缩 `1 − 0.2·h`
         const spx = cardShadowParallaxX(m.T.x, this.wTiles);
-        this.shadow.setScale(VT.scale * (1 - 0.2 * SHADOW_HEIGHT))
+        this.shadow.setScale(VT.scale * (1 - 0.2 * SHADOW_HEIGHT) * m.wScale, VT.scale * (1 - 0.2 * SHADOW_HEIGHT))
             .setPosition(cx - toPx(spx * SHADOW_HEIGHT), cy + toPx(1.5 * SHADOW_HEIGHT))
             .setRotation(VT.r);
 
@@ -129,9 +145,10 @@ export class PlacedLayers {
             const scale = m2 * mods.scale;
             const rotate = m2 * mods.rotate;
             const k = VT.scale * (1 + scale);
+            const kx = k * m.wScale;
             // 阴影那遍 `_shadow_height = 0`：不错开、不缩，只是 `draw_from` 的 my 往下挪
-            f.shadow?.setPosition(cx, cy + toPx(0.1 + 0.03 * Math.sin(1.8 * now))).setRotation(VT.r + rotate).setScale(k).setDepth(this.depth + 0.005);
-            f.body.setPosition(cx, cy).setRotation(VT.r + rotate).setScale(k).setDepth(this.depth + 0.006);
+            f.shadow?.setPosition(cx, cy + toPx(0.1 + 0.03 * Math.sin(1.8 * now))).setRotation(VT.r + rotate).setScale(kx, k).setDepth(this.depth + 0.005);
+            f.body.setPosition(cx, cy).setRotation(VT.r + rotate).setScale(kx, k).setDepth(this.depth + 0.006);
         }
     }
 

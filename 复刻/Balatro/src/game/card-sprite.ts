@@ -21,6 +21,7 @@ import {
     cardTimeOf,
     makeClickable,
     makeShaderQuad,
+    type DissolveState,
 } from './shader-quad';
 
 /** `game.lua:302` 起 `P_CARDS` 的 `pos.y`：花色决定行。 */
@@ -96,6 +97,8 @@ export class CardSprite {
     prevX = 0;
     /** 选中的牌抬起来。`G.HIGHLIGHT_H` 在原作里是 tile 量。 */
     highlighted = false;
+    /** `Card.dissolve` / `dissolve_colours`：碎掉、被毁时由 `card-exit.ts` 缓动（所有层共用这一张表，阴影也跟着溶） */
+    readonly dissolve: DissolveState = { amount: 0, colours: [] };
 
     constructor(
         private readonly scene: Scene,
@@ -107,6 +110,7 @@ export class CardSprite {
         const h = toPx(CARD_H);
         const cardTime = cardTimeOf(card.sort_id);
         const tilt = () => this.hoverTilt;
+        const dissolve = this.dissolve;
 
         // **强化牌换的是底板那一格**，不是正面：`Enhancers.png` 里
         // `c_base` 在 `{x=1,y=0}`，8 张强化各占一格（`game.lua:649-656`）
@@ -121,7 +125,7 @@ export class CardSprite {
             textureKey: 'centers',
             atlas: CENTERS_ATLAS,
             pos: basePos,
-            cardTime, w, h, tilt,
+            cardTime, w, h, tilt, dissolve,
         }, 0, look);
 
         this.frontLayers = new LayeredQuad(scene, {
@@ -129,7 +133,7 @@ export class CardSprite {
             textureKey: 'cards',
             atlas: DECK_ATLAS,
             pos,
-            cardTime, w, h, tilt,
+            cardTime, w, h, tilt, dissolve,
         }, 1, look);
 
         this.seal = card.seal
@@ -138,7 +142,7 @@ export class CardSprite {
                 textureKey: 'centers',
                 atlas: CENTERS_ATLAS,
                 pos: SEAL_POS[card.seal],
-                cardTime, w, h, tilt,
+                cardTime, w, h, tilt, dissolve,
                 shader: 'dissolve',
             }, 1.5, { set: card.seal === 'Gold' ? 'Voucher' : undefined })
             : null;
@@ -148,7 +152,7 @@ export class CardSprite {
             textureKey: 'centers',
             atlas: CENTERS_ATLAS,
             pos: BACK_POS,
-            cardTime, w, h, tilt,
+            cardTime, w, h, tilt, dissolve,
         });
         this.back.setDepth(2);
 
@@ -157,7 +161,7 @@ export class CardSprite {
             textureKey: 'centers',
             atlas: CENTERS_ATLAS,
             pos: basePos,
-            cardTime, w, h, tilt: () => 0,
+            cardTime, w, h, tilt: () => 0, dissolve,
             shadow: true,
         });
         this.shadow.setDepth(-1);
@@ -276,10 +280,11 @@ export class CardSprite {
         this.seal?.setPosition(cx, cy);
         this.seal?.setRotation(VT.r);
         this.back.setPosition(cx, cy).setRotation(VT.r);
-        for (const q of this.allQuads()) if (q !== this.shadow) q.setScale(VT.scale);
+        // `pinch.x` 只缩横向（`VT.w`）
+        for (const q of this.allQuads()) if (q !== this.shadow) q.setScale(VT.scale * m.wScale, VT.scale);
         const sh = SHADOW_HEIGHT;
         const spx = cardShadowParallaxX(m.T.x, CARD_W);
-        this.shadow.setScale(VT.scale * (1 - 0.2 * sh))
+        this.shadow.setScale(VT.scale * (1 - 0.2 * sh) * m.wScale, VT.scale * (1 - 0.2 * sh))
             .setPosition(cx - toPx(spx * sh), cy + toPx(1.5 * sh))
             .setRotation(VT.r);
     }
@@ -305,6 +310,33 @@ export class CardSprite {
     pop(amount?: number): void {
         if (amount === undefined) this.motion?.cardJuiceUp(this.scene.time.now / 1000, 0.6, 0.1);
         else this.motion?.cardJuiceUp(this.scene.time.now / 1000, amount);
+    }
+
+    /** `Card:juice_up(scale, rot)`，参数缺省即原作缺省 */
+    juiceUp(amount?: number, rot?: number): void {
+        this.motion?.cardJuiceUp(this.scene.time.now / 1000, amount, rot);
+    }
+
+    /** 最上面那层的深度：退场碎屑画在它之上（原作的碎屑是卡的 child，跟着卡画） */
+    get topDepth(): number {
+        return this.depth + 0.4;
+    }
+
+    /** 退场时不再响应悬停 / 点击（原作 `remove` 之前卡还在区里，但已经点不动了） */
+    disableInput(): void {
+        for (const q of this.hoverTargets) q.disableInteractive();
+        this.hoverTilt = 0;
+        if (this.motion) this.motion.hovered = false;
+    }
+
+    /** `children.center.pinch.x = true` */
+    pinch(): void {
+        if (this.motion) this.motion.pinchX = true;
+    }
+
+    /** 直接改转角目标（`self.T.r = -0.2`） */
+    setTargetR(r: number): void {
+        if (this.motion) this.motion.T.r = r;
     }
 
     destroy(): void {
