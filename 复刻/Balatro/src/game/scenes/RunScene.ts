@@ -45,7 +45,7 @@ import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
 import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/definitions/hud-blind';
 import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
-import { type BlindSelectState, createBlindPrompt, createBlindSelect } from '../../ui/definitions/blind-select';
+import { type BlindSelectState, type BlindType, cardAlert, createBlindPrompt, createBlindSelect, hudTag } from '../../ui/definitions/blind-select';
 import { mostPlayedHand } from '../../core/round';
 import { runModifiers } from '../../core/jokers/modifiers';
 import { type EvalRow, type EvalStep, RoundEval, evalTimeline } from '../../ui/definitions/round-eval';
@@ -186,6 +186,9 @@ export class RunScene extends Scene {
      * `G.OVERLAY_MENU`：游戏结束 / 胜利界面。`motion` 是 UIBox 自己的 VT（`bond = 'Weak'`，从下方 10 tile 弹上来），
      * `bg` 是背景那张颜色表，alpha 由 `ease_value` 0.3 秒线性缓上去；`blocker` 吞掉底下所有点击与悬停
      */
+    /** `G.HUD_tags`：手上的标签，右下角往上叠。`run.tags` 变了就整列重建 */
+    private hudTags: { list: readonly object[]; views: UIBoxView[] } = { list: [], views: [] };
+
     /** 这一局输了（`G.STATE = GAME_OVER`）。`Run` 停在那一关不再推进 */
     private runOver = false;
     private overlay: {
@@ -388,8 +391,9 @@ ${String(e instanceof Error ? e.message : e)}`)
      *
      * 手牌区空着；标签开的包（Charm / Meteor …）在这一屏上挑，挑完或跳过才能开打。
      */
-    private showBlindSelect(): void {
-        this.buildBlindSelect();
+    private showBlindSelect(rebuild = true): void {
+        if (rebuild) this.buildBlindSelect();
+        else this.updateBlindSelectState();
         this.selected.clear();
         this.clearShop();
         this.rebuildHand();
@@ -399,14 +403,32 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.refresh();
     }
 
+    /**
+     * `skip_blind`（`button_callbacks.lua:2850`）之后：界面不重建，只把 `blind_states` 改掉——
+     * 跳过的那格保留原来的配色、`blind_choice_handler` 把它盖灰、收起标签行、盖上「SKIPPED」，下一格亮起
+     */
+    private updateBlindSelectState(): void {
+        const b = this.blindSelectState;
+        if (!b || !this.blindSelectViews) {
+            this.buildBlindSelect();
+            return;
+        }
+        const run = this.run;
+        for (const [type, kind] of [['Small', 'small'], ['Big', 'big'], ['Boss', 'boss']] as const) {
+            const next = run.blindState(kind);
+            if (next === 'Skipped' && b.state.states[type] !== 'Skipped') this.addSkippedAlert(type);
+            b.state.states[type] = next;
+            b.loc[type] = next;
+        }
+    }
+
     /** 「跳过盲注」：拿走这一格的标签，直接到下一格（不打、不进商店） */
     private doSkipBlind(): void {
         if (this.animating || !this.run.canSkipBlind) return;
-        const tag = this.run.skipBlind();
+        this.run.skipBlind();
         this.sound.play('generic1', { volume: 0.5 });
-        this.message.setText(`拿到 ${tag.center.name}`).setColor('#ffd76e');
-        this.time.delayedCall(1400, () => this.message.setText(''));
-        this.showBlindSelect();
+        // 拿到的标签出现在右下角那一列（`add_tag`），立即生效的（Economy 之类）当场兑现
+        this.showBlindSelect(false);
     }
 
     /** Director's Cut：花 $10 重掷这个 Ante 的 Boss（每个 Ante 一次） */
@@ -1478,7 +1500,9 @@ ${String(e instanceof Error ? e.message : e)}`)
             probabilities: 1,
         };
         // `loc_blind_states`：英文里各状态的显示名与键同名
-        const { def } = createBlindSelect(state, this.areas.hand.w, { ...state.states });
+        const loc = { ...state.states };
+        const { def, opts } = createBlindSelect(state, this.areas.hand.w, loc);
+        this.blindSelectState = { state, loc, opts };
         const hand = this.areas.hand;
         const select = new UIBox(def, { align: 'bmi', offset: { x: 0, y: 29 }, major: { T: hand } });
         select.config.offset = { x: 0, y: 0.8 - (hand.y - this.areas.jokers.y) + select.T.h };
@@ -1500,13 +1524,33 @@ ${String(e instanceof Error ? e.message : e)}`)
             prompt: new UIBoxView(this, prompt, 41, onButton),
         };
         for (const v of Object.values(this.blindSelectViews)) v.setResolution(this.mapping.pxPerTile / toPx(1));
+        // `blind_choice_handler`：跳过的那一格盖一个斜着的「SKIPPED」（`tmi` 挂卡片、下移 2.2，跟着卡走）
+        for (const type of ['Small', 'Big'] as const) if (state.states[type] === 'Skipped') this.addSkippedAlert(type);
+    }
+
+    /** 选盲注界面上跳过那几格的「SKIPPED」戳 */
+    private skippedAlerts: UIBoxView[] = [];
+    /** 当前选盲注界面读的那几张表。**跳过盲注不重建界面**（原作只改 `blind_states`，每帧的 handler 切外观） */
+    private blindSelectState: { state: BlindSelectState; loc: Record<BlindType, string>; opts: Partial<Record<BlindType, UIBox>> } | null = null;
+
+    private addSkippedAlert(type: BlindType): void {
+        const card = this.blindSelectState?.opts[type];
+        if (!card) return;
+        const alert = new UIBox(cardAlert({ textRot: -0.35, noBg: true, text: DICTIONARY.k_skipped_cap, bumpAmount: 1, scale: 0.9, maxw: 3.4 }),
+            { align: 'tmi', offset: { x: 0, y: 2.2 }, major: card });
+        const view = new UIBoxView(this, alert, 31);
+        view.setResolution(this.mapping.pxPerTile / toPx(1));
+        this.skippedAlerts.push(view);
     }
 
     private destroyBlindSelect(): void {
         if (!this.blindSelectViews) return;
         this.blindSelectViews.select.destroy();
         this.blindSelectViews.prompt.destroy();
+        for (const v of this.skippedAlerts) v.destroy();
+        this.skippedAlerts = [];
         this.blindSelectViews = null;
+        this.blindSelectState = null;
     }
 
     /** `G.FUNCS[button]`：UI 按钮名接到场景的操作上 */
@@ -1725,8 +1769,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         const vouchersLine = run.usedVouchers.size > 0
             ? `优惠券：${[...run.usedVouchers].map((k) => VOUCHER_CENTERS[k].name).join('、')}`
             : '';
-        const tagsLine = run.tags.length > 0
-            ? `标签：${run.tags.map((t) => t.center.name + (isTagImplemented(t.key) ? '' : ' ⚠未实现')).join('、')}`
+        // 标签的图标在右下角那一列（`G.HUD_tags`）；这里只标出没实现行为的
+        const tagsLine = run.tags.some((t) => !isTagImplemented(t.key))
+            ? `标签 ⚠未实现：${run.tags.filter((t) => !isTagImplemented(t.key)).map((t) => t.center.name).join('、')}`
             : '';
 
         if (run.state === 'blind-select') {
@@ -1826,6 +1871,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.syncHud();
         this.hudView.update(time / 1000);
         this.syncHudBlind();
+        this.syncHudTags(time / 1000);
         this.hudBlindView.update(time / 1000);
         this.syncAreas();
         for (const a of this.areaViews) a.view.update(time / 1000);
@@ -1835,6 +1881,11 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (this.blindSelectViews) {
             this.blindSelectViews.select.update(time / 1000);
             this.blindSelectViews.prompt.update(time / 1000);
+            for (const v of this.skippedAlerts) {
+                v.setVisible(!this.run.openPack);
+                v.box.followMajor();
+                v.update(time / 1000);
+            }
         }
         if (this.round?.phase === 'won' && !this.animating && !this.roundEval) this.startRoundEval();
         // `end_round`：没够分就直接 `G.STATE = GAME_OVER`，不用点任何按钮
@@ -1858,6 +1909,31 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.placeCards(time / 1000);
         // 牌堆：盲注里是剩余张数，盲注外整副牌都在牌堆里
         this.deckSprite.update(this.areas.deck, this.deckCount());
+    }
+
+    /** `add_tag` / `Tag:remove`：第一个 `bri` 挂房间（x 外移 0.7），之后每个 `tm` 叠在上一个上面 */
+    private syncHudTags(now: number): void {
+        const tags = this.run.tags;
+        const cur = this.hudTags;
+        if (cur.list.length !== tags.length || cur.list.some((t, i) => t !== tags[i])) {
+            for (const v of cur.views) v.destroy();
+            const views: UIBoxView[] = [];
+            let prev: UIBox | null = null;
+            for (const tag of tags) {
+                const box: UIBox = new UIBox(hudTag(tag.key), prev
+                    ? { align: 'tm', offset: { x: 0, y: 0 }, major: prev }
+                    : { align: 'bri', offset: { x: 0.7, y: 0 }, major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } } });
+                const view = new UIBoxView(this, box, 42);
+                view.setResolution(this.mapping.pxPerTile / toPx(1));
+                views.push(view);
+                prev = box;
+            }
+            this.hudTags = { list: [...tags], views };
+        }
+        for (const v of this.hudTags.views) {
+            v.box.followMajor();
+            v.update(now);
+        }
     }
 
     /**

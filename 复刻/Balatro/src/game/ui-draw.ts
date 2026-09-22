@@ -488,14 +488,20 @@ export class UIBoxView {
         const sqrtS = Math.sqrt(d.scale);
         const px = (d.font.renderScale / (TILESIZE * 10)) * 7;
         let cursor = 0;
+        const R = d.config.text_rot ?? 0;
+        const rcx = x + d.T.w / 2;
+        const rcy = y + d.T.h / 2;
         d.letters.forEach((letter, k0) => {
             const k = k0 + 1;
             // `text.lua:187` 起的逐字动画（旋转 / 漂浮 / 弹跳）
-            let r = 0;
-            if (d.config.rotate) r = (d.config.rotate === 2 ? -1 : 1) * (0.2 * (-n / 2 - 0.5 + k) / n + 0.02 * Math.sin(2 * t + k));
+            let rl = 0;
+            if (d.config.rotate) rl = (d.config.rotate === 2 ? -1 : 1) * (0.2 * (-n / 2 - 0.5 + k) / n + 0.02 * Math.sin(2 * t + k));
             let offY = 0;
             if (d.config.float) offY = sqrtS * px * 1.5 * Math.sin(2.666 * t + 200 * k);
-            if (d.config.bump) offY = sqrtS * px * Math.max(0, (5 + 2.666) * Math.sin(2.666 * t + 200 * k) - 3 - 2.666);
+            if (d.config.bump) {
+                const rate = d.config.bump_rate ?? 2.666;
+                offY = (d.config.bump_amount ?? 1) * sqrtS * px * Math.max(0, (5 + rate) * Math.sin(rate * t + 200 * k) - 3 - rate);
+            }
 
             const cx = base.x + cursor + (0.5 * letter.dims.x * fs) / TILESIZE;
             const cy = base.y + (0.5 * (letter.dims.y - offY) * fs) / TILESIZE;
@@ -506,7 +512,11 @@ export class UIBoxView {
             const l = letters[k0]!;
             // 字体像素 → 世界像素：字号 toPx(scale) 对应 renderScale
             const fontToWorld = toPx(d.scale) / d.font.renderScale;
-            const place = (txt: GameObjects.Text, ax: number, ay: number) => {
+            const place = (txt: GameObjects.Text, ax0: number, ay0: number) => {
+                // `text_rot`：整串绕 DynaText 的中心转（`prep_draw` 按 `T.r` 旋转）
+                const ax = R ? rcx + (ax0 - rcx) * Math.cos(R) - (ay0 - rcy) * Math.sin(R) : ax0;
+                const ay = R ? rcy + (ax0 - rcx) * Math.sin(R) + (ay0 - rcy) * Math.cos(R) : ay0;
+                const r = rl + R;
                 txt.setText(letter.char)
                     .setOrigin(0, 0)
                     .setRotation(r)

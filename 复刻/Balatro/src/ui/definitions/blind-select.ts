@@ -103,6 +103,42 @@ function createBlindTag(type: 'Small' | 'Big', tagKey: string): UINodeDef | null
     ] };
 }
 
+/**
+ * `common_events.lua` 的 `add_tag`：手上的标签在房间右下角叠成一列，每个是一个 UIBox——
+ * `ROOT(cm, padding 0.05)` 里装 `Tag:generate_UI()`（0.8 的精灵，带阴影、漂浮）。
+ * 第一个 `bri` 挂房间、x 外移 0.7；之后每个 `tm` 挂在上一个上面（调用方负责挂法）
+ */
+export function hudTag(tagKey: string): UINodeDef {
+    const center = TAG_CENTERS[tagKey];
+    if (!center) throw new Error(`没有标签 ${tagKey}`);
+    const size = 0.8;
+    const sprite: TagSpriteObject = {
+        kind: 'sprite', atlas: 'tags', pos: center.pos, T: { x: 0, y: 0, w: size, h: size }, shadowHeight: 0.05, float: true,
+    };
+    return { n: UIT.ROOT, config: { align: 'cm', padding: 0.05, colour: C.CLEAR }, nodes: [
+        { n: UIT.C, config: { align: 'cm' }, nodes: [
+            { n: UIT.O, config: { w: size, h: size, colour: C.BLUE, object: sprite, focus_with_object: true } },
+        ] },
+    ] };
+}
+
+/**
+ * `UI_definitions.lua:1966` 的 `create_UIBox_card_alert`。选盲注界面上跳过的那一格盖一个斜着的「SKIPPED」
+ * （`blind_choice_handler`：`text_rot = -0.35, no_bg, bump_amount = 1, scale = 0.9, maxw = 3.4`，`tmi` 挂卡片、下移 2.2）
+ */
+export function cardAlert(args: { text?: string; noBg?: boolean; bgCol?: Colour; redBad?: boolean; textRot?: number; bumpAmount?: number; scale?: number; maxw?: number; yOffset?: number }): UINodeDef {
+    const scale = args.scale ?? 0.48;
+    return { n: UIT.ROOT, config: { align: 'cm', colour: C.CLEAR }, nodes: [
+        { n: UIT.R, config: { align: 'cm', r: 0.15, minw: 0.42, minh: 0.42, colour: args.noBg ? C.CLEAR : args.bgCol ?? (args.redBad ? darken(C.RED, 0.1) : C.RED), emboss: 0.05 }, nodes: [
+            { n: UIT.O, config: { object: new DynaText({
+                string: [args.text ?? '!'], colours: [C.WHITE], shadow: true, rotate: true, bump: true,
+                bump_rate: args.text ? 3 : 7, bump_amount: args.bumpAmount ?? 3, maxw: args.maxw, text_rot: args.textRot ?? 0.2,
+                spacing: 3 * (args.scale ?? 1), scale,
+            }) } },
+        ] },
+    ] };
+}
+
 /** `:1592`（非 `run_info` 那一支） */
 export function createBlindChoice(type: BlindType, s: BlindSelectState, locBlindStates: Record<BlindType, string>, stake = 1): UINodeDef {
     const key = s.choices[type];

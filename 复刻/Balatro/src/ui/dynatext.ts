@@ -26,6 +26,11 @@ export type DynaTextConfig = {
     rotate?: boolean | 2;
     float?: boolean;
     bump?: boolean;
+    /** `text.lua:11`：弹跳的频率与幅度（缺省 2.666 / 1） */
+    bump_rate?: number;
+    bump_amount?: number;
+    /** `text.lua:46`：整串绕自己中心转（`T.r`），弧度。SKIPPED 戳是 −0.35 */
+    text_rot?: number;
     pop_in?: number;
     /** 绘制时整串再挪多少（字体像素，`text.lua:17` 的 `text_offset`），不进布局 */
     x_offset?: number;

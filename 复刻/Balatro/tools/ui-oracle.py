@@ -306,6 +306,13 @@ def main():
     for k in ['small', 'big', 'boss']:
         cases.append({'name': f'blind_choice_{k}', **to_py(lua.eval(f'DUMP(G.blind_select_opts.{k})'))})
     cases.append({'name': 'blind_prompt', **to_py(lua.eval('DUMP(G.blind_prompt_box)'))})
+    # 跳过那一格的「SKIPPED」戳（blind_choice_handler：create_UIBox_card_alert，tmi 挂在卡片的 UIBox 上、下移 2.2）
+    lua.execute(r'''
+      SKIPPED = UIBox{
+        definition = create_UIBox_card_alert({text_rot = -0.35, no_bg = true, text = localize('k_skipped_cap'), bump_amount = 1, scale = 0.9, maxw = 3.4}),
+        config = { align = 'tmi', offset = {x = 0, y = 2.2}, major = G.blind_select_opts.small, parent = G.blind_select_opts.small } }
+    ''')
+    cases.append({'name': 'skipped_alert', **to_py(lua.eval('DUMP(SKIPPED)'))})
     # 兑换过 Director's Cut：提示框下面多一个 UIBox_button（Reroll Boss / $10）
     lua.execute(r'''
       G.GAME.used_vouchers = { v_directors_cut = true }

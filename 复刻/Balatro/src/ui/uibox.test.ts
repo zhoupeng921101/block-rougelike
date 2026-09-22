@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { cardAreas } from '../game/areas';
-import { type BlindSelectState, createBlindPrompt, createBlindSelect } from './definitions/blind-select';
+import { type BlindSelectState, cardAlert, createBlindPrompt, createBlindSelect } from './definitions/blind-select';
 import { createButtons } from './definitions/buttons';
 import { type EvalRow, RoundEval, evalTimeline } from './definitions/round-eval';
 import { cardAreaBox } from './definitions/card-area';
@@ -142,6 +142,8 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
         });
         const prompt = new UIBox(createBlindPrompt(), { align: 'cm', offset: { x: 0, y: 0 }, major: hud.getById('row_blind')!.asMajor });
         expectSame(dump(prompt), cases.find((c) => c.name === 'blind_prompt')!.elements);
+        const skipped = new UIBox(cardAlert({ textRot: -0.35, noBg: true, text: 'SKIPPED', bumpAmount: 1, scale: 0.9, maxw: 3.4 }), { align: 'tmi', offset: { x: 0, y: 2.2 }, major: opts.Small! });
+        expectSame(dump(skipped), cases.find((c) => c.name === 'skipped_alert')!.elements);
         const reroll = new UIBox(createBlindPrompt(true), { align: 'cm', offset: { x: 0, y: 0 }, major: hud.getById('row_blind')!.asMajor });
         expectSame(dump(reroll), cases.find((c) => c.name === 'blind_prompt_reroll')!.elements);
     });
