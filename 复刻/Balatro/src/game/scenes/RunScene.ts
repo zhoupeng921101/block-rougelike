@@ -57,7 +57,7 @@ const locVariable = (key: string, v: number) => (V_DICTIONARY[key] ?? 'ERROR').r
 import { type ViewDeckArea, deckInfo } from '../../ui/definitions/deck-info';
 import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/definitions/hud-blind';
 import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
-import { type BlindSelectState, type BlindType, blindChoiceBox, blindChoiceFuncs, cardAlert, currentBlinds, createBlindPrompt, createBlindSelect, hudTag } from '../../ui/definitions/blind-select';
+import { type BlindSelectState, type BlindType, type TagSpriteObject, blindChoiceBox, blindChoiceFuncs, cardAlert, currentBlinds, createBlindPrompt, createBlindSelect, hudTag } from '../../ui/definitions/blind-select';
 import { mostPlayedHand } from '../../core/round';
 import { runModifiers } from '../../core/jokers/modifiers';
 import { type EvalRow, type EvalStep, RoundEval, evalTimeline } from '../../ui/definitions/round-eval';
@@ -1554,15 +1554,19 @@ ${String(e instanceof Error ? e.message : e)}`)
      */
     private tagHoverZones: Array<{ zone: GameObjects.Zone; target: { readonly rect: Rect } }> = [];
 
-    private addTagHover(rect: () => Rect, key: string, orbital: () => string | undefined, juice?: () => void): void {
+    private addTagHover(rect: () => Rect, key: string, orbital: () => string | undefined, sprite: TagSpriteObject, juice?: () => void): void {
         const target = { get rect() { return rect(); } };
         const zone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(43);
-        // `tag_sprite.hover`：`juice_up(0.05, 0.02)` 弹一下、两声，出提示框（`hover_tilt = 3` 要走 shader，标签精灵是普通贴图，没做）
+        // `tag_sprite.hover`：`hover_tilt = 3`、`juice_up(0.05, 0.02)` 弹一下、两声，出提示框；`stop_hover` 把倾斜收回 0
         zone.on('pointerover', () => {
+            sprite.hoverTilt = 3;
             juice?.();
             this.showTagPopup(target, key, orbital());
         });
-        zone.on('pointerout', () => { if (this.popup?.sprite === (target as unknown as Pickable)) this.hidePopup(); });
+        zone.on('pointerout', () => {
+            sprite.hoverTilt = 0;
+            if (this.popup?.sprite === (target as unknown as Pickable)) this.hidePopup();
+        });
         this.tagHoverZones.push({ zone, target });
     }
 
@@ -2259,7 +2263,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             // 悬停区跟着卡片那块的滑动走（开包时收到屏幕下面，区也跟下去）
             const slid = () => this.blindSelectViews?.select.slideOffset ?? { x: 0, y: 0 };
             this.addTagHover(() => ({ x: sprite.x + slid().x, y: sprite.y + slid().y, w: sprite.T.w, h: sprite.T.h }), key, () => run.orbitalChoice(type),
-                () => this.blindSelectViews?.select.childView(card)?.juiceObject(sprite.config.object!, this.time.now / 1000, 0.05, 0.02));
+                sprite.config.object as TagSpriteObject, () => this.blindSelectViews?.select.childView(card)?.juiceObject(sprite.config.object!, this.time.now / 1000, 0.05, 0.02));
             this.blindTagTargets.add(this.tagHoverZones[this.tagHoverZones.length - 1]!.target);
         }
     }
@@ -3207,7 +3211,7 @@ ${String(e instanceof Error ? e.message : e)}`)
                 prev = box;
                 const sprite = [...box.root.walk()].find((e) => e.UIT === UIT.O)!;
                 this.addTagHover(() => ({ x: sprite.x, y: sprite.y, w: sprite.T.w, h: sprite.T.h }), tag.key, () => tag.orbitalHand,
-                    () => view.juiceObject(sprite.config.object!, this.time.now / 1000, 0.05, 0.02));
+                    sprite.config.object as TagSpriteObject, () => view.juiceObject(sprite.config.object!, this.time.now / 1000, 0.05, 0.02));
                 // `Tag:generate_UI` 末尾的 `tag_sprite:juice_up()`：新拿到的标签弹一下（缺省幅度 0.4）
                 if (!cur.list.includes(tag)) view.juiceObject(sprite.config.object!, now, 0.4);
                 this.hudTagTargets.add(this.tagHoverZones[this.tagHoverZones.length - 1]!.target);

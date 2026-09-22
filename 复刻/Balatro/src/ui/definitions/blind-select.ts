@@ -32,7 +32,11 @@ export type BlindSlotState = 'Defeated' | 'Skipped' | 'Select' | 'Upcoming';
 export type BlindChipObject = UIObject & { kind: 'blind_chip'; pos: { x: number; y: number }; shadowHeight: number };
 
 /** 标签精灵（`Tag:generate_UI` 的 `tag_sprite`）：`tags` 图集、带阴影、上下漂浮 */
-export type TagSpriteObject = SpriteObject & { shadowHeight: number; float: true };
+/**
+ * `Tag:generate_UI` 的精灵：带阴影那一步（`shadow_height = 0.05`）、漂浮。`touch_collide_tilt = true`，
+ * 悬停时 `hover_tilt = 3`（`tag.lua:519`）——由场景的悬停区写 `hoverTilt`，绘制层喂给 `dissolve` 的 `hovering`
+ */
+export type TagSpriteObject = SpriteObject & { shadowHeight: number; float: true; hoverTilt?: number };
 
 /** 界面读的 `G.GAME` 那几项 */
 export type BlindSelectState = {

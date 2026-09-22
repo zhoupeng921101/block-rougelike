@@ -92,6 +92,13 @@ export const VOUCHER_ATLAS: AtlasSpec = {
     w: 639, h: 380, frameW: 71, frameH: 95,
 };
 
+/** 标签（`game.lua` 的 `tags`，34 像素一格）。204×170 = 6 列 × 5 行 */
+export const TAG_ATLAS: AtlasSpec = {
+    key: 'tags',
+    path: 'assets/textures/tags.png',
+    w: 204, h: 170, frameW: 34, frameH: 34,
+};
+
 export function columnsOf(atlas: AtlasSpec): number {
     return Math.floor(atlas.w / atlas.frameW);
 }

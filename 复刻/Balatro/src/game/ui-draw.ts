@@ -19,7 +19,9 @@ import { EN_FONT } from '../ui/font';
 import { TILESIZE, UIT, UIBox, UI_DRAG, type UIElement } from '../ui/uibox';
 import { TILE_H, TILE_W, toPx } from './coords';
 import { Motion } from './moveable';
-import { SETTINGS } from './settings';
+import { SETTINGS, wobble } from './settings';
+import { TAG_ATLAS } from '../core/atlas';
+import { cardTimeOf, makeShaderQuad } from './shader-quad';
 
 /** 世界像素 / 原作画矩形时的顶点单位（1/TILESIZE tile） */
 const U = toPx(1) / TILESIZE;
@@ -90,6 +92,8 @@ type ElementView = {
     blindChip?: { shadow: GameObjects.Image; main: GameObjects.Image };
     /** 精灵的阴影（`draw_steps` 里带 `shadow_height` 的那一步，标签有） */
     imageShadow?: GameObjects.Image;
+    /** 标签精灵：两遍 `dissolve`（阴影、本体），本体吃 `hover_tilt` */
+    tagQuads?: { shadow: GameObjects.Shader; main: GameObjects.Shader };
     /** O 节点里装的 UIBox（选盲注卡）：它自己的一套视图，容器挂在这里 */
     child?: UIBoxView;
 };
@@ -185,7 +189,19 @@ export class UIBoxView {
             } else if (el.UIT === UIT.O && (cfg.object as SpriteObject | undefined)?.kind === 'sprite') {
                 const sprite = cfg.object as SpriteObject;
                 const frame = sprite.pos.y * this.atlasColumns(sprite.atlas) + sprite.pos.x;
-                if ((sprite as TagSpriteObject).shadowHeight) {
+                if (sprite.atlas === 'tags' && (sprite as TagSpriteObject).shadowHeight) {
+                    // `tag_sprite:define_draw_steps{{shader='dissolve', shadow_height=0.05}, {shader='dissolve'}}`：
+                    // 走 shader 才有 `touch_collide_tilt` 的悬停倾斜。阴影那遍 `hovering` 恒 0（`sprite.lua:98`）
+                    const tag = sprite as TagSpriteObject;
+                    const quad = {
+                        name: `tag_${Math.random().toString(36).slice(2, 8)}`, textureKey: 'tags', atlas: TAG_ATLAS, pos: tag.pos,
+                        cardTime: cardTimeOf(tag.pos.x + 6 * tag.pos.y + 1), w: toPx(tag.T.w), h: toPx(tag.T.h), mouseDamping: 1,
+                    };
+                    const shadow = makeShaderQuad(this.scene, { ...quad, name: `${quad.name}_s`, tilt: () => 0, shadow: true });
+                    const main = makeShaderQuad(this.scene, { ...quad, tilt: () => tag.hoverTilt ?? 0 });
+                    this.container.add([shadow, main]);
+                    view.tagQuads = { shadow, main };
+                } else if ((sprite as TagSpriteObject).shadowHeight) {
                     view.imageShadow = this.scene.add.image(0, 0, sprite.atlas, frame).setTint(0x000000).setAlpha(0.3);
                     this.container.add(view.imageShadow);
                 }
@@ -253,7 +269,7 @@ export class UIBoxView {
     /** 一个元素自己的显示对象，先画的在前 */
     private own(v: ElementView): GameObjects.GameObject[] {
         const out: Array<GameObjects.GameObject | null | undefined> = [
-            v.gfx, v.extra, v.imageShadow, v.image, v.blindChip?.shadow, v.blindChip?.main, v.text?.shadow, v.text?.main,
+            v.gfx, v.extra, v.imageShadow, v.image, v.tagQuads?.shadow, v.tagQuads?.main, v.blindChip?.shadow, v.blindChip?.main, v.text?.shadow, v.text?.main,
             ...(v.letters ?? []).flatMap((l) => [l.shadow, l.main]), v.child?.container, v.zone,
         ];
         return out.filter((o): o is GameObjects.GameObject => !!o);
@@ -566,6 +582,14 @@ export class UIBoxView {
                 // 开关的勾关着时藏起来（`states.visible = false`）
                 .setVisible((cfg.object as { visible?: boolean }).visible !== false);
         }
+        if (v.tagQuads) {
+            // 以中心画、吃 `juice_up`；阴影往视差反方向错开 `shadow_height`、缩 `1 − 0.2·shadow_height`（`sprite.lua:76`）
+            const j = this.juices.get(cfg.object as object)?.VT;
+            const k = j?.scale ?? 1;
+            const hgt = (cfg.object as TagSpriteObject).shadowHeight;
+            v.tagQuads.main.setPosition(toPx(el.x + w / 2), toPx(el.y + h / 2)).setScale(k).setRotation(j?.r ?? 0);
+            v.tagQuads.shadow.setPosition(toPx(el.x + w / 2 - sp.x * hgt), toPx(el.y + h / 2 - sp.y * hgt)).setScale(k * (1 - 0.2 * hgt)).setRotation(j?.r ?? 0);
+        }
         if (v.imageShadow) {
             // `sprite.lua:76`：往视差反方向错开 `shadow_height`、缩到 `1 − 0.2·shadow_height`（以中心）
             const hgt = (cfg.object as TagSpriteObject).shadowHeight;
@@ -678,7 +702,7 @@ export class UIBoxView {
             const fx = d.letterFx(k0, t);
             rl += fx.r;
             let offY = 0;
-            if (d.config.float) offY = sqrtS * px * 1.5 * Math.sin(2.666 * t + 200 * k);
+            if (d.config.float) offY = wobble() * sqrtS * px * 1.5 * Math.sin(2.666 * t + 200 * k);
             if (d.config.bump) {
                 const rate = d.config.bump_rate ?? 2.666;
                 offY = (d.config.bump_amount ?? 1) * sqrtS * px * Math.max(0, (5 + rate) * Math.sin(rate * t + 200 * k) - 3 - rate);

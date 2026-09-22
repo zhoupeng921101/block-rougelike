@@ -53,6 +53,8 @@ export type QuadOptions = {
      * 不给就是 0 / 透明（绝大多数卡）
      */
     dissolve?: DissolveState;
+    /** `_draw_major.mouse_damping or 1`：卡牌是 1.5（`card.lua:346`），普通 `Sprite`（标签）没有这个字段，按 1 */
+    mouseDamping?: number;
 };
 
 /** `start_materialize` / `start_dissolve` 缓动的那两项：`amount` 1 = 全溶掉，`colours` 前两个是烧边的两色 */
@@ -114,7 +116,7 @@ export function makeShaderQuad(scene: Scene, opts: QuadOptions): GameObjects.Sha
                 const zoom = scene.cameras.main.zoom;
                 setUniform('mouse_screen_pos', [p.x, p.y]);
                 setUniform('hovering', opts.tilt());
-                setUniform('screen_scale', PX_PER_TILE * zoom * MOUSE_DAMPING);
+                setUniform('screen_scale', PX_PER_TILE * zoom * (opts.mouseDamping ?? MOUSE_DAMPING));
                 setUniform('uScreenSize', [scene.scale.width, scene.scale.height]);
             },
         },
