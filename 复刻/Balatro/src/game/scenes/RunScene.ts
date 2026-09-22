@@ -74,6 +74,13 @@ import { RED_DECK, WIN_ANTE } from '../../core/run';
 import { JokerSprite } from '../joker-sprite';
 import { type ExitStyle, type ExitTarget, destroyStyle, playEnter, playExit } from '../card-exit';
 import { queueUseConsumable } from '../use-sequence';
+import { type CollectionArea, type CollectionPageSpec, type CollectionTallies, COLLECTION_PAGES, centerPool, collectionPage, yourCollection } from '../../ui/definitions/collection';
+import { discover, discoverTally, isDiscovered } from '../profile';
+import { alignTitle, alignVoucher } from '../align-cards';
+import { makeJoker as makeJokerInstance } from '../../core/jokers';
+import { makeConsumable as makeConsumableInstance } from '../../core/consumables';
+import { P_CENTERS } from '../../ui/descriptions.generated';
+
 import { LOOK } from '../look';
 import { SETTINGS, masterGain, saveSettings, wobble } from '../settings';
 import { type SettingsHooks, controlFuncs, handleControlButton, optionsMenu, settingsMenu } from '../../ui/definitions/options';
@@ -602,6 +609,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (!round || round.phase !== 'won' || this.roundEval) return;
         const run = this.run;
         const blindKey = run.blindKey;
+        // `state_events.lua:144`：打过的盲注记进图鉴
+        discover(blindKey, this.seeded);
         const requirement = round.requirement;
         const jokersBefore = [...run.jokers];
         const last = { blindKey, chips: round.chips, handsLeft: round.handsLeft, discardsLeft: round.discardsLeft };
@@ -901,6 +910,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     private playUse(used: ConsumableSprite | undefined, consumable: Consumable, snap: ReturnType<RunScene['useSnapshot']>, onDone?: () => void): void {
         this.animating = true;
         this.tarotInterrupt = true;
+        discover(consumable.key, this.seeded); // `misc_functions.lua:1217`：用过的消耗品
         this.hidePopup();
         // `G.STATE` 是奥秘 / 天体 / 幽灵包时停在手牌区上方，否则进出牌区
         const inPack = ['Arcana', 'Celestial', 'Spectral'].includes(snap.packKind ?? '');
@@ -1429,6 +1439,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.time.delayedCall(1400, () => this.message.setText(''));
             return;
         }
+        discover(this.run.shop?.packs[index]?.key ?? '', this.seeded); // `Card:open` 的 discover
         this.run.buyAndOpenPack(index);
         this.sound.play('coin1', { volume: 0.5 });
         this.rebuildJokers();
@@ -2671,6 +2682,8 @@ ${String(e instanceof Error ? e.message : e)}`)
     private closeOverlay(): void {
         if (!this.overlay) return;
         this.closeRunSetupExtras();
+        this.clearCollectionCards();
+        this.collection = null;
         this.hidePopup();
         this.overlay.view.destroy();
         this.overlay.blocker.destroy();
@@ -2943,6 +2956,121 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
     }
 
+    /** `set_discover_tallies` 里图鉴首页要的那几项 */
+    private collectionTallies(): CollectionTallies {
+        const bySet = (set: string) => discoverTally((k, s) => s === set && k !== 'b_challenge');
+        return {
+            jokers: bySet('Joker'), backs: bySet('Back'), vouchers: bySet('Voucher'), tarots: bySet('Tarot'), planets: bySet('Planet'),
+            spectrals: bySet('Spectral'), editions: bySet('Edition'), boosters: bySet('Booster'),
+            tags: { tally: Object.keys(TAG_CENTERS).filter((k) => isDiscovered(k)).length, of: Object.keys(TAG_CENTERS).length },
+            blinds: { tally: Object.keys(BLIND_CENTERS).filter((k) => isDiscovered(k)).length, of: Object.keys(BLIND_CENTERS).length },
+        };
+    }
+
+    /** `G.FUNCS.your_collection` */
+    private openCollection(): void {
+        const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
+        this.mountOverlay(yourCollection(this.collectionTallies()), bg, 0.7);
+    }
+
+    /** 图鉴分页开着时：哪一页、第几页、卡 */
+    private collection: { spec: CollectionPageSpec; page: number; cards: Array<{ sprite: JokerSprite | ConsumableSprite | VoucherSprite | BoosterSprite; row: number }> } | null = null;
+
+    private openCollectionPage(kind: CollectionPageSpec['kind']): void {
+        const spec = COLLECTION_PAGES[kind];
+        const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
+        this.mountOverlay(collectionPage(spec, (page) => this.fillCollection(page)), bg, 0.7);
+        this.collection = { spec, page: 1, cards: [] };
+        this.fillCollection(1);
+    }
+
+    private clearCollectionCards(): void {
+        const c = this.collection;
+        if (!c) return;
+        if (c.cards.some((x) => this.popup?.sprite === x.sprite)) this.hidePopup();
+        for (const x of c.cards) x.sprite.destroy();
+        c.cards = [];
+    }
+
+    /**
+     * `your_collection_*_page`：拆掉这一页的卡、按页码从池子里取、造卡放进各行。图鉴里的卡没有 `bypass_discovery_center`：
+     * 没解锁的小丑画锁、没发现的画问号，提示框相应是 Locked（解锁条件）/ Undiscovered（藏描述）
+     */
+    private fillCollection(page: number): void {
+        const c = this.collection;
+        if (!c) return;
+        this.clearCollectionCards();
+        c.page = page;
+        const pool = centerPool(c.spec.set);
+        c.spec.rows.forEach((row, j) => {
+            for (let i = 1; i <= row.limit; i++) {
+                const key = pool[c.spec.index(page, j + 1, i) - 1];
+                if (!key) break;
+                const center = P_CENTERS[key]!;
+                const locked = center.unlocked === false;
+                const discovered = isDiscovered(key);
+                if (c.spec.set === 'Voucher') {
+                    const vc = VOUCHER_CENTERS[key]!;
+                    const display = locked ? 'locked' as const : !discovered ? 'undiscovered' as const : undefined;
+                    // `start_materialize(nil, i > 1 or j > 1)`：只有第一张出声
+                    const sp = new VoucherSprite(this, vc, () => undefined, { card: 202, shadow: 201 }, { silent: i > 1 || j > 0 }, display);
+                    this.attachPopup([sp.shader], sp, () => ({ ...popupOfCenter(key, 'other'), display: locked ? 'Locked' : !discovered ? 'Undiscovered' : undefined }));
+                    c.cards.push({ sprite: sp, row: j + 1 });
+                } else if (c.spec.set === 'Booster') {
+                    const sp = new BoosterSprite(this, BOOSTER_CENTERS[key]!, () => undefined, discovered ? undefined : 'undiscovered');
+                    sp.setBaseDepth(202, 201);
+                    this.attachPopup([sp.shader], sp, () => ({ ...popupOfCenter(key, 'other'), display: discovered ? undefined : 'Undiscovered' }));
+                    c.cards.push({ sprite: sp, row: j + 1 });
+                } else if (c.spec.set === 'Joker') {
+                    const joker = makeJokerInstance(key);
+                    const display = locked ? 'locked' as const : !discovered ? 'undiscovered' as const : undefined;
+                    const sp = new JokerSprite(this, joker, () => undefined, display);
+                    sp.setBaseDepth(202, 201);
+                    this.attachPopup([sp.shader], sp, () => ({ ...popupOfJoker(joker, 'other'), display: locked ? 'Locked' : !discovered ? 'Undiscovered' : undefined }));
+                    c.cards.push({ sprite: sp, row: j + 1 });
+                } else {
+                    const con = makeConsumableInstance(key);
+                    const sp = new ConsumableSprite(this, con, () => undefined, discovered ? undefined : 'undiscovered');
+                    sp.setBaseDepth(202, 201);
+                    this.attachPopup([sp.shader], sp, () => ({ ...popupOfConsumable(con, 'other'), display: discovered ? undefined : 'Undiscovered' }));
+                    c.cards.push({ sprite: sp, row: j + 1 });
+                }
+            }
+        });
+    }
+
+    /** 每帧：各行按 `align_cards` 的 title 分支摆（含 overlay 的滑动） */
+    private followCollection(now: number): void {
+        const c = this.collection;
+        const o = this.overlay;
+        if (!c || !o) return;
+        const slide = o.view.slideOffset;
+        for (const el of o.view.box.root.walk()) {
+            const area = el.config.object as CollectionArea | undefined;
+            if (!area?.collectionArea) continue;
+            const cards = c.cards.filter((x) => x.row === area.row).map((x) => x.sprite);
+            const rect = { x: el.x + slide.x, y: el.y + slide.y, w: el.T.w, h: el.T.h };
+            const U = toPx(1);
+            const align = c.spec.areaType === 'voucher' ? alignVoucher : alignTitle;
+            align(rect, cards.map((s) => ({ highlighted: false, prevX: s.prevX, w: s.w / U, h: s.h / U })), area.limit, now)
+                .forEach((p, i) => cards[i]!.place(p, i));
+        }
+    }
+
+    /**
+     * `discover_card` 的几个来路收成一处：在场的小丑与消耗品（`add_to_deck`）、它们的版本、兑换过的优惠券、牌组里的强化与版本。
+     * 用掉的消耗品、开的包、打过的盲注、拿到的标签在各自那一处单独记。指定种子的局都不记
+     */
+    private discoverVisible(): void {
+        const seeded = this.seeded;
+        const d = (k: string | undefined) => { if (k) discover(k, seeded); };
+        for (const j of this.run.jokers) { d(j.key); if (j.edition) d(`e_${j.edition}`); }
+        for (const c of this.run.consumables) { d(c.key); if (c.edition) d(`e_${c.edition}`); }
+        for (const v of this.run.usedVouchers) d(v);
+        for (const t of this.run.tags) d(t.key); // `add_tag` 的 discover
+        for (const card of this.run.fullDeck) { d(card.enhancement ?? undefined); if (card.edition) d(`e_${card.edition}`); }
+    }
+
     /** `G.FUNCS.run_info`：`G.UIDEF.run_info()` 挂成 overlay（灰底 0.7，不缓动），第一页牌型 */
     private openRunInfo(): void {
         if (this.overlay || this.animating) return;
@@ -3133,6 +3261,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.placeDeckViewCards(now);
         this.followRunInfoHovers(now);
         this.followRunSetup(now);
+        this.followCollection(now);
     }
 
     private onOverlayButton(name: string, el?: UIElement): void {
@@ -3176,6 +3305,18 @@ ${String(e instanceof Error ? e.message : e)}`)
             return;
         }
         if (this.handleRunSetupButton(name, el)) return;
+        // 图鉴：首页 ↔ 分页都是换掉整块 overlay
+        if (name === 'your_collection') {
+            this.closeOverlay();
+            this.openCollection();
+            return;
+        }
+        const page = /^your_collection_(jokers|tarots|planets|spectrals|vouchers|boosters)$/.exec(name)?.[1] as CollectionPageSpec['kind'] | undefined;
+        if (page) {
+            this.closeOverlay();
+            this.openCollectionPage(page);
+            return;
+        }
         // 复刻件没有主菜单：「Main Menu」同种子重开（整页重载，URL 上的 ?seed 就是这一局的种子）
         if (name === 'go_to_menu') {
             saveSettings();
@@ -3299,6 +3440,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     // ————————————————————————————————————————————————————————————————
 
     private refresh(lastAction = ''): void {
+        this.discoverVisible();
         const run = this.run;
         const round = this.round;
 

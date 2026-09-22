@@ -132,13 +132,13 @@ export type LocalizeArgs = {
 };
 
 const parsedCache = new Map<string, LocPart[][]>();
-function parsedLines(set: string, key: string, which: 'text' | 'name'): LocPart[][] | null {
+function parsedLines(set: string, key: string, which: 'text' | 'name' | 'unlock'): LocPart[][] | null {
     const id = `${set}/${key}/${which}`;
     const hit = parsedCache.get(id);
     if (hit) return hit;
     const entry = DESCRIPTIONS[set]?.[key];
     if (!entry) return null;
-    const src = which === 'text' ? entry.text : entry.name;
+    const src = which === 'text' ? entry.text : which === 'unlock' ? entry.unlock : entry.name;
     if (src === undefined || src === null) return null;
     const lines = (typeof src === 'string' ? [src] : src).map(locParseString);
     parsedCache.set(id, lines);
@@ -151,7 +151,7 @@ function parsedLines(set: string, key: string, which: 'text' | 'name'): LocPart[
  */
 export function localize(args: LocalizeArgs): UINodeDef[] | undefined {
     const set = args.type === 'other' ? 'Other' : args.set!;
-    const lines = parsedLines(set, args.key, args.type === 'name' ? 'name' : 'text');
+    const lines = parsedLines(set, args.key, args.type === 'name' ? 'name' : args.type === 'unlocks' ? 'unlock' : 'text');
     if (!lines) return undefined;
     const vars = args.vars ?? ([] as LocVars);
     const descScale = args.mobile ? 1.45 : 1;

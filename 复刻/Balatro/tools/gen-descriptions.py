@@ -38,6 +38,9 @@ def main():
             item = {'name': name}
             if e['text'] is not None:
                 item['text'] = seq(e['text'])
+            # 锁住的卡提示框显示的解锁条件（`generate_card_ui` 的 Locked 那一支读 `unlock`）
+            if e['unlock'] is not None:
+                item['unlock'] = seq(e['unlock'])
             out[key] = item
         desc[set_name] = dict(sorted(out.items()))
     # G.P_CENTERS / G.P_TAGS：原样跑 Game:init_item_prototypes（桩掉 save_progress 与读档用的全局）
@@ -53,7 +56,7 @@ def main():
       G = {}; FAKE = setmetatable({ save_progress = function() end }, {__index = Game})
       pcall(FAKE.init_item_prototypes, FAKE)  -- 读档那段（love.mod_filesystem）会炸，表在它之前就建好了
     ''')
-    keep = ['name', 'set', 'effect', 'rarity', 'order', 'config', 'consumeable', 'unlocked', 'discovered']
+    keep = ['name', 'set', 'effect', 'rarity', 'order', 'config', 'consumeable', 'unlocked', 'discovered', 'unlock_condition', 'pos']
 
     def plain(v):
         if hasattr(v, 'items'):
@@ -88,7 +91,7 @@ def main():
     body = (
         '// 由 tools/gen-descriptions.py 从 本地化/en-us.lua 生成，不要手改。\n'
         '/** `G.localization.descriptions`：`name` 是字符串或多行，`text` 按行（控制码原样） */\n'
-        'export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { name: string | string[] | null; text?: string[] }>>>> = '
+        'export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { name: string | string[] | null; text?: string[]; unlock?: string[] }>>>> = '
         + json.dumps(dict(sorted(desc.items())), ensure_ascii=False, indent=1) + ';\n\n'
         '/** `G.localization.misc` 里提示框会查的几张表（`localize(key, cat)`） */\n'
         'export const MISC: Readonly<Record<string, Readonly<Record<string, string>>>> = '
@@ -111,7 +114,8 @@ def main():
     )
     body = ('/* eslint-disable */\nexport type PCenter = { name: string; set: string; effect?: string; rarity?: number; order?: number; '
             '// eslint-disable-next-line @typescript-eslint/no-explicit-any\n'
-            'config: Record<string, any>; consumeable?: boolean; unlocked?: boolean; discovered?: boolean };\n\n' + body)
+            'config: Record<string, any>; consumeable?: boolean; unlocked?: boolean; discovered?: boolean; '
+            'unlock_condition?: Record<string, any>; pos?: { x: number; y: number } };\n\n' + body)
     OUT.write_text(body, encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f'{k} {len(v)}' for k, v in sorted(desc.items())) + f'; centers {len(centers)}, tags {len(tags)}')
 

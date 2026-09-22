@@ -1,10 +1,10 @@
 /* eslint-disable */
 export type PCenter = { name: string; set: string; effect?: string; rarity?: number; order?: number; // eslint-disable-next-line @typescript-eslint/no-explicit-any
-config: Record<string, any>; consumeable?: boolean; unlocked?: boolean; discovered?: boolean };
+config: Record<string, any>; consumeable?: boolean; unlocked?: boolean; discovered?: boolean; unlock_condition?: Record<string, any>; pos?: { x: number; y: number } };
 
 // 由 tools/gen-descriptions.py 从 本地化/en-us.lua 生成，不要手改。
 /** `G.localization.descriptions`：`name` 是字符串或多行，`text` 按行（控制码原样） */
-export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { name: string | string[] | null; text?: string[] }>>>> = {
+export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { name: string | string[] | null; text?: string[]; unlock?: string[] }>>>> = {
  "Back": {
   "b_abandoned": {
    "name": "Abandoned Deck",
@@ -456,6 +456,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "{X:red,C:white} X#1# {} Mult on {C:attention}final",
     "{C:attention}hand{} of round"
+   ],
+   "unlock": [
+    "Play {C:attention,E:1}#1#{} hands",
+    "{C:inactive}(#2#)"
    ]
   },
   "j_ancient": {
@@ -473,6 +477,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Played cards with",
     "{C:spades}Spade{} suit give",
     "{C:chips}+#1#{} Chips when scored"
+   ],
+   "unlock": [
+    "Have at least {E:1,C:attention}#1#",
+    "cards with {E:1,C:attention}#2#",
+    "suit in your deck"
    ]
   },
   "j_astronomer": {
@@ -481,6 +490,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "All {C:planet}Planet{} cards and",
     "{C:planet}Celestial Packs{} in",
     "the shop are {C:attention}free"
+   ],
+   "unlock": [
+    "Discover every",
+    "{E:1,C:planet}Planet{} card"
    ]
   },
   "j_banner": {
@@ -521,6 +534,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "played cards with",
     "{C:hearts}Heart{} suit to give",
     "{X:mult,C:white} X#3# {} Mult when scored"
+   ],
+   "unlock": [
+    "Have at least {E:1,C:attention}#1#",
+    "cards with {E:1,C:attention}#2#",
+    "suit in your deck"
    ]
   },
   "j_blue_joker": {
@@ -536,6 +554,9 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "Copies ability of",
     "{C:attention}Joker{} to the right"
+   ],
+   "unlock": [
+    "Win a run"
    ]
   },
   "j_bootstraps": {
@@ -544,6 +565,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:mult}+#1#{} Mult for every",
     "{C:money}$#2#{} you have",
     "{C:inactive}(Currently {C:mult}+#3#{C:inactive} Mult)"
+   ],
+   "unlock": [
+    "Have at least {E:1,C:attention}#1#",
+    "{C:dark_edition}Polychrome{} Jokers"
    ]
   },
   "j_brainstorm": {
@@ -551,6 +576,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "Copies the ability",
     "of leftmost {C:attention}Joker"
+   ],
+   "unlock": [
+    "Discard a",
+    "{E:1,C:attention}Royal Flush"
    ]
   },
   "j_bull": {
@@ -575,6 +604,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Upgrade the level of",
     "the first {C:attention}discarded",
     "poker hand each round"
+   ],
+   "unlock": [
+    "Sell a total",
+    "of {E:1,C:attention}#1#{} cards",
+    "{C:inactive}(#2#)"
    ]
   },
   "j_business": {
@@ -592,6 +626,9 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "when a {C:attention}face{} card",
     "is destroyed",
     "{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)"
+   ],
+   "unlock": [
+    "{E:1,s:1.3}?????"
    ]
   },
   "j_campfire": {
@@ -617,6 +654,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Create a {C:tarot}Tarot{} card",
     "when {C:attention}Blind{} is selected",
     "{C:inactive}(Must have room)"
+   ],
+   "unlock": [
+    "Discover every",
+    "{E:1,C:tarot}Tarot{} card"
    ]
   },
   "j_castle": {
@@ -654,6 +695,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "add a random {C:attention}playing",
     "{C:attention}card{} with a random",
     "{C:attention}seal{} to your hand"
+   ],
+   "unlock": [
+    "Have a Gold",
+    "playing card with",
+    "a {C:attention,E:1}Gold Seal"
    ]
   },
   "j_chaos": {
@@ -668,6 +714,9 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "Disables effect of",
     "every {C:attention}Boss Blind"
+   ],
+   "unlock": [
+    "{E:1,s:1.3}?????"
    ]
   },
   "j_clever": {
@@ -759,6 +808,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "at least {C:attention}16{} Enhanced",
     "cards in your full deck",
     "{C:inactive}(Currently {C:attention}#2#{C:inactive})"
+   ],
+   "unlock": [
+    "Enhance {E:1,C:attention}#1#{} cards",
+    "in your deck"
    ]
   },
   "j_droll": {
@@ -782,6 +835,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{X:mult,C:white} X#1# {} Mult if played",
     "hand contains",
     "a {C:attention}#2#"
+   ],
+   "unlock": [
+    "Win a run",
+    "without playing",
+    "a {E:1,C:attention}#1#"
    ]
   },
   "j_dusk": {
@@ -833,6 +891,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{X:mult,C:white} X#1# {} Mult if played",
     "hand contains",
     "a {C:attention}#2#"
+   ],
+   "unlock": [
+    "Win a run",
+    "without playing",
+    "a {E:1,C:attention}#1#"
    ]
   },
   "j_fibonacci": {
@@ -858,6 +921,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "hand contains a",
     "{C:diamonds}Diamond{} card, {C:clubs}Club{} card,",
     "{C:hearts}Heart{} card, and {C:spades}Spade{} card"
+   ],
+   "unlock": [
+    "Reach Ante",
+    "level {E:1,C:attention}#1#"
    ]
   },
   "j_fortune_teller": {
@@ -892,6 +959,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "for every {C:attention}Glass Card",
     "that is destroyed",
     "{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)"
+   ],
+   "unlock": [
+    "Have at least {E:1,C:attention}#1#",
+    "{E:1,C:attention}#2#s{} in",
+    "your deck"
    ]
   },
   "j_gluttenous_joker": {
@@ -965,6 +1037,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Retrigger {C:attention}first{} played",
     "card used in scoring",
     "{C:attention}#1#{} additional times"
+   ],
+   "unlock": [
+    "Beat a Boss Blind",
+    "with a {E:1,C:attention}#1#"
    ]
   },
   "j_hiker": {
@@ -982,6 +1058,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "for every {C:attention}Jack{}",
     "discarded this round",
     "{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)"
+   ],
+   "unlock": [
+    "Discard {E:1,C:attention}5",
+    "{E:1,C:attention}Jacks{} at the",
+    "same time"
    ]
   },
   "j_hologram": {
@@ -1008,6 +1089,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "of {V:1}#3#{} gives",
     "{X:mult,C:white} X#1# {} Mult when scored",
     "{s:0.8}Card changes every round"
+   ],
+   "unlock": [
+    "In one hand,",
+    "earn at least",
+    "{E:1,C:attention}#1#{} chips"
    ]
   },
   "j_invisible": {
@@ -1017,6 +1103,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "sell this card to",
     "{C:attention}Duplicate{} a random Joker",
     "{C:inactive}(Currently {C:attention}#2#{C:inactive}/#1#)"
+   ],
+   "unlock": [
+    "Win a run without",
+    "ever having more",
+    "than {E:1,C:attention}4 Jokers{}"
    ]
   },
   "j_joker": {
@@ -1111,6 +1202,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Earn {C:money}$#1#{} if played",
     "hand triggers the",
     "{C:attention}Boss Blind{} ability"
+   ],
+   "unlock": [
+    "Defeat a Boss Blind",
+    "in {E:1,C:attention}1 hand{} without",
+    "using any discards"
    ]
   },
   "j_merry_andy": {
@@ -1119,6 +1215,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:red}+#1#{} discards",
     "each round,",
     "{C:red}#2#{} hand size"
+   ],
+   "unlock": [
+    "Win a run in {E:1,C:attention}#1#",
+    "or fewer rounds"
    ]
   },
   "j_midas_mask": {
@@ -1151,6 +1251,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "are at least {C:attention}25%",
     "of required chips",
     "{S:1.1,C:red,E:2}self destructs{}"
+   ],
+   "unlock": [
+    "Lose {C:attention,E:1}#1#{} runs",
+    "{C:inactive}(#2#)"
    ]
   },
   "j_mystic_summit": {
@@ -1186,6 +1290,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Played cards with",
     "{C:clubs}Club{} suit give",
     "{C:mult}+#1#{} Mult when scored"
+   ],
+   "unlock": [
+    "Have at least {E:1,C:attention}#1#",
+    "cards with {E:1,C:attention}#2#",
+    "suit in your deck"
    ]
   },
   "j_oops": {
@@ -1194,6 +1303,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Doubles all {C:attention}listed",
     "{C:green,E:1,S:1.1}probabilities",
     "{C:inactive}(ex: {C:green}1 in 3{C:inactive} -> {C:green}2 in 3{C:inactive})"
+   ],
+   "unlock": [
+    "In one hand,",
+    "earn at least",
+    "{E:1,C:attention}#1#{} chips"
    ]
   },
   "j_order": {
@@ -1202,6 +1316,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{X:mult,C:white} X#1# {} Mult if played",
     "hand contains",
     "a {C:attention}#2#"
+   ],
+   "unlock": [
+    "Win a run",
+    "without playing",
+    "a {E:1,C:attention}#1#"
    ]
   },
   "j_pareidolia": {
@@ -1219,6 +1338,9 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:attention}1{} random {C:attention}consumable{}",
     "card in your possession",
     "at the end of the {C:attention}shop"
+   ],
+   "unlock": [
+    "{E:1,s:1.3}?????"
    ]
   },
   "j_photograph": {
@@ -1295,6 +1417,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:attention}Joker{}, {C:tarot}Tarot{}, {C:planet}Planet{},",
     "and {C:spectral}Spectral{} cards may",
     "appear multiple times"
+   ],
+   "unlock": [
+    "Reach Ante",
+    "level {E:1,C:attention}#1#"
    ]
   },
   "j_rocket": {
@@ -1311,6 +1437,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Played cards with",
     "{C:diamonds}Diamond{} suit earn",
     "{C:money}$#1#{} when scored"
+   ],
+   "unlock": [
+    "Have at least {E:1,C:attention}#1#",
+    "cards with {E:1,C:attention}#2#",
+    "suit in your deck"
    ]
   },
   "j_runner": {
@@ -1329,6 +1460,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "round per unique {C:planet}Planet",
     "card used this run",
     "{C:inactive}(Currently {C:money}$#2#{C:inactive})"
+   ],
+   "unlock": [
+    "Have {E:1,C:money}$#1#",
+    "or more"
    ]
   },
   "j_scary_face": {
@@ -1364,6 +1499,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "hand has a scoring",
     "{C:clubs}Club{} card and a scoring",
     "card of any other {C:attention}suit"
+   ],
+   "unlock": [
+    "Play a hand",
+    "that contains",
+    "{E:1,C:attention}#1#"
    ]
   },
   "j_selzer": {
@@ -1380,6 +1520,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Each {C:attention}Queen{}",
     "held in hand",
     "gives {C:mult}+#1#{} Mult"
+   ],
+   "unlock": [
+    "Play every {E:1,C:attention}Heart",
+    "in your deck in",
+    "a single round"
    ]
   },
   "j_shortcut": {
@@ -1414,6 +1559,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "count as the same suit,",
     "{C:spades}Spades{} and {C:clubs}Clubs",
     "count as the same suit"
+   ],
+   "unlock": [
+    "Have at least {C:attention}#1#",
+    "{E:1,C:attention}#2#{} in",
+    "your deck"
    ]
   },
   "j_smiley": {
@@ -1429,6 +1579,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "Retrigger all",
     "played {C:attention}face{} cards"
+   ],
+   "unlock": [
+    "Play a total of",
+    "{C:attention,E:1}#1#{} face cards",
+    "{C:inactive}(#2#)"
    ]
   },
   "j_space": {
@@ -1487,6 +1642,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "{C:chips}+#1#{} Chips,",
     "{C:attention}-#2#{} hand size"
+   ],
+   "unlock": [
+    "In one hand,",
+    "earn at least",
+    "{E:1,C:attention}#1#{} chips"
    ]
   },
   "j_supernova": {
@@ -1513,6 +1673,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "of all other owned",
     "{C:attention}Jokers{} to Mult",
     "{C:inactive}(Currently {C:mult}+#1#{C:inactive} Mult)"
+   ],
+   "unlock": [
+    "Sell a total of",
+    "{C:attention,E:1}#1#{} Joker cards",
+    "{C:inactive}(#2#)"
    ]
   },
   "j_throwback": {
@@ -1521,6 +1686,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{X:mult,C:white} X#1# {} Mult for each",
     "{C:attention}Blind{} skipped this run",
     "{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)"
+   ],
+   "unlock": [
+    "Continue a saved run",
+    "from the main menu"
    ]
   },
   "j_ticket": {
@@ -1528,6 +1697,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "Played {C:attention}Gold{} cards",
     "earn {C:money}$#1#{} when scored"
+   ],
+   "unlock": [
+    "Play a 5 card hand",
+    "that contains only",
+    "{C:attention,E:1}Gold{} cards"
    ]
   },
   "j_to_the_moon": {
@@ -1561,6 +1735,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{X:mult,C:white} X#1# {} Mult if played",
     "hand contains",
     "a {C:attention}#2#"
+   ],
+   "unlock": [
+    "Win a run",
+    "without playing",
+    "a {E:1,C:attention}#1#"
    ]
   },
   "j_triboulet": {
@@ -1569,6 +1748,9 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Played {C:attention}Kings{} and",
     "{C:attention}Queens{} each give",
     "{X:mult,C:white} X#1# {} Mult when scored"
+   ],
+   "unlock": [
+    "{E:1,s:1.3}?????"
    ]
   },
   "j_trio": {
@@ -1577,6 +1759,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{X:mult,C:white} X#1# {} Mult if played",
     "hand contains",
     "a {C:attention}#2#"
+   ],
+   "unlock": [
+    "Win a run",
+    "without playing",
+    "a {E:1,C:attention}#1#"
    ]
   },
   "j_troubadour": {
@@ -1584,6 +1771,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "{C:attention}+#1#{} hand size,",
     "{C:blue}-#2#{} hand each round"
+   ],
+   "unlock": [
+    "Win {C:attention,E:1}#1#{} consecutive",
+    "rounds by playing",
+    "only 1 hand"
    ]
   },
   "j_trousers": {
@@ -1635,6 +1827,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:chips}+#2#{} Chips when each",
     "played {C:attention}2{} is scored",
     "{C:inactive}(Currently {C:chips}+#1#{C:inactive} Chips)"
+   ],
+   "unlock": [
+    "Win a run in {E:1,C:attention}#1#",
+    "or fewer rounds"
    ]
   },
   "j_wily": {
@@ -1660,6 +1856,9 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{X:mult,C:white} X#1# {} Mult every {C:attention}#2#{C:inactive} [#3#]{}",
     "cards discarded",
     "{C:inactive}(Currently {X:mult,C:white} X#4# {C:inactive} Mult)"
+   ],
+   "unlock": [
+    "{E:1,s:1.3}?????"
    ]
   },
   "j_zany": {
@@ -2780,6 +2979,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "name": "Antimatter",
    "text": [
     "{C:dark_edition}+1{} Joker Slot"
+   ],
+   "unlock": [
+    "Redeem {C:voucher}Blank{}",
+    "{C:attention}#1#{} total times",
+    "{C:inactive}(#2#)"
    ]
   },
   "v_blank": {
@@ -2815,6 +3019,12 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, and",
     "{C:dark_edition}Polychrome{} cards",
     "appear {C:attention}#1#X{} more often"
+   ],
+   "unlock": [
+    "Have at least {C:attention}#1#",
+    "{C:attention}Joker{} cards with",
+    "{C:dark_edition}Foil{}, {C:dark_edition}Holographic{}, or",
+    "{C:dark_edition}Polychrome{} edition"
    ]
   },
   "v_grabber": {
@@ -2847,6 +3057,12 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:attention}Playing cards{} in shop",
     "may have an {C:enhanced}Enhancement{},",
     "{C:dark_edition}Edition{}, and/or a {C:attention}Seal{}"
+   ],
+   "unlock": [
+    "Buy a total of",
+    "{C:attention}#1#{} playing cards",
+    "from the shop",
+    "{C:inactive}(#2#)"
    ]
   },
   "v_liquidation": {
@@ -2854,6 +3070,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "All cards and packs in",
     "shop are {C:attention}#1#%{} off"
+   ],
+   "unlock": [
+    "Redeem at least",
+    "{C:attention}#1#{C:voucher} Voucher{} cards",
+    "in one run"
    ]
   },
   "v_magic_trick": {
@@ -2870,6 +3091,12 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Raise the cap on",
     "interest earned in",
     "each round to {C:money}$#1#{}"
+   ],
+   "unlock": [
+    "Max out the interest",
+    "per round earnings for",
+    "{C:attention}#1#{} consecutive rounds",
+    "{C:inactive}(#2#)"
    ]
   },
   "v_nacho_tong": {
@@ -2878,6 +3105,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Permanently",
     "gain {C:blue}+#1#{} hand",
     "per round"
+   ],
+   "unlock": [
+    "Play a total",
+    "of {C:attention}#1#{} cards",
+    "{C:inactive}(#2#)"
    ]
   },
   "v_observatory": {
@@ -2887,6 +3119,12 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:attention}consumable{} area give",
     "{X:red,C:white} X#1# {} Mult for their",
     "specified {C:attention}poker hand"
+   ],
+   "unlock": [
+    "Use a total of {C:attention}#1#",
+    "{C:planet}Planet{} cards from any",
+    "{C:planet}Celestial Pack",
+    "{C:inactive}(#2#)"
    ]
   },
   "v_omen_globe": {
@@ -2895,6 +3133,12 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:spectral}Spectral{} cards may",
     "appear in any of",
     "the {C:attention}Arcana Packs"
+   ],
+   "unlock": [
+    "Use a total of {C:attention}#1#",
+    "{C:tarot}Tarot{} cards from any",
+    "{C:tarot}Arcana Pack",
+    "{C:inactive}(#2#)"
    ]
   },
   "v_overstock_norm": {
@@ -2909,6 +3153,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "{C:attention}+1{} card slot",
     "available in shop"
+   ],
+   "unlock": [
+    "Spend a total of",
+    "{C:money}$#1#{} at the shop",
+    "{C:inactive}($#2#)"
    ]
   },
   "v_paint_brush": {
@@ -2921,6 +3170,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "name": "Palette",
    "text": [
     "{C:attention}+#1#{} hand size"
+   ],
+   "unlock": [
+    "Reduce hand size",
+    "down to {C:attention}#1#{} cards"
    ]
   },
   "v_petroglyph": {
@@ -2929,6 +3182,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:attention}-#1#{} Ante,",
     "{C:red}-#1#{} discard",
     "each round"
+   ],
+   "unlock": [
+    "Reach Ante",
+    "level {E:1,C:attention}#1#"
    ]
   },
   "v_planet_merchant": {
@@ -2945,6 +3202,12 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:planet}Planet{} cards appear",
     "{C:attention}#1#X{} more frequently",
     "in the shop"
+   ],
+   "unlock": [
+    "Buy a total of",
+    "{C:attention}#1#{C:planet} Planet{} cards",
+    "from the shop",
+    "{C:inactive}(#2#)"
    ]
   },
   "v_recyclomancy": {
@@ -2953,6 +3216,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Permanently",
     "gain {C:red}+#1#{} discard",
     "each round"
+   ],
+   "unlock": [
+    "Discard a total",
+    "of {C:attention}#1#{} cards",
+    "{C:inactive}(#2#)"
    ]
   },
   "v_reroll_glut": {
@@ -2960,6 +3228,11 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
    "text": [
     "Rerolls cost",
     "{C:money}$#1#{} less"
+   ],
+   "unlock": [
+    "Reroll the shop a",
+    "total of {C:attention}#1#{} times",
+    "{C:inactive}(#2#)"
    ]
   },
   "v_reroll_surplus": {
@@ -2975,6 +3248,10 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "Reroll Boss Blind",
     "{C:attention}unlimited{} times,",
     "{C:money}$#1#{} per roll"
+   ],
+   "unlock": [
+    "Discover",
+    "{C:attention}#1#{} Blinds"
    ]
   },
   "v_seed_money": {
@@ -2999,6 +3276,12 @@ export const DESCRIPTIONS: Readonly<Record<string, Readonly<Record<string, { nam
     "{C:tarot}Tarot{} cards appear",
     "{C:attention}#1#X{} more frequently",
     "in the shop"
+   ],
+   "unlock": [
+    "Buy a total of",
+    "{C:attention}#1#{C:tarot} Tarot{} cards",
+    "from the shop",
+    "{C:inactive}(#2#)"
    ]
   },
   "v_telescope": {
@@ -3229,7 +3512,7 @@ export const QUIPS: Readonly<Record<string, readonly string[]>> = {
 };
 
 /** `G.P_CENTERS`（`Game:init_item_prototypes` 原样跑出来的）：提示框读 name / set / effect / rarity / config */
-export const P_CENTERS: Readonly<Record<string, PCenter>> = {"b_abandoned":{"config":{"remove_faces":true},"name":"Abandoned Deck","order":9,"set":"Back","unlocked":false},"b_anaglyph":{"config":{},"name":"Anaglyph Deck","order":13,"set":"Back","unlocked":false},"b_black":{"config":{"hands":-1,"joker_slot":1},"name":"Black Deck","order":5,"set":"Back","unlocked":false},"b_blue":{"config":{"hands":1},"name":"Blue Deck","order":2,"set":"Back","unlocked":false},"b_challenge":{"config":{},"name":"Challenge Deck","order":16,"set":"Back","unlocked":true},"b_checkered":{"config":{},"name":"Checkered Deck","order":10,"set":"Back","unlocked":false},"b_erratic":{"config":{"randomize_rank_suit":true},"name":"Erratic Deck","order":15,"set":"Back","unlocked":false},"b_ghost":{"config":{"consumables":["c_hex"],"spectral_rate":2},"name":"Ghost Deck","order":8,"set":"Back","unlocked":false},"b_green":{"config":{"extra_discard_bonus":1,"extra_hand_bonus":2,"no_interest":true},"name":"Green Deck","order":4,"set":"Back","unlocked":false},"b_magic":{"config":{"consumables":["c_fool","c_fool"],"voucher":"v_crystal_ball"},"name":"Magic Deck","order":6,"set":"Back","unlocked":false},"b_nebula":{"config":{"consumable_slot":-1,"voucher":"v_telescope"},"name":"Nebula Deck","order":7,"set":"Back","unlocked":false},"b_painted":{"config":{"hand_size":2,"joker_slot":-1},"name":"Painted Deck","order":12,"set":"Back","unlocked":false},"b_plasma":{"config":{"ante_scaling":2},"name":"Plasma Deck","order":14,"set":"Back","unlocked":false},"b_red":{"config":{"discards":1},"discovered":true,"name":"Red Deck","order":1,"set":"Back","unlocked":true},"b_yellow":{"config":{"dollars":10},"name":"Yellow Deck","order":3,"set":"Back","unlocked":false},"b_zodiac":{"config":{"vouchers":["v_tarot_merchant","v_planet_merchant","v_overstock_norm"]},"name":"Zodiac Deck","order":11,"set":"Back","unlocked":false},"c_ankh":{"config":{"extra":2},"consumeable":true,"discovered":false,"name":"Ankh","order":11,"set":"Spectral"},"c_aura":{"config":{},"consumeable":true,"discovered":false,"name":"Aura","order":5,"set":"Spectral"},"c_base":{"config":{},"discovered":true,"effect":"Base","name":"Default Base","set":"Default"},"c_black_hole":{"config":{},"consumeable":true,"discovered":false,"name":"Black Hole","order":18,"set":"Spectral"},"c_ceres":{"config":{"hand_type":"Flush House","softlock":true},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Ceres","order":11,"set":"Planet"},"c_chariot":{"config":{"max_highlighted":1,"mod_conv":"m_steel"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Chariot","order":8,"set":"Tarot"},"c_cryptid":{"config":{"extra":2,"max_highlighted":1},"consumeable":true,"discovered":false,"name":"Cryptid","order":16,"set":"Spectral"},"c_death":{"config":{"max_highlighted":2,"min_highlighted":2,"mod_conv":"card"},"consumeable":true,"discovered":false,"effect":"Card Conversion","name":"Death","order":14,"set":"Tarot"},"c_deja_vu":{"config":{"extra":"Red","max_highlighted":1},"consumeable":true,"discovered":false,"name":"Deja Vu","order":12,"set":"Spectral"},"c_devil":{"config":{"max_highlighted":1,"mod_conv":"m_gold"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Devil","order":16,"set":"Tarot"},"c_earth":{"config":{"hand_type":"Full House"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Earth","order":3,"set":"Planet"},"c_ectoplasm":{"config":{},"consumeable":true,"discovered":false,"name":"Ectoplasm","order":9,"set":"Spectral"},"c_emperor":{"config":{"tarots":2},"consumeable":true,"discovered":false,"effect":"Round Bonus","name":"The Emperor","order":5,"set":"Tarot"},"c_empress":{"config":{"max_highlighted":2,"mod_conv":"m_mult"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Empress","order":4,"set":"Tarot"},"c_eris":{"config":{"hand_type":"Flush Five","softlock":true},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Eris","order":12,"set":"Planet"},"c_familiar":{"config":{"extra":3,"remove_card":true},"consumeable":true,"discovered":false,"name":"Familiar","order":1,"set":"Spectral"},"c_fool":{"config":{},"consumeable":true,"discovered":false,"effect":"Disable Blind Effect","name":"The Fool","order":1,"set":"Tarot"},"c_grim":{"config":{"extra":2,"remove_card":true},"consumeable":true,"discovered":false,"name":"Grim","order":2,"set":"Spectral"},"c_hanged_man":{"config":{"max_highlighted":2,"remove_card":true},"consumeable":true,"discovered":false,"effect":"Card Removal","name":"The Hanged Man","order":13,"set":"Tarot"},"c_heirophant":{"config":{"max_highlighted":2,"mod_conv":"m_bonus"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Hierophant","order":6,"set":"Tarot"},"c_hermit":{"config":{"extra":20},"consumeable":true,"discovered":false,"effect":"Dollar Doubler","name":"The Hermit","order":10,"set":"Tarot"},"c_hex":{"config":{"extra":2},"consumeable":true,"discovered":false,"name":"Hex","order":13,"set":"Spectral"},"c_high_priestess":{"config":{"planets":2},"consumeable":true,"discovered":false,"effect":"Round Bonus","name":"The High Priestess","order":3,"set":"Tarot"},"c_immolate":{"config":{"extra":{"destroy":5,"dollars":20},"remove_card":true},"consumeable":true,"discovered":false,"name":"Immolate","order":10,"set":"Spectral"},"c_incantation":{"config":{"extra":4,"remove_card":true},"consumeable":true,"discovered":false,"name":"Incantation","order":3,"set":"Spectral"},"c_judgement":{"config":{},"consumeable":true,"discovered":false,"effect":"Random Joker","name":"Judgement","order":21,"set":"Tarot"},"c_jupiter":{"config":{"hand_type":"Flush"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Jupiter","order":5,"set":"Planet"},"c_justice":{"config":{"max_highlighted":1,"mod_conv":"m_glass"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"Justice","order":9,"set":"Tarot"},"c_lovers":{"config":{"max_highlighted":1,"mod_conv":"m_wild"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Lovers","order":7,"set":"Tarot"},"c_magician":{"config":{"max_highlighted":2,"mod_conv":"m_lucky"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Magician","order":2,"set":"Tarot"},"c_mars":{"config":{"hand_type":"Four of a Kind"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Mars","order":4,"set":"Planet"},"c_medium":{"config":{"extra":"Purple","max_highlighted":1},"consumeable":true,"discovered":false,"name":"Medium","order":15,"set":"Spectral"},"c_mercury":{"config":{"hand_type":"Pair"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Mercury","order":1,"set":"Planet"},"c_moon":{"config":{"max_highlighted":3,"suit_conv":"Clubs"},"consumeable":true,"discovered":false,"effect":"Suit Conversion","name":"The Moon","order":19,"set":"Tarot"},"c_neptune":{"config":{"hand_type":"Straight Flush"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Neptune","order":8,"set":"Planet"},"c_ouija":{"config":{},"consumeable":true,"discovered":false,"name":"Ouija","order":8,"set":"Spectral"},"c_planet_x":{"config":{"hand_type":"Five of a Kind","softlock":true},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Planet X","order":10,"set":"Planet"},"c_pluto":{"config":{"hand_type":"High Card"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Pluto","order":9,"set":"Planet"},"c_saturn":{"config":{"hand_type":"Straight"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Saturn","order":6,"set":"Planet"},"c_sigil":{"config":{},"consumeable":true,"discovered":false,"name":"Sigil","order":7,"set":"Spectral"},"c_soul":{"config":{},"consumeable":true,"discovered":false,"effect":"Unlocker","name":"The Soul","order":17,"set":"Spectral"},"c_star":{"config":{"max_highlighted":3,"suit_conv":"Diamonds"},"consumeable":true,"discovered":false,"effect":"Suit Conversion","name":"The Star","order":18,"set":"Tarot"},"c_strength":{"config":{"max_highlighted":2,"mod_conv":"up_rank"},"consumeable":true,"discovered":false,"effect":"Round Bonus","name":"Strength","order":12,"set":"Tarot"},"c_sun":{"config":{"max_highlighted":3,"suit_conv":"Hearts"},"consumeable":true,"discovered":false,"effect":"Suit Conversion","name":"The Sun","order":20,"set":"Tarot"},"c_talisman":{"config":{"extra":"Gold","max_highlighted":1},"consumeable":true,"discovered":false,"name":"Talisman","order":4,"set":"Spectral"},"c_temperance":{"config":{"extra":50},"consumeable":true,"discovered":false,"effect":"Joker Payout","name":"Temperance","order":15,"set":"Tarot"},"c_tower":{"config":{"max_highlighted":1,"mod_conv":"m_stone"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Tower","order":17,"set":"Tarot"},"c_trance":{"config":{"extra":"Blue","max_highlighted":1},"consumeable":true,"discovered":false,"name":"Trance","order":14,"set":"Spectral"},"c_uranus":{"config":{"hand_type":"Two Pair"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Uranus","order":7,"set":"Planet"},"c_venus":{"config":{"hand_type":"Three of a Kind"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Venus","order":2,"set":"Planet"},"c_wheel_of_fortune":{"config":{"extra":4},"consumeable":true,"discovered":false,"effect":"Round Bonus","name":"The Wheel of Fortune","order":11,"set":"Tarot"},"c_world":{"config":{"max_highlighted":3,"suit_conv":"Spades"},"consumeable":true,"discovered":false,"effect":"Suit Conversion","name":"The World","order":22,"set":"Tarot"},"c_wraith":{"config":{},"consumeable":true,"discovered":false,"name":"Wraith","order":6,"set":"Spectral"},"e_base":{"config":{},"discovered":false,"name":"Base","order":1,"set":"Edition","unlocked":true},"e_foil":{"config":{"extra":50},"discovered":false,"name":"Foil","order":2,"set":"Edition","unlocked":true},"e_holo":{"config":{"extra":10},"discovered":false,"name":"Holographic","order":3,"set":"Edition","unlocked":true},"e_negative":{"config":{"extra":1},"discovered":false,"name":"Negative","order":5,"set":"Edition","unlocked":true},"e_polychrome":{"config":{"extra":1.5},"discovered":false,"name":"Polychrome","order":4,"set":"Edition","unlocked":true},"j_8_ball":{"config":{"extra":4},"discovered":false,"effect":"Spawn Tarot","name":"8 Ball","order":26,"rarity":1,"set":"Joker","unlocked":true},"j_abstract":{"config":{"extra":3},"discovered":false,"effect":"Joker Mult","name":"Abstract Joker","order":34,"rarity":1,"set":"Joker","unlocked":true},"j_acrobat":{"config":{"extra":3},"discovered":false,"effect":"Shop size","name":"Acrobat","order":108,"rarity":2,"set":"Joker","unlocked":false},"j_ancient":{"config":{"extra":1.5},"discovered":false,"name":"Ancient Joker","order":99,"rarity":3,"set":"Joker","unlocked":true},"j_arrowhead":{"config":{"extra":50},"discovered":false,"effect":"","name":"Arrowhead","order":118,"rarity":2,"set":"Joker","unlocked":false},"j_astronomer":{"config":{},"discovered":false,"effect":"","name":"Astronomer","order":143,"rarity":2,"set":"Joker","unlocked":false},"j_banner":{"config":{"extra":30},"discovered":false,"effect":"Discard Chips","name":"Banner","order":22,"rarity":1,"set":"Joker","unlocked":true},"j_baron":{"config":{"extra":1.5},"discovered":false,"name":"Baron","order":72,"rarity":3,"set":"Joker","unlocked":true},"j_baseball":{"config":{"extra":1.5},"discovered":false,"name":"Baseball Card","order":92,"rarity":3,"set":"Joker","unlocked":true},"j_blackboard":{"config":{"extra":3},"discovered":false,"name":"Blackboard","order":48,"rarity":2,"set":"Joker","unlocked":true},"j_bloodstone":{"config":{"extra":{"Xmult":1.5,"odds":2}},"discovered":false,"effect":"","name":"Bloodstone","order":117,"rarity":2,"set":"Joker","unlocked":false},"j_blue_joker":{"config":{"extra":2},"discovered":false,"name":"Blue Joker","order":53,"rarity":1,"set":"Joker","unlocked":true},"j_blueprint":{"config":{},"discovered":false,"effect":"Copycat","name":"Blueprint","order":123,"rarity":3,"set":"Joker","unlocked":false},"j_bootstraps":{"config":{"extra":{"dollars":5,"mult":2}},"discovered":false,"effect":"","name":"Bootstraps","order":145,"rarity":2,"set":"Joker","unlocked":false},"j_brainstorm":{"config":{},"discovered":false,"effect":"Copycat","name":"Brainstorm","order":138,"rarity":3,"set":"Joker","unlocked":false},"j_bull":{"config":{"extra":2},"discovered":false,"name":"Bull","order":93,"rarity":2,"set":"Joker","unlocked":true},"j_burglar":{"config":{"extra":3},"discovered":false,"name":"Burglar","order":47,"rarity":2,"set":"Joker","unlocked":true},"j_burnt":{"config":{"extra":4,"h_size":0},"discovered":false,"effect":"","name":"Burnt Joker","order":144,"rarity":3,"set":"Joker","unlocked":false},"j_business":{"config":{"extra":2},"discovered":false,"effect":"Face Card dollar Chance","name":"Business Card","order":42,"rarity":1,"set":"Joker","unlocked":true},"j_caino":{"config":{"extra":1},"discovered":false,"effect":"","name":"Caino","order":146,"rarity":4,"set":"Joker","unlocked":false},"j_campfire":{"config":{"extra":0.25},"discovered":false,"name":"Campfire","order":105,"rarity":3,"set":"Joker","unlocked":true},"j_card_sharp":{"config":{"extra":{"Xmult":3}},"discovered":false,"name":"Card Sharp","order":62,"rarity":2,"set":"Joker","unlocked":true},"j_cartomancer":{"config":{},"discovered":false,"effect":"Tarot Buff","name":"Cartomancer","order":142,"rarity":2,"set":"Joker","unlocked":false},"j_castle":{"config":{"extra":{"chip_mod":3,"chips":0}},"discovered":false,"name":"Castle","order":103,"rarity":2,"set":"Joker","unlocked":true},"j_cavendish":{"config":{"extra":{"Xmult":3,"odds":1000}},"discovered":false,"name":"Cavendish","order":61,"rarity":1,"set":"Joker","unlocked":true},"j_ceremonial":{"config":{"mult":0},"discovered":false,"effect":"","name":"Ceremonial Dagger","order":21,"rarity":2,"set":"Joker","unlocked":true},"j_certificate":{"config":{},"discovered":false,"effect":"","name":"Certificate","order":112,"rarity":2,"set":"Joker","unlocked":false},"j_chaos":{"config":{"extra":1},"discovered":false,"effect":"Bonus Rerolls","name":"Chaos the Clown","order":30,"rarity":1,"set":"Joker","unlocked":true},"j_chicot":{"config":{},"discovered":false,"effect":"","name":"Chicot","order":149,"rarity":4,"set":"Joker","unlocked":false},"j_clever":{"config":{"t_chips":80,"type":"Two Pair"},"discovered":false,"name":"Clever Joker","order":13,"rarity":1,"set":"Joker","unlocked":true},"j_cloud_9":{"config":{"extra":1},"discovered":false,"name":"Cloud 9","order":73,"rarity":2,"set":"Joker","unlocked":true},"j_constellation":{"config":{"Xmult":1,"extra":0.1},"discovered":false,"name":"Constellation","order":55,"rarity":2,"set":"Joker","unlocked":true},"j_crafty":{"config":{"t_chips":80,"type":"Flush"},"discovered":false,"name":"Crafty Joker","order":15,"rarity":1,"set":"Joker","unlocked":true},"j_crazy":{"config":{"t_mult":12,"type":"Straight"},"discovered":false,"effect":"Type Mult","name":"Crazy Joker","order":9,"rarity":1,"set":"Joker","unlocked":true},"j_credit_card":{"config":{"extra":20},"discovered":false,"effect":"Credit","name":"Credit Card","order":20,"rarity":1,"set":"Joker","unlocked":true},"j_delayed_grat":{"config":{"extra":2},"discovered":false,"effect":"Discard dollars","name":"Delayed Gratification","order":35,"rarity":1,"set":"Joker","unlocked":true},"j_devious":{"config":{"t_chips":100,"type":"Straight"},"discovered":false,"name":"Devious Joker","order":14,"rarity":1,"set":"Joker","unlocked":true},"j_diet_cola":{"config":{},"discovered":false,"name":"Diet Cola","order":94,"rarity":2,"set":"Joker","unlocked":true},"j_dna":{"config":{},"discovered":false,"name":"DNA","order":51,"rarity":3,"set":"Joker","unlocked":true},"j_drivers_license":{"config":{"extra":3},"discovered":false,"effect":"","name":"Driver's License","order":141,"rarity":3,"set":"Joker","unlocked":false},"j_droll":{"config":{"t_mult":10,"type":"Flush"},"discovered":false,"effect":"Type Mult","name":"Droll Joker","order":10,"rarity":1,"set":"Joker","unlocked":true},"j_drunkard":{"config":{"d_size":1},"discovered":false,"effect":"Discard Size","name":"Drunkard","order":88,"rarity":1,"set":"Joker","unlocked":true},"j_duo":{"config":{"Xmult":2,"type":"Pair"},"discovered":false,"effect":"X1.5 Mult","name":"The Duo","order":131,"rarity":3,"set":"Joker","unlocked":false},"j_dusk":{"config":{"extra":1},"discovered":false,"effect":"","name":"Dusk","order":28,"rarity":2,"set":"Joker","unlocked":true},"j_egg":{"config":{"extra":3},"discovered":false,"name":"Egg","order":46,"rarity":1,"set":"Joker","unlocked":true},"j_erosion":{"config":{"extra":4},"discovered":false,"name":"Erosion","order":81,"rarity":2,"set":"Joker","unlocked":true},"j_even_steven":{"config":{"extra":4},"discovered":false,"effect":"Even Card Buff","name":"Even Steven","order":39,"rarity":1,"set":"Joker","unlocked":true},"j_faceless":{"config":{"extra":{"dollars":5,"faces":3}},"discovered":false,"name":"Faceless Joker","order":57,"rarity":1,"set":"Joker","unlocked":true},"j_family":{"config":{"Xmult":4,"type":"Four of a Kind"},"discovered":false,"effect":"X3 Mult","name":"The Family","order":133,"rarity":3,"set":"Joker","unlocked":false},"j_fibonacci":{"config":{"extra":8},"discovered":false,"effect":"Card Mult","name":"Fibonacci","order":31,"rarity":2,"set":"Joker","unlocked":true},"j_flash":{"config":{"extra":2,"mult":0},"discovered":false,"name":"Flash Card","order":96,"rarity":2,"set":"Joker","unlocked":true},"j_flower_pot":{"config":{"extra":3},"discovered":false,"effect":"","name":"Flower Pot","order":122,"rarity":2,"set":"Joker","unlocked":false},"j_fortune_teller":{"config":{"extra":1},"discovered":false,"effect":"","name":"Fortune Teller","order":86,"rarity":1,"set":"Joker","unlocked":true},"j_four_fingers":{"config":{},"discovered":false,"effect":"","name":"Four Fingers","order":18,"rarity":2,"set":"Joker","unlocked":true},"j_gift":{"config":{"extra":1},"discovered":false,"name":"Gift Card","order":79,"rarity":2,"set":"Joker","unlocked":true},"j_glass":{"config":{"Xmult":1,"extra":0.75},"discovered":false,"effect":"Glass Card","name":"Glass Joker","order":120,"rarity":2,"set":"Joker","unlocked":false},"j_gluttenous_joker":{"config":{"extra":{"s_mult":3,"suit":"Clubs"}},"discovered":false,"effect":"Suit Mult","name":"Gluttonous Joker","order":5,"rarity":1,"set":"Joker","unlocked":true},"j_golden":{"config":{"extra":4},"discovered":false,"effect":"Bonus dollars","name":"Golden Joker","order":90,"rarity":1,"set":"Joker","unlocked":true},"j_greedy_joker":{"config":{"extra":{"s_mult":3,"suit":"Diamonds"}},"discovered":false,"effect":"Suit Mult","name":"Greedy Joker","order":2,"rarity":1,"set":"Joker","unlocked":true},"j_green_joker":{"config":{"extra":{"discard_sub":1,"hand_add":1}},"discovered":false,"name":"Green Joker","order":58,"rarity":1,"set":"Joker","unlocked":true},"j_gros_michel":{"config":{"extra":{"mult":15,"odds":6}},"discovered":false,"effect":"","name":"Gros Michel","order":38,"rarity":1,"set":"Joker","unlocked":true},"j_hack":{"config":{"extra":1},"discovered":false,"effect":"Low Card double","name":"Hack","order":36,"rarity":2,"set":"Joker","unlocked":true},"j_half":{"config":{"extra":{"mult":20,"size":3}},"discovered":false,"effect":"Hand Size Mult","name":"Half Joker","order":16,"rarity":1,"set":"Joker","unlocked":true},"j_hallucination":{"config":{"extra":2},"discovered":false,"name":"Hallucination","order":85,"rarity":1,"set":"Joker","unlocked":true},"j_hanging_chad":{"config":{"extra":2},"discovered":false,"effect":"","name":"Hanging Chad","order":115,"rarity":1,"set":"Joker","unlocked":false},"j_hiker":{"config":{"extra":5},"discovered":false,"name":"Hiker","order":56,"rarity":2,"set":"Joker","unlocked":true},"j_hit_the_road":{"config":{"extra":0.5},"discovered":false,"effect":"Jack Discard Effect","name":"Hit the Road","order":130,"rarity":3,"set":"Joker","unlocked":false},"j_hologram":{"config":{"Xmult":1,"extra":0.25},"discovered":false,"name":"Hologram","order":70,"rarity":2,"set":"Joker","unlocked":true},"j_ice_cream":{"config":{"extra":{"chip_mod":5,"chips":100}},"discovered":false,"name":"Ice Cream","order":50,"rarity":1,"set":"Joker","unlocked":true},"j_idol":{"config":{"extra":2},"discovered":false,"effect":"","name":"The Idol","order":127,"rarity":2,"set":"Joker","unlocked":false},"j_invisible":{"config":{"extra":2},"discovered":false,"effect":"","name":"Invisible Joker","order":137,"rarity":3,"set":"Joker","unlocked":false},"j_joker":{"config":{"mult":4},"discovered":true,"effect":"Mult","name":"Joker","order":1,"rarity":1,"set":"Joker","unlocked":true},"j_jolly":{"config":{"t_mult":8,"type":"Pair"},"discovered":false,"effect":"Type Mult","name":"Jolly Joker","order":6,"rarity":1,"set":"Joker","unlocked":true},"j_juggler":{"config":{"h_size":1},"discovered":false,"effect":"Hand Size","name":"Juggler","order":87,"rarity":1,"set":"Joker","unlocked":true},"j_loyalty_card":{"config":{"extra":{"Xmult":4,"every":5,"remaining":"5 remaining"}},"discovered":false,"effect":"1 in 10 mult","name":"Loyalty Card","order":25,"rarity":2,"set":"Joker","unlocked":true},"j_luchador":{"config":{},"discovered":false,"name":"Luchador","order":77,"rarity":2,"set":"Joker","unlocked":true},"j_lucky_cat":{"config":{"Xmult":1,"extra":0.25},"discovered":false,"name":"Lucky Cat","order":91,"rarity":2,"set":"Joker","unlocked":true},"j_lusty_joker":{"config":{"extra":{"s_mult":3,"suit":"Hearts"}},"discovered":false,"effect":"Suit Mult","name":"Lusty Joker","order":3,"rarity":1,"set":"Joker","unlocked":true},"j_mad":{"config":{"t_mult":10,"type":"Two Pair"},"discovered":false,"effect":"Type Mult","name":"Mad Joker","order":8,"rarity":1,"set":"Joker","unlocked":true},"j_madness":{"config":{"extra":0.5},"discovered":false,"name":"Madness","order":64,"rarity":2,"set":"Joker","unlocked":true},"j_mail":{"config":{"extra":5},"discovered":false,"name":"Mail-In Rebate","order":83,"rarity":1,"set":"Joker","unlocked":true},"j_marble":{"config":{"extra":1},"discovered":false,"effect":"Stone card hands","name":"Marble Joker","order":24,"rarity":2,"set":"Joker","unlocked":true},"j_matador":{"config":{"extra":8},"discovered":false,"effect":"","name":"Matador","order":129,"rarity":2,"set":"Joker","unlocked":false},"j_merry_andy":{"config":{"d_size":3,"h_size":-1},"discovered":false,"effect":"","name":"Merry Andy","order":125,"rarity":2,"set":"Joker","unlocked":false},"j_midas_mask":{"config":{},"discovered":false,"name":"Midas Mask","order":76,"rarity":2,"set":"Joker","unlocked":true},"j_mime":{"config":{"extra":1},"discovered":false,"effect":"Hand card double","name":"Mime","order":19,"rarity":2,"set":"Joker","unlocked":true},"j_misprint":{"config":{"extra":{"max":23,"min":0}},"discovered":false,"effect":"Random Mult","name":"Misprint","order":27,"rarity":1,"set":"Joker","unlocked":true},"j_mr_bones":{"config":{},"discovered":false,"effect":"Prevent Death","name":"Mr. Bones","order":107,"rarity":2,"set":"Joker","unlocked":false},"j_mystic_summit":{"config":{"extra":{"d_remaining":0,"mult":15}},"discovered":false,"effect":"No Discard Mult","name":"Mystic Summit","order":23,"rarity":1,"set":"Joker","unlocked":true},"j_obelisk":{"config":{"Xmult":1,"extra":0.2},"discovered":false,"name":"Obelisk","order":75,"rarity":3,"set":"Joker","unlocked":true},"j_odd_todd":{"config":{"extra":31},"discovered":false,"effect":"Odd Card Buff","name":"Odd Todd","order":40,"rarity":1,"set":"Joker","unlocked":true},"j_onyx_agate":{"config":{"extra":7},"discovered":false,"effect":"","name":"Onyx Agate","order":119,"rarity":2,"set":"Joker","unlocked":false},"j_oops":{"config":{},"discovered":false,"effect":"","name":"Oops! All 6s","order":126,"rarity":2,"set":"Joker","unlocked":false},"j_order":{"config":{"Xmult":3,"type":"Straight"},"discovered":false,"effect":"X3 Mult","name":"The Order","order":134,"rarity":3,"set":"Joker","unlocked":false},"j_pareidolia":{"config":{},"discovered":false,"effect":"All face cards","name":"Pareidolia","order":37,"rarity":2,"set":"Joker","unlocked":true},"j_perkeo":{"config":{},"discovered":false,"effect":"","name":"Perkeo","order":150,"rarity":4,"set":"Joker","unlocked":false},"j_photograph":{"config":{"extra":2},"discovered":false,"name":"Photograph","order":78,"rarity":1,"set":"Joker","unlocked":true},"j_popcorn":{"config":{"extra":4,"mult":20},"discovered":false,"name":"Popcorn","order":97,"rarity":1,"set":"Joker","unlocked":true},"j_raised_fist":{"config":{},"discovered":false,"effect":"Socialized Mult","name":"Raised Fist","order":29,"rarity":1,"set":"Joker","unlocked":true},"j_ramen":{"config":{"Xmult":2,"extra":0.01},"discovered":false,"name":"Ramen","order":100,"rarity":2,"set":"Joker","unlocked":true},"j_red_card":{"config":{"extra":3},"discovered":false,"name":"Red Card","order":63,"rarity":1,"set":"Joker","unlocked":true},"j_reserved_parking":{"config":{"extra":{"dollars":1,"odds":2}},"discovered":false,"name":"Reserved Parking","order":82,"rarity":1,"set":"Joker","unlocked":true},"j_ride_the_bus":{"config":{"extra":1},"discovered":false,"effect":"","name":"Ride the Bus","order":44,"rarity":1,"set":"Joker","unlocked":true},"j_riff_raff":{"config":{"extra":2},"discovered":false,"name":"Riff-raff","order":67,"rarity":1,"set":"Joker","unlocked":true},"j_ring_master":{"config":{},"discovered":false,"effect":"","name":"Showman","order":121,"rarity":2,"set":"Joker","unlocked":false},"j_rocket":{"config":{"extra":{"dollars":1,"increase":2}},"discovered":false,"name":"Rocket","order":74,"rarity":2,"set":"Joker","unlocked":true},"j_rough_gem":{"config":{"extra":1},"discovered":false,"effect":"","name":"Rough Gem","order":116,"rarity":2,"set":"Joker","unlocked":false},"j_runner":{"config":{"extra":{"chip_mod":15,"chips":0}},"discovered":false,"name":"Runner","order":49,"rarity":1,"set":"Joker","unlocked":true},"j_satellite":{"config":{"extra":1},"discovered":false,"effect":"","name":"Satellite","order":139,"rarity":2,"set":"Joker","unlocked":false},"j_scary_face":{"config":{"extra":30},"discovered":false,"effect":"Scary Face Cards","name":"Scary Face","order":33,"rarity":1,"set":"Joker","unlocked":true},"j_scholar":{"config":{"extra":{"chips":20,"mult":4}},"discovered":false,"effect":"Ace Buff","name":"Scholar","order":41,"rarity":1,"set":"Joker","unlocked":true},"j_seance":{"config":{"extra":{"poker_hand":"Straight Flush"}},"discovered":false,"name":"Seance","order":66,"rarity":2,"set":"Joker","unlocked":true},"j_seeing_double":{"config":{"extra":2},"discovered":false,"effect":"X1.5 Mult club 7","name":"Seeing Double","order":128,"rarity":2,"set":"Joker","unlocked":false},"j_selzer":{"config":{"extra":10},"discovered":false,"name":"Seltzer","order":102,"rarity":2,"set":"Joker","unlocked":true},"j_shoot_the_moon":{"config":{"extra":13},"discovered":false,"effect":"","name":"Shoot the Moon","order":140,"rarity":1,"set":"Joker","unlocked":false},"j_shortcut":{"config":{},"discovered":false,"name":"Shortcut","order":69,"rarity":2,"set":"Joker","unlocked":true},"j_sixth_sense":{"config":{},"discovered":false,"name":"Sixth Sense","order":54,"rarity":2,"set":"Joker","unlocked":true},"j_sly":{"config":{"t_chips":50,"type":"Pair"},"discovered":false,"name":"Sly Joker","order":11,"rarity":1,"set":"Joker","unlocked":true},"j_smeared":{"config":{},"discovered":false,"effect":"","name":"Smeared Joker","order":113,"rarity":2,"set":"Joker","unlocked":false},"j_smiley":{"config":{"extra":5},"discovered":false,"name":"Smiley Face","order":104,"rarity":1,"set":"Joker","unlocked":true},"j_sock_and_buskin":{"config":{"extra":1},"discovered":false,"effect":"Face card double","name":"Sock and Buskin","order":109,"rarity":2,"set":"Joker","unlocked":false},"j_space":{"config":{"extra":4},"discovered":false,"effect":"Upgrade Hand chance","name":"Space Joker","order":45,"rarity":2,"set":"Joker","unlocked":true},"j_splash":{"config":{},"discovered":false,"name":"Splash","order":52,"rarity":1,"set":"Joker","unlocked":true},"j_square":{"config":{"extra":{"chip_mod":4,"chips":0}},"discovered":false,"name":"Square Joker","order":65,"rarity":1,"set":"Joker","unlocked":true},"j_steel_joker":{"config":{"extra":0.2},"discovered":false,"effect":"Steel Card Buff","name":"Steel Joker","order":32,"rarity":2,"set":"Joker","unlocked":true},"j_stencil":{"config":{},"discovered":false,"effect":"Hand Size Mult","name":"Joker Stencil","order":17,"rarity":2,"set":"Joker","unlocked":true},"j_stone":{"config":{"extra":25},"discovered":false,"effect":"Stone Card Buff","name":"Stone Joker","order":89,"rarity":2,"set":"Joker","unlocked":true},"j_stuntman":{"config":{"extra":{"chip_mod":250,"h_size":2}},"discovered":false,"effect":"","name":"Stuntman","order":136,"rarity":3,"set":"Joker","unlocked":false},"j_supernova":{"config":{"extra":1},"discovered":false,"effect":"Hand played mult","name":"Supernova","order":43,"rarity":1,"set":"Joker","unlocked":true},"j_superposition":{"config":{},"discovered":false,"name":"Superposition","order":59,"rarity":1,"set":"Joker","unlocked":true},"j_swashbuckler":{"config":{"mult":1},"discovered":false,"effect":"Set Mult","name":"Swashbuckler","order":110,"rarity":1,"set":"Joker","unlocked":false},"j_throwback":{"config":{"extra":0.25},"discovered":false,"effect":"","name":"Throwback","order":114,"rarity":2,"set":"Joker","unlocked":false},"j_ticket":{"config":{"extra":4},"discovered":false,"effect":"dollars for Gold cards","name":"Golden Ticket","order":106,"rarity":1,"set":"Joker","unlocked":false},"j_to_the_moon":{"config":{"extra":1},"discovered":false,"name":"To the Moon","order":84,"rarity":2,"set":"Joker","unlocked":true},"j_todo_list":{"config":{"extra":{"dollars":4,"poker_hand":"High Card"}},"discovered":false,"name":"To Do List","order":60,"rarity":1,"set":"Joker","unlocked":true},"j_trading":{"config":{"extra":3},"discovered":false,"name":"Trading Card","order":95,"rarity":2,"set":"Joker","unlocked":true},"j_tribe":{"config":{"Xmult":2,"type":"Flush"},"discovered":false,"effect":"X3 Mult","name":"The Tribe","order":135,"rarity":3,"set":"Joker","unlocked":false},"j_triboulet":{"config":{"extra":2},"discovered":false,"effect":"","name":"Triboulet","order":147,"rarity":4,"set":"Joker","unlocked":false},"j_trio":{"config":{"Xmult":3,"type":"Three of a Kind"},"discovered":false,"effect":"X2 Mult","name":"The Trio","order":132,"rarity":3,"set":"Joker","unlocked":false},"j_troubadour":{"config":{"extra":{"h_plays":-1,"h_size":2}},"discovered":false,"effect":"Hand Size, Plays","name":"Troubadour","order":111,"rarity":2,"set":"Joker","unlocked":false},"j_trousers":{"config":{"extra":2},"discovered":false,"name":"Spare Trousers","order":98,"rarity":2,"set":"Joker","unlocked":true},"j_turtle_bean":{"config":{"extra":{"h_mod":1,"h_size":5}},"discovered":false,"name":"Turtle Bean","order":80,"rarity":2,"set":"Joker","unlocked":true},"j_vagabond":{"config":{"extra":4},"discovered":false,"name":"Vagabond","order":71,"rarity":3,"set":"Joker","unlocked":true},"j_vampire":{"config":{"Xmult":1,"extra":0.1},"discovered":false,"name":"Vampire","order":68,"rarity":2,"set":"Joker","unlocked":true},"j_walkie_talkie":{"config":{"extra":{"chips":10,"mult":4}},"discovered":false,"name":"Walkie Talkie","order":101,"rarity":1,"set":"Joker","unlocked":true},"j_wee":{"config":{"extra":{"chip_mod":8,"chips":0}},"discovered":false,"effect":"","name":"Wee Joker","order":124,"rarity":3,"set":"Joker","unlocked":false},"j_wily":{"config":{"t_chips":100,"type":"Three of a Kind"},"discovered":false,"name":"Wily Joker","order":12,"rarity":1,"set":"Joker","unlocked":true},"j_wrathful_joker":{"config":{"extra":{"s_mult":3,"suit":"Spades"}},"discovered":false,"effect":"Suit Mult","name":"Wrathful Joker","order":4,"rarity":1,"set":"Joker","unlocked":true},"j_yorick":{"config":{"extra":{"discards":23,"xmult":1}},"discovered":false,"effect":"","name":"Yorick","order":148,"rarity":4,"set":"Joker","unlocked":false},"j_zany":{"config":{"t_mult":12,"type":"Three of a Kind"},"discovered":false,"effect":"Type Mult","name":"Zany Joker","order":7,"rarity":1,"set":"Joker","unlocked":true},"m_bonus":{"config":{"bonus":30},"effect":"Bonus Card","name":"Bonus","order":2,"set":"Enhanced"},"m_glass":{"config":{"Xmult":2,"extra":4},"effect":"Glass Card","name":"Glass Card","order":5,"set":"Enhanced"},"m_gold":{"config":{"h_dollars":3},"effect":"Gold Card","name":"Gold Card","order":8,"set":"Enhanced"},"m_lucky":{"config":{"mult":20,"p_dollars":20},"effect":"Lucky Card","name":"Lucky Card","order":9,"set":"Enhanced"},"m_mult":{"config":{"mult":4},"effect":"Mult Card","name":"Mult","order":3,"set":"Enhanced"},"m_steel":{"config":{"h_x_mult":1.5},"effect":"Steel Card","name":"Steel Card","order":6,"set":"Enhanced"},"m_stone":{"config":{"bonus":50},"effect":"Stone Card","name":"Stone Card","order":7,"set":"Enhanced"},"m_wild":{"config":{},"effect":"Wild Card","name":"Wild Card","order":4,"set":"Enhanced"},"p_arcana_jumbo_1":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Arcana Pack","order":5,"set":"Booster"},"p_arcana_jumbo_2":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Arcana Pack","order":6,"set":"Booster"},"p_arcana_mega_1":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Arcana Pack","order":7,"set":"Booster"},"p_arcana_mega_2":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Arcana Pack","order":8,"set":"Booster"},"p_arcana_normal_1":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Arcana Pack","order":1,"set":"Booster"},"p_arcana_normal_2":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Arcana Pack","order":2,"set":"Booster"},"p_arcana_normal_3":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Arcana Pack","order":3,"set":"Booster"},"p_arcana_normal_4":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Arcana Pack","order":4,"set":"Booster"},"p_buffoon_jumbo_1":{"config":{"choose":1,"extra":4},"discovered":false,"name":"Jumbo Buffoon Pack","order":27,"set":"Booster"},"p_buffoon_mega_1":{"config":{"choose":2,"extra":4},"discovered":false,"name":"Mega Buffoon Pack","order":28,"set":"Booster"},"p_buffoon_normal_1":{"config":{"choose":1,"extra":2},"discovered":false,"name":"Buffoon Pack","order":25,"set":"Booster"},"p_buffoon_normal_2":{"config":{"choose":1,"extra":2},"discovered":false,"name":"Buffoon Pack","order":26,"set":"Booster"},"p_celestial_jumbo_1":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Celestial Pack","order":13,"set":"Booster"},"p_celestial_jumbo_2":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Celestial Pack","order":14,"set":"Booster"},"p_celestial_mega_1":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Celestial Pack","order":15,"set":"Booster"},"p_celestial_mega_2":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Celestial Pack","order":16,"set":"Booster"},"p_celestial_normal_1":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Celestial Pack","order":9,"set":"Booster"},"p_celestial_normal_2":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Celestial Pack","order":10,"set":"Booster"},"p_celestial_normal_3":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Celestial Pack","order":11,"set":"Booster"},"p_celestial_normal_4":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Celestial Pack","order":12,"set":"Booster"},"p_spectral_jumbo_1":{"config":{"choose":1,"extra":4},"discovered":false,"name":"Jumbo Spectral Pack","order":31,"set":"Booster"},"p_spectral_mega_1":{"config":{"choose":2,"extra":4},"discovered":false,"name":"Mega Spectral Pack","order":32,"set":"Booster"},"p_spectral_normal_1":{"config":{"choose":1,"extra":2},"discovered":false,"name":"Spectral Pack","order":29,"set":"Booster"},"p_spectral_normal_2":{"config":{"choose":1,"extra":2},"discovered":false,"name":"Spectral Pack","order":30,"set":"Booster"},"p_standard_jumbo_1":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Standard Pack","order":21,"set":"Booster"},"p_standard_jumbo_2":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Standard Pack","order":22,"set":"Booster"},"p_standard_mega_1":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Standard Pack","order":23,"set":"Booster"},"p_standard_mega_2":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Standard Pack","order":24,"set":"Booster"},"p_standard_normal_1":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Standard Pack","order":17,"set":"Booster"},"p_standard_normal_2":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Standard Pack","order":18,"set":"Booster"},"p_standard_normal_3":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Standard Pack","order":19,"set":"Booster"},"p_standard_normal_4":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Standard Pack","order":20,"set":"Booster"},"v_antimatter":{"config":{"extra":15},"discovered":false,"name":"Antimatter","order":24,"set":"Voucher","unlocked":false},"v_blank":{"config":{"extra":5},"discovered":false,"name":"Blank","order":23,"set":"Voucher","unlocked":true},"v_clearance_sale":{"config":{"extra":25},"discovered":false,"name":"Clearance Sale","order":3,"set":"Voucher","unlocked":true},"v_crystal_ball":{"config":{"extra":3},"discovered":false,"name":"Crystal Ball","order":9,"set":"Voucher","unlocked":true},"v_directors_cut":{"config":{"extra":10},"discovered":false,"name":"Director's Cut","order":29,"set":"Voucher","unlocked":true},"v_glow_up":{"config":{"extra":4},"discovered":false,"name":"Glow Up","order":6,"set":"Voucher","unlocked":false},"v_grabber":{"config":{"extra":1},"discovered":false,"name":"Grabber","order":13,"set":"Voucher","unlocked":true},"v_hieroglyph":{"config":{"extra":1},"discovered":false,"name":"Hieroglyph","order":27,"set":"Voucher","unlocked":true},"v_hone":{"config":{"extra":2},"discovered":false,"name":"Hone","order":5,"set":"Voucher","unlocked":true},"v_illusion":{"config":{"extra":4},"discovered":false,"name":"Illusion","order":26,"set":"Voucher","unlocked":false},"v_liquidation":{"config":{"extra":50},"discovered":false,"name":"Liquidation","order":4,"set":"Voucher","unlocked":false},"v_magic_trick":{"config":{"extra":4},"discovered":false,"name":"Magic Trick","order":25,"set":"Voucher","unlocked":true},"v_money_tree":{"config":{"extra":100},"discovered":false,"name":"Money Tree","order":22,"set":"Voucher","unlocked":false},"v_nacho_tong":{"config":{"extra":1},"discovered":false,"name":"Nacho Tong","order":14,"set":"Voucher","unlocked":false},"v_observatory":{"config":{"extra":1.5},"discovered":false,"name":"Observatory","order":12,"set":"Voucher","unlocked":false},"v_omen_globe":{"config":{"extra":4},"discovered":false,"name":"Omen Globe","order":10,"set":"Voucher","unlocked":false},"v_overstock_norm":{"config":{},"discovered":false,"name":"Overstock","order":1,"set":"Voucher","unlocked":true},"v_overstock_plus":{"config":{},"discovered":false,"name":"Overstock Plus","order":2,"set":"Voucher","unlocked":false},"v_paint_brush":{"config":{"extra":1},"discovered":false,"name":"Paint Brush","order":31,"set":"Voucher","unlocked":true},"v_palette":{"config":{"extra":1},"discovered":false,"name":"Palette","order":32,"set":"Voucher","unlocked":false},"v_petroglyph":{"config":{"extra":1},"discovered":false,"name":"Petroglyph","order":28,"set":"Voucher","unlocked":false},"v_planet_merchant":{"config":{"extra":2.4,"extra_disp":2},"discovered":false,"name":"Planet Merchant","order":19,"set":"Voucher","unlocked":true},"v_planet_tycoon":{"config":{"extra":8,"extra_disp":4},"discovered":false,"name":"Planet Tycoon","order":20,"set":"Voucher","unlocked":false},"v_recyclomancy":{"config":{"extra":1},"discovered":false,"name":"Recyclomancy","order":16,"set":"Voucher","unlocked":false},"v_reroll_glut":{"config":{"extra":2},"discovered":false,"name":"Reroll Glut","order":8,"set":"Voucher","unlocked":false},"v_reroll_surplus":{"config":{"extra":2},"discovered":false,"name":"Reroll Surplus","order":7,"set":"Voucher","unlocked":true},"v_retcon":{"config":{"extra":10},"discovered":false,"name":"Retcon","order":30,"set":"Voucher","unlocked":false},"v_seed_money":{"config":{"extra":50},"discovered":false,"name":"Seed Money","order":21,"set":"Voucher","unlocked":true},"v_tarot_merchant":{"config":{"extra":2.4,"extra_disp":2},"discovered":false,"name":"Tarot Merchant","order":17,"set":"Voucher","unlocked":true},"v_tarot_tycoon":{"config":{"extra":8,"extra_disp":4},"discovered":false,"name":"Tarot Tycoon","order":18,"set":"Voucher","unlocked":false},"v_telescope":{"config":{"extra":3},"discovered":false,"name":"Telescope","order":11,"set":"Voucher","unlocked":true},"v_wasteful":{"config":{"extra":1},"discovered":false,"name":"Wasteful","order":15,"set":"Voucher","unlocked":true}};
+export const P_CENTERS: Readonly<Record<string, PCenter>> = {"b_abandoned":{"config":{"remove_faces":true},"name":"Abandoned Deck","order":9,"pos":{"x":3,"y":3},"set":"Back","unlock_condition":{"deck":"b_green","type":"win_deck"},"unlocked":false},"b_anaglyph":{"config":{},"name":"Anaglyph Deck","order":13,"pos":{"x":2,"y":4},"set":"Back","unlock_condition":{"stake":4,"type":"win_stake"},"unlocked":false},"b_black":{"config":{"hands":-1,"joker_slot":1},"name":"Black Deck","order":5,"pos":{"x":3,"y":2},"set":"Back","unlock_condition":{"amount":100,"type":"discover_amount"},"unlocked":false},"b_blue":{"config":{"hands":1},"name":"Blue Deck","order":2,"pos":{"x":0,"y":2},"set":"Back","unlock_condition":{"amount":20,"type":"discover_amount"},"unlocked":false},"b_challenge":{"config":{},"name":"Challenge Deck","order":16,"pos":{"x":0,"y":4},"set":"Back","unlocked":true},"b_checkered":{"config":{},"name":"Checkered Deck","order":10,"pos":{"x":1,"y":3},"set":"Back","unlock_condition":{"deck":"b_black","type":"win_deck"},"unlocked":false},"b_erratic":{"config":{"randomize_rank_suit":true},"name":"Erratic Deck","order":15,"pos":{"x":2,"y":3},"set":"Back","unlock_condition":{"stake":7,"type":"win_stake"},"unlocked":false},"b_ghost":{"config":{"consumables":["c_hex"],"spectral_rate":2},"name":"Ghost Deck","order":8,"pos":{"x":6,"y":2},"set":"Back","unlock_condition":{"deck":"b_yellow","type":"win_deck"},"unlocked":false},"b_green":{"config":{"extra_discard_bonus":1,"extra_hand_bonus":2,"no_interest":true},"name":"Green Deck","order":4,"pos":{"x":2,"y":2},"set":"Back","unlock_condition":{"amount":75,"type":"discover_amount"},"unlocked":false},"b_magic":{"config":{"consumables":["c_fool","c_fool"],"voucher":"v_crystal_ball"},"name":"Magic Deck","order":6,"pos":{"x":0,"y":3},"set":"Back","unlock_condition":{"deck":"b_red","type":"win_deck"},"unlocked":false},"b_nebula":{"config":{"consumable_slot":-1,"voucher":"v_telescope"},"name":"Nebula Deck","order":7,"pos":{"x":3,"y":0},"set":"Back","unlock_condition":{"deck":"b_blue","type":"win_deck"},"unlocked":false},"b_painted":{"config":{"hand_size":2,"joker_slot":-1},"name":"Painted Deck","order":12,"pos":{"x":4,"y":3},"set":"Back","unlock_condition":{"stake":3,"type":"win_stake"},"unlocked":false},"b_plasma":{"config":{"ante_scaling":2},"name":"Plasma Deck","order":14,"pos":{"x":4,"y":2},"set":"Back","unlock_condition":{"stake":5,"type":"win_stake"},"unlocked":false},"b_red":{"config":{"discards":1},"discovered":true,"name":"Red Deck","order":1,"pos":{"x":0,"y":0},"set":"Back","unlocked":true},"b_yellow":{"config":{"dollars":10},"name":"Yellow Deck","order":3,"pos":{"x":1,"y":2},"set":"Back","unlock_condition":{"amount":50,"type":"discover_amount"},"unlocked":false},"b_zodiac":{"config":{"vouchers":["v_tarot_merchant","v_planet_merchant","v_overstock_norm"]},"name":"Zodiac Deck","order":11,"pos":{"x":3,"y":4},"set":"Back","unlock_condition":{"stake":2,"type":"win_stake"},"unlocked":false},"c_ankh":{"config":{"extra":2},"consumeable":true,"discovered":false,"name":"Ankh","order":11,"pos":{"x":0,"y":5},"set":"Spectral"},"c_aura":{"config":{},"consumeable":true,"discovered":false,"name":"Aura","order":5,"pos":{"x":4,"y":4},"set":"Spectral"},"c_base":{"config":{},"discovered":true,"effect":"Base","name":"Default Base","pos":{"x":1,"y":0},"set":"Default"},"c_black_hole":{"config":{},"consumeable":true,"discovered":false,"name":"Black Hole","order":18,"pos":{"x":9,"y":3},"set":"Spectral"},"c_ceres":{"config":{"hand_type":"Flush House","softlock":true},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Ceres","order":11,"pos":{"x":8,"y":2},"set":"Planet"},"c_chariot":{"config":{"max_highlighted":1,"mod_conv":"m_steel"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Chariot","order":8,"pos":{"x":7,"y":0},"set":"Tarot"},"c_cryptid":{"config":{"extra":2,"max_highlighted":1},"consumeable":true,"discovered":false,"name":"Cryptid","order":16,"pos":{"x":5,"y":5},"set":"Spectral"},"c_death":{"config":{"max_highlighted":2,"min_highlighted":2,"mod_conv":"card"},"consumeable":true,"discovered":false,"effect":"Card Conversion","name":"Death","order":14,"pos":{"x":3,"y":1},"set":"Tarot"},"c_deja_vu":{"config":{"extra":"Red","max_highlighted":1},"consumeable":true,"discovered":false,"name":"Deja Vu","order":12,"pos":{"x":1,"y":5},"set":"Spectral"},"c_devil":{"config":{"max_highlighted":1,"mod_conv":"m_gold"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Devil","order":16,"pos":{"x":5,"y":1},"set":"Tarot"},"c_earth":{"config":{"hand_type":"Full House"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Earth","order":3,"pos":{"x":2,"y":3},"set":"Planet"},"c_ectoplasm":{"config":{},"consumeable":true,"discovered":false,"name":"Ectoplasm","order":9,"pos":{"x":8,"y":4},"set":"Spectral"},"c_emperor":{"config":{"tarots":2},"consumeable":true,"discovered":false,"effect":"Round Bonus","name":"The Emperor","order":5,"pos":{"x":4,"y":0},"set":"Tarot"},"c_empress":{"config":{"max_highlighted":2,"mod_conv":"m_mult"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Empress","order":4,"pos":{"x":3,"y":0},"set":"Tarot"},"c_eris":{"config":{"hand_type":"Flush Five","softlock":true},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Eris","order":12,"pos":{"x":3,"y":2},"set":"Planet"},"c_familiar":{"config":{"extra":3,"remove_card":true},"consumeable":true,"discovered":false,"name":"Familiar","order":1,"pos":{"x":0,"y":4},"set":"Spectral"},"c_fool":{"config":{},"consumeable":true,"discovered":false,"effect":"Disable Blind Effect","name":"The Fool","order":1,"pos":{"x":0,"y":0},"set":"Tarot"},"c_grim":{"config":{"extra":2,"remove_card":true},"consumeable":true,"discovered":false,"name":"Grim","order":2,"pos":{"x":1,"y":4},"set":"Spectral"},"c_hanged_man":{"config":{"max_highlighted":2,"remove_card":true},"consumeable":true,"discovered":false,"effect":"Card Removal","name":"The Hanged Man","order":13,"pos":{"x":2,"y":1},"set":"Tarot"},"c_heirophant":{"config":{"max_highlighted":2,"mod_conv":"m_bonus"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Hierophant","order":6,"pos":{"x":5,"y":0},"set":"Tarot"},"c_hermit":{"config":{"extra":20},"consumeable":true,"discovered":false,"effect":"Dollar Doubler","name":"The Hermit","order":10,"pos":{"x":9,"y":0},"set":"Tarot"},"c_hex":{"config":{"extra":2},"consumeable":true,"discovered":false,"name":"Hex","order":13,"pos":{"x":2,"y":5},"set":"Spectral"},"c_high_priestess":{"config":{"planets":2},"consumeable":true,"discovered":false,"effect":"Round Bonus","name":"The High Priestess","order":3,"pos":{"x":2,"y":0},"set":"Tarot"},"c_immolate":{"config":{"extra":{"destroy":5,"dollars":20},"remove_card":true},"consumeable":true,"discovered":false,"name":"Immolate","order":10,"pos":{"x":9,"y":4},"set":"Spectral"},"c_incantation":{"config":{"extra":4,"remove_card":true},"consumeable":true,"discovered":false,"name":"Incantation","order":3,"pos":{"x":2,"y":4},"set":"Spectral"},"c_judgement":{"config":{},"consumeable":true,"discovered":false,"effect":"Random Joker","name":"Judgement","order":21,"pos":{"x":0,"y":2},"set":"Tarot"},"c_jupiter":{"config":{"hand_type":"Flush"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Jupiter","order":5,"pos":{"x":4,"y":3},"set":"Planet"},"c_justice":{"config":{"max_highlighted":1,"mod_conv":"m_glass"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"Justice","order":9,"pos":{"x":8,"y":0},"set":"Tarot"},"c_lovers":{"config":{"max_highlighted":1,"mod_conv":"m_wild"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Lovers","order":7,"pos":{"x":6,"y":0},"set":"Tarot"},"c_magician":{"config":{"max_highlighted":2,"mod_conv":"m_lucky"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Magician","order":2,"pos":{"x":1,"y":0},"set":"Tarot"},"c_mars":{"config":{"hand_type":"Four of a Kind"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Mars","order":4,"pos":{"x":3,"y":3},"set":"Planet"},"c_medium":{"config":{"extra":"Purple","max_highlighted":1},"consumeable":true,"discovered":false,"name":"Medium","order":15,"pos":{"x":4,"y":5},"set":"Spectral"},"c_mercury":{"config":{"hand_type":"Pair"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Mercury","order":1,"pos":{"x":0,"y":3},"set":"Planet"},"c_moon":{"config":{"max_highlighted":3,"suit_conv":"Clubs"},"consumeable":true,"discovered":false,"effect":"Suit Conversion","name":"The Moon","order":19,"pos":{"x":8,"y":1},"set":"Tarot"},"c_neptune":{"config":{"hand_type":"Straight Flush"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Neptune","order":8,"pos":{"x":7,"y":3},"set":"Planet"},"c_ouija":{"config":{},"consumeable":true,"discovered":false,"name":"Ouija","order":8,"pos":{"x":7,"y":4},"set":"Spectral"},"c_planet_x":{"config":{"hand_type":"Five of a Kind","softlock":true},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Planet X","order":10,"pos":{"x":9,"y":2},"set":"Planet"},"c_pluto":{"config":{"hand_type":"High Card"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Pluto","order":9,"pos":{"x":8,"y":3},"set":"Planet"},"c_saturn":{"config":{"hand_type":"Straight"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Saturn","order":6,"pos":{"x":5,"y":3},"set":"Planet"},"c_sigil":{"config":{},"consumeable":true,"discovered":false,"name":"Sigil","order":7,"pos":{"x":6,"y":4},"set":"Spectral"},"c_soul":{"config":{},"consumeable":true,"discovered":false,"effect":"Unlocker","name":"The Soul","order":17,"pos":{"x":2,"y":2},"set":"Spectral"},"c_star":{"config":{"max_highlighted":3,"suit_conv":"Diamonds"},"consumeable":true,"discovered":false,"effect":"Suit Conversion","name":"The Star","order":18,"pos":{"x":7,"y":1},"set":"Tarot"},"c_strength":{"config":{"max_highlighted":2,"mod_conv":"up_rank"},"consumeable":true,"discovered":false,"effect":"Round Bonus","name":"Strength","order":12,"pos":{"x":1,"y":1},"set":"Tarot"},"c_sun":{"config":{"max_highlighted":3,"suit_conv":"Hearts"},"consumeable":true,"discovered":false,"effect":"Suit Conversion","name":"The Sun","order":20,"pos":{"x":9,"y":1},"set":"Tarot"},"c_talisman":{"config":{"extra":"Gold","max_highlighted":1},"consumeable":true,"discovered":false,"name":"Talisman","order":4,"pos":{"x":3,"y":4},"set":"Spectral"},"c_temperance":{"config":{"extra":50},"consumeable":true,"discovered":false,"effect":"Joker Payout","name":"Temperance","order":15,"pos":{"x":4,"y":1},"set":"Tarot"},"c_tower":{"config":{"max_highlighted":1,"mod_conv":"m_stone"},"consumeable":true,"discovered":false,"effect":"Enhance","name":"The Tower","order":17,"pos":{"x":6,"y":1},"set":"Tarot"},"c_trance":{"config":{"extra":"Blue","max_highlighted":1},"consumeable":true,"discovered":false,"name":"Trance","order":14,"pos":{"x":3,"y":5},"set":"Spectral"},"c_uranus":{"config":{"hand_type":"Two Pair"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Uranus","order":7,"pos":{"x":6,"y":3},"set":"Planet"},"c_venus":{"config":{"hand_type":"Three of a Kind"},"consumeable":true,"discovered":false,"effect":"Hand Upgrade","name":"Venus","order":2,"pos":{"x":1,"y":3},"set":"Planet"},"c_wheel_of_fortune":{"config":{"extra":4},"consumeable":true,"discovered":false,"effect":"Round Bonus","name":"The Wheel of Fortune","order":11,"pos":{"x":0,"y":1},"set":"Tarot"},"c_world":{"config":{"max_highlighted":3,"suit_conv":"Spades"},"consumeable":true,"discovered":false,"effect":"Suit Conversion","name":"The World","order":22,"pos":{"x":1,"y":2},"set":"Tarot"},"c_wraith":{"config":{},"consumeable":true,"discovered":false,"name":"Wraith","order":6,"pos":{"x":5,"y":4},"set":"Spectral"},"e_base":{"config":{},"discovered":false,"name":"Base","order":1,"pos":{"x":0,"y":0},"set":"Edition","unlocked":true},"e_foil":{"config":{"extra":50},"discovered":false,"name":"Foil","order":2,"pos":{"x":0,"y":0},"set":"Edition","unlocked":true},"e_holo":{"config":{"extra":10},"discovered":false,"name":"Holographic","order":3,"pos":{"x":0,"y":0},"set":"Edition","unlocked":true},"e_negative":{"config":{"extra":1},"discovered":false,"name":"Negative","order":5,"pos":{"x":0,"y":0},"set":"Edition","unlocked":true},"e_polychrome":{"config":{"extra":1.5},"discovered":false,"name":"Polychrome","order":4,"pos":{"x":0,"y":0},"set":"Edition","unlocked":true},"j_8_ball":{"config":{"extra":4},"discovered":false,"effect":"Spawn Tarot","name":"8 Ball","order":26,"pos":{"x":0,"y":5},"rarity":1,"set":"Joker","unlocked":true},"j_abstract":{"config":{"extra":3},"discovered":false,"effect":"Joker Mult","name":"Abstract Joker","order":34,"pos":{"x":3,"y":3},"rarity":1,"set":"Joker","unlocked":true},"j_acrobat":{"config":{"extra":3},"discovered":false,"effect":"Shop size","name":"Acrobat","order":108,"pos":{"x":2,"y":1},"rarity":2,"set":"Joker","unlock_condition":{"extra":200,"type":"c_hands_played"},"unlocked":false},"j_ancient":{"config":{"extra":1.5},"discovered":false,"name":"Ancient Joker","order":99,"pos":{"x":7,"y":15},"rarity":3,"set":"Joker","unlocked":true},"j_arrowhead":{"config":{"extra":50},"discovered":false,"effect":"","name":"Arrowhead","order":118,"pos":{"x":1,"y":8},"rarity":2,"set":"Joker","unlock_condition":{"extra":{"count":30,"suit":"Spades"},"type":"modify_deck"},"unlocked":false},"j_astronomer":{"config":{},"discovered":false,"effect":"","name":"Astronomer","order":143,"pos":{"x":2,"y":7},"rarity":2,"set":"Joker","unlock_condition":{"planet_count":12,"type":"discover_amount"},"unlocked":false},"j_banner":{"config":{"extra":30},"discovered":false,"effect":"Discard Chips","name":"Banner","order":22,"pos":{"x":1,"y":2},"rarity":1,"set":"Joker","unlocked":true},"j_baron":{"config":{"extra":1.5},"discovered":false,"name":"Baron","order":72,"pos":{"x":6,"y":12},"rarity":3,"set":"Joker","unlocked":true},"j_baseball":{"config":{"extra":1.5},"discovered":false,"name":"Baseball Card","order":92,"pos":{"x":6,"y":14},"rarity":3,"set":"Joker","unlocked":true},"j_blackboard":{"config":{"extra":3},"discovered":false,"name":"Blackboard","order":48,"pos":{"x":2,"y":10},"rarity":2,"set":"Joker","unlocked":true},"j_bloodstone":{"config":{"extra":{"Xmult":1.5,"odds":2}},"discovered":false,"effect":"","name":"Bloodstone","order":117,"pos":{"x":0,"y":8},"rarity":2,"set":"Joker","unlock_condition":{"extra":{"count":30,"suit":"Hearts"},"type":"modify_deck"},"unlocked":false},"j_blue_joker":{"config":{"extra":2},"discovered":false,"name":"Blue Joker","order":53,"pos":{"x":7,"y":10},"rarity":1,"set":"Joker","unlocked":true},"j_blueprint":{"config":{},"discovered":false,"effect":"Copycat","name":"Blueprint","order":123,"pos":{"x":0,"y":3},"rarity":3,"set":"Joker","unlock_condition":{"type":"win_custom"},"unlocked":false},"j_bootstraps":{"config":{"extra":{"dollars":5,"mult":2}},"discovered":false,"effect":"","name":"Bootstraps","order":145,"pos":{"x":9,"y":8},"rarity":2,"set":"Joker","unlock_condition":{"extra":{"count":2,"polychrome":true},"type":"modify_jokers"},"unlocked":false},"j_brainstorm":{"config":{},"discovered":false,"effect":"Copycat","name":"Brainstorm","order":138,"pos":{"x":7,"y":7},"rarity":3,"set":"Joker","unlock_condition":{"type":"discard_custom"},"unlocked":false},"j_bull":{"config":{"extra":2},"discovered":false,"name":"Bull","order":93,"pos":{"x":7,"y":14},"rarity":2,"set":"Joker","unlocked":true},"j_burglar":{"config":{"extra":3},"discovered":false,"name":"Burglar","order":47,"pos":{"x":1,"y":10},"rarity":2,"set":"Joker","unlocked":true},"j_burnt":{"config":{"extra":4,"h_size":0},"discovered":false,"effect":"","name":"Burnt Joker","order":144,"pos":{"x":3,"y":7},"rarity":3,"set":"Joker","unlock_condition":{"extra":50,"type":"c_cards_sold"},"unlocked":false},"j_business":{"config":{"extra":2},"discovered":false,"effect":"Face Card dollar Chance","name":"Business Card","order":42,"pos":{"x":1,"y":4},"rarity":1,"set":"Joker","unlocked":true},"j_caino":{"config":{"extra":1},"discovered":false,"effect":"","name":"Caino","order":146,"pos":{"x":3,"y":8},"rarity":4,"set":"Joker","unlock_condition":{"extra":"","hidden":true,"type":""},"unlocked":false},"j_campfire":{"config":{"extra":0.25},"discovered":false,"name":"Campfire","order":105,"pos":{"x":5,"y":15},"rarity":3,"set":"Joker","unlocked":true},"j_card_sharp":{"config":{"extra":{"Xmult":3}},"discovered":false,"name":"Card Sharp","order":62,"pos":{"x":6,"y":11},"rarity":2,"set":"Joker","unlocked":true},"j_cartomancer":{"config":{},"discovered":false,"effect":"Tarot Buff","name":"Cartomancer","order":142,"pos":{"x":7,"y":3},"rarity":2,"set":"Joker","unlock_condition":{"tarot_count":22,"type":"discover_amount"},"unlocked":false},"j_castle":{"config":{"extra":{"chip_mod":3,"chips":0}},"discovered":false,"name":"Castle","order":103,"pos":{"x":9,"y":15},"rarity":2,"set":"Joker","unlocked":true},"j_cavendish":{"config":{"extra":{"Xmult":3,"odds":1000}},"discovered":false,"name":"Cavendish","order":61,"pos":{"x":5,"y":11},"rarity":1,"set":"Joker","unlocked":true},"j_ceremonial":{"config":{"mult":0},"discovered":false,"effect":"","name":"Ceremonial Dagger","order":21,"pos":{"x":5,"y":5},"rarity":2,"set":"Joker","unlocked":true},"j_certificate":{"config":{},"discovered":false,"effect":"","name":"Certificate","order":112,"pos":{"x":8,"y":8},"rarity":2,"set":"Joker","unlock_condition":{"type":"double_gold"},"unlocked":false},"j_chaos":{"config":{"extra":1},"discovered":false,"effect":"Bonus Rerolls","name":"Chaos the Clown","order":30,"pos":{"x":1,"y":0},"rarity":1,"set":"Joker","unlocked":true},"j_chicot":{"config":{},"discovered":false,"effect":"","name":"Chicot","order":149,"pos":{"x":6,"y":8},"rarity":4,"set":"Joker","unlock_condition":{"extra":"","hidden":true,"type":""},"unlocked":false},"j_clever":{"config":{"t_chips":80,"type":"Two Pair"},"discovered":false,"name":"Clever Joker","order":13,"pos":{"x":2,"y":14},"rarity":1,"set":"Joker","unlocked":true},"j_cloud_9":{"config":{"extra":1},"discovered":false,"name":"Cloud 9","order":73,"pos":{"x":7,"y":12},"rarity":2,"set":"Joker","unlocked":true},"j_constellation":{"config":{"Xmult":1,"extra":0.1},"discovered":false,"name":"Constellation","order":55,"pos":{"x":9,"y":10},"rarity":2,"set":"Joker","unlocked":true},"j_crafty":{"config":{"t_chips":80,"type":"Flush"},"discovered":false,"name":"Crafty Joker","order":15,"pos":{"x":4,"y":14},"rarity":1,"set":"Joker","unlocked":true},"j_crazy":{"config":{"t_mult":12,"type":"Straight"},"discovered":false,"effect":"Type Mult","name":"Crazy Joker","order":9,"pos":{"x":5,"y":0},"rarity":1,"set":"Joker","unlocked":true},"j_credit_card":{"config":{"extra":20},"discovered":false,"effect":"Credit","name":"Credit Card","order":20,"pos":{"x":5,"y":1},"rarity":1,"set":"Joker","unlocked":true},"j_delayed_grat":{"config":{"extra":2},"discovered":false,"effect":"Discard dollars","name":"Delayed Gratification","order":35,"pos":{"x":4,"y":3},"rarity":1,"set":"Joker","unlocked":true},"j_devious":{"config":{"t_chips":100,"type":"Straight"},"discovered":false,"name":"Devious Joker","order":14,"pos":{"x":3,"y":14},"rarity":1,"set":"Joker","unlocked":true},"j_diet_cola":{"config":{},"discovered":false,"name":"Diet Cola","order":94,"pos":{"x":8,"y":14},"rarity":2,"set":"Joker","unlocked":true},"j_dna":{"config":{},"discovered":false,"name":"DNA","order":51,"pos":{"x":5,"y":10},"rarity":3,"set":"Joker","unlocked":true},"j_drivers_license":{"config":{"extra":3},"discovered":false,"effect":"","name":"Driver's License","order":141,"pos":{"x":0,"y":7},"rarity":3,"set":"Joker","unlock_condition":{"extra":{"count":16,"tally":"total"},"type":"modify_deck"},"unlocked":false},"j_droll":{"config":{"t_mult":10,"type":"Flush"},"discovered":false,"effect":"Type Mult","name":"Droll Joker","order":10,"pos":{"x":6,"y":0},"rarity":1,"set":"Joker","unlocked":true},"j_drunkard":{"config":{"d_size":1},"discovered":false,"effect":"Discard Size","name":"Drunkard","order":88,"pos":{"x":1,"y":1},"rarity":1,"set":"Joker","unlocked":true},"j_duo":{"config":{"Xmult":2,"type":"Pair"},"discovered":false,"effect":"X1.5 Mult","name":"The Duo","order":131,"pos":{"x":5,"y":4},"rarity":3,"set":"Joker","unlock_condition":{"extra":"Pair","type":"win_no_hand"},"unlocked":false},"j_dusk":{"config":{"extra":1},"discovered":false,"effect":"","name":"Dusk","order":28,"pos":{"x":4,"y":7},"rarity":2,"set":"Joker","unlock_condition":{"extra":"","hidden":true,"type":""},"unlocked":true},"j_egg":{"config":{"extra":3},"discovered":false,"name":"Egg","order":46,"pos":{"x":0,"y":10},"rarity":1,"set":"Joker","unlocked":true},"j_erosion":{"config":{"extra":4},"discovered":false,"name":"Erosion","order":81,"pos":{"x":5,"y":13},"rarity":2,"set":"Joker","unlocked":true},"j_even_steven":{"config":{"extra":4},"discovered":false,"effect":"Even Card Buff","name":"Even Steven","order":39,"pos":{"x":8,"y":3},"rarity":1,"set":"Joker","unlocked":true},"j_faceless":{"config":{"extra":{"dollars":5,"faces":3}},"discovered":false,"name":"Faceless Joker","order":57,"pos":{"x":1,"y":11},"rarity":1,"set":"Joker","unlocked":true},"j_family":{"config":{"Xmult":4,"type":"Four of a Kind"},"discovered":false,"effect":"X3 Mult","name":"The Family","order":133,"pos":{"x":7,"y":4},"rarity":3,"set":"Joker","unlock_condition":{"extra":"Four of a Kind","type":"win_no_hand"},"unlocked":false},"j_fibonacci":{"config":{"extra":8},"discovered":false,"effect":"Card Mult","name":"Fibonacci","order":31,"pos":{"x":1,"y":5},"rarity":2,"set":"Joker","unlocked":true},"j_flash":{"config":{"extra":2,"mult":0},"discovered":false,"name":"Flash Card","order":96,"pos":{"x":0,"y":15},"rarity":2,"set":"Joker","unlocked":true},"j_flower_pot":{"config":{"extra":3},"discovered":false,"effect":"","name":"Flower Pot","order":122,"pos":{"x":0,"y":6},"rarity":2,"set":"Joker","unlock_condition":{"ante":8,"type":"ante_up"},"unlocked":false},"j_fortune_teller":{"config":{"extra":1},"discovered":false,"effect":"","name":"Fortune Teller","order":86,"pos":{"x":7,"y":5},"rarity":1,"set":"Joker","unlocked":true},"j_four_fingers":{"config":{},"discovered":false,"effect":"","name":"Four Fingers","order":18,"pos":{"x":6,"y":6},"rarity":2,"set":"Joker","unlocked":true},"j_gift":{"config":{"extra":1},"discovered":false,"name":"Gift Card","order":79,"pos":{"x":3,"y":13},"rarity":2,"set":"Joker","unlocked":true},"j_glass":{"config":{"Xmult":1,"extra":0.75},"discovered":false,"effect":"Glass Card","name":"Glass Joker","order":120,"pos":{"x":1,"y":3},"rarity":2,"set":"Joker","unlock_condition":{"extra":{"count":5,"e_key":"m_glass","enhancement":"Glass Card"},"type":"modify_deck"},"unlocked":false},"j_gluttenous_joker":{"config":{"extra":{"s_mult":3,"suit":"Clubs"}},"discovered":false,"effect":"Suit Mult","name":"Gluttonous Joker","order":5,"pos":{"x":9,"y":1},"rarity":1,"set":"Joker","unlocked":true},"j_golden":{"config":{"extra":4},"discovered":false,"effect":"Bonus dollars","name":"Golden Joker","order":90,"pos":{"x":9,"y":2},"rarity":1,"set":"Joker","unlocked":true},"j_greedy_joker":{"config":{"extra":{"s_mult":3,"suit":"Diamonds"}},"discovered":false,"effect":"Suit Mult","name":"Greedy Joker","order":2,"pos":{"x":6,"y":1},"rarity":1,"set":"Joker","unlocked":true},"j_green_joker":{"config":{"extra":{"discard_sub":1,"hand_add":1}},"discovered":false,"name":"Green Joker","order":58,"pos":{"x":2,"y":11},"rarity":1,"set":"Joker","unlocked":true},"j_gros_michel":{"config":{"extra":{"mult":15,"odds":6}},"discovered":false,"effect":"","name":"Gros Michel","order":38,"pos":{"x":7,"y":6},"rarity":1,"set":"Joker","unlocked":true},"j_hack":{"config":{"extra":1},"discovered":false,"effect":"Low Card double","name":"Hack","order":36,"pos":{"x":5,"y":2},"rarity":2,"set":"Joker","unlocked":true},"j_half":{"config":{"extra":{"mult":20,"size":3}},"discovered":false,"effect":"Hand Size Mult","name":"Half Joker","order":16,"pos":{"x":7,"y":0},"rarity":1,"set":"Joker","unlocked":true},"j_hallucination":{"config":{"extra":2},"discovered":false,"name":"Hallucination","order":85,"pos":{"x":9,"y":13},"rarity":1,"set":"Joker","unlocked":true},"j_hanging_chad":{"config":{"extra":2},"discovered":false,"effect":"","name":"Hanging Chad","order":115,"pos":{"x":9,"y":6},"rarity":1,"set":"Joker","unlock_condition":{"extra":"High Card","type":"round_win"},"unlocked":false},"j_hiker":{"config":{"extra":5},"discovered":false,"name":"Hiker","order":56,"pos":{"x":0,"y":11},"rarity":2,"set":"Joker","unlocked":true},"j_hit_the_road":{"config":{"extra":0.5},"discovered":false,"effect":"Jack Discard Effect","name":"Hit the Road","order":130,"pos":{"x":8,"y":5},"rarity":3,"set":"Joker","unlock_condition":{"type":"discard_custom"},"unlocked":false},"j_hologram":{"config":{"Xmult":1,"extra":0.25},"discovered":false,"name":"Hologram","order":70,"pos":{"x":4,"y":12},"rarity":2,"set":"Joker","unlocked":true},"j_ice_cream":{"config":{"extra":{"chip_mod":5,"chips":100}},"discovered":false,"name":"Ice Cream","order":50,"pos":{"x":4,"y":10},"rarity":1,"set":"Joker","unlocked":true},"j_idol":{"config":{"extra":2},"discovered":false,"effect":"","name":"The Idol","order":127,"pos":{"x":6,"y":7},"rarity":2,"set":"Joker","unlock_condition":{"chips":1000000,"type":"chip_score"},"unlocked":false},"j_invisible":{"config":{"extra":2},"discovered":false,"effect":"","name":"Invisible Joker","order":137,"pos":{"x":1,"y":7},"rarity":3,"set":"Joker","unlock_condition":{"type":"win_custom"},"unlocked":false},"j_joker":{"config":{"mult":4},"discovered":true,"effect":"Mult","name":"Joker","order":1,"pos":{"x":0,"y":0},"rarity":1,"set":"Joker","unlocked":true},"j_jolly":{"config":{"t_mult":8,"type":"Pair"},"discovered":false,"effect":"Type Mult","name":"Jolly Joker","order":6,"pos":{"x":2,"y":0},"rarity":1,"set":"Joker","unlocked":true},"j_juggler":{"config":{"h_size":1},"discovered":false,"effect":"Hand Size","name":"Juggler","order":87,"pos":{"x":0,"y":1},"rarity":1,"set":"Joker","unlocked":true},"j_loyalty_card":{"config":{"extra":{"Xmult":4,"every":5,"remaining":"5 remaining"}},"discovered":false,"effect":"1 in 10 mult","name":"Loyalty Card","order":25,"pos":{"x":4,"y":2},"rarity":2,"set":"Joker","unlocked":true},"j_luchador":{"config":{},"discovered":false,"name":"Luchador","order":77,"pos":{"x":1,"y":13},"rarity":2,"set":"Joker","unlocked":true},"j_lucky_cat":{"config":{"Xmult":1,"extra":0.25},"discovered":false,"name":"Lucky Cat","order":91,"pos":{"x":5,"y":14},"rarity":2,"set":"Joker","unlocked":true},"j_lusty_joker":{"config":{"extra":{"s_mult":3,"suit":"Hearts"}},"discovered":false,"effect":"Suit Mult","name":"Lusty Joker","order":3,"pos":{"x":7,"y":1},"rarity":1,"set":"Joker","unlocked":true},"j_mad":{"config":{"t_mult":10,"type":"Two Pair"},"discovered":false,"effect":"Type Mult","name":"Mad Joker","order":8,"pos":{"x":4,"y":0},"rarity":1,"set":"Joker","unlocked":true},"j_madness":{"config":{"extra":0.5},"discovered":false,"name":"Madness","order":64,"pos":{"x":8,"y":11},"rarity":2,"set":"Joker","unlocked":true},"j_mail":{"config":{"extra":5},"discovered":false,"name":"Mail-In Rebate","order":83,"pos":{"x":7,"y":13},"rarity":1,"set":"Joker","unlocked":true},"j_marble":{"config":{"extra":1},"discovered":false,"effect":"Stone card hands","name":"Marble Joker","order":24,"pos":{"x":3,"y":2},"rarity":2,"set":"Joker","unlocked":true},"j_matador":{"config":{"extra":8},"discovered":false,"effect":"","name":"Matador","order":129,"pos":{"x":4,"y":5},"rarity":2,"set":"Joker","unlock_condition":{"type":"round_win"},"unlocked":false},"j_merry_andy":{"config":{"d_size":3,"h_size":-1},"discovered":false,"effect":"","name":"Merry Andy","order":125,"pos":{"x":8,"y":0},"rarity":2,"set":"Joker","unlock_condition":{"n_rounds":12,"type":"win"},"unlocked":false},"j_midas_mask":{"config":{},"discovered":false,"name":"Midas Mask","order":76,"pos":{"x":0,"y":13},"rarity":2,"set":"Joker","unlocked":true},"j_mime":{"config":{"extra":1},"discovered":false,"effect":"Hand card double","name":"Mime","order":19,"pos":{"x":4,"y":1},"rarity":2,"set":"Joker","unlocked":true},"j_misprint":{"config":{"extra":{"max":23,"min":0}},"discovered":false,"effect":"Random Mult","name":"Misprint","order":27,"pos":{"x":6,"y":2},"rarity":1,"set":"Joker","unlocked":true},"j_mr_bones":{"config":{},"discovered":false,"effect":"Prevent Death","name":"Mr. Bones","order":107,"pos":{"x":3,"y":4},"rarity":2,"set":"Joker","unlock_condition":{"extra":5,"type":"c_losses"},"unlocked":false},"j_mystic_summit":{"config":{"extra":{"d_remaining":0,"mult":15}},"discovered":false,"effect":"No Discard Mult","name":"Mystic Summit","order":23,"pos":{"x":2,"y":2},"rarity":1,"set":"Joker","unlocked":true},"j_obelisk":{"config":{"Xmult":1,"extra":0.2},"discovered":false,"name":"Obelisk","order":75,"pos":{"x":9,"y":12},"rarity":3,"set":"Joker","unlocked":true},"j_odd_todd":{"config":{"extra":31},"discovered":false,"effect":"Odd Card Buff","name":"Odd Todd","order":40,"pos":{"x":9,"y":3},"rarity":1,"set":"Joker","unlocked":true},"j_onyx_agate":{"config":{"extra":7},"discovered":false,"effect":"","name":"Onyx Agate","order":119,"pos":{"x":2,"y":8},"rarity":2,"set":"Joker","unlock_condition":{"extra":{"count":30,"suit":"Clubs"},"type":"modify_deck"},"unlocked":false},"j_oops":{"config":{},"discovered":false,"effect":"","name":"Oops! All 6s","order":126,"pos":{"x":5,"y":6},"rarity":2,"set":"Joker","unlock_condition":{"chips":10000,"type":"chip_score"},"unlocked":false},"j_order":{"config":{"Xmult":3,"type":"Straight"},"discovered":false,"effect":"X3 Mult","name":"The Order","order":134,"pos":{"x":8,"y":4},"rarity":3,"set":"Joker","unlock_condition":{"extra":"Straight","type":"win_no_hand"},"unlocked":false},"j_pareidolia":{"config":{},"discovered":false,"effect":"All face cards","name":"Pareidolia","order":37,"pos":{"x":6,"y":3},"rarity":2,"set":"Joker","unlocked":true},"j_perkeo":{"config":{},"discovered":false,"effect":"","name":"Perkeo","order":150,"pos":{"x":7,"y":8},"rarity":4,"set":"Joker","unlock_condition":{"extra":"","hidden":true,"type":""},"unlocked":false},"j_photograph":{"config":{"extra":2},"discovered":false,"name":"Photograph","order":78,"pos":{"x":2,"y":13},"rarity":1,"set":"Joker","unlocked":true},"j_popcorn":{"config":{"extra":4,"mult":20},"discovered":false,"name":"Popcorn","order":97,"pos":{"x":1,"y":15},"rarity":1,"set":"Joker","unlocked":true},"j_raised_fist":{"config":{},"discovered":false,"effect":"Socialized Mult","name":"Raised Fist","order":29,"pos":{"x":8,"y":2},"rarity":1,"set":"Joker","unlocked":true},"j_ramen":{"config":{"Xmult":2,"extra":0.01},"discovered":false,"name":"Ramen","order":100,"pos":{"x":2,"y":15},"rarity":2,"set":"Joker","unlocked":true},"j_red_card":{"config":{"extra":3},"discovered":false,"name":"Red Card","order":63,"pos":{"x":7,"y":11},"rarity":1,"set":"Joker","unlocked":true},"j_reserved_parking":{"config":{"extra":{"dollars":1,"odds":2}},"discovered":false,"name":"Reserved Parking","order":82,"pos":{"x":6,"y":13},"rarity":1,"set":"Joker","unlocked":true},"j_ride_the_bus":{"config":{"extra":1},"discovered":false,"effect":"","name":"Ride the Bus","order":44,"pos":{"x":1,"y":6},"rarity":1,"set":"Joker","unlock_condition":{"type":"discard_custom"},"unlocked":true},"j_riff_raff":{"config":{"extra":2},"discovered":false,"name":"Riff-raff","order":67,"pos":{"x":1,"y":12},"rarity":1,"set":"Joker","unlocked":true},"j_ring_master":{"config":{},"discovered":false,"effect":"","name":"Showman","order":121,"pos":{"x":6,"y":5},"rarity":2,"set":"Joker","unlock_condition":{"ante":4,"type":"ante_up"},"unlocked":false},"j_rocket":{"config":{"extra":{"dollars":1,"increase":2}},"discovered":false,"name":"Rocket","order":74,"pos":{"x":8,"y":12},"rarity":2,"set":"Joker","unlocked":true},"j_rough_gem":{"config":{"extra":1},"discovered":false,"effect":"","name":"Rough Gem","order":116,"pos":{"x":9,"y":7},"rarity":2,"set":"Joker","unlock_condition":{"extra":{"count":30,"suit":"Diamonds"},"type":"modify_deck"},"unlocked":false},"j_runner":{"config":{"extra":{"chip_mod":15,"chips":0}},"discovered":false,"name":"Runner","order":49,"pos":{"x":3,"y":10},"rarity":1,"set":"Joker","unlocked":true},"j_satellite":{"config":{"extra":1},"discovered":false,"effect":"","name":"Satellite","order":139,"pos":{"x":8,"y":7},"rarity":2,"set":"Joker","unlock_condition":{"extra":400,"type":"money"},"unlocked":false},"j_scary_face":{"config":{"extra":30},"discovered":false,"effect":"Scary Face Cards","name":"Scary Face","order":33,"pos":{"x":2,"y":3},"rarity":1,"set":"Joker","unlocked":true},"j_scholar":{"config":{"extra":{"chips":20,"mult":4}},"discovered":false,"effect":"Ace Buff","name":"Scholar","order":41,"pos":{"x":0,"y":4},"rarity":1,"set":"Joker","unlocked":true},"j_seance":{"config":{"extra":{"poker_hand":"Straight Flush"}},"discovered":false,"name":"Seance","order":66,"pos":{"x":0,"y":12},"rarity":2,"set":"Joker","unlocked":true},"j_seeing_double":{"config":{"extra":2},"discovered":false,"effect":"X1.5 Mult club 7","name":"Seeing Double","order":128,"pos":{"x":4,"y":4},"rarity":2,"set":"Joker","unlock_condition":{"extra":"four 7 of Clubs","type":"hand_contents"},"unlocked":false},"j_selzer":{"config":{"extra":10},"discovered":false,"name":"Seltzer","order":102,"pos":{"x":3,"y":15},"rarity":2,"set":"Joker","unlocked":true},"j_shoot_the_moon":{"config":{"extra":13},"discovered":false,"effect":"","name":"Shoot the Moon","order":140,"pos":{"x":2,"y":6},"rarity":1,"set":"Joker","unlock_condition":{"type":"play_all_hearts"},"unlocked":false},"j_shortcut":{"config":{},"discovered":false,"name":"Shortcut","order":69,"pos":{"x":3,"y":12},"rarity":2,"set":"Joker","unlocked":true},"j_sixth_sense":{"config":{},"discovered":false,"name":"Sixth Sense","order":54,"pos":{"x":8,"y":10},"rarity":2,"set":"Joker","unlocked":true},"j_sly":{"config":{"t_chips":50,"type":"Pair"},"discovered":false,"name":"Sly Joker","order":11,"pos":{"x":0,"y":14},"rarity":1,"set":"Joker","unlocked":true},"j_smeared":{"config":{},"discovered":false,"effect":"","name":"Smeared Joker","order":113,"pos":{"x":4,"y":6},"rarity":2,"set":"Joker","unlock_condition":{"extra":{"count":3,"e_key":"m_wild","enhancement":"Wild Card"},"type":"modify_deck"},"unlocked":false},"j_smiley":{"config":{"extra":5},"discovered":false,"name":"Smiley Face","order":104,"pos":{"x":6,"y":15},"rarity":1,"set":"Joker","unlocked":true},"j_sock_and_buskin":{"config":{"extra":1},"discovered":false,"effect":"Face card double","name":"Sock and Buskin","order":109,"pos":{"x":3,"y":1},"rarity":2,"set":"Joker","unlock_condition":{"extra":300,"type":"c_face_cards_played"},"unlocked":false},"j_space":{"config":{"extra":4},"discovered":false,"effect":"Upgrade Hand chance","name":"Space Joker","order":45,"pos":{"x":3,"y":5},"rarity":2,"set":"Joker","unlocked":true},"j_splash":{"config":{},"discovered":false,"name":"Splash","order":52,"pos":{"x":6,"y":10},"rarity":1,"set":"Joker","unlocked":true},"j_square":{"config":{"extra":{"chip_mod":4,"chips":0}},"discovered":false,"name":"Square Joker","order":65,"pos":{"x":9,"y":11},"rarity":1,"set":"Joker","unlocked":true},"j_steel_joker":{"config":{"extra":0.2},"discovered":false,"effect":"Steel Card Buff","name":"Steel Joker","order":32,"pos":{"x":7,"y":2},"rarity":2,"set":"Joker","unlocked":true},"j_stencil":{"config":{},"discovered":false,"effect":"Hand Size Mult","name":"Joker Stencil","order":17,"pos":{"x":2,"y":5},"rarity":2,"set":"Joker","unlocked":true},"j_stone":{"config":{"extra":25},"discovered":false,"effect":"Stone Card Buff","name":"Stone Joker","order":89,"pos":{"x":9,"y":0},"rarity":2,"set":"Joker","unlocked":true},"j_stuntman":{"config":{"extra":{"chip_mod":250,"h_size":2}},"discovered":false,"effect":"","name":"Stuntman","order":136,"pos":{"x":8,"y":6},"rarity":3,"set":"Joker","unlock_condition":{"chips":100000000,"type":"chip_score"},"unlocked":false},"j_supernova":{"config":{"extra":1},"discovered":false,"effect":"Hand played mult","name":"Supernova","order":43,"pos":{"x":2,"y":4},"rarity":1,"set":"Joker","unlocked":true},"j_superposition":{"config":{},"discovered":false,"name":"Superposition","order":59,"pos":{"x":3,"y":11},"rarity":1,"set":"Joker","unlocked":true},"j_swashbuckler":{"config":{"mult":1},"discovered":false,"effect":"Set Mult","name":"Swashbuckler","order":110,"pos":{"x":9,"y":5},"rarity":1,"set":"Joker","unlock_condition":{"extra":20,"type":"c_jokers_sold"},"unlocked":false},"j_throwback":{"config":{"extra":0.25},"discovered":false,"effect":"","name":"Throwback","order":114,"pos":{"x":5,"y":7},"rarity":2,"set":"Joker","unlock_condition":{"type":"continue_game"},"unlocked":false},"j_ticket":{"config":{"extra":4},"discovered":false,"effect":"dollars for Gold cards","name":"Golden Ticket","order":106,"pos":{"x":5,"y":3},"rarity":1,"set":"Joker","unlock_condition":{"extra":"Gold","type":"hand_contents"},"unlocked":false},"j_to_the_moon":{"config":{"extra":1},"discovered":false,"name":"To the Moon","order":84,"pos":{"x":8,"y":13},"rarity":2,"set":"Joker","unlocked":true},"j_todo_list":{"config":{"extra":{"dollars":4,"poker_hand":"High Card"}},"discovered":false,"name":"To Do List","order":60,"pos":{"x":4,"y":11},"rarity":1,"set":"Joker","unlocked":true},"j_trading":{"config":{"extra":3},"discovered":false,"name":"Trading Card","order":95,"pos":{"x":9,"y":14},"rarity":2,"set":"Joker","unlocked":true},"j_tribe":{"config":{"Xmult":2,"type":"Flush"},"discovered":false,"effect":"X3 Mult","name":"The Tribe","order":135,"pos":{"x":9,"y":4},"rarity":3,"set":"Joker","unlock_condition":{"extra":"Flush","type":"win_no_hand"},"unlocked":false},"j_triboulet":{"config":{"extra":2},"discovered":false,"effect":"","name":"Triboulet","order":147,"pos":{"x":4,"y":8},"rarity":4,"set":"Joker","unlock_condition":{"extra":"","hidden":true,"type":""},"unlocked":false},"j_trio":{"config":{"Xmult":3,"type":"Three of a Kind"},"discovered":false,"effect":"X2 Mult","name":"The Trio","order":132,"pos":{"x":6,"y":4},"rarity":3,"set":"Joker","unlock_condition":{"extra":"Three of a Kind","type":"win_no_hand"},"unlocked":false},"j_troubadour":{"config":{"extra":{"h_plays":-1,"h_size":2}},"discovered":false,"effect":"Hand Size, Plays","name":"Troubadour","order":111,"pos":{"x":0,"y":2},"rarity":2,"set":"Joker","unlock_condition":{"extra":5,"type":"round_win"},"unlocked":false},"j_trousers":{"config":{"extra":2},"discovered":false,"name":"Spare Trousers","order":98,"pos":{"x":4,"y":15},"rarity":2,"set":"Joker","unlocked":true},"j_turtle_bean":{"config":{"extra":{"h_mod":1,"h_size":5}},"discovered":false,"name":"Turtle Bean","order":80,"pos":{"x":4,"y":13},"rarity":2,"set":"Joker","unlocked":true},"j_vagabond":{"config":{"extra":4},"discovered":false,"name":"Vagabond","order":71,"pos":{"x":5,"y":12},"rarity":3,"set":"Joker","unlocked":true},"j_vampire":{"config":{"Xmult":1,"extra":0.1},"discovered":false,"name":"Vampire","order":68,"pos":{"x":2,"y":12},"rarity":2,"set":"Joker","unlocked":true},"j_walkie_talkie":{"config":{"extra":{"chips":10,"mult":4}},"discovered":false,"name":"Walkie Talkie","order":101,"pos":{"x":8,"y":15},"rarity":1,"set":"Joker","unlocked":true},"j_wee":{"config":{"extra":{"chip_mod":8,"chips":0}},"discovered":false,"effect":"","name":"Wee Joker","order":124,"pos":{"x":0,"y":0},"rarity":3,"set":"Joker","unlock_condition":{"n_rounds":18,"type":"win"},"unlocked":false},"j_wily":{"config":{"t_chips":100,"type":"Three of a Kind"},"discovered":false,"name":"Wily Joker","order":12,"pos":{"x":1,"y":14},"rarity":1,"set":"Joker","unlocked":true},"j_wrathful_joker":{"config":{"extra":{"s_mult":3,"suit":"Spades"}},"discovered":false,"effect":"Suit Mult","name":"Wrathful Joker","order":4,"pos":{"x":8,"y":1},"rarity":1,"set":"Joker","unlocked":true},"j_yorick":{"config":{"extra":{"discards":23,"xmult":1}},"discovered":false,"effect":"","name":"Yorick","order":148,"pos":{"x":5,"y":8},"rarity":4,"set":"Joker","unlock_condition":{"extra":"","hidden":true,"type":""},"unlocked":false},"j_zany":{"config":{"t_mult":12,"type":"Three of a Kind"},"discovered":false,"effect":"Type Mult","name":"Zany Joker","order":7,"pos":{"x":3,"y":0},"rarity":1,"set":"Joker","unlocked":true},"m_bonus":{"config":{"bonus":30},"effect":"Bonus Card","name":"Bonus","order":2,"pos":{"x":1,"y":1},"set":"Enhanced"},"m_glass":{"config":{"Xmult":2,"extra":4},"effect":"Glass Card","name":"Glass Card","order":5,"pos":{"x":5,"y":1},"set":"Enhanced"},"m_gold":{"config":{"h_dollars":3},"effect":"Gold Card","name":"Gold Card","order":8,"pos":{"x":6,"y":0},"set":"Enhanced"},"m_lucky":{"config":{"mult":20,"p_dollars":20},"effect":"Lucky Card","name":"Lucky Card","order":9,"pos":{"x":4,"y":1},"set":"Enhanced"},"m_mult":{"config":{"mult":4},"effect":"Mult Card","name":"Mult","order":3,"pos":{"x":2,"y":1},"set":"Enhanced"},"m_steel":{"config":{"h_x_mult":1.5},"effect":"Steel Card","name":"Steel Card","order":6,"pos":{"x":6,"y":1},"set":"Enhanced"},"m_stone":{"config":{"bonus":50},"effect":"Stone Card","name":"Stone Card","order":7,"pos":{"x":5,"y":0},"set":"Enhanced"},"m_wild":{"config":{},"effect":"Wild Card","name":"Wild Card","order":4,"pos":{"x":3,"y":1},"set":"Enhanced"},"p_arcana_jumbo_1":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Arcana Pack","order":5,"pos":{"x":0,"y":2},"set":"Booster"},"p_arcana_jumbo_2":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Arcana Pack","order":6,"pos":{"x":1,"y":2},"set":"Booster"},"p_arcana_mega_1":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Arcana Pack","order":7,"pos":{"x":2,"y":2},"set":"Booster"},"p_arcana_mega_2":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Arcana Pack","order":8,"pos":{"x":3,"y":2},"set":"Booster"},"p_arcana_normal_1":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Arcana Pack","order":1,"pos":{"x":0,"y":0},"set":"Booster"},"p_arcana_normal_2":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Arcana Pack","order":2,"pos":{"x":1,"y":0},"set":"Booster"},"p_arcana_normal_3":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Arcana Pack","order":3,"pos":{"x":2,"y":0},"set":"Booster"},"p_arcana_normal_4":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Arcana Pack","order":4,"pos":{"x":3,"y":0},"set":"Booster"},"p_buffoon_jumbo_1":{"config":{"choose":1,"extra":4},"discovered":false,"name":"Jumbo Buffoon Pack","order":27,"pos":{"x":2,"y":8},"set":"Booster"},"p_buffoon_mega_1":{"config":{"choose":2,"extra":4},"discovered":false,"name":"Mega Buffoon Pack","order":28,"pos":{"x":3,"y":8},"set":"Booster"},"p_buffoon_normal_1":{"config":{"choose":1,"extra":2},"discovered":false,"name":"Buffoon Pack","order":25,"pos":{"x":0,"y":8},"set":"Booster"},"p_buffoon_normal_2":{"config":{"choose":1,"extra":2},"discovered":false,"name":"Buffoon Pack","order":26,"pos":{"x":1,"y":8},"set":"Booster"},"p_celestial_jumbo_1":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Celestial Pack","order":13,"pos":{"x":0,"y":3},"set":"Booster"},"p_celestial_jumbo_2":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Celestial Pack","order":14,"pos":{"x":1,"y":3},"set":"Booster"},"p_celestial_mega_1":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Celestial Pack","order":15,"pos":{"x":2,"y":3},"set":"Booster"},"p_celestial_mega_2":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Celestial Pack","order":16,"pos":{"x":3,"y":3},"set":"Booster"},"p_celestial_normal_1":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Celestial Pack","order":9,"pos":{"x":0,"y":1},"set":"Booster"},"p_celestial_normal_2":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Celestial Pack","order":10,"pos":{"x":1,"y":1},"set":"Booster"},"p_celestial_normal_3":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Celestial Pack","order":11,"pos":{"x":2,"y":1},"set":"Booster"},"p_celestial_normal_4":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Celestial Pack","order":12,"pos":{"x":3,"y":1},"set":"Booster"},"p_spectral_jumbo_1":{"config":{"choose":1,"extra":4},"discovered":false,"name":"Jumbo Spectral Pack","order":31,"pos":{"x":2,"y":4},"set":"Booster"},"p_spectral_mega_1":{"config":{"choose":2,"extra":4},"discovered":false,"name":"Mega Spectral Pack","order":32,"pos":{"x":3,"y":4},"set":"Booster"},"p_spectral_normal_1":{"config":{"choose":1,"extra":2},"discovered":false,"name":"Spectral Pack","order":29,"pos":{"x":0,"y":4},"set":"Booster"},"p_spectral_normal_2":{"config":{"choose":1,"extra":2},"discovered":false,"name":"Spectral Pack","order":30,"pos":{"x":1,"y":4},"set":"Booster"},"p_standard_jumbo_1":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Standard Pack","order":21,"pos":{"x":0,"y":7},"set":"Booster"},"p_standard_jumbo_2":{"config":{"choose":1,"extra":5},"discovered":false,"name":"Jumbo Standard Pack","order":22,"pos":{"x":1,"y":7},"set":"Booster"},"p_standard_mega_1":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Standard Pack","order":23,"pos":{"x":2,"y":7},"set":"Booster"},"p_standard_mega_2":{"config":{"choose":2,"extra":5},"discovered":false,"name":"Mega Standard Pack","order":24,"pos":{"x":3,"y":7},"set":"Booster"},"p_standard_normal_1":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Standard Pack","order":17,"pos":{"x":0,"y":6},"set":"Booster"},"p_standard_normal_2":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Standard Pack","order":18,"pos":{"x":1,"y":6},"set":"Booster"},"p_standard_normal_3":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Standard Pack","order":19,"pos":{"x":2,"y":6},"set":"Booster"},"p_standard_normal_4":{"config":{"choose":1,"extra":3},"discovered":false,"name":"Standard Pack","order":20,"pos":{"x":3,"y":6},"set":"Booster"},"v_antimatter":{"config":{"extra":15},"discovered":false,"name":"Antimatter","order":24,"pos":{"x":7,"y":1},"set":"Voucher","unlock_condition":{"extra":10,"type":"blank_redeems"},"unlocked":false},"v_blank":{"config":{"extra":5},"discovered":false,"name":"Blank","order":23,"pos":{"x":7,"y":0},"set":"Voucher","unlocked":true},"v_clearance_sale":{"config":{"extra":25},"discovered":false,"name":"Clearance Sale","order":3,"pos":{"x":3,"y":0},"set":"Voucher","unlocked":true},"v_crystal_ball":{"config":{"extra":3},"discovered":false,"name":"Crystal Ball","order":9,"pos":{"x":2,"y":2},"set":"Voucher","unlocked":true},"v_directors_cut":{"config":{"extra":10},"discovered":false,"name":"Director's Cut","order":29,"pos":{"x":6,"y":2},"set":"Voucher","unlocked":true},"v_glow_up":{"config":{"extra":4},"discovered":false,"name":"Glow Up","order":6,"pos":{"x":4,"y":1},"set":"Voucher","unlock_condition":{"extra":5,"type":"have_edition"},"unlocked":false},"v_grabber":{"config":{"extra":1},"discovered":false,"name":"Grabber","order":13,"pos":{"x":5,"y":0},"set":"Voucher","unlocked":true},"v_hieroglyph":{"config":{"extra":1},"discovered":false,"name":"Hieroglyph","order":27,"pos":{"x":5,"y":2},"set":"Voucher","unlocked":true},"v_hone":{"config":{"extra":2},"discovered":false,"name":"Hone","order":5,"pos":{"x":4,"y":0},"set":"Voucher","unlocked":true},"v_illusion":{"config":{"extra":4},"discovered":false,"name":"Illusion","order":26,"pos":{"x":4,"y":3},"set":"Voucher","unlock_condition":{"extra":20,"type":"c_playing_cards_bought"},"unlocked":false},"v_liquidation":{"config":{"extra":50},"discovered":false,"name":"Liquidation","order":4,"pos":{"x":3,"y":1},"set":"Voucher","unlock_condition":{"extra":10,"type":"run_redeem"},"unlocked":false},"v_magic_trick":{"config":{"extra":4},"discovered":false,"name":"Magic Trick","order":25,"pos":{"x":4,"y":2},"set":"Voucher","unlocked":true},"v_money_tree":{"config":{"extra":100},"discovered":false,"name":"Money Tree","order":22,"pos":{"x":1,"y":3},"set":"Voucher","unlock_condition":{"extra":10,"type":"interest_streak"},"unlocked":false},"v_nacho_tong":{"config":{"extra":1},"discovered":false,"name":"Nacho Tong","order":14,"pos":{"x":5,"y":1},"set":"Voucher","unlock_condition":{"extra":2500,"type":"c_cards_played"},"unlocked":false},"v_observatory":{"config":{"extra":1.5},"discovered":false,"name":"Observatory","order":12,"pos":{"x":3,"y":3},"set":"Voucher","unlock_condition":{"extra":25,"type":"c_planetarium_used"},"unlocked":false},"v_omen_globe":{"config":{"extra":4},"discovered":false,"name":"Omen Globe","order":10,"pos":{"x":2,"y":3},"set":"Voucher","unlock_condition":{"extra":25,"type":"c_tarot_reading_used"},"unlocked":false},"v_overstock_norm":{"config":{},"discovered":false,"name":"Overstock","order":1,"pos":{"x":0,"y":0},"set":"Voucher","unlocked":true},"v_overstock_plus":{"config":{},"discovered":false,"name":"Overstock Plus","order":2,"pos":{"x":0,"y":1},"set":"Voucher","unlock_condition":{"extra":2500,"type":"c_shop_dollars_spent"},"unlocked":false},"v_paint_brush":{"config":{"extra":1},"discovered":false,"name":"Paint Brush","order":31,"pos":{"x":7,"y":2},"set":"Voucher","unlocked":true},"v_palette":{"config":{"extra":1},"discovered":false,"name":"Palette","order":32,"pos":{"x":7,"y":3},"set":"Voucher","unlock_condition":{"extra":5,"type":"min_hand_size"},"unlocked":false},"v_petroglyph":{"config":{"extra":1},"discovered":false,"name":"Petroglyph","order":28,"pos":{"x":5,"y":3},"set":"Voucher","unlock_condition":{"ante":12,"extra":12,"type":"ante_up"},"unlocked":false},"v_planet_merchant":{"config":{"extra":2.4,"extra_disp":2},"discovered":false,"name":"Planet Merchant","order":19,"pos":{"x":2,"y":0},"set":"Voucher","unlocked":true},"v_planet_tycoon":{"config":{"extra":8,"extra_disp":4},"discovered":false,"name":"Planet Tycoon","order":20,"pos":{"x":2,"y":1},"set":"Voucher","unlock_condition":{"extra":50,"type":"c_planets_bought"},"unlocked":false},"v_recyclomancy":{"config":{"extra":1},"discovered":false,"name":"Recyclomancy","order":16,"pos":{"x":6,"y":1},"set":"Voucher","unlock_condition":{"extra":2500,"type":"c_cards_discarded"},"unlocked":false},"v_reroll_glut":{"config":{"extra":2},"discovered":false,"name":"Reroll Glut","order":8,"pos":{"x":0,"y":3},"set":"Voucher","unlock_condition":{"extra":100,"type":"c_shop_rerolls"},"unlocked":false},"v_reroll_surplus":{"config":{"extra":2},"discovered":false,"name":"Reroll Surplus","order":7,"pos":{"x":0,"y":2},"set":"Voucher","unlocked":true},"v_retcon":{"config":{"extra":10},"discovered":false,"name":"Retcon","order":30,"pos":{"x":6,"y":3},"set":"Voucher","unlock_condition":{"extra":25,"type":"blind_discoveries"},"unlocked":false},"v_seed_money":{"config":{"extra":50},"discovered":false,"name":"Seed Money","order":21,"pos":{"x":1,"y":2},"set":"Voucher","unlocked":true},"v_tarot_merchant":{"config":{"extra":2.4,"extra_disp":2},"discovered":false,"name":"Tarot Merchant","order":17,"pos":{"x":1,"y":0},"set":"Voucher","unlocked":true},"v_tarot_tycoon":{"config":{"extra":8,"extra_disp":4},"discovered":false,"name":"Tarot Tycoon","order":18,"pos":{"x":1,"y":1},"set":"Voucher","unlock_condition":{"extra":50,"type":"c_tarots_bought"},"unlocked":false},"v_telescope":{"config":{"extra":3},"discovered":false,"name":"Telescope","order":11,"pos":{"x":3,"y":2},"set":"Voucher","unlocked":true},"v_wasteful":{"config":{"extra":1},"discovered":false,"name":"Wasteful","order":15,"pos":{"x":6,"y":0},"set":"Voucher","unlocked":true}};
 
 /** `G.P_TAGS` */
 export const P_TAGS: Readonly<Record<string, PCenter>> = {"tag_boss":{"config":{"type":"new_blind_choice"},"name":"Boss Tag","order":9,"set":"Tag"},"tag_buffoon":{"config":{"type":"new_blind_choice"},"name":"Buffoon Tag","order":13,"set":"Tag"},"tag_charm":{"config":{"type":"new_blind_choice"},"name":"Charm Tag","order":11,"set":"Tag"},"tag_coupon":{"config":{"type":"shop_final_pass"},"name":"Coupon Tag","order":17,"set":"Tag"},"tag_d_six":{"config":{"type":"shop_start"},"name":"D6 Tag","order":20,"set":"Tag"},"tag_double":{"config":{"type":"tag_add"},"name":"Double Tag","order":18,"set":"Tag"},"tag_economy":{"config":{"max":40,"type":"immediate"},"name":"Economy Tag","order":24,"set":"Tag"},"tag_ethereal":{"config":{"type":"new_blind_choice"},"name":"Ethereal Tag","order":16,"set":"Tag"},"tag_foil":{"config":{"edition":"foil","odds":2,"type":"store_joker_modify"},"name":"Foil Tag","order":4,"set":"Tag"},"tag_garbage":{"config":{"dollars_per_discard":1,"type":"immediate"},"name":"Garbage Tag","order":15,"set":"Tag"},"tag_handy":{"config":{"dollars_per_hand":1,"type":"immediate"},"name":"Handy Tag","order":14,"set":"Tag"},"tag_holo":{"config":{"edition":"holo","odds":3,"type":"store_joker_modify"},"name":"Holographic Tag","order":5,"set":"Tag"},"tag_investment":{"config":{"dollars":25,"type":"eval"},"name":"Investment Tag","order":7,"set":"Tag"},"tag_juggle":{"config":{"h_size":3,"type":"round_start_bonus"},"name":"Juggle Tag","order":19,"set":"Tag"},"tag_meteor":{"config":{"type":"new_blind_choice"},"name":"Meteor Tag","order":12,"set":"Tag"},"tag_negative":{"config":{"edition":"negative","odds":5,"type":"store_joker_modify"},"name":"Negative Tag","order":3,"set":"Tag"},"tag_orbital":{"config":{"levels":3,"type":"immediate"},"name":"Orbital Tag","order":23,"set":"Tag"},"tag_polychrome":{"config":{"edition":"polychrome","odds":4,"type":"store_joker_modify"},"name":"Polychrome Tag","order":6,"set":"Tag"},"tag_rare":{"config":{"odds":3,"type":"store_joker_create"},"name":"Rare Tag","order":2,"set":"Tag"},"tag_skip":{"config":{"skip_bonus":5,"type":"immediate"},"name":"Skip Tag","order":22,"set":"Tag"},"tag_standard":{"config":{"type":"new_blind_choice"},"name":"Standard Tag","order":10,"set":"Tag"},"tag_top_up":{"config":{"spawn_jokers":2,"type":"immediate"},"name":"Top-up Tag","order":21,"set":"Tag"},"tag_uncommon":{"config":{"type":"store_joker_create"},"name":"Uncommon Tag","order":1,"set":"Tag"},"tag_voucher":{"config":{"type":"voucher_add"},"name":"Voucher Tag","order":8,"set":"Tag"}};

@@ -123,6 +123,9 @@ export type OptionCycleArgs = {
     current_option: number;
     /** 换掉中间那块（牌组 / 赌注选择：中间是整块卡片而不是一串字） */
     mid?: UINodeDef;
+    /** 两边各留 0.7 的「肩膀」（手柄的 LB / RB 提示位）；图鉴翻页用 */
+    cycle_shoulders?: boolean;
+    no_pips?: boolean;
     opt_callback?: (to: { to_key: number; to_val: string | number }) => void;
     colour?: Colour;
     scale?: number;
@@ -147,7 +150,7 @@ export function createOptionCycle(args: OptionCycleArgs): UINodeDef {
     const pips: UINodeDef[] = args.options.map((_, i) => ({ n: UIT.B, config: {
         w: 0.1 * scale, h: 0.1 * scale, r: 0.05, id: `pip_${i + 1}`, colour: args.current_option === i + 1 ? C.WHITE : C.BLACK,
     } }));
-    const choicePips: UINodeDef = { n: UIT.R, config: { align: 'cm', padding: (0.05 - (args.options.length > 15 ? 0.03 : 0)) * scale }, nodes: pips };
+    const choicePips: UINodeDef | null = args.no_pips ? null : { n: UIT.R, config: { align: 'cm', padding: (0.05 - (args.options.length > 15 ? 0.03 : 0)) * scale }, nodes: pips };
     const arrow = (side: 'l' | 'r'): UINodeDef => ({ n: UIT.C, config: {
         align: 'cm', r: 0.1, minw: 1.2 * scale, hover: !disabled, colour: disabled ? C.BLACK : colour, shadow: !disabled,
         button: disabled ? undefined : 'option_cycle', ref_table: args, ref_value: side,
@@ -174,7 +177,13 @@ export function createOptionCycle(args: OptionCycleArgs): UINodeDef {
             ] },
         arrow('r'),
     ] };
-    t = { n: UIT.R, config: { align: 'cm', colour: C.CLEAR, padding: 0 }, nodes: [t] };
+    t = args.cycle_shoulders
+        ? { n: UIT.R, config: { align: 'cm', colour: C.CLEAR }, nodes: [
+            { n: UIT.C, config: { minw: 0.7, align: 'cm', colour: C.CLEAR }, nodes: [] },
+            { n: UIT.C, config: { id: 'cycle_shoulders', padding: 0.1 }, nodes: [t] },
+            { n: UIT.C, config: { minw: 0.7, align: 'cm', colour: C.CLEAR }, nodes: [] },
+        ] }
+        : { n: UIT.R, config: { align: 'cm', colour: C.CLEAR, padding: 0 }, nodes: [t] };
     if (args.label) {
         t = { n: UIT.R, config: { align: 'cm', padding: 0.05 }, nodes: [
             { n: UIT.R, config: { align: 'cm' }, nodes: [
@@ -278,7 +287,7 @@ export function optionsMenu(game: { seeded: boolean; seed: string }): UINodeDef 
     const settings = uiboxButton({ button: 'settings', label: [loc('b_settings')], minw: 5 });
     const restart = uiboxButton({ id: 'restart_button', label: [loc('b_start_new_run')], button: 'setup_run', minw: 5 });
     const mainMenu = uiboxButton({ label: [loc('b_main_menu')], button: 'go_to_menu', minw: 5 });
-    const yourCollection = inactive(uiboxButton({ label: [loc('b_collection')], button: 'your_collection', minw: 5, id: 'your_collection' }));
+    const yourCollection = uiboxButton({ label: [loc('b_collection')], button: 'your_collection', minw: 5, id: 'your_collection' });
     const currentSeed: UINodeDef = { n: UIT.R, config: { align: 'cm', padding: 0.05 }, nodes: [
         { n: UIT.C, config: { align: 'cm', padding: 0 }, nodes: [
             { n: UIT.T, config: { text: `${loc('b_seed')}: `, scale: 0.4, colour: C.WHITE } },

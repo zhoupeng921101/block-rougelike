@@ -14,6 +14,7 @@ import { DynaText } from '../dynatext';
 import { V_DICTIONARY } from '../lang.generated';
 import { type LocVars, locMisc, locNameText, localize } from '../localize';
 import { type UINodeDef, UIT } from '../uibox';
+import { numberFormat } from '../format';
 
 /** 提示框会读的 `G.GAME` 与区域状态 */
 export type PopupGame = {
@@ -53,6 +54,8 @@ export type PopupCard = {
     edition?: string;
     seal?: string;
     debuff?: boolean;
+    /** 图鉴里没解锁 / 没发现的（`generate_UIBox_ability_table` 的 `card_type = 'Locked' / 'Undiscovered'`） */
+    display?: 'Locked' | 'Undiscovered';
     /** 在哪个区（Blueprint / Brainstorm / Luchador 只在小丑区显示额外一行） */
     area?: 'jokers' | 'consumeables' | 'hand' | 'shop' | 'pack' | 'other';
 };
@@ -255,10 +258,48 @@ function blueprintCompat(a: Record<string, unknown>): UINodeDef[] {
     ];
 }
 
+/**
+ * `generate_card_ui` 的 Locked 那一支按名字填的 `loc_vars`（`common_events.lua:2508` 起）。
+ * 读生涯统计的那几项（`career_stats.c_losses` 之类）复刻件没有生涯统计，按新档的 0
+ */
+function unlockVars(c: Center): LocVars {
+    const u = (c.unlock_condition ?? {}) as Record<string, any>;
+    const ex = u.extra as any;
+    const hand = (k: string) => locMisc(k, 'poker_hands');
+    switch (c.name) {
+        case 'Mr. Bones': case 'Acrobat': case 'Sock and Buskin': case 'Swashbuckler': case 'Burnt Joker':
+        case 'Overstock Plus': case 'Tarot Tycoon': case 'Planet Tycoon': case 'Reroll Glut': case 'Omen Globe': case 'Observatory':
+        case 'Nacho Tong': case 'Recyclomancy': case 'Money Tree': case 'Antimatter': case 'Illusion':
+            return [ex, 0];
+        case 'Troubadour': case 'Satellite': case 'Liquidation': case 'Glow Up': case 'Petroglyph': case 'Retcon': case 'Palette':
+            return [ex];
+        case 'Smeared Joker': case 'Glass Joker':
+            return [ex.count, locNameText('Enhanced', ex.e_key)];
+        case 'Hanging Chad': case 'The Duo': case 'The Trio': case 'The Family': case 'The Order': case 'The Tribe':
+            return [hand(ex)];
+        case 'Rough Gem': case 'Bloodstone': case 'Arrowhead': case 'Onyx Agate':
+            return [ex.count, locMisc(ex.suit, 'suits_singular')];
+        case 'Showman': case 'Flower Pot':
+            return [u.ante];
+        case 'Wee Joker': case 'Merry Andy':
+            return [u.n_rounds];
+        case 'Oops! All 6s': case 'The Idol': case 'Stuntman':
+            return [numberFormat(u.chips)];
+        case 'Seeing Double':
+            return [locMisc('ph_4_7_of_clubs')];
+        case "Driver's License": case 'Bootstraps':
+            return [ex.count];
+        case 'Cartomancer':
+            return [u.tarot_count];
+        default:
+            return [];
+    }
+}
+
 /** `Card:generate_UIBox_ability_table` */
 export function abilityTable(card: PopupCard, g: PopupGame): CardUi {
     const a = card.ability;
-    const cardType: string = a.set ?? 'None';
+    const cardType: string = card.display ?? a.set ?? 'None';
     let loc: LocResult = {};
     // biome-ignore lint: loc_vars 在扑克牌那一支是个带字段的表
     let specific: any;
@@ -271,6 +312,8 @@ export function abilityTable(card: PopupCard, g: PopupGame): CardUi {
             nominal_chips: card.base && card.base.nominal > 0 ? card.base.nominal : undefined,
             bonus_chips: bonus > 0 ? bonus : undefined,
         };
+    } else if (card.display) {
+        // 锁住 / 没发现的不填 loc_vars
     } else if (a.set === 'Joker') {
         loc = jokerLocVars(card, g);
         specific = loc.loc_vars;
@@ -282,7 +325,7 @@ export function abilityTable(card: PopupCard, g: PopupGame): CardUi {
         else badges.push(card.edition === 'holo' ? 'holographic' : card.edition);
     }
     if (card.seal) badges.push(`${card.seal.toLowerCase()}_seal`);
-    return generateCardUi(center(card.centerKey), null, specific, cardType, badges, false, loc.main_start, loc.main_end, g);
+    return generateCardUi(center(card.centerKey), null, specific, cardType, badges, cardType === 'Undiscovered', loc.main_start, loc.main_end, g);
 }
 
 /** `Tag:get_uibox_table` 读的 `G.GAME` 那几项 */
@@ -347,6 +390,8 @@ export function generateCardUi(
 
     if (!full.name) {
         if (specific?.no_name) full.name = true;
+        else if (cardType === 'Locked') full.name = localize({ type: 'name', set: 'Other', key: 'locked', mobile }) ?? null;
+        else if (cardType === 'Undiscovered') full.name = localize({ type: 'name', set: 'Other', key: `undiscovered_${c.set.toLowerCase()}`, mobile }) ?? null;
         else if (specific && (cardType === 'Default' || cardType === 'Enhanced')) {
             if (c.name === 'Stone Card') full.name = true;
             if (specific.playing_card && c.name !== 'Stone Card') {
@@ -368,6 +413,8 @@ export function generateCardUi(
 
     if (c.set === 'Other') {
         localize({ type: 'other', key: c.key, nodes: descNodes, vars: specific ?? c.vars, mobile });
+    } else if (cardType === 'Locked') {
+        localize({ type: 'unlocks', key: c.key, set: c.set, nodes: descNodes, vars: unlockVars(c), mobile });
     } else if (hideDesc) {
         localize({ type: 'other', key: `undiscovered_${c.set.toLowerCase()}`, nodes: descNodes, mobile });
     } else if (specific?.debuffed) {

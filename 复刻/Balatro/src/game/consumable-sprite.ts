@@ -35,13 +35,16 @@ export class ConsumableSprite {
         scene: Scene,
         readonly consumable: Consumable,
         private readonly onClick: (consumable: Consumable) => void,
+        /** 图鉴里没发现的：Tarot 图集的 `t_/p_/s_undiscovered`（{6,2} / {7,2} / {5,2}）再浮一张 `shared_undiscovered_tarot`（centers {6,3}） */
+        display?: 'undiscovered',
     ) {
+        const undiscoveredPos: Record<string, { x: number; y: number }> = { Tarot: { x: 6, y: 2 }, Planet: { x: 7, y: 2 }, Spectral: { x: 5, y: 2 } };
         const quad = {
             // 名字要唯一：同一张牌可能同时在商店和消耗品区
             name: `consumable_${consumable.key}_${Math.random().toString(36).slice(2, 7)}`,
             textureKey: 'tarots',
             atlas: TAROT_ATLAS,
-            pos: consumable.center.pos,
+            pos: display ? undiscoveredPos[consumable.center.set] ?? consumable.center.pos : consumable.center.pos,
             // 塔罗与小丑的 order 各自从 1 起，撞在一起会让两张牌的
             // shader 动画完全同相。错开一段，只影响观感
             cardTime: cardTimeOf(consumable.center.order + 200),
@@ -53,7 +56,8 @@ export class ConsumableSprite {
         this.layers = new LayeredQuad(scene, quad, 2, { edition: consumable.edition, set: consumable.center.set });
         this.placed = new PlacedLayers(scene, this.layers, quad, CARD_W, CARD_H);
         // The Soul 的宝石是 `G.shared_soul`：`centers` 图集里 `P_CENTERS.soul.pos`（`game.lua:175`）
-        if (consumable.key === 'c_soul') {
+        if (display) this.placed.addFloating(scene, 'undiscovered', { ...quad, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: { x: 6, y: 3 } });
+        else if (consumable.key === 'c_soul') {
             this.placed.addFloating(scene, 'soul', { ...quad, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: { x: 0, y: 1 } });
         }
 
@@ -92,6 +96,11 @@ export class ConsumableSprite {
     /** 计分时弹一下：`card_eval_status_text` 的 `juice_up(0.6, 0.1)`（`common_events.lua:896`） */
     pop(): void {
         this.placed.juiceUp(0.6, 0.1);
+    }
+
+    /** 图鉴里压在 overlay 之上 */
+    setBaseDepth(card: number, shadow: number): void {
+        this.placed.setBaseDepth(card, shadow);
     }
 
     /** 退场（`card-exit.ts`）要的那几样 */

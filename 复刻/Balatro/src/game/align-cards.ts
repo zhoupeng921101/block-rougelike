@@ -122,3 +122,45 @@ export function alignPackHand(area: Rect, cards: CardIn[], limit: number, real: 
         return { x, y, r };
     });
 }
+
+/**
+ * `cardarea.lua:470`：`type = 'title'`（图鉴的卡区、Run Info 的优惠券格）。均摊、扇形 ±0.2 弧度、两端下沉，晃得小。
+ * `limit` 是 `config.temp_limit`（缺省就是 `card_limit`）
+ */
+export function alignTitle(area: Rect, cards: CardIn[], limit: number, real: number, cardW = CARD_W): Placed[] {
+    const n = cards.length;
+    return cards.map((c, i) => {
+        const k = i + 1;
+        const w = c.w ?? CARD_W;
+        const h = c.h ?? CARD_H;
+        const r = (0.2 * (-n / 2 - 0.5 + k)) / n + wobble() * 0.02 * Math.sin(2 * real + c.prevX);
+        const maxCards = Math.max(n, limit);
+        const d = Math.max(maxCards - 1, 1);
+        const x = area.x + (area.w - cardW) * ((k - 1) / d - (0.5 * (n - maxCards)) / d) + 0.5 * (cardW - w);
+        const y = area.y + area.h / 2 - h / 2 - (c.highlighted ? HIGHLIGHT_H : 0) + wobble() * 0.03 * Math.sin(0.666 * real + x) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - (n > 1 ? 0.2 : 0);
+        return { x, y, r };
+    });
+}
+
+/**
+ * `cardarea.lua:486`：`type = 'voucher'` 且多于一张（图鉴的优惠券页）。在 title 的基础上奇偶交错：
+ * 转角多 ±0.08、x 多 ±0.27，区域宽至少 3.2，正弦相位加上 y
+ */
+export function alignVoucher(area: Rect, cards: CardIn[], limit: number, real: number): Placed[] {
+    const n = cards.length;
+    if (n <= 1) return alignTitle(area, cards, limit, real);
+    const selfW = Math.max(area.w, 3.2);
+    return cards.map((c, i) => {
+        const k = i + 1;
+        const w = c.w ?? CARD_W;
+        const h = c.h ?? CARD_H;
+        const odd = k % 2 === 1;
+        const maxCards = Math.max(n, limit);
+        const d = Math.max(maxCards - 1, 1);
+        let x = area.x + (selfW - CARD_W) * ((k - 1) / d - (0.5 * (n - maxCards)) / d) + 0.5 * (CARD_W - w) + (odd ? 0.27 : -0.27) + (area.w - selfW) / 2;
+        const y = area.y + area.h / 2 - h / 2 - (c.highlighted ? HIGHLIGHT_H : 0) + wobble() * 0.03 * Math.sin(0.666 * real + x) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - 0.2;
+        const r = (0.2 * (-n / 2 - 0.5 + k)) / n + wobble() * 0.02 * Math.sin(2 * real + c.prevX + y) + (odd ? -0.08 : 0.08);
+        x += cardShadowParallaxX(c.prevX, w) / 30;
+        return { x, y, r };
+    });
+}

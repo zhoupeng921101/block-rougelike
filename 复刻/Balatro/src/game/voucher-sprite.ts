@@ -7,7 +7,7 @@
 
 import type { GameObjects, Scene } from 'phaser';
 
-import { VOUCHER_ATLAS } from '../core/atlas';
+import { CENTERS_ATLAS, VOUCHER_ATLAS } from '../core/atlas';
 import type { VoucherCenter } from '../core/vouchers';
 import { CARD_H, CARD_W, toPx } from './coords';
 import type { Placed } from './align-cards';
@@ -34,12 +34,14 @@ export class VoucherSprite {
         depthBase?: { card: number; shadow: number },
         /** `Card:start_materialize(nil, silent)`：建出来时溶入（Run Info 的 Vouchers 页） */
         materialize?: { silent: boolean },
+        /** 图鉴：没解锁的画 `v_locked`（{8,3}），没发现的画 `v_undiscovered`（{8,2}）再浮一张问号 */
+        display?: 'locked' | 'undiscovered',
     ) {
         const quad = {
             name: `voucher_${center.order}_${Math.random().toString(36).slice(2, 7)}`,
             textureKey: 'vouchers',
             atlas: VOUCHER_ATLAS,
-            pos: center.pos,
+            pos: display === 'locked' ? { x: 8, y: 3 } : display === 'undiscovered' ? { x: 8, y: 2 } : center.pos,
             // 与小丑／塔罗／补充包错开，免得 shader 动画同相
             cardTime: cardTimeOf(center.order + 600),
             w: this.w,
@@ -49,6 +51,7 @@ export class VoucherSprite {
         };
         this.layers = new LayeredQuad(scene, quad, 2, { set: 'Voucher' });
         this.placed = new PlacedLayers(scene, this.layers, quad, this.w / toPx(1), this.h / toPx(1), depthBase);
+        if (display === 'undiscovered') this.placed.addFloating(scene, 'undiscovered', { ...quad, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: { x: 6, y: 3 } });
         if (materialize) this.startMaterialize(scene, materialize.silent, (depthBase?.card ?? 10) + 0.5);
 
         makeClickable(this.shader, this.w, this.h, {

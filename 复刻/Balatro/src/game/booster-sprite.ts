@@ -9,7 +9,7 @@
 
 import type { GameObjects, Scene } from 'phaser';
 
-import { BOOSTER_ATLAS } from '../core/atlas';
+import { BOOSTER_ATLAS, CENTERS_ATLAS } from '../core/atlas';
 import type { BoosterCenter } from '../core/boosters';
 import { CARD_H, CARD_W, toPx } from './coords';
 import type { Placed } from './align-cards';
@@ -31,12 +31,14 @@ export class BoosterSprite {
         scene: Scene,
         readonly center: BoosterCenter,
         private readonly onClick: () => void,
+        /** 图鉴：没发现的画 `booster_undiscovered`（{0,5}）再浮一张问号 */
+        display?: 'undiscovered',
     ) {
         const quad = {
             name: `booster_${center.order}_${Math.random().toString(36).slice(2, 7)}`,
             textureKey: 'boosters',
             atlas: BOOSTER_ATLAS,
-            pos: center.pos,
+            pos: display ? { x: 0, y: 5 } : center.pos,
             // 与小丑／塔罗错开，免得三种卡的 shader 动画同相
             cardTime: cardTimeOf(center.order + 400),
             w: this.w,
@@ -45,6 +47,7 @@ export class BoosterSprite {
         };
         this.layers = new LayeredQuad(scene, quad, 2, { set: 'Booster' });
         this.placed = new PlacedLayers(scene, this.layers, quad, this.w / toPx(1), this.h / toPx(1));
+        if (display) this.placed.addFloating(scene, 'undiscovered', { ...quad, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: { x: 6, y: 3 } });
 
         makeClickable(this.shader, this.w, this.h, {
             onClick: () => this.onClick(),
@@ -61,6 +64,11 @@ export class BoosterSprite {
     /** 按 `align_cards` 的结果摆：`T.scale = 0.95`、阴影、缓动都在 `PlacedLayers` 里 */
     place(p: Placed, index: number): void {
         this.placed.place(p, index);
+    }
+
+    /** 图鉴里压在 overlay 之上 */
+    setBaseDepth(card: number, shadow: number): void {
+        this.placed.setBaseDepth(card, shadow);
     }
 
     /** 选中（点一下；按钮挂在它身上） */

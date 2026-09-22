@@ -23,6 +23,8 @@ export type ButtonArgs = {
     choice?: boolean;
     chosen?: boolean;
     refTable?: object;
+    /** 按钮下面一行「已发现 / 总数」（图鉴） */
+    count?: { tally: number; of: number };
 };
 
 /** `UIBox_button` */
@@ -39,7 +41,10 @@ export function uiboxButton(args: ButtonArgs): UINodeDef {
     const labelNodes: UINodeDef[] = label.map((v) => ({ n: UIT.R, config: { align: 'cm', padding: 0, minw, maxw }, nodes: [
         { n: UIT.T, config: { text: v, scale, colour: textColour, shadow: args.shadow } },
     ] }));
+    if (args.count) labelNodes.push({ n: UIT.R, config: { align: 'cm', minh: 0.4 }, nodes: [
+        { n: UIT.T, config: { scale: 0.35, text: `${args.count.tally} / ${args.count.of}`, colour: [1, 1, 1, 0.9] } },
+    ] });
     return { n: args.col ? UIT.C : UIT.R, config: { align: 'cm' }, nodes: [
-        { n: UIT.C, config: { align: 'cm', padding: args.padding ?? 0, r: 0.1, hover: true, colour, button, minh, shadow: true, func: args.func, id: args.id, choice: args.choice, chosen: args.chosen, ref_table: args.refTable }, nodes: labelNodes },
+        { n: UIT.C, config: { align: 'cm', padding: args.padding ?? 0, r: 0.1, hover: true, colour, button, minh: minh - 0.3 * (args.count ? 1 : 0), shadow: true, func: args.func, id: args.id, choice: args.choice, chosen: args.chosen, ref_table: args.refTable }, nodes: labelNodes },
     ] };
 }

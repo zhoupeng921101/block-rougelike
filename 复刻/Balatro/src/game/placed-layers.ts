@@ -20,9 +20,11 @@ const SHADOW_HEIGHT = 0.1;
  * 传奇小丑与 Hologram 的 `soul_pos`（`floating_sprite`）。`draw_from` 以卡心为轴，额外缩放 `1 + scale_mod`、
  * 额外转 `rotate_mod`；先画一遍阴影模式（下移 `0.1 + 0.03·sin(1.8t)` tile），再画本体。两种的摆动幅度不同
  */
-export type FloatingKind = 'soul' | 'soul_pos' | 'hologram';
+export type FloatingKind = 'soul' | 'soul_pos' | 'hologram' | 'undiscovered';
 
 function floatingMods(kind: FloatingKind, t: number): { scale: number; rotate: number } {
+    // `card.lua:4440`：没发现的卡上浮的那张问号
+    if (kind === 'undiscovered') return { scale: -0.05 + 0.05 * Math.sin(1.8 * t), rotate: 0.03 * Math.sin(1.219 * t) };
     const frac = t - Math.floor(t);
     if (kind === 'soul') {
         return {
@@ -53,7 +55,7 @@ export class PlacedLayers {
         private readonly wTiles: number,
         private readonly hTiles: number,
         /** 卡与阴影的基准深度（第 `index` 张在 `card + index` / `shadow + 0.001·index`）。结束界面的 Jimbo 要压在 overlay 之上 */
-        private readonly depthBase = { card: 10, shadow: 1 },
+        private depthBase = { card: 10, shadow: 1 },
     ) {
         this.shadow = makeShaderQuad(scene, { ...quad, name: `${quad.name}_shadow`, tilt: () => 0, shadow: true, shader: 'dissolve' });
         for (const q of layers.quads) q.setScale(CARD_SCALE);
@@ -67,6 +69,10 @@ export class PlacedLayers {
      * Hologram（`card.lua:4524`）用 `hologram` shader 画、只画一遍（没有阴影那遍），摆动幅度 ×2，倾斜 ×1.5
      */
     addFloating(scene: Scene, kind: FloatingKind, quad: QuadOptions): void {
+        if (kind === 'undiscovered') {
+            this.floating = { kind, shadow: null, body: makeShaderQuad(scene, { ...quad, name: `${quad.name}_undisc`, shader: 'dissolve' }) };
+            return;
+        }
         if (kind === 'hologram') {
             const tilt = quad.tilt;
             this.floating = { kind, shadow: null, body: makeShaderQuad(scene, { ...quad, name: `${quad.name}_float`, shader: 'hologram', tilt: () => tilt() * 1.5 }) };
@@ -102,6 +108,11 @@ export class PlacedLayers {
     /** 悬停时大 0.05（`zoom`） */
     set hovered(v: boolean) {
         if (this.motion) this.motion.hovered = v;
+    }
+
+    /** 换基准深度（图鉴里的卡要压在 overlay 之上） */
+    setBaseDepth(card: number, shadow: number): void {
+        this.depthBase = { card, shadow };
     }
 
     /** 最上面那层的深度：退场碎屑画在它之上 */
@@ -144,7 +155,7 @@ export class PlacedLayers {
 
         const f = this.floating;
         if (f) {
-            const mods = floatingMods(f.kind === 'soul' ? 'soul' : 'soul_pos', now);
+            const mods = floatingMods(f.kind === 'hologram' ? 'soul_pos' : f.kind, now);
             const m2 = f.kind === 'hologram' ? 2 : 1;
             const scale = m2 * mods.scale;
             const rotate = m2 * mods.rotate;

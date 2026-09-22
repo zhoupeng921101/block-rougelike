@@ -15,7 +15,7 @@ import type { Joker } from '../core/jokers';
 import type { Placed } from './align-cards';
 import { CARD_H, CARD_W, toPx } from './coords';
 import { PlacedLayers } from './placed-layers';
-import { type DissolveState, JOKER_ATLAS, LayeredQuad, cardTimeOf, makeClickable } from './shader-quad';
+import { CENTERS_ATLAS, type DissolveState, JOKER_ATLAS, LayeredQuad, cardTimeOf, makeClickable } from './shader-quad';
 
 /**
  * `card.lua:238-257` 的那四条尺寸特例。
@@ -61,8 +61,13 @@ export class JokerSprite {
         scene: Scene,
         readonly joker: Joker,
         private readonly onClick: (joker: Joker) => void,
+        /**
+         * 图鉴里（没有 `bypass_discovery_center`）：没解锁的画 `j_locked`（Joker 图集 {8,9}），没发现的画 `j_undiscovered`（{9,9}）
+         * 再浮一张 `shared_undiscovered_joker`（`card.lua:4438`）。这两种都不走尺寸特例、不画浮层
+         */
+        display?: 'locked' | 'undiscovered',
     ) {
-        const { w, h } = sizeOf(joker);
+        const { w, h } = display ? { w: toPx(CARD_W), h: toPx(CARD_H) } : sizeOf(joker);
         this.w = w;
         this.h = h;
 
@@ -71,7 +76,7 @@ export class JokerSprite {
             name: `joker_${joker.key}_${joker.center.order}_${Math.random().toString(36).slice(2, 7)}`,
             textureKey: 'jokers',
             atlas: JOKER_ATLAS,
-            pos: joker.center.pos,
+            pos: display === 'locked' ? { x: 8, y: 9 } : display === 'undiscovered' ? { x: 9, y: 9 } : joker.center.pos,
             cardTime: cardTimeOf(joker.center.order),
             w, h,
             tilt: () => this.hoverTilt,
@@ -80,7 +85,8 @@ export class JokerSprite {
         this.layers = new LayeredQuad(scene, quad, 2, { edition: joker.edition, debuff: joker.debuff });
         this.placed = new PlacedLayers(scene, this.layers, quad, w / toPx(1), h / toPx(1));
         // 传奇小丑与 Hologram 的 `floating_sprite`（`card.lua:205`），Hologram 走 `hologram` shader
-        if (joker.center.soul_pos) this.placed.addFloating(scene, joker.key === 'j_hologram' ? 'hologram' : 'soul_pos', { ...quad, pos: joker.center.soul_pos });
+        if (display === 'undiscovered') this.placed.addFloating(scene, 'undiscovered', { ...quad, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: { x: 5, y: 3 } });
+        else if (joker.center.soul_pos && !display) this.placed.addFloating(scene, joker.key === 'j_hologram' ? 'hologram' : 'soul_pos', { ...quad, pos: joker.center.soul_pos });
 
         makeClickable(this.shader, w, h, {
             onClick: () => this.onClick(this.joker),
@@ -119,6 +125,11 @@ export class JokerSprite {
     pop(amount?: number): void {
         if (amount === undefined) this.placed.juiceUp(0.6, 0.1);
         else this.placed.juiceUp(amount);
+    }
+
+    /** 图鉴里压在 overlay 之上 */
+    setBaseDepth(card: number, shadow: number): void {
+        this.placed.setBaseDepth(card, shadow);
     }
 
     /** 退场（`card-exit.ts`）要的那几样 */
