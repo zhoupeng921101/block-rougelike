@@ -45,6 +45,7 @@ import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud
 import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
 import { deckPreview, viewDeckLabel } from '../../ui/definitions/deck-preview';
+import { MUSIC_KEYS, Music, desiredTrack } from '../music';
 import { type ViewDeckArea, deckInfo } from '../../ui/definitions/deck-info';
 import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/definitions/hud-blind';
 import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
@@ -316,6 +317,11 @@ export class RunScene extends Scene {
         }
     }
 
+    /** 背景音乐与管风琴（`modulate_sound`）。音乐 14M，场景起来之后再后台加载 */
+    private music!: Music;
+    /** 关包后粒子还在淡出（`booster_pack_sparkles` 没 `REMOVED`）：那一包的种类与到期时刻 */
+    private packFade: { kind: string; until: number } | null = null;
+
     create(): void {
         const seed = new URLSearchParams(location.search).get('seed') ?? 'ALEEB';
 
@@ -343,6 +349,9 @@ export class RunScene extends Scene {
             hudBlindFuncs(this.hudBlindState),
         ), 41);
         this.deckSprite = new DeckSprite(this);
+        this.music = new Music(this);
+        for (const key of [...MUSIC_KEYS, 'ambientOrgan1']) this.load.audio(key, `/assets/sounds/${key}.ogg`);
+        this.load.start();
         this.deckZone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(6);
         this.deckZone.on('pointerover', () => { this.deckHovered = true; });
         this.deckZone.on('pointerout', () => { this.deckHovered = false; });
@@ -928,6 +937,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         // `end_consumeable`：粒子淡出 1 秒后移除
         if (this.packFx && this.packFx.pack !== pack) {
             for (const p of this.packFx.systems) p.fadeOutAndRemove(1);
+            // 小丑包没有粒子，音乐只跟着外框（0.2 秒后拆）；别的包跟着粒子淡出 1 秒
+            const kind = this.packFx.pack.center.kind;
+            this.packFade = { kind, until: this.time.now / 1000 + (kind === 'Buffoon' ? 0.2 : 1) };
             this.packFx = null;
         }
         if (!pack) {
@@ -2543,6 +2555,29 @@ ${String(e instanceof Error ? e.message : e)}`)
         // 牌堆：盲注里是剩余张数，盲注外整副牌都在牌堆里
         this.deckSprite.update(this.areas.deck, this.deckCount());
         this.syncDeckPreview(time / 1000);
+        this.syncMusic(time / 1000);
+    }
+
+    /** `modulate_sound`：挑音轨、游戏结束降调、管风琴跟着本手分数 */
+    private syncMusic(now: number): void {
+        const run = this.run;
+        const round = this.round;
+        if (this.packFade && now > this.packFade.until) this.packFade = null;
+        const blindKey = run.state === 'playing' ? run.blindKey : this.roundEval?.blindHeld ? this.roundEval.last.blindKey : null;
+        const hand = this.hudState.current_round.current_hand;
+        const earned = this.animating && round ? this.liveChips * this.liveMult
+            : (Number(String(hand.chip_text).replace(/,/g, '')) || 0) * (Number(String(hand.mult_text).replace(/,/g, '')) || 0);
+        this.music.update(now, {
+            track: desiredTrack({
+                packKind: run.openPack?.center.kind ?? null,
+                packFading: this.packFade?.kind ?? null,
+                inShop: !!this.shopUi,
+                boss: !!blindKey && !!BLIND_CENTERS[blindKey]?.boss,
+            }),
+            gameOver: this.runOver,
+            earned,
+            required: round?.requirement ?? 0,
+        });
     }
 
     /**
