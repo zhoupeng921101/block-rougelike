@@ -1851,6 +1851,17 @@ ${String(e instanceof Error ? e.message : e)}`)
         } }));
     }
 
+    private lastDollars: number | null = null;
+
+    private dollarsPopup(mod: number): void {
+        const el = this.hudView.box.getById('dollar_text_UI')?.parent;
+        if (!el) return;
+        this.attentionTexts.push(new AttentionText(this, {
+            text: `${mod < 0 ? '-' : '+'}$${Math.abs(mod)}`, scale: 0.8, hold: 0.7, align: 'cm',
+            major: () => ({ x: el.x, y: el.y, w: el.T.w, h: el.T.h }), cover: true, coverColour: mod < 0 ? C.RED : C.MONEY,
+        }, this.mapping.pxPerTile / toPx(1), 45));
+    }
+
     /** 当前显示的回合分数（`G.GAME.chips` 的缓动值）；null 时直接读逻辑层 */
     private shownRoundChips: { v: number } | null = null;
 
@@ -3111,6 +3122,9 @@ ${String(e instanceof Error ? e.message : e)}`)
         const s = this.hudState;
         const inRound = run.state === 'playing' && round !== null;
         s.dollars = inRound ? round.dollars : run.dollars - this.pendingPayout;
+        // `ease_dollars`：金额格上盖一块金（加）/ 红（减）色块、冒「+$N」（同一帧里的几笔合成一笔；`coin1` 由各处自己放）
+        if (this.lastDollars !== null && s.dollars !== this.lastDollars) this.dollarsPopup(s.dollars - this.lastDollars);
+        this.lastDollars = s.dollars;
         s.round = run.roundNumber;
         s.round_resets.ante = run.ante;
         const last = this.roundEval?.last;

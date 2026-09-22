@@ -67,7 +67,7 @@ export class AttentionText {
             const dark = [...darken(coverColour, 0.2)] as Colour;
             const particles = new Particles(scene, {
                 timer: 0.01, pulse_max: 15, max: 0, scale: 0.3, vel_variation: 0.2, padding: 0.1, fill: true, lifespan: 0.5, speed: 2.5,
-                attach: () => ({ x: box.T.x, y: box.T.y, w: box.T.w, h: box.T.h }), colours: [coverColour, light, dark], depth: depth + 0.2,
+                attach: () => ({ x: box.T.x, y: box.T.y, w: box.T.w, h: box.T.h }), colours: [coverColour, light, dark], depth: depth + 0.05,
             });
             this.cover = { colours: [coverColour, light, dark], particles };
         } else this.cover = null;
