@@ -1393,11 +1393,13 @@ ${String(e instanceof Error ? e.message : e)}`)
         const major = { T: { ...r } };
         const box = new UIBox(cardHPopup(card, aut), { align: type, offset, major });
         const U = toPx(1);
-        const views = [new UIBoxView(this, box, 90)];
+        // overlay（Run Info）里的卡压在 overlay 之上，提示框也得在它们之上
+        const depth = this.overlay ? 210 : 90;
+        const views = [new UIBoxView(this, box, depth)];
         const info = infoBoxes(aut);
         if (info) {
             const ibox = new UIBox(info, { align: 'cl', offset: { x: -0.03, y: 0 }, major: box.getById('h_popup_main')!.asMajor });
-            views.push(new UIBoxView(this, ibox, 90));
+            views.push(new UIBoxView(this, ibox, depth));
         }
         for (const v of views) v.setResolution(this.mapping.pxPerTile / U);
         this.popup = { sprite, major, views };
@@ -2064,12 +2066,19 @@ ${String(e instanceof Error ? e.message : e)}`)
     private syncRunInfoVouchers(showing: boolean): void {
         const o = this.overlay;
         if (!o) return;
+        if (o.vouchers.some((v) => this.popup?.sprite === v.sprite)) this.hidePopup();
         for (const v of o.vouchers) v.sprite.destroy();
         o.vouchers = [];
         if (!showing) return;
+        // `used_vouchers`：每张 `start_materialize(nil, silent)`，只有第一张出声；溶完（1.05 × 0.6 秒）才能悬停出提示框
+        let silent = false;
         for (const area of this.runInfoVoucherAreas) {
             for (const key of area.keys) {
-                o.vouchers.push({ sprite: new VoucherSprite(this, VOUCHER_CENTERS[key]!, () => undefined, { card: 202, shadow: 201.5 }), area });
+                const s = new VoucherSprite(this, VOUCHER_CENTERS[key]!, () => undefined, { card: 202, shadow: 201.5 }, { silent });
+                silent = true;
+                s.shader.on('pointerover', () => { if (s.hoverable) this.showPopup(s, popupOfCenter(key, 'other'), false); });
+                s.shader.on('pointerout', () => { if (this.popup?.sprite === s) this.hidePopup(); });
+                o.vouchers.push({ sprite: s, area });
             }
         }
     }
