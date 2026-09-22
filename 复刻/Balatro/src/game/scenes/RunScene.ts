@@ -36,7 +36,7 @@ import { makeRoomJuice, stepRoomJuice } from '../room-juice';
 import { Particles } from '../particles';
 import type { OpenPack } from '../../core/booster-open';
 import type { BoosterKind } from '../../core/boosters';
-import { type BackgroundColours, applyBlindColours, backgroundFor, packMainColour } from '../../ui/blind-colour';
+import { type BackgroundColours, applyBlindColours, backgroundFor, backgroundTarget, packMainColour } from '../../ui/blind-colour';
 import { C, type Colour, HEX, applySuitColours, lighten, mixColours, setColour, tickColours } from '../../ui/colours';
 import { buyAndUseButton, shopBuyButton, useAndSellButtons } from '../../ui/definitions/card-buttons';
 import { type PopupCard, abilityTable, cardHPopup, infoBoxes, tagAbilityTable } from '../../ui/definitions/card-popup';
@@ -98,6 +98,7 @@ import { HAND_DESCRIPTIONS, HAND_EXAMPLES } from '../../ui/descriptions.generate
 import { MiniCard } from '../mini-card';
 import { LOGO_ATLAS, MainMenu, type MenuContext } from '../main-menu';
 import { Splash } from '../splash';
+import { ScreenWipe, randomCardKey } from '../screen-wipe';
 
 /**
  * 版本的文字标记。
@@ -268,6 +269,8 @@ export class RunScene extends Scene {
     private bgQuad: GameObjects.Shader | null = null;
     /** 主菜单（`G.STAGE == MAIN_MENU`）：URL 上没有 `?seed` 时进这里，局里的东西全藏着 */
     private mainMenu: MainMenu | null = null;
+    /** 转场（`G.screenwipe`）：开着时吞掉一切输入（`CONTROLLER.locks.wipe`） */
+    private wipe: { wipe: ScreenWipe; blocker: GameObjects.Zone } | null = null;
     /** 开机 splash（`Game:splash_screen`）：直接打开页面时先走这段，走完进主菜单 */
     private splash: Splash | null = null;
     /** 正在播放出牌动画时不接受输入 */
@@ -453,6 +456,18 @@ export class RunScene extends Scene {
         this.skipBlindBtn = this.makeButton(toPx(17.0), toPx(10.2), '跳过盲注', '#a07a2c', () => this.doSkipBlind());
 
         const params = new URLSearchParams(location.search);
+        // 前一页放完 `wipe_on` 跳过来的：接着放 `wipe_off`，参数随即从地址栏抹掉（刷新不重放）
+        const wipeKey = params.get('wipe');
+        if (wipeKey) {
+            params.delete('wipe');
+            history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+            // 从主菜单进局：`G.C.BACKGROUND` 在主菜单是黑的，`start_run` 再缓到盲注色——方块的颜色跟着变
+            if (params.has('seed')) {
+                const black = backgroundTarget({ new_colour: C.BLACK, contrast: 1 });
+                this.bg = { now: black, from: black, to: black, t0: -Infinity };
+            }
+            this.startWipe('off', wipeKey);
+        }
         if (params.has('seed')) {
             // 开局先进盲注选择（原作如此）：能看到这一格跳过给什么标签，再决定打还是跳
             this.showBlindSelect();
@@ -2888,7 +2903,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             params.delete('menu');
             if (seed) params.delete('rs');
             else params.set('rs', '1');
-            location.search = params.toString();
+            this.wipeTo(params);
             return true;
         }
         return false;
@@ -3508,7 +3523,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             params.delete('seed');
             params.delete('rs');
             params.set('menu', 'game');
-            location.search = params.toString();
+            this.wipeTo(params);
         }
     }
 
@@ -3841,6 +3856,28 @@ ${String(e instanceof Error ? e.message : e)}`)
         else if (name === 'your_collection') this.openCollection();
     }
 
+    /** `wipe_on` / `wipe_off` 挂上，并用一块全屏挡板吞掉输入 */
+    private startWipe(phase: 'on' | 'off', key: string, onSwitch?: () => void): void {
+        const wipe = new ScreenWipe(this, phase, key, () => this.bg.now.C, onSwitch);
+        const blocker = this.add.zone(-toPx(TILE_W * 3), -toPx(TILE_H * 3), toPx(TILE_W * 7), toPx(TILE_H * 7))
+            .setOrigin(0, 0).setInteractive().setDepth(459);
+        this.wipe = { wipe, blocker };
+        this.time.delayedCall(1200, () => {
+            if (phase === 'off' && this.wipe?.wipe === wipe) {
+                blocker.destroy();
+                this.wipe = null;
+            }
+        });
+    }
+
+    /** 换局 / 回主菜单：先放 `wipe_on`，0.7 秒（场景切换那一刻）整页跳转，新页接着放 `wipe_off` */
+    private wipeTo(params: URLSearchParams): void {
+        if (this.wipe) return;
+        const key = randomCardKey();
+        params.set('wipe', key);
+        this.startWipe('on', key, () => { location.search = params.toString(); });
+    }
+
     /** 主菜单这一帧：房间的余振、旋涡与标志、overlay、提示框、音乐（`music1`，没有局就没有火与管风琴） */
     private updateMainMenu(time: number, delta: number): void {
         this.queue.update(delta / 1000);
@@ -3850,6 +3887,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.placeRoom(stepRoomJuice(this.juice, delta / 1000, now, SETTINGS.screenshake,
             { x: p.x / P, y: p.y / P }, { x: this.mapping.roomX, y: this.mapping.roomY }));
         this.mainMenu!.update(now);
+        // `ease_background_colour{new_colour = G.C.BLACK, contrast = 1}`：主菜单不画背景 shader，但转场方块读 `G.C.BACKGROUND.C`
+        this.easeBackground(backgroundTarget({ new_colour: C.BLACK, contrast: 1 }));
         this.stepOverlay(now);
         this.followPopup(now);
         tickColours(now);

@@ -36,6 +36,8 @@ export type MiniCardLook = {
     shadow?: boolean;
     /** `Card.dissolve` / `dissolve_colours`：给了就由调用方缓动（主菜单那张黑桃 A 的 `start_materialize`） */
     dissolve?: DissolveState;
+    /** 给了就多造一层背面（红牌组，Enhancers {0,0}），能 `flip()`：转场那张牌（`screenwipecard`）先背面、立刻翻过来 */
+    facing?: 'front' | 'back';
 };
 
 let serial = 0;
@@ -44,6 +46,10 @@ export class MiniCard {
     private readonly base: LayeredQuad;
     private readonly front: LayeredQuad | null;
     private readonly seal: LayeredQuad | null;
+    private readonly back: LayeredQuad | null;
+    /** `sprite_facing`：画的是哪一面 */
+    private shownFacing: 'front' | 'back';
+    private flipTo: 'front' | 'back' | null = null;
     private readonly shadow: GameObjects.Shader | null;
     private readonly onPostUpdate = (time: number, delta: number) => this.render(time / 1000, delta / 1000);
     private motion: Motion | null = null;
@@ -80,12 +86,30 @@ export class MiniCard {
         this.seal = look.seal
             ? new LayeredQuad(scene, { ...common, name: `mini_seal_${id}`, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: SEAL_POS[look.seal]!, shader: 'dissolve' }, depth + 0.04, { set: look.seal === 'Gold' ? 'Voucher' : undefined })
             : null;
+        this.back = look.facing
+            ? new LayeredQuad(scene, { ...common, name: `mini_back_${id}`, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: { x: 0, y: 0 } }, depth + 0.03, {})
+            : null;
+        this.shownFacing = look.facing ?? 'front';
         this.shadow = look.shadow === false
             ? null
             : joker
                 ? makeShaderQuad(scene, { ...common, name: `mini_shadow_${id}`, textureKey: 'jokers', atlas: JOKER_ATLAS, pos: joker.pos, shadow: true }).setDepth(depth - 0.5)
                 : makeShaderQuad(scene, { ...common, name: `mini_shadow_${id}`, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: basePos, shadow: true }).setDepth(depth - 0.5);
         scene.events.on('postupdate', this.onPostUpdate);
+        this.applyVisibility();
+    }
+
+    /** `Card:flip`：横向捏到 0（`pinch.x`）那一刻换面、再撑开 */
+    flip(): void {
+        this.flipTo = this.shownFacing === 'back' ? 'front' : 'back';
+        if (this.motion) this.motion.pinchX = true;
+    }
+
+    private applyVisibility(): void {
+        const front = this.visible && this.shownFacing === 'front';
+        for (const l of [this.base, this.front, this.seal]) for (const q of l?.quads ?? []) q.setVisible(front);
+        for (const q of this.back?.quads ?? []) q.setVisible(this.visible && this.shownFacing === 'back');
+        this.shadow?.setVisible(this.visible && shadowsOn());
     }
 
     /** 目标：左上角（tile）、转角、缩放（`T.scale`） */
@@ -122,8 +146,7 @@ export class MiniCard {
     /** `states.visible`：连阴影一起藏 */
     setVisible(on: boolean): void {
         this.visible = on;
-        for (const l of [this.base, this.front, this.seal]) for (const q of l?.quads ?? []) q.setVisible(on);
-        this.shadow?.setVisible(on && shadowsOn());
+        this.applyVisibility();
     }
 
     private visible = true;
@@ -133,25 +156,34 @@ export class MiniCard {
         this.base.setDepth(depth);
         this.front?.setDepth(depth + 0.02);
         this.seal?.setDepth(depth + 0.04);
+        this.back?.setDepth(depth + 0.03);
     }
 
     private render(now: number, dt: number): void {
         const m = this.motion;
         if (!m) return;
+        if (this.flipTo && !m.pinchX) m.pinchX = true;
         m.step(dt, now);
+        if (this.flipTo && m.wScale <= 0) {
+            this.shownFacing = this.flipTo;
+            this.flipTo = null;
+            m.pinchX = false;
+            this.applyVisibility();
+        }
         const { VT } = m;
+        const sx = VT.scale * m.wScale;
         const cx = toPx(VT.x + this.w / 2);
         const cy = toPx(VT.y + this.h / 2);
-        for (const l of [this.base, this.front, this.seal]) {
+        for (const l of [this.base, this.front, this.seal, this.back]) {
             if (!l) continue;
             l.setPosition(cx, cy);
             l.setRotation(VT.r);
-            for (const q of l.quads) q.setScale(VT.scale);
+            for (const q of l.quads) q.setScale(sx, VT.scale);
         }
         if (this.shadow) {
             this.shadow.setVisible(this.visible && shadowsOn());
             const spx = cardShadowParallaxX(m.T.x, this.w);
-            this.shadow.setScale(VT.scale * (1 - 0.2 * SHADOW_HEIGHT))
+            this.shadow.setScale(sx * (1 - 0.2 * SHADOW_HEIGHT), VT.scale * (1 - 0.2 * SHADOW_HEIGHT))
                 .setPosition(cx - toPx(spx * SHADOW_HEIGHT), cy + toPx(1.5 * SHADOW_HEIGHT))
                 .setRotation(VT.r);
         }
@@ -166,6 +198,7 @@ export class MiniCard {
         this.base.destroy();
         this.front?.destroy();
         this.seal?.destroy();
+        this.back?.destroy();
         this.shadow?.destroy();
     }
 }
