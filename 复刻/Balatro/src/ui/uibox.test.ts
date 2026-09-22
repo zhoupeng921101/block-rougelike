@@ -22,6 +22,7 @@ import { makeHudState, createHud } from './definitions/hud';
 import { type Tab, changeTab, currentHands, handTip, popupTooltip, runInfo, usedVouchers } from './definitions/run-info';
 import { HAND_DESCRIPTIONS } from './descriptions.generated';
 import { deckPreview } from './definitions/deck-preview';
+import { deckInfo } from './definitions/deck-info';
 import { type Card, type Suit, type Value, cardKey, makeCard } from '../core/card';
 import { VOUCHER_CENTERS } from '../core/vouchers';
 import { initialHands } from '../core/scoring';
@@ -308,5 +309,14 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
     it.each([['deck_preview', false], ['deck_preview_mixed', true]] as const)('%s：悬停牌堆的剩余牌表', (name, mixed) => {
         const box = new UIBox(deckPreview(previewDeck(mixed)), { align: 'tm', offset: { x: 0, y: -0.8 }, major: { T: { x: 0, y: 0, w: 21, h: 11.2 } } });
         expectSame(dump(box), cases.find((c) => c.name === name)!.elements);
+    });
+
+    it.each([['deck_info_remaining', true], ['deck_info_full', false]] as const)('%s：View Deck（deck_info → view_deck）', (name, remaining) => {
+        const deck = previewDeck(false);
+        if (remaining) for (const c of deck.playingCards) if (c.base.suit === 'Hearts') c.debuff = true;
+        const input = { ...deck, pareidolia: false, back: { name: 'Red Deck', key: 'b_red', vars: [1] }, mobile: false };
+        const box = new UIBox(deckInfo(input, remaining, () => undefined), { align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: 0, y: 0, w: 21, h: 11.2 } } });
+        expectSame(dump(box), cases.find((c) => c.name === name)!.elements);
+        if (remaining) expectSame(dump(box.getById('tab_contents')!.config.object as UIBox), cases.find((c) => c.name === 'deck_info_remaining_page')!.elements);
     });
 });

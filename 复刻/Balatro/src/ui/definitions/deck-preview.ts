@@ -7,7 +7,7 @@
  */
 import { type Card, type Suit } from '../../core/card';
 import { isStone } from '../../core/enhancements';
-import { C, type Colour, mixColours } from '../colours';
+import { C, type Colour, adjustAlpha, mixColours } from '../colours';
 import { EN_FONT } from '../font';
 import { DICTIONARY, V_DICTIONARY } from '../lang.generated';
 import { type UINodeDef, UIT } from '../uibox';
@@ -29,7 +29,7 @@ export type DeckPreviewInput = {
 const SUIT_MAP: Suit[] = ['Spades', 'Hearts', 'Clubs', 'Diamonds'];
 
 /** `card.lua:4067` 的 `Card:is_suit`（不 bypass debuff：被削弱的牌一个花色都不算） */
-function isSuitForPreview(card: Card, suit: Suit, smeared: boolean): boolean {
+export function isSuitForPreview(card: Card, suit: Suit, smeared: boolean): boolean {
     if (card.debuff) return false;
     if (isStone(card)) return false;
     if (card.enhancement === 'm_wild') return true;
@@ -142,6 +142,19 @@ export function deckPreview(input: DeckPreviewInput): UINodeDef {
                 { n: UIT.C, config: { padding: 0.3, r: 0.1, colour: flipCol }, nodes: [] },
                 { n: UIT.T, config: { text: ` ${(V_DICTIONARY[wheelKey] ?? 'ERROR').replace('#1#', String(wheelFlipped))}`, colour: C.WHITE, scale: 0.3 } },
             ] } : null,
+        ] },
+    ] };
+}
+
+/**
+ * 牌堆上的「View Deck」（`cardarea.lua:394` 的 `children.view_deck`）：挂在最上面那张牌中间（`cm`），
+ * 悬停牌堆时才画；本身 `collide.can = false`，点下去点的是底下那张牌（→ `deck_info`）
+ */
+export function viewDeckLabel(): UINodeDef {
+    return { n: UIT.ROOT, config: { align: 'cm', padding: 0.1, r: 0.1, colour: C.CLEAR }, nodes: [
+        { n: UIT.R, config: { align: 'cm', padding: 0.05, r: 0.1, colour: adjustAlpha(C.BLACK, 0.5), button: 'deck_info' }, nodes: [
+            { n: UIT.R, config: { align: 'cm', maxw: 2 }, nodes: [{ n: UIT.T, config: { text: loc('k_view'), scale: 0.48, colour: C.WHITE, shadow: true } }] },
+            { n: UIT.R, config: { align: 'cm', maxw: 2 }, nodes: [{ n: UIT.T, config: { text: loc('k_deck'), scale: 0.38, colour: C.WHITE, shadow: true } }] },
         ] },
     ] };
 }

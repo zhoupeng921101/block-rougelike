@@ -116,6 +116,15 @@ export class UIBoxView {
         this.container.setVisible(on);
     }
 
+    /** 整块不接指针（`states.collide.can = false`）：按钮照样画成按钮，但点击与悬停落到底下的东西上 */
+    setPassThrough(): this {
+        this.passThrough = true;
+        for (const v of this.views) v.zone?.disableInteractive();
+        return this;
+    }
+
+    private passThrough = false;
+
     destroy(): void {
         for (const v of this.views) v.child?.destroy();
         this.container.destroy();
@@ -197,6 +206,7 @@ export class UIBoxView {
         for (const c of keep.values()) c.destroy();
         this.setResolution(this.resolution);
         this.orderDirty = true;
+        if (this.passThrough) for (const v of this.views) v.zone?.disableInteractive();
     }
 
     /** 嵌套在这块里的某个 UIBox 的视图（结构改过就先重建），给它单独挂滑动用 */
@@ -590,9 +600,11 @@ export class UIBoxView {
         const sp = shadowParallax(x, d.T.w);
         const norm = Math.hypot(sp.x, sp.y);
         const shadowNorm = { x: ((sp.x / norm) * fs) / TILESIZE, y: ((sp.y / norm) * fs) / TILESIZE };
+        // 多串轮播时当前串在整体里居中（`W_offset` / `H_offset`）
+        const so = d.offset;
         const base = {
-            x: x + ((d.font.TEXT_OFFSET.x * d.scale + (d.config.x_offset ?? 0)) * fs) / TILESIZE + ((d.config.spacing ?? 0) * fs) / TILESIZE,
-            y: y + ((d.font.TEXT_OFFSET.y * d.scale + (d.config.y_offset ?? 0)) * fs) / TILESIZE,
+            x: x + so.x + ((d.font.TEXT_OFFSET.x * d.scale + (d.config.x_offset ?? 0)) * fs) / TILESIZE + ((d.config.spacing ?? 0) * fs) / TILESIZE,
+            y: y + so.y + ((d.font.TEXT_OFFSET.y * d.scale + (d.config.y_offset ?? 0)) * fs) / TILESIZE,
         };
         const colours = d.colours;
         const sqrtS = Math.sqrt(d.scale);

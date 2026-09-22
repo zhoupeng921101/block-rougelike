@@ -692,6 +692,36 @@ def main():
     cases.append({'name': 'deck_preview', **to_py(lua.eval('DUMP(PREVIEW1)'))})
     cases.append({'name': 'deck_preview_mixed', **to_py(lua.eval('DUMP(PREVIEW2)'))})
 
+    # View Deck（G.UIDEF.deck_info → view_deck）。用例一：Remaining 页，前 48 张里每第 6 张在手里、红心全被削弱
+    # （计数在两个数之间轮播，DynaText 取两串最宽）；用例二：Full Deck 页、谁都没被削弱。
+    # 牌组说明（Back:generate_UI）按原文 localize 的产物手搭：红牌组两行，默认字号 0.32
+    lua.execute(r'''
+      for _, c in ipairs(G.playing_cards) do end
+      local function decorate()
+        for _, c in ipairs(G.playing_cards) do
+          c.get_id = function(self) return self.base.id end
+          c.is_face = function(self) if self.debuff then return end return self.base.id >= 11 and self.base.id <= 13 end
+        end
+      end
+      copy_card = function(other, _, scale) local m = Moveable(0, 0, G.CARD_W*scale, G.CARD_H*scale); m.ability = {}; m.hard_set_T = function() end; return m end
+      CardArea = function(x, y, w, h, cfg) local a = Moveable(x, y, w, h); a.emplace = function() end; return a end
+      G.GAME.selected_back = { loc_name = 'Red Deck', generate_UI = function(self, other, ui_scale, min_dims)
+        local nodes = {
+          {{n=G.UIT.T, config={text = '+1', colour = G.C.RED, scale = 0.32}}, {n=G.UIT.T, config={text = ' discard', colour = G.C.BLACK, scale = 0.32}}},
+          {{n=G.UIT.T, config={text = 'every round', colour = G.C.BLACK, scale = 0.32}}},
+        }
+        return {n=G.UIT.ROOT, config={align = "cm", minw = min_dims*5, minh = min_dims*2.5, id = self.name, colour = G.C.CLEAR}, nodes={ desc_from_rows(nodes, true, min_dims*5) }}
+      end }
+      DECK(); decorate()
+      for _, c in ipairs(G.playing_cards) do if c.base.suit == 'Hearts' then c.debuff = true end end
+      DECK_INFO1 = OVERLAY(G.UIDEF.deck_info(true))
+      DECK(); decorate()
+      DECK_INFO2 = OVERLAY(G.UIDEF.deck_info(false))
+    ''')
+    cases.append({'name': 'deck_info_remaining', **to_py(lua.eval('DUMP(DECK_INFO1)'))})
+    cases.append({'name': 'deck_info_remaining_page', **to_py(lua.eval("DUMP(DECK_INFO1:get_UIE_by_ID('tab_contents').config.object)"))})
+    cases.append({'name': 'deck_info_full', **to_py(lua.eval('DUMP(DECK_INFO2)'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 

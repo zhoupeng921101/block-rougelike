@@ -46,7 +46,7 @@ const BACK_POS = { x: 0, y: 0 } as const;
  * 蜡封：`game.lua:193` 的 `G.shared_seals`，也在 `centers` 图集（`Enhancers.png`）里，不用新素材。
  * `card.lua:4480`：用 `dissolve` 画在卡上，**Gold 再叠一层 `voucher` 扫光**
  */
-const SEAL_POS: Record<string, { x: number; y: number }> = {
+export const SEAL_POS: Record<string, { x: number; y: number }> = {
     Gold: { x: 2, y: 0 },
     Purple: { x: 4, y: 4 },
     Red: { x: 5, y: 4 },

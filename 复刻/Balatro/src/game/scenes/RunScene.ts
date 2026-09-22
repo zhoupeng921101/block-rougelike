@@ -44,7 +44,8 @@ import { popupGame, popupOfCard, popupOfCenter, popupOfConsumable, popupOfJoker 
 import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
 import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
-import { deckPreview } from '../../ui/definitions/deck-preview';
+import { deckPreview, viewDeckLabel } from '../../ui/definitions/deck-preview';
+import { type ViewDeckArea, deckInfo } from '../../ui/definitions/deck-info';
 import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/definitions/hud-blind';
 import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
 import { type BlindSelectState, type BlindType, blindChoiceBox, blindChoiceFuncs, cardAlert, currentBlinds, createBlindPrompt, createBlindSelect, hudTag } from '../../ui/definitions/blind-select';
@@ -54,7 +55,7 @@ import { type EvalRow, type EvalStep, RoundEval, evalTimeline } from '../../ui/d
 import { BLIND_TEXT, DICTIONARY } from '../../ui/lang.generated';
 import type { Rect, UIElement, UIFuncs, UINodeDef } from '../../ui/uibox';
 import { cardAreas } from '../areas';
-import { type Placed, alignConsumeable, alignHand, alignJokers, alignPackHand, alignPlay } from '../align-cards';
+import { type Placed, alignConsumeable, alignHand, alignJokers, alignPackHand, alignPlay, cardShadowParallaxX } from '../align-cards';
 import { type PackCardsObject, createBoosterPack, packCardsArea } from '../../ui/definitions/booster-pack';
 import { type CardAreaObject, createShop, createShopSign, priceTag, shopAreas } from '../../ui/definitions/shop';
 import { DeckSprite } from '../deck-sprite';
@@ -204,6 +205,8 @@ export class RunScene extends Scene {
         jimbo: Jimbo | null;
         /** Run Info 的 Vouchers 页：每格里的卡 */
         vouchers: Array<{ sprite: VoucherSprite; area: VoucherArea }>;
+        /** View Deck 当前页：每个花色行里的复制品 */
+        deckCards: Array<{ card: MiniCard; area: ViewDeckArea; index: number }>;
     } | null = null;
     private roundEval: {
         ev: RoundEval;
@@ -226,6 +229,8 @@ export class RunScene extends Scene {
     }
     /** `G.deck_preview`：选牌时悬停牌堆弹出的剩余牌表 */
     private deckPreview: UIBoxView | null = null;
+    /** 牌堆上的「View Deck」：悬停牌堆时画 */
+    private viewDeckLabel: { view: UIBoxView; major: { T: Rect } } | null = null;
     /** 已经打到出牌区的牌（`G.play`），逐帧按 `alignPlay` 摆；其余手牌按 `alignHand` */
     private readonly inPlay = new Set<CardSprite>();
     private readonly areas = cardAreas();
@@ -341,6 +346,8 @@ export class RunScene extends Scene {
         this.deckZone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(6);
         this.deckZone.on('pointerover', () => { this.deckHovered = true; });
         this.deckZone.on('pointerout', () => { this.deckHovered = false; });
+        // `Card:click`：点牌堆最上面那张 → `G.FUNCS.deck_info`
+        this.deckZone.on('pointerdown', () => this.openDeckInfo());
         // `Blind:hover`（`blind.lua:428`）：左上盲注筹码悬停只弹一下、响一声（没有提示框）
         this.blindChipZone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(43);
         this.blindChipZone.on('pointerover', () => {
@@ -1929,6 +1936,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         const overlay = {
             view, bg, alpha: { from: bg[3], to: alphaTo, start: this.time.now / 1000 }, blocker,
             jimbo: null as Jimbo | null, vouchers: [] as Array<{ sprite: VoucherSprite; area: VoucherArea }>,
+            deckCards: [] as Array<{ card: MiniCard; area: ViewDeckArea; index: number }>,
         };
         this.overlay = overlay;
         this.juice.jiggle += 1;
@@ -1942,8 +1950,86 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.overlay.blocker.destroy();
         this.overlay.jimbo?.destroy();
         for (const v of this.overlay.vouchers) v.sprite.destroy();
+        for (const c of this.overlay.deckCards) c.card.destroy();
         this.overlay = null;
         this.syncHandRowHovers();
+    }
+
+    /** View Deck 当前页的花色行（`view_deck` 建页时写） */
+    private deckViewAreas: ViewDeckArea[] = [];
+
+    /**
+     * `G.FUNCS.deck_info`（点牌堆最上面那张 / 牌堆上的「View Deck」）：选牌中打开有 Remaining 与 Full Deck 两页，
+     * 其余时候只有 Full Deck。灰底 0.7，同 Run Info
+     */
+    private openDeckInfo(): void {
+        if (this.overlay || this.animating) return;
+        const run = this.run;
+        const round = this.round;
+        const inRound = !!round && run.state === 'playing' && round.phase === 'selecting';
+        this.deckHovered = false;
+        const input = {
+            playingCards: run.fullDeck,
+            inDeck: new Set(inRound ? round.deck : run.fullDeck),
+            wheelFlipped: new Set(inRound ? round.hand.filter((c) => c.facing === 'back') : []),
+            smeared: run.jokers.some((j) => j.key === 'j_smeared' && !j.debuff),
+            pareidolia: run.jokers.some((j) => j.key === 'j_pareidolia' && !j.debuff),
+            back: { name: 'Red Deck', key: RED_DECK.key, vars: [RED_DECK.config.discards] },
+            mobile: LOOK.mobileUi,
+        };
+        const def = deckInfo(input, inRound, (areas) => { this.deckViewAreas = areas; });
+        const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
+        this.mountOverlay(def, bg, 0.7);
+        this.syncDeckViewCards();
+        this.syncHandRowHovers();
+    }
+
+    /** 每个花色行按当前页造复制品（`copy_card(card, nil, 0.7)`：强化、版本、蜡封、削弱都跟着；不在牌堆的 greyed） */
+    private syncDeckViewCards(): void {
+        const o = this.overlay;
+        if (!o) return;
+        for (const c of o.deckCards) c.card.destroy();
+        o.deckCards = [];
+        const inner = o.view.box.getById('tab_contents')?.config.object as UIBox | undefined;
+        if (!inner || ![...inner.root.walk()].some((e) => (e.config.object as { kind?: string } | undefined)?.kind === 'view_deck')) return;
+        for (const area of this.deckViewAreas) {
+            area.cards.forEach(({ card, greyed }, index) => {
+                const mini = new MiniCard(this, card.key, 0.7 * CARD_W, 0.7 * CARD_H, 202 + index * 0.05, {
+                    enhancement: card.enhancement, edition: card.edition, seal: card.seal, debuff: card.debuff, greyed, shadow: false,
+                });
+                o.deckCards.push({ card: mini, area, index });
+            });
+        }
+    }
+
+    /**
+     * `align_cards` 的 `title` 分支，`card_w = 0.7·CARD_W`、卡本身也是 0.7 倍：
+     * x 按下标在行宽里均分，转角 `0.2·(−n/2 − ½ + k)/n + 0.02·sin(2t + x)`，y 上下浮并按离中间的距离往下弯
+     */
+    private placeDeckViewCards(now: number): void {
+        const o = this.overlay;
+        if (!o || o.deckCards.length === 0) return;
+        const inner = o.view.box.getById('tab_contents')?.config.object as UIBox | undefined;
+        if (!inner) return;
+        const slide = o.view.slideOffset.y;
+        const els = new Map<ViewDeckArea, UIElement>();
+        for (const e of inner.root.walk()) {
+            const obj = e.config.object as ViewDeckArea | undefined;
+            if (obj?.kind === 'view_deck') els.set(obj, e);
+        }
+        const cw = 0.7 * CARD_W;
+        const ch = 0.7 * CARD_H;
+        for (const { card, area, index } of o.deckCards) {
+            const el = els.get(area);
+            if (!el) continue;
+            const n = area.cards.length;
+            const k = index + 1;
+            let x = el.x + (area.T.w - cw) * ((k - 1) / Math.max(n - 1, 1));
+            const r = (0.2 * (-n / 2 - 0.5 + k)) / n + 0.02 * Math.sin(2 * now + x);
+            const y = el.y + slide + area.T.h / 2 - ch / 2 + 0.03 * Math.sin(0.666 * now + x) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - (n > 1 ? 0.2 : 0);
+            x += cardShadowParallaxX(x, cw) / 30;
+            card.place(x, y, r, 0.95);
+        }
     }
 
     /** `G.FUNCS.run_info`：`G.UIDEF.run_info()` 挂成 overlay（灰底 0.7，不缓动），第一页牌型 */
@@ -1987,9 +2073,12 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (!inner) return;
         for (const el of inner.root.walk()) {
             const tip = el.config.on_demand_tooltip as { hand: string } | undefined;
-            if (!tip) continue;
+            const plain = el.config.tooltip as { text: string[] } | undefined;
+            if (!tip && !plain) continue;
+            // O 节点带的 tooltip 与它外层 C 节点的是同一个（`tally_sprite`），外层那个就够了
+            if (plain && el.UIT === UIT.O && el.parent?.parent?.config.tooltip) continue;
             const zone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(203);
-            zone.on('pointerover', () => this.showHandTip(el, tip.hand));
+            zone.on('pointerover', () => (tip ? this.showHandTip(el, tip.hand) : this.showTooltip(el, plain!.text)));
             zone.on('pointerout', () => { if (this.handTipShown?.el === el) this.hideHandTip(); });
             this.handRowHovers.push({ zone, el });
         }
@@ -2015,6 +2104,18 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.handTipShown = { view, cards, major, el, start: this.time.now / 1000 };
         example?.forEach(([, scoring], i) => { if (scoring) this.time.delayedCall(0, () => cards[i]?.juiceUp(0.3, 0.2)); });
         this.sound.play('paper1', { rate: 0.95 + Math.random() * 0.1, volume: 0.3 });
+    }
+
+    /** `UIElement:hover` 的 `tooltip`：`create_popup_UIBox_tooltip(tooltip)`，挂 `tm`、上提 0.1 */
+    private showTooltip(el: UIElement, text: string[]): void {
+        this.hideHandTip();
+        const o = this.overlay;
+        if (!o) return;
+        const major = { T: { x: el.x, y: el.y + o.view.slideOffset.y, w: el.T.w, h: el.T.h } };
+        const box = new UIBox(popupTooltip(text, null), { align: 'tm', offset: { x: 0, y: -0.1 }, major });
+        const view = new UIBoxView(this, box, 205);
+        view.setResolution(this.mapping.pxPerTile / toPx(1));
+        this.handTipShown = { view, cards: [], major, el, start: this.time.now / 1000 };
     }
 
     private hideHandTip(): void {
@@ -2118,6 +2219,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         o.view.update(now);
         o.jimbo?.update(now);
         this.placeRunInfoVouchers(now);
+        this.placeDeckViewCards(now);
         this.followRunInfoHovers(now);
     }
 
@@ -2126,6 +2228,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             const tab = el.config.ref_table as Tab;
             changeTab(this.overlay.view.box, tab);
             this.syncRunInfoVouchers(tab.label === DICTIONARY.b_vouchers);
+            this.syncDeckViewCards();
             this.syncHandRowHovers();
             this.sound.play('button', { volume: 0.3 });
             this.juice.jiggle += 0.5;
@@ -2158,6 +2261,10 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
         if (name === 'skip_blind') {
             this.doSkipBlind();
+            return;
+        }
+        if (name === 'deck_info') {
+            this.openDeckInfo();
             return;
         }
         if (name === 'reroll_boss') {
@@ -2432,6 +2539,23 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
         this.buttonsView?.setVisible(!this.deckPreview);
         this.deckPreview?.update(now);
+
+        // `cardarea.lua:411`：没被 overlay 盖着、牌堆被悬停（或者 deck_preview 开着）就画「View Deck」
+        const label = top && !this.overlay && (this.deckHovered || !!this.deckPreview);
+        if (label && !this.viewDeckLabel) {
+            const major = { T: { ...top } };
+            const view = new UIBoxView(this, new UIBox(viewDeckLabel(), { align: 'cm', offset: { x: 0, y: 0 }, major }), 44).setPassThrough();
+            view.setResolution(this.mapping.pxPerTile / toPx(1));
+            this.viewDeckLabel = { view, major };
+        } else if (!label && this.viewDeckLabel) {
+            this.viewDeckLabel.view.destroy();
+            this.viewDeckLabel = null;
+        }
+        if (this.viewDeckLabel && top) {
+            Object.assign(this.viewDeckLabel.major.T, top);
+            this.viewDeckLabel.view.box.followMajor();
+            this.viewDeckLabel.view.update(now);
+        }
     }
 
     /** `add_tag` / `Tag:remove`：第一个 `bri` 挂房间（x 外移 0.7），之后每个 `tm` 叠在上一个上面 */

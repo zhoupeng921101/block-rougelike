@@ -39,6 +39,12 @@ export type DynaTextConfig = {
     reset_pop_in?: boolean;
     /** 弹字音效的音高偏移 */
     pitch_shift?: number;
+    /** 多串轮播：一串弹满之后停多少秒再缩回（缺省 1.5） */
+    pop_delay?: number;
+    /** 轮播随机挑下一串（Misprint） */
+    random_element?: boolean;
+    /** `min_cycle_time`：缩回的时长系数；0 表示字恒为满（Misprint） */
+    min_cycle_time?: number;
     /** 绘制时整串再挪多少（字体像素，`text.lua:17` 的 `text_offset`），不进布局 */
     x_offset?: number;
     y_offset?: number;
@@ -56,15 +62,22 @@ export type DynaLetter = {
     popIn: number;
 };
 
+/** 一串（`self.strings[k]`）：它自己的字、宽高 */
+type DynaString = { text: string; letters: DynaLetter[]; W: number; H: number };
+
 export class DynaText implements UIObject {
     readonly T: Rect = { x: 0, y: 0, w: 0, h: 0 };
     scale: number;
     readonly font: FontSpec;
-    /** 当前那一串（原作的 `strings[focused_string]`；多串轮播先不做，取第一串） */
+    /** 当前那一串（`strings[focused_string]`）的字与逐字排布 */
     text = '';
     letters: DynaLetter[] = [];
     /** 尺寸变了，所在的 UIBox 要重排（原作的 `ui_object_updated`） */
     resized = false;
+
+    /** `self.strings`：`config.string` 的每一项各是一串，多于一串时轮播（`pop_out` → `pop_cycle` → 下一串弹入） */
+    private strings: DynaString[] = [];
+    private focused = 0;
 
     /**
      * `self.config.pop_in`：弹入进行中时是开始前的延迟，弹完置空。
@@ -75,6 +88,12 @@ export class DynaText implements UIObject {
     createdTime: number | null = null;
     /** `start_pop_in` / `reset_pop_in`：下一次 `update` 换字时要不要重新弹 */
     private resetPopIn = false;
+    /** `self.config.pop_out`（缩回的速度）与 `pop_out_time`；`pop_out_time` 为 null 时在下一次 `popStep` 定 */
+    private popOut: number | undefined;
+    private popOutTime: number | null = null;
+    /** `self.pop_delay`：`pop_out` 的起点比现在晚多少秒 */
+    private popDelayOut = 0;
+    private popCycle = false;
 
     constructor(readonly config: DynaTextConfig) {
         this.scale = config.scale ?? 1;
@@ -88,6 +107,11 @@ export class DynaText implements UIObject {
             this.update(true);
         }
         this.resized = false;
+        // `text.lua:39`：多于一串，建好就开始轮播——`pop_delay`（缺省 1.5）秒后第一串缩回去
+        if (this.strings.length > 1) {
+            this.popDelayOut = config.pop_delay ?? 1.5;
+            this.startPopOut(4);
+        }
     }
 
     /** 字的颜色按 `colours[k % #colours + 1]` 轮（1 起的下标，所以单色时恒是第一个） */
@@ -95,46 +119,68 @@ export class DynaText implements UIObject {
         return this.config.colours ?? [[0.996, 0.373, 0.333, 1]];
     }
 
-    /** `text.lua:68` 的 `update_text`，只取第一串。返回尺寸有没有变 */
-    update(firstPass = false): boolean {
-        const part = this.config.string[0];
-        let str: string;
-        let partScale = 1;
-        let partColour: Colour | undefined;
-        if (typeof part === 'string') str = part;
-        else {
-            const body = 'ref_table' in part ? luaToString(readRef(part.ref_table, part.ref_value)) : part.string;
-            str = (part.prefix ?? '') + body + (part.suffix ?? '');
-            partScale = part.scale ?? 1;
-            partColour = part.colour;
-        }
-        if (!firstPass && str === this.text) return false;
-        this.text = str;
-        // `text.lua:95`：建好时（`start_pop_in`）或配了 `reset_pop_in` 才重新弹，否则字一换就是满的
-        const reset = this.resetPopIn || !!this.config.reset_pop_in;
-        this.resetPopIn = false;
-        if (!reset) this.popDelay = undefined;
-        else {
-            this.popDelay ??= 0;
-            this.createdTime = null;
-        }
-        const old = this.letters;
+    /** 当前串在整个 DynaText 里的偏移（tile）：`W_offset = ½(W − 串宽)`、`H_offset = ½(H − 串高)` */
+    get offset(): { x: number; y: number } {
+        const s = this.strings[this.focused];
+        return s ? { x: 0.5 * (this.T.w - s.W), y: 0.5 * (this.T.h - s.H) } : { x: 0, y: 0 };
+    }
 
-        const fs = this.font.FONTSCALE;
-        const spacing = this.config.spacing ?? 0;
-        let w = 0;
-        let h = 0;
-        this.letters = [];
-        for (const char of str) {
-            // tx / (FONTSCALE*TILESCALE)：字体像素 × scale，再加 spacing 那一项
-            const dx = fontWidth(char, this.font) * this.scale * partScale + 2.7 * spacing;
-            const dy = fontHeight(this.font) * this.scale * partScale * this.font.TEXT_HEIGHT_SCALE;
-            // `text.lua:119`：头一遍沿用旧字的进度（maxw 缩过再量一遍），没有就看配没配 pop_in；之后换字恒为满
-            const popIn = firstPass ? (old[this.letters.length]?.popIn ?? (this.popDelay !== undefined ? 0 : 1)) : 1;
-            this.letters.push({ char, dims: { x: dx, y: dy }, partScale, colour: partColour, popIn });
-            w += (dx * fs) / TILESIZE;
-            h = Math.max(h, (dy * fs) / TILESIZE);
-        }
+    /** `text.lua:68` 的 `update_text`：每一串按需重量，整体宽高取各串最大。返回尺寸有没有变 */
+    update(firstPass = false): boolean {
+        let anyChanged = false;
+        this.config.string.forEach((part, k) => {
+            const isRef = typeof part !== 'string' && 'ref_table' in part;
+            if (!isRef && !firstPass) return;
+            let str: string;
+            let partScale = 1;
+            let partColour: Colour | undefined;
+            if (typeof part === 'string') str = part;
+            else {
+                const body = 'ref_table' in part ? luaToString(readRef(part.ref_table, part.ref_value)) : part.string;
+                str = (part.prefix ?? '') + body + (part.suffix ?? '');
+                partScale = part.scale ?? 1;
+                // `text.lua:87`：段自己的颜色只在头一遍读
+                partColour = firstPass ? part.colour : this.strings[k]?.letters[0]?.colour;
+            }
+            const prev = this.strings[k];
+            if (!firstPass && prev && str === prev.text) return;
+            anyChanged = true;
+            // `text.lua:95`：建好时（`start_pop_in`）或配了 `reset_pop_in` 才重新弹，否则字一换就是满的
+            const reset = this.resetPopIn || !!this.config.reset_pop_in;
+            if (!reset) {
+                this.popDelay = undefined;
+                this.popOut = undefined;
+            } else {
+                this.popDelay ??= 0;
+                this.createdTime = null;
+            }
+            const old = prev?.letters ?? [];
+            const fs = this.font.FONTSCALE;
+            const spacing = this.config.spacing ?? 0;
+            let w = 0;
+            let h = 0;
+            const letters: DynaLetter[] = [];
+            for (const char of str) {
+                // tx / (FONTSCALE*TILESCALE)：字体像素 × scale，再加 spacing 那一项
+                const dx = fontWidth(char, this.font) * this.scale * partScale + 2.7 * spacing;
+                const dy = fontHeight(this.font) * this.scale * partScale * this.font.TEXT_HEIGHT_SCALE;
+                // `text.lua:119`：头一遍沿用旧字的进度（maxw 缩过再量一遍），没有就看配没配 pop_in；之后换字恒为满。
+                // 第二串起一律从 0 开始（轮到它时再弹）
+                let popIn = firstPass ? (old[letters.length]?.popIn ?? (this.popDelay !== undefined ? 0 : 1)) : 1;
+                if (k > 0) popIn = 0;
+                letters.push({ char, dims: { x: dx, y: dy }, partScale, colour: partColour, popIn });
+                w += (dx * fs) / TILESIZE;
+                h = Math.max(h, (dy * fs) / TILESIZE);
+            }
+            this.strings[k] = { text: str, letters, W: w, H: h };
+        });
+        this.resetPopIn = false;
+        if (!anyChanged && !firstPass) return false;
+        const cur = this.strings[this.focused]!;
+        this.text = cur.text;
+        this.letters = cur.letters;
+        const w = Math.max(...this.strings.map((s) => s.W));
+        const h = Math.max(...this.strings.map((s) => s.H));
         const changed = w !== this.T.w || h !== this.T.h;
         this.T.w = w;
         this.T.h = h;
@@ -142,35 +188,81 @@ export class DynaText implements UIObject {
         return changed;
     }
 
+    /** `DynaText:pop_out`：`pop_delay` 秒后开始按 `rate` 缩回去（起点在下一次 `popStep` 定） */
+    private startPopOut(rate: number): void {
+        this.popOut = rate;
+        this.popOutTime = null;
+    }
+
     /**
-     * `text.lua:191`：`align_letters` 的弹入一支。第 k 个字的进度 `((now − pop_in − created)·#string·rate − k + 1)²`，
-     * 夹在 [0, 1]；最后一个字满了就停（`config.pop_in = nil`）。
+     * `text.lua:174` 的 `align_letters` 里 pop 那几支：
+     * - 轮播到下一串（`pop_cycle`）：那一串的字清零，0.1 秒后开始弹入
+     * - 缩回（`pop_out`）：`(min_cycle − (now − pop_out_time)·pop_out/min_cycle)²`，最后一个字缩没了就轮到下一串
+     * - 弹入：第 k 个字 `((now − pop_in − created)·#string·rate − k + 1)²`，夹 [0, 1]；最后一个字满了——
+     *   单串就停（`config.pop_in = nil`），多串则隔 `pop_delay` 秒再缩回去
      * 返回这一帧**刚冒头**的字要放的 `paper1` 音高（`silent` 时为空；超过 10 个字的只有偶数位出声）
      */
     popStep(now: number, random: () => number = Math.random): number[] {
         this.createdTime ??= now;
-        const delay = this.popDelay;
-        if (delay === undefined) return [];
+        if (this.popOut !== undefined && this.popOutTime === null) this.popOutTime = now + this.popDelayOut;
+        if (this.popCycle) {
+            this.focused = this.config.random_element
+                ? Math.floor(random() * this.strings.length)
+                : (this.focused + 1) % this.strings.length;
+            this.popCycle = false;
+            const cur = this.strings[this.focused]!;
+            for (const l of cur.letters) l.popIn = 0;
+            this.text = cur.text;
+            this.letters = cur.letters;
+            this.popDelay = 0.1;
+            this.popOut = undefined;
+            this.createdTime = now;
+        }
         const n = this.text.length;
-        const rate = this.config.pop_in_rate ?? 3;
+        const letters = this.letters;
         const sounds: number[] = [];
-        this.letters.forEach((letter, k0) => {
+        const mct = this.config.min_cycle_time ?? 1;
+        if (this.popOut !== undefined) {
+            const out = this.popOut;
+            const t0 = this.popOutTime!;
+            letters.forEach((letter, k0) => {
+                const p = Math.min(1, Math.max(mct - ((now - t0) * out) / mct, 0));
+                letter.popIn = p * p;
+                if (k0 === letters.length - 1 && letter.popIn <= 0 && this.strings.length > 1) this.popCycle = true;
+            });
+            return sounds;
+        }
+        const delay = this.popDelay;
+        if (delay === undefined) return sounds;
+        const rate = this.config.pop_in_rate ?? 3;
+        const floor = this.config.min_cycle_time === 0 ? 1 : 0;
+        const created = this.createdTime;
+        let finished = letters.length === 0;
+        letters.forEach((letter, k0) => {
             const k = k0 + 1;
             const prev = letter.popIn;
-            const p = Math.min(1, Math.max((now - delay - this.createdTime!) * n * rate - k + 1, 0));
+            const p = Math.min(1, Math.max((now - delay - created) * n * rate - k + 1, floor));
             letter.popIn = p * p;
             if (prev <= 0 && letter.popIn > 0 && !this.config.silent && (n < 10 || k % 2 === 0)) {
                 sounds.push(0.45 + 0.05 * random() + (0.3 / n) * k + (this.config.pitch_shift ?? 0));
             }
+            if (k === letters.length && letter.popIn >= 1) finished = true;
         });
-        const last = this.letters[this.letters.length - 1];
-        if (!last || last.popIn >= 1) this.popDelay = undefined;
+        if (finished) {
+            if (this.strings.length > 1) {
+                // `text.lua:209`：`pop_delay = now − pop_in − created + (config.pop_delay or 1.5)`，再 `pop_out(4)`
+                this.popDelayOut = now - delay - created + (this.config.pop_delay ?? 1.5);
+                this.popOut = 4;
+                this.popOutTime = now + this.popDelayOut;
+            } else this.popDelay = undefined;
+        }
         return sounds;
     }
 
     /** `DynaText:pop_in`：从头再弹一遍 */
     popIn(delay = 0): void {
         this.popDelay = delay;
+        this.popOut = undefined;
         this.createdTime = null;
         for (const l of this.letters) l.popIn = 0;
     }
@@ -180,9 +272,16 @@ export class DynaText implements UIObject {
      * 新建的这个接过旧的进度（字一样才接）
      */
     inheritPop(from: DynaText): void {
-        if (from.text !== this.text) return;
+        if (from.text !== this.text || from.strings.length !== this.strings.length) return;
         this.popDelay = from.popDelay;
         this.createdTime = from.createdTime;
-        this.letters.forEach((l, i) => { l.popIn = from.letters[i]?.popIn ?? 1; });
+        this.popOut = from.popOut;
+        this.popOutTime = from.popOutTime;
+        this.popDelayOut = from.popDelayOut;
+        this.popCycle = from.popCycle;
+        this.focused = from.focused;
+        this.strings.forEach((s, k) => s.letters.forEach((l, i) => { l.popIn = from.strings[k]?.letters[i]?.popIn ?? 1; }));
+        this.text = this.strings[this.focused]!.text;
+        this.letters = this.strings[this.focused]!.letters;
     }
 }

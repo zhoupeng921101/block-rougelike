@@ -518,7 +518,7 @@ export function generateCardUi(
 // G.UIDEF.card_h_popup 与它的几个小工具
 // ————————————————————————————————————————————————————————————————
 
-function descFromRows(rows: Rows, empty = false, maxw?: number): UINodeDef {
+export function descFromRows(rows: Rows, empty = false, maxw?: number): UINodeDef {
     return { n: UIT.R, config: { align: 'cm', colour: empty ? C.CLEAR : C.UI.BACKGROUND_WHITE, r: 0.1, padding: 0.04, minw: 2, minh: 0.8, emboss: !empty ? 0.05 : undefined, filler: true }, nodes: [
         { n: UIT.R, config: { align: 'cm', padding: 0.03 }, nodes: rows.map((v) => ({ n: UIT.R, config: { align: 'cm', maxw }, nodes: v })) },
     ] };

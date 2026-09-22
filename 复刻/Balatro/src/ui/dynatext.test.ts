@@ -70,4 +70,31 @@ describe('DynaText 弹入（text.lua:191）', () => {
         c.inheritPop(a);
         expect(c.letters[0]!.popIn).toBe(0);
     });
+
+    it('多串轮播：pop_delay 秒后缩回、轮到下一串弹入，再缩回、轮回第一串', () => {
+        const d = new DynaText({ string: [{ string: '12' }, { string: '9' }], pop_in_rate: 10, pop_delay: 4, silent: true });
+        // 头一串一出来就是满的（没配 pop_in），第二串先清零；宽度取两串最大
+        expect(d.text).toBe('12');
+        expect(d.letters.map((l) => l.popIn)).toEqual([1, 1]);
+        d.popStep(0);
+        d.popStep(3.9);
+        expect(d.letters.map((l) => l.popIn)).toEqual([1, 1]);
+        // 4 秒起按 pop_out = 4 缩：(1 − 4·t)²，0.25 秒缩没
+        d.popStep(4.125);
+        expect(d.letters[0]!.popIn).toBeCloseTo(0.25);
+        d.popStep(4.3);
+        expect(d.letters[0]!.popIn).toBe(0);
+        // 下一帧轮到第二串，0.1 秒后弹入：(t·1·10 − k + 1)²
+        d.popStep(4.31);
+        expect(d.text).toBe('9');
+        expect(d.offset.x).toBeGreaterThan(0);
+        d.popStep(4.31 + 0.1 + 0.05);
+        expect(d.letters[0]!.popIn).toBeCloseTo(0.25);
+        d.popStep(4.6);
+        expect(d.letters[0]!.popIn).toBe(1);
+        // 满了之后隔 (now − 0.1 − created + 4) 秒再缩回，缩没了回到第一串
+        d.popStep(20);
+        d.popStep(20.01);
+        expect(d.text).toBe('12');
+    });
 });
