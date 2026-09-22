@@ -96,8 +96,6 @@ export class CardSprite {
     prevX = 0;
     /** 选中的牌抬起来。`G.HIGHLIGHT_H` 在原作里是 tile 量。 */
     highlighted = false;
-    /** 被 debuff 的牌画得暗一点。逻辑层的 `card.debuff` 是真状态，不是显示标记 */
-    private readonly dimmed: boolean;
 
     constructor(
         private readonly scene: Scene,
@@ -109,7 +107,6 @@ export class CardSprite {
         const h = toPx(CARD_H);
         const cardTime = cardTimeOf(card.sort_id);
         const tilt = () => this.hoverTilt;
-        this.dimmed = card.debuff;
 
         // **强化牌换的是底板那一格**，不是正面：`Enhancers.png` 里
         // `c_base` 在 `{x=1,y=0}`，8 张强化各占一格（`game.lua:649-656`）
@@ -117,7 +114,8 @@ export class CardSprite {
             ? ENHANCEMENT_CENTERS[card.enhancement].pos
             : BASE_POS;
 
-        const look = { edition: card.edition };
+        // 被削弱的牌底板与正面都盖 `debuff`（建精灵时的状态；Boss 在摸牌前就定了）
+        const look = { edition: card.edition, debuff: card.debuff };
         this.baseLayers = new LayeredQuad(scene, {
             name: `base_${card.key}_${card.unique_val}`,
             textureKey: 'centers',
@@ -296,11 +294,6 @@ export class CardSprite {
         // 它没有点数也没有花色，画出来就是在骗人。正面的版本叠加层也跟着不画（原文同一个条件）
         this.frontLayers.setVisible(!faceDown && !isStone(this.card));
         this.seal?.setVisible(!faceDown);
-    }
-
-    /** 被 debuff 的牌要看得出来。`Shader` 的 setAlpha 是 NOOP，所以缩一点当提示。 */
-    get isDimmed(): boolean {
-        return this.dimmed;
     }
 
     /** 计分时弹一下：`card_eval_status_text` 的 `juice_up(0.6, 0.1)`（`common_events.lua:896`） */

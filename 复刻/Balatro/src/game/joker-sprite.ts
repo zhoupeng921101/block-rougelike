@@ -74,7 +74,7 @@ export class JokerSprite {
             w, h,
             tilt: () => this.hoverTilt,
         };
-        this.layers = new LayeredQuad(scene, quad, 2, { edition: joker.edition });
+        this.layers = new LayeredQuad(scene, quad, 2, { edition: joker.edition, debuff: joker.debuff });
         this.placed = new PlacedLayers(scene, this.layers, quad, w / toPx(1), h / toPx(1));
         // 传奇小丑与 Hologram 的 `floating_sprite`（`card.lua:205`），Hologram 走 `hologram` shader
         if (joker.center.soul_pos) this.placed.addFloating(scene, joker.key === 'j_hologram' ? 'hologram' : 'soul_pos', { ...quad, pos: joker.center.soul_pos });

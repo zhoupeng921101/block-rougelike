@@ -156,9 +156,9 @@ export function baseShaderFor(edition?: Edition): 'dissolve' | 'negative' {
 
 /**
  * `card.lua:4452` 起的叠加层，**按原文的绘制顺序**：
- * voucher（优惠券）→ booster（补充包与幽灵牌）→ holo → foil → polychrome → negative_shine。
+ * voucher（优惠券）→ booster（补充包与幽灵牌）→ holo → foil → polychrome → negative_shine → debuff。
  */
-export function overlaysFor(opts: { edition?: Edition; set?: string }): OverlayShader[] {
+export function overlaysFor(opts: { edition?: Edition; set?: string; debuff?: boolean }): OverlayShader[] {
     const out: OverlayShader[] = [];
     if (opts.set === 'Voucher') out.push('voucher');
     if (opts.set === 'Booster' || opts.set === 'Spectral') out.push('booster');
@@ -166,6 +166,8 @@ export function overlaysFor(opts: { edition?: Edition; set?: string }): OverlayS
     if (opts.edition === 'foil') out.push('foil');
     if (opts.edition === 'polychrome') out.push('polychrome');
     if (opts.edition === 'negative') out.push('negative_shine');
+    // `card.lua:4531`：被削弱的再盖一层 `debuff`（红叉、去饱和）
+    if (opts.debuff) out.push('debuff');
     return out;
 }
 
@@ -182,7 +184,7 @@ export class LayeredQuad {
         scene: Scene,
         opts: QuadOptions,
         depth: number,
-        look: { edition?: Edition; set?: string },
+        look: { edition?: Edition; set?: string; debuff?: boolean },
     ) {
         const base = makeShaderQuad(scene, { ...opts, shader: opts.shader ?? baseShaderFor(look.edition) });
         base.setDepth(depth);

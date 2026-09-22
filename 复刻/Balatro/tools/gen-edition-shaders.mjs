@@ -32,7 +32,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const SRC = resolve(HERE, '../../../参考/产物/Balatro_1.0.1o/资源/shaders');
 const OUT = resolve(HERE, '../src/game/shaders/editions.generated.ts');
 
-const NAMES = ['holo', 'foil', 'polychrome', 'negative', 'negative_shine', 'voucher', 'booster', 'hologram'];
+const NAMES = ['holo', 'foil', 'polychrome', 'negative', 'negative_shine', 'voucher', 'booster', 'hologram', 'debuff', 'played'];
 
 /**
  * `hologram.fs`（Hologram 的浮层）的发光采样是个 `int` 循环：上限 `glow_samples` 在原文里是普通变量，
