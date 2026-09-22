@@ -1437,10 +1437,14 @@ ${String(e instanceof Error ? e.message : e)}`)
      */
     private tagHoverZones: Array<{ zone: GameObjects.Zone; target: { readonly rect: Rect } }> = [];
 
-    private addTagHover(rect: () => Rect, key: string, orbital: () => string | undefined): void {
+    private addTagHover(rect: () => Rect, key: string, orbital: () => string | undefined, juice?: () => void): void {
         const target = { get rect() { return rect(); } };
         const zone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(43);
-        zone.on('pointerover', () => this.showTagPopup(target, key, orbital()));
+        // `tag_sprite.hover`：`juice_up(0.05, 0.02)` 弹一下、两声，出提示框（`hover_tilt = 3` 要走 shader，标签精灵是普通贴图，没做）
+        zone.on('pointerover', () => {
+            juice?.();
+            this.showTagPopup(target, key, orbital());
+        });
         zone.on('pointerout', () => { if (this.popup?.sprite === (target as unknown as Pickable)) this.hidePopup(); });
         this.tagHoverZones.push({ zone, target });
     }
@@ -1795,7 +1799,8 @@ ${String(e instanceof Error ? e.message : e)}`)
             const key = run.blindTags[type];
             const sprite = card && [...card.root.walk()].find((e) => e.UIT === UIT.O && (e.config.object as { atlas?: string } | undefined)?.atlas === 'tags');
             if (!sprite || !key) continue;
-            this.addTagHover(() => ({ x: sprite.x, y: sprite.y, w: sprite.T.w, h: sprite.T.h }), key, () => run.orbitalChoice(type));
+            this.addTagHover(() => ({ x: sprite.x, y: sprite.y, w: sprite.T.w, h: sprite.T.h }), key, () => run.orbitalChoice(type),
+                () => this.blindSelectViews?.select.childView(card)?.juiceObject(sprite.config.object!, this.time.now / 1000, 0.05, 0.02));
             this.blindTagTargets.add(this.tagHoverZones[this.tagHoverZones.length - 1]!.target);
         }
     }
@@ -1946,6 +1951,7 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     private closeOverlay(): void {
         if (!this.overlay) return;
+        this.hidePopup();
         this.overlay.view.destroy();
         this.overlay.blocker.destroy();
         this.overlay.jimbo?.destroy();
@@ -1988,6 +1994,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     private syncDeckViewCards(): void {
         const o = this.overlay;
         if (!o) return;
+        if (o.deckCards.some((c) => this.popup?.sprite === (c.card as unknown as Pickable))) this.hidePopup();
         for (const c of o.deckCards) c.card.destroy();
         o.deckCards = [];
         const inner = o.view.box.getById('tab_contents')?.config.object as UIBox | undefined;
@@ -1997,6 +2004,13 @@ ${String(e instanceof Error ? e.message : e)}`)
                 const mini = new MiniCard(this, card.key, 0.7 * CARD_W, 0.7 * CARD_H, 202 + index * 0.05, {
                     enhancement: card.enhancement, edition: card.edition, seal: card.seal, debuff: card.debuff, greyed, shadow: false,
                 });
+                // `Card:hover`：`juice_up(0.05, 0.03)`、`paper1`，出 `card_h_popup`——`view_deck` 区域里与商店一样挂左边（`cl`）
+                const target = mini as unknown as Pickable;
+                mini.onHover(() => {
+                    mini.juiceUp(0.05, 0.03);
+                    this.sound.play('paper1', { rate: Math.random() * 0.2 + 0.9, volume: 0.35 });
+                    this.showPopup(target, popupOfCard(card, 'other'), true);
+                }, () => { if (this.popup?.sprite === target) this.hidePopup(); });
                 o.deckCards.push({ card: mini, area, index });
             });
         }
@@ -2577,7 +2591,10 @@ ${String(e instanceof Error ? e.message : e)}`)
                 views.push(view);
                 prev = box;
                 const sprite = [...box.root.walk()].find((e) => e.UIT === UIT.O)!;
-                this.addTagHover(() => ({ x: sprite.x, y: sprite.y, w: sprite.T.w, h: sprite.T.h }), tag.key, () => tag.orbitalHand);
+                this.addTagHover(() => ({ x: sprite.x, y: sprite.y, w: sprite.T.w, h: sprite.T.h }), tag.key, () => tag.orbitalHand,
+                    () => view.juiceObject(sprite.config.object!, this.time.now / 1000, 0.05, 0.02));
+                // `Tag:generate_UI` 末尾的 `tag_sprite:juice_up()`：新拿到的标签弹一下（缺省幅度 0.4）
+                if (!cur.list.includes(tag)) view.juiceObject(sprite.config.object!, now, 0.4);
                 this.hudTagTargets.add(this.tagHoverZones[this.tagHoverZones.length - 1]!.target);
             }
             this.hudTags = { list: [...tags], views };

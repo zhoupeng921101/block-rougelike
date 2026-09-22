@@ -186,7 +186,7 @@ export class UIBoxView {
                     view.imageShadow = this.scene.add.image(0, 0, sprite.atlas, frame).setTint(0x000000).setAlpha(0.3);
                     this.container.add(view.imageShadow);
                 }
-                view.image = this.scene.add.image(0, 0, sprite.atlas, frame).setOrigin(0, 0);
+                view.image = this.scene.add.image(0, 0, sprite.atlas, frame);
                 this.container.add(view.image);
             } else if (el.UIT !== UIT.O) {
                 view.gfx = this.scene.add.graphics();
@@ -509,7 +509,12 @@ export class UIBoxView {
             this.drawDynaText(v, cfg.object, el.x, el.y, t);
             if (v.letters.length !== before) this.orderDirty = true;
         }
-        if (v.image) v.image.setPosition(toPx(el.x), toPx(el.y)).setDisplaySize(toPx(w), toPx(h));
+        if (v.image) {
+            // 以中心画，好吃 `juice_up` 的缩放与转角（标签精灵悬停、刚拿到时弹一下）
+            const j = this.juices.get(cfg.object as object)?.VT;
+            const k = j?.scale ?? 1;
+            v.image.setPosition(toPx(el.x + w / 2), toPx(el.y + h / 2)).setDisplaySize(toPx(w) * k, toPx(h) * k).setRotation(j?.r ?? 0);
+        }
         if (v.imageShadow) {
             // `sprite.lua:76`：往视差反方向错开 `shadow_height`、缩到 `1 − 0.2·shadow_height`（以中心）
             const hgt = (cfg.object as TagSpriteObject).shadowHeight;

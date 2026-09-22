@@ -15,7 +15,7 @@ import { cardShadowParallaxX } from './align-cards';
 import { SEAL_POS } from './card-sprite';
 import { toPx } from './coords';
 import { Motion } from './moveable';
-import { LayeredQuad, cardTimeOf, makeShaderQuad } from './shader-quad';
+import { LayeredQuad, cardTimeOf, makeClickable, makeShaderQuad } from './shader-quad';
 
 /** `P_CARDS` 的 key（`S_A`、`D_T`…）→ 图集格：花色定行、点数定列（2 → 0 … A → 12） */
 const SUIT_ROW: Record<string, number> = { H: 0, C: 1, D: 2, S: 3 };
@@ -87,6 +87,26 @@ export class MiniCard {
     /** `Card:juice_up`（参数是卡牌版的，内部 ×0.4） */
     juiceUp(amount?: number, rot?: number): void {
         this.motion?.cardJuiceUp(this.scene.time.now / 1000, amount, rot);
+    }
+
+    /** 可见矩形（tile，`VT` 左上角 + 卡面尺寸）：提示框挂在它上面 */
+    get rect(): { x: number; y: number; w: number; h: number } {
+        const VT = this.motion?.VT ?? { x: 0, y: 0 };
+        return { x: VT.x, y: VT.y, w: this.w, h: this.h };
+    }
+
+    /** 悬停（`Card:hover`）：悬停时大 0.05（`zoom`），回调里由调用方弹一下、出提示框 */
+    onHover(over: () => void, out: () => void): void {
+        makeClickable(this.base.main, toPx(this.w), toPx(this.h), {
+            onOver: () => {
+                if (this.motion) this.motion.hovered = true;
+                over();
+            },
+            onOut: () => {
+                if (this.motion) this.motion.hovered = false;
+                out();
+            },
+        });
     }
 
     /** 同一区域里后面的牌压前面的：整张卡（含叠层）一起换深度 */
