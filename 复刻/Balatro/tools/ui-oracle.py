@@ -722,6 +722,23 @@ def main():
     cases.append({'name': 'deck_info_remaining_page', **to_py(lua.eval("DUMP(DECK_INFO1:get_UIE_by_ID('tab_contents').config.object)"))})
     cases.append({'name': 'deck_info_full', **to_py(lua.eval('DUMP(DECK_INFO2)'))})
 
+    # 主菜单（`set_main_menu_UI`）：按钮 `bmi`、Profile `bli`、版本号 `tri`，都挂 G.ROOM_ATTACH，offset 落定为 0。
+    # Android 版的开关：没有 QUIT、有语言与链接按钮、教程已做完（PLAY 走 setup_run）
+    lua.execute(r'''
+      G.F_QUIT_BUTTON = false; G.F_ENGLISH_ONLY = false; G.F_LINKTREE = true; G.F_DISP_USERNAME = nil
+      G.SETTINGS.tutorial_complete = true
+      G.LANG.label = 'English'
+      G.PROFILES[1].name = 'P1'; G.profile_display = 'P1'
+      G.VERSION = '1.0.1o-FULL [M]'
+      MAIN_MENU = UIBox{definition = create_UIBox_main_menu_buttons(), config = {align = 'bmi', offset = {x = 0, y = 0}, major = G.ROOM_ATTACH, bond = 'Weak'}}
+      PROFILE = UIBox{definition = create_UIBox_profile_button(), config = {align = 'bli', offset = {x = 0, y = 0}, major = G.ROOM_ATTACH, bond = 'Weak'}}
+      VERSION_BOX = UIBox{definition = {n=G.UIT.ROOT, config={align = "cm", colour = G.C.UI.TRANSPARENT_DARK}, nodes={
+          {n=G.UIT.T, config={text = G.VERSION, scale = 0.3, colour = G.C.UI.TEXT_LIGHT}}}},
+        config = {align = 'tri', offset = {x = 0, y = 0}, major = G.ROOM_ATTACH, bond = 'Weak'}}
+    ''')
+    for name, var in [('main_menu', 'MAIN_MENU'), ('profile_button', 'PROFILE'), ('version', 'VERSION_BOX')]:
+        cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 

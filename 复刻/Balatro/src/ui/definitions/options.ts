@@ -283,7 +283,12 @@ function inactive(def: UINodeDef): UINodeDef {
 }
 
 /** `create_UIBox_options`（`G.STAGE == RUN` 那一支；种子那行只在 `G.GAME.seeded` 时有） */
-export function optionsMenu(game: { seeded: boolean; seed: string }): UINodeDef {
+/**
+ * `create_UIBox_options`。`stage` 照 `G.STAGE`：局内（`RUN`）有种子行、New Run、Main Menu、Collection；
+ * 主菜单（`MAIN_MENU`）只有 Settings / Stats / Customize Deck / Credits（复刻件没有 Credits 页，画成灰的）
+ */
+export function optionsMenu(game: { seeded: boolean; seed: string; stage?: 'run' | 'menu' }): UINodeDef {
+    const inRun = (game.stage ?? 'run') === 'run';
     const settings = uiboxButton({ button: 'settings', label: [loc('b_settings')], minw: 5 });
     const restart = uiboxButton({ id: 'restart_button', label: [loc('b_start_new_run')], button: 'setup_run', minw: 5 });
     const mainMenu = uiboxButton({ label: [loc('b_main_menu')], button: 'go_to_menu', minw: 5 });
@@ -305,14 +310,16 @@ export function optionsMenu(game: { seeded: boolean; seed: string }): UINodeDef 
     ] };
     const highScores = inactive(uiboxButton({ label: [loc('b_stats')], button: 'high_scores', minw: 5 }));
     const customize = inactive(uiboxButton({ label: [loc('b_customize_deck')], button: 'customize_deck', minw: 5 }));
+    const credits = inRun ? null : inactive(uiboxButton({ label: [loc('b_credits')], button: 'show_credits', minw: 5 }));
     return genericOptions({ contents: [
         settings,
-        game.seeded ? currentSeed : null,
-        restart,
-        mainMenu,
+        inRun && game.seeded ? currentSeed : null,
+        inRun ? restart : null,
+        inRun ? mainMenu : null,
         highScores,
-        yourCollection,
+        inRun ? yourCollection : null,
         customize,
+        credits,
     ].filter((x): x is UINodeDef => !!x) });
 }
 

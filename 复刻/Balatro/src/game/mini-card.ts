@@ -15,7 +15,7 @@ import { cardShadowParallaxX } from './align-cards';
 import { SEAL_POS } from './card-sprite';
 import { toPx } from './coords';
 import { Motion } from './moveable';
-import { LayeredQuad, cardTimeOf, makeClickable, makeShaderQuad } from './shader-quad';
+import { type DissolveState, LayeredQuad, cardTimeOf, makeClickable, makeShaderQuad } from './shader-quad';
 import { cardsTexture, shadowsOn } from './settings';
 
 /** `P_CARDS` 的 key（`S_A`、`D_T`…）→ 图集格：花色定行、点数定列（2 → 0 … A → 12） */
@@ -33,6 +33,8 @@ export type MiniCardLook = {
     greyed?: boolean;
     /** `draw_layers = {'card'}`（View Deck）不画阴影 */
     shadow?: boolean;
+    /** `Card.dissolve` / `dissolve_colours`：给了就由调用方缓动（主菜单那张黑桃 A 的 `start_materialize`） */
+    dissolve?: DissolveState;
 };
 
 let serial = 0;
@@ -57,7 +59,7 @@ export class MiniCard {
         const [suit, rank] = key.split('_') as [string, string];
         const id = serial++;
         const cardTime = cardTimeOf(1000 + id);
-        const common = { cardTime, w: toPx(w), h: toPx(h), tilt: () => 0 };
+        const common = { cardTime, w: toPx(w), h: toPx(h), tilt: () => 0, dissolve: look.dissolve };
         const basePos = look.enhancement ? ENHANCEMENT_CENTERS[look.enhancement]!.pos : BASE_POS;
         // `card.lua:4429` 起：greyed 的牌底板与牌面**不画 dissolve**，只画叠层——版本、`debuff`（红叉）、最后 `played`（去饱和、半透明）。
         // 复刻件的底层 quad 就用叠层里的第一个 shader 画
@@ -110,6 +112,15 @@ export class MiniCard {
         });
     }
 
+    /** `states.visible`：连阴影一起藏 */
+    setVisible(on: boolean): void {
+        this.visible = on;
+        for (const l of [this.base, this.front, this.seal]) for (const q of l?.quads ?? []) q.setVisible(on);
+        this.shadow?.setVisible(on && shadowsOn());
+    }
+
+    private visible = true;
+
     /** 同一区域里后面的牌压前面的：整张卡（含叠层）一起换深度 */
     setDepth(depth: number): void {
         this.base.setDepth(depth);
@@ -131,7 +142,7 @@ export class MiniCard {
             for (const q of l.quads) q.setScale(VT.scale);
         }
         if (this.shadow) {
-            this.shadow.setVisible(shadowsOn());
+            this.shadow.setVisible(this.visible && shadowsOn());
             const spx = cardShadowParallaxX(m.T.x, this.w);
             this.shadow.setScale(VT.scale * (1 - 0.2 * SHADOW_HEIGHT))
                 .setPosition(cx - toPx(spx * SHADOW_HEIGHT), cy + toPx(1.5 * SHADOW_HEIGHT))

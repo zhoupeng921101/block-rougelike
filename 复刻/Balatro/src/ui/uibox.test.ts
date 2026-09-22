@@ -23,6 +23,7 @@ import { type Tab, changeTab, currentHands, handTip, popupTooltip, runInfo, used
 import { HAND_DESCRIPTIONS } from './descriptions.generated';
 import { deckPreview } from './definitions/deck-preview';
 import { deckInfo } from './definitions/deck-info';
+import { mainMenuButtons, profileButton, versionBox } from './definitions/main-menu';
 import { type Card, type Suit, type Value, cardKey, makeCard } from '../core/card';
 import { VOUCHER_CENTERS } from '../core/vouchers';
 import { initialHands } from '../core/scoring';
@@ -318,5 +319,18 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
         const box = new UIBox(deckInfo(input, remaining, () => undefined), { align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: 0, y: 0, w: 21, h: 11.2 } } });
         expectSame(dump(box), cases.find((c) => c.name === name)!.elements);
         if (remaining) expectSame(dump(box.getById('tab_contents')!.config.object as UIBox), cases.find((c) => c.name === 'deck_info_remaining_page')!.elements);
+    });
+
+    /** 主菜单：`set_main_menu_UI` 的三块，挂 G.ROOM_ATTACH，offset 落定为 0 */
+    it('create_UIBox_main_menu_buttons / create_UIBox_profile_button / 版本号', () => {
+        const room = { T: { x: 0, y: 0, w: 21, h: 11.2 } };
+        for (const [name, def, align] of [
+            ['main_menu', mainMenuButtons(), 'bmi'],
+            ['profile_button', profileButton(), 'bli'],
+            ['version', versionBox(), 'tri'],
+        ] as const) {
+            const box = new UIBox(def, { align, offset: { x: 0, y: 0 }, major: room });
+            expectSame(dump(box), cases.find((c) => c.name === name)!.elements);
+        }
     });
 });

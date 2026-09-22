@@ -96,6 +96,7 @@ import { Jimbo } from '../jimbo';
 import { type Tab, type VoucherArea, changeTab, currentHands, handTip, popupTooltip, runInfo, usedVouchers } from '../../ui/definitions/run-info';
 import { HAND_DESCRIPTIONS, HAND_EXAMPLES } from '../../ui/descriptions.generated';
 import { MiniCard } from '../mini-card';
+import { LOGO_ATLAS, MainMenu, type MenuContext } from '../main-menu';
 
 /**
  * 版本的文字标记。
@@ -262,6 +263,10 @@ export class RunScene extends Scene {
     private areaViews: Array<{ view: UIBoxView; count: AreaCount; key: 'jokers' | 'consumeables' | 'hand' | 'deck' }> = [];
     /** 背景与 CRT：铺满可视区，窗口变了跟着相机重摆（`applyRoomCamera`） */
     private readonly fullscreenQuads: GameObjects.Shader[] = [];
+    /** 背景那张 `background` shader（主菜单时藏起来，换成 `splash`） */
+    private bgQuad: GameObjects.Shader | null = null;
+    /** 主菜单（`G.STAGE == MAIN_MENU`）：URL 上没有 `?seed` 时进这里，局里的东西全藏着 */
+    private mainMenu: MainMenu | null = null;
     /** 正在播放出牌动画时不接受输入 */
     private animating = false;
     /** 计分过程中的实时累加器，只用于显示 */
@@ -287,6 +292,8 @@ export class RunScene extends Scene {
         this.load.font(UI_FONT_FAMILY, '/assets/fonts/m6x11plus.ttf');
         // `game.lua:996`：赌注筹码，29×29 一格
         this.load.spritesheet('chips', '/assets/textures/chips.png', { frameWidth: 29, frameHeight: 29 });
+        // `game.lua:991`：主菜单的 BALATRO 标志，一整张 333×216
+        this.load.spritesheet(LOGO_ATLAS.key, `/${LOGO_ATLAS.path}`, { frameWidth: LOGO_ATLAS.frameW, frameHeight: LOGO_ATLAS.frameH });
         // `game.lua:989`：`ui_1`，18×18 一格（结束界面「Best Hand」前的小筹码是 {0,0}）
         this.load.spritesheet('ui_1', '/assets/textures/ui_assets.png', { frameWidth: 18, frameHeight: 18 });
         // `game.lua:994`：标签，34×34 一格
@@ -341,6 +348,8 @@ export class RunScene extends Scene {
             ...Array.from({ length: 6 }, (_, i) => `glass${i + 1}`),
             // 版本（`set_edition`）、蜡封、造牌 / 给钱的定音鼓
             'foil1', 'holo1', 'polychrome1', 'timpani', 'gold_seal',
+            // 主菜单标志溶出来（`magic_crumple3`）
+            'magic_crumple3',
         ]) {
             this.load.audio(key, `/assets/sounds/${key}.ogg`);
         }
@@ -440,8 +449,13 @@ export class RunScene extends Scene {
         this.rerollBtn = this.makeButton(toPx(12.2), toPx(10.2), '重掷', '#8a5fb0', () => this.doReroll());
         this.skipBlindBtn = this.makeButton(toPx(17.0), toPx(10.2), '跳过盲注', '#a07a2c', () => this.doSkipBlind());
 
-        // 开局先进盲注选择（原作如此）：能看到这一格跳过给什么标签，再决定打还是跳
-        this.showBlindSelect();
+        const params = new URLSearchParams(location.search);
+        if (params.has('seed')) {
+            // 开局先进盲注选择（原作如此）：能看到这一格跳过给什么标签，再决定打还是跳
+            this.showBlindSelect();
+        } else {
+            this.enterMainMenu(params.get('menu') === 'game' ? 'game' : null);
+        }
         this.setupCrt();
         this.applyRoomCamera();
         this.scale.on('resize', () => this.applyRoomCamera());
@@ -2866,6 +2880,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             const params = new URLSearchParams(location.search);
             const seed = r.state.run_setup_seed && r.state.setup_seed ? r.state.setup_seed : null;
             params.set('seed', seed ?? randomSeed());
+            params.delete('menu');
             if (seed) params.delete('rs');
             else params.set('rs', '1');
             location.search = params.toString();
@@ -2915,7 +2930,7 @@ ${String(e instanceof Error ? e.message : e)}`)
     private openOptions(): void {
         if (this.overlay) return;
         const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
-        this.mountOverlay(optionsMenu({ seeded: this.seeded, seed: this.run.seed }), bg, 0.7);
+        this.mountOverlay(optionsMenu({ seeded: this.seeded, seed: this.run.seed, stage: this.mainMenu ? 'menu' : 'run' }), bg, 0.7);
     }
 
     /** `G.FUNCS.settings`：三页设置，第一页 Game。控件的 `func`（滑条、开关）挂在每页的内容盒上 */
@@ -3481,11 +3496,13 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.openCollectionPage(page);
             return;
         }
-        // 复刻件没有主菜单：「Main Menu」同种子重开（整页重载，URL 上的 ?seed 就是这一局的种子）
+        // 「Main Menu」（`go_to_menu` → `G:main_menu('game')`）：整页重载，去掉种子就是主菜单
         if (name === 'go_to_menu') {
             saveSettings();
             const params = new URLSearchParams(location.search);
-            params.set('seed', this.run.seed);
+            params.delete('seed');
+            params.delete('rs');
+            params.set('menu', 'game');
             location.search = params.toString();
         }
     }
@@ -3702,6 +3719,10 @@ ${String(e instanceof Error ? e.message : e)}`)
     }
 
     update(time: number, delta: number): void {
+        if (this.mainMenu) {
+            this.updateMainMenu(time, delta);
+            return;
+        }
         // `game.lua:2730` 的 `SPEEDFACTOR`：局内、没暂停（overlay 开着就是暂停）时按设置的游戏速度走事件队列
         this.queue.update((delta / 1000) * (this.overlay ? 1 : SETTINGS.GAMESPEED));
         // `update_canvas_juice`：光标用屏幕 tile 坐标（`G.CURSOR.T`）
@@ -3759,6 +3780,52 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.syncMusic(time / 1000);
         for (const a of this.attentionTexts) a.update(time / 1000);
         this.attentionTexts = this.attentionTexts.filter((a) => !a.done);
+    }
+
+    /**
+     * `Game:main_menu`：`prep_stage(MAIN_MENU)` 清掉局里的一切，只剩旋涡、标志、黑桃 A 与三块 UI。
+     * 复刻件的场景仍按局来建（Options / 图鉴 / 开局设置都长在它上面），这里把局里看得见的东西全藏起来、不再逐帧更新
+     */
+    private enterMainMenu(context: MenuContext): void {
+        this.hudView.setVisible(false);
+        this.hudBlindView.setVisible(false);
+        for (const a of this.areaViews) a.view.setVisible(false);
+        for (const t of [this.hud, this.handPreview, this.jokerInfo, this.message, this.nextBtn, this.rerollBtn, this.skipBlindBtn]) t.setVisible(false);
+        for (const f of this.flames) f.quad.setVisible(false);
+        this.deckZone.disableInteractive();
+        this.blindChipZone.disableInteractive();
+        this.bgQuad?.setVisible(false);
+        this.mainMenu = new MainMenu(this, context, (name) => this.onMainMenuButton(name), this.mapping.pxPerTile / toPx(1));
+        this.fullscreenQuads.push(this.mainMenu.splash);
+    }
+
+    /**
+     * 主菜单上的按钮。PLAY 进开局设置（教程做完了的 `setup_run`），OPTIONS、COLLECTION 同局里。
+     * Profile / 语言 / 链接三个按钮原作各开一个 overlay（存档选择、语言列表、FAQ 与社交链接），复刻件没有这几页：画照原样、点了没反应
+     */
+    private onMainMenuButton(name: string): void {
+        if (this.overlay) return;
+        if (name === 'setup_run') this.openRunSetup(false);
+        else if (name === 'options') this.openOptions();
+        else if (name === 'your_collection') this.openCollection();
+    }
+
+    /** 主菜单这一帧：房间的余振、旋涡与标志、overlay、提示框、音乐（`music1`，没有局就没有火与管风琴） */
+    private updateMainMenu(time: number, delta: number): void {
+        this.queue.update(delta / 1000);
+        const now = time / 1000;
+        const p = this.input.activePointer;
+        const P = this.mapping.pxPerTile;
+        this.placeRoom(stepRoomJuice(this.juice, delta / 1000, now, SETTINGS.screenshake,
+            { x: p.x / P, y: p.y / P }, { x: this.mapping.roomX, y: this.mapping.roomY }));
+        this.mainMenu!.update(now);
+        this.stepOverlay(now);
+        this.followPopup(now);
+        tickColours(now);
+        this.music.update(now, {
+            track: desiredTrack({ packKind: null, packFading: null, inShop: false, boss: false }),
+            gameOver: false, earned: 0, required: 0, flames: 0, fireChange: 0,
+        });
     }
 
     /** 两团分数火：状态、贴片、挂在哪个元素上 */
@@ -4089,6 +4156,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         );
         bg.setDepth(-1000);
         this.fullscreenQuads.push(bg);
+        this.bgQuad = bg;
     }
 
     /** `love.resize` 的结果：窗口变了才重算 */
@@ -4105,6 +4173,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.blindSelectViews?.select.setResolution(this.mapping.pxPerTile / toPx(1));
         this.blindSelectViews?.prompt.setResolution(this.mapping.pxPerTile / toPx(1));
         for (const a of this.areaViews) a.view.setResolution(this.mapping.pxPerTile / toPx(1));
+        this.mainMenu?.setResolution(this.mapping.pxPerTile / toPx(1));
         this.placeRoom({ x: this.mapping.roomX, y: this.mapping.roomY, r: 0 });
     }
 

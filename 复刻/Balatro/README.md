@@ -163,7 +163,7 @@ src/
 ## 命令
 
 ```bash
-npm run dev         # localhost:8080
+npm run dev         # localhost:8080 进主菜单；?seed=ALEEB 直接开这一局
 npm test            # 889 个测试，必须全绿（含 13 条 shader 编译检查、5 条实机真值）
 npm run test:slow   # 60 个 seed 量墙（约 30 秒，改了内容或 bot 之后跑）
 npm run typecheck   # tsc --noEmit
