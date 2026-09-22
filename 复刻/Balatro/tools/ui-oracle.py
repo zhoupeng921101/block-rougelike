@@ -623,6 +623,20 @@ def main():
     cases.append({'name': 'run_info_vouchers_outer', **to_py(lua.eval('DUMP(RUN_INFO)'))})
     cases.append({'name': 'run_info_vouchers', **to_py(lua.eval("DUMP(RUN_INFO:get_UIE_by_ID('tab_contents').config.object)"))})
 
+    # 牌型行的悬停说明：UIElement:hover 的 on_demand_tooltip → create_popup_UIBox_tooltip（filler = create_UIBox_hand_tip），
+    # 挂在一行上（行在上半屏 bm、下移 0.1）
+    lua.execute(r'''
+      G.GAME.hands['Pair'].example = {{'S_K', false},{'S_9', true},{'D_9', true},{'H_6', false},{'D_3', false}}
+      G.P_CARDS = setmetatable({}, {__index = function() return {} end})
+      G.P_CENTERS.c_base = {}
+      Card = function(x, y, w, h) local c = Moveable(x, y, w, h); c.juice_up = function() end; return c end
+      play_sound = function() end
+      local row = Moveable(6, 3, 11.7, 0.62)
+      TIP = UIBox{ definition = create_popup_UIBox_tooltip({text = {'2 cards that share the same rank. They may', 'be played with up to 3 other unscored cards'}, filler = {func = create_UIBox_hand_tip, args = 'Pair'}}),
+        config = { align = 'bm', offset = {x = 0, y = 0.1}, parent = row } }
+    ''')
+    cases.append({'name': 'hand_tip', **to_py(lua.eval('DUMP(TIP)'))})
+
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))
 

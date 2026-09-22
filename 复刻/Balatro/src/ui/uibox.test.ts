@@ -19,7 +19,8 @@ import { createHudBlind, makeHudBlindState } from './definitions/hud-blind';
 import { type GameOverState, createGameOver, createWin } from './definitions/game-over';
 import { hudBlindFuncs } from './definitions/hud-blind-funcs';
 import { makeHudState, createHud } from './definitions/hud';
-import { type Tab, changeTab, currentHands, runInfo, usedVouchers } from './definitions/run-info';
+import { type Tab, changeTab, currentHands, handTip, popupTooltip, runInfo, usedVouchers } from './definitions/run-info';
+import { HAND_DESCRIPTIONS } from './descriptions.generated';
 import { VOUCHER_CENTERS } from '../core/vouchers';
 import { initialHands } from '../core/scoring';
 import oracle from './oracle.generated.json';
@@ -266,4 +267,10 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
         expectSame(dump(box), cases.find((c) => c.name === 'run_info_vouchers_outer')!.elements);
         expectSame(dump(box.getById('tab_contents')!.config.object as UIBox), cases.find((c) => c.name === 'run_info_vouchers')!.elements);
     });
+
+    it('牌型行的悬停说明：create_popup_UIBox_tooltip + create_UIBox_hand_tip', () => {
+        const box = new UIBox(popupTooltip(HAND_DESCRIPTIONS.Pair!, handTip('Pair', true).def), { align: 'bm', offset: { x: 0, y: 0.1 }, major: { T: { x: 6, y: 3, w: 11.7, h: 0.62 } } });
+        expectSame(dump(box), cases.find((c) => c.name === 'hand_tip')!.elements);
+    });
 });
+

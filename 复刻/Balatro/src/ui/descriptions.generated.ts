@@ -3090,6 +3090,60 @@ export const MISC: Readonly<Record<string, Readonly<Record<string, string>>>> = 
  }
 };
 
+/** `G.localization.misc.poker_hand_descriptions`：Run Info 牌型行悬停时的说明 */
+export const HAND_DESCRIPTIONS: Readonly<Record<string, readonly string[]>> = {
+ "Five of a Kind": [
+  "5 cards with the same rank"
+ ],
+ "Flush": [
+  "5 cards that share the same suit"
+ ],
+ "Flush Five": [
+  "5 cards with the same rank and suit"
+ ],
+ "Flush House": [
+  "A Three of a Kind and a Pair with",
+  "all cards sharing the same suit"
+ ],
+ "Four of a Kind": [
+  "4 cards with the same rank. They may",
+  "be played with 1 other unscored card"
+ ],
+ "Full House": [
+  "A Three of a Kind and a Pair"
+ ],
+ "High Card": [
+  "If the played hand is not any of the above",
+  "hands, only the highest ranked card scores"
+ ],
+ "Pair": [
+  "2 cards that share the same rank. They may",
+  "be played with up to 3 other unscored cards"
+ ],
+ "Royal Flush": [
+  "5 cards in a row (consecutive ranks) with",
+  "all cards sharing the same suit"
+ ],
+ "Straight": [
+  "5 cards in a row (consecutive ranks)"
+ ],
+ "Straight Flush": [
+  "5 cards in a row (consecutive ranks) with",
+  "all cards sharing the same suit"
+ ],
+ "Three of a Kind": [
+  "3 cards with the same rank. They may be",
+  "played with up to 2 other unscored cards"
+ ],
+ "Two Pair": [
+  "2 pairs of cards with different ranks, may",
+  "be played with 1 other unscored card"
+ ]
+};
+
+/** `G.GAME.hands[*].example`（game.lua:2212）：示例牌 `[牌 key, 是否计分]` */
+export const HAND_EXAMPLES: Readonly<Record<string, ReadonlyArray<readonly [string, boolean]>>> = {"Flush Five": [["S_A", true], ["S_A", true], ["S_A", true], ["S_A", true], ["S_A", true]], "Flush House": [["D_7", true], ["D_7", true], ["D_7", true], ["D_4", true], ["D_4", true]], "Five of a Kind": [["S_A", true], ["H_A", true], ["H_A", true], ["C_A", true], ["D_A", true]], "Straight Flush": [["S_Q", true], ["S_J", true], ["S_T", true], ["S_9", true], ["S_8", true]], "Four of a Kind": [["S_J", true], ["H_J", true], ["C_J", true], ["D_J", true], ["C_3", false]], "Full House": [["H_K", true], ["C_K", true], ["D_K", true], ["S_2", true], ["D_2", true]], "Flush": [["H_A", true], ["H_K", true], ["H_T", true], ["H_5", true], ["H_4", true]], "Straight": [["D_J", true], ["C_T", true], ["C_9", true], ["S_8", true], ["H_7", true]], "Three of a Kind": [["S_T", true], ["C_T", true], ["D_T", true], ["H_6", false], ["D_5", false]], "Two Pair": [["H_A", true], ["D_A", true], ["C_Q", false], ["H_4", true], ["C_4", true]], "Pair": [["S_K", false], ["S_9", true], ["D_9", true], ["H_6", false], ["D_3", false]], "High Card": [["S_A", true], ["D_Q", false], ["D_9", false], ["C_4", false], ["D_3", false]]};
+
 /** `G.localization.misc.quips`（`localize{type = 'quips'}`）：Jimbo 的俏皮话，每条按行 */
 export const QUIPS: Readonly<Record<string, readonly string[]>> = {
  "dq_1": [

@@ -10,6 +10,7 @@
 依赖：lupa（带 LuaJIT 2.1），与 `tools/ui-oracle.py` 同一个包。
 """
 import json
+import re
 import pathlib
 
 from lupa import luajit21
@@ -78,6 +79,12 @@ def main():
         misc[cat] = dict(sorted((k, v) for k, v in loc['misc'][cat].items() if isinstance(v, str)))
     # lq_* 输了、wq_* 赢了、dq_* 终局 Boss
     quips = {k: plain(v) for k, v in sorted(loc['misc']['quips'].items())}
+    # Run Info 牌型行的悬停说明（misc.poker_hand_descriptions）与示例牌（game.lua 的 G.GAME.hands[*].example）
+    hand_desc = {k: plain(v) for k, v in sorted(loc['misc']['poker_hand_descriptions'].items())}
+    game_src = (SRC_DIR / 'game.lua').read_text(encoding='utf-8')
+    hand_examples = {}
+    for name, ex in re.findall(r'\["([^"]+)"\] = +\{visible.*?example = \{(.*?)\}\}', game_src):
+        hand_examples[name] = [[k, flag == 'true'] for k, flag in re.findall(r"\{'(\w_\w+)', (true|false)", ex)]
     body = (
         '// 由 tools/gen-descriptions.py 从 本地化/en-us.lua 生成，不要手改。\n'
         '/** `G.localization.descriptions`：`name` 是字符串或多行，`text` 按行（控制码原样） */\n'
@@ -86,6 +93,12 @@ def main():
         '/** `G.localization.misc` 里提示框会查的几张表（`localize(key, cat)`） */\n'
         'export const MISC: Readonly<Record<string, Readonly<Record<string, string>>>> = '
         + json.dumps(misc, ensure_ascii=False, indent=1) + ';\n\n'
+        '/** `G.localization.misc.poker_hand_descriptions`：Run Info 牌型行悬停时的说明 */\n'
+        'export const HAND_DESCRIPTIONS: Readonly<Record<string, readonly string[]>> = '
+        + json.dumps(hand_desc, ensure_ascii=False, indent=1) + ';\n\n'
+        '/** `G.GAME.hands[*].example`（game.lua:2212）：示例牌 `[牌 key, 是否计分]` */\n'
+        'export const HAND_EXAMPLES: Readonly<Record<string, ReadonlyArray<readonly [string, boolean]>>> = '
+        + json.dumps(hand_examples, ensure_ascii=False) + ';\n\n'
         "/** `G.localization.misc.quips`（`localize{type = 'quips'}`）：Jimbo 的俏皮话，每条按行 */\n"
         'export const QUIPS: Readonly<Record<string, readonly string[]>> = '
         + json.dumps(quips, ensure_ascii=False, indent=1) + ';\n\n'

@@ -59,7 +59,8 @@ const HAND_ORDER: HandName[] = ['Flush Five', 'Flush House', 'Five of a Kind', '
 /** `create_UIBox_current_hand_row`（非 `simple`）。没露过脸的牌型不出这一行 */
 export function currentHandRow(name: HandName, h: HandInfo): UINodeDef | null {
     if (!h.visible) return null;
-    return { n: UIT.R, config: { align: 'cm', padding: 0.05, r: 0.1, colour: darken(C.JOKER_GREY, 0.1), emboss: 0.05, hover: true }, nodes: [
+    // `on_demand_tooltip`：悬停出说明与示例牌（场景读它）
+    return { n: UIT.R, config: { align: 'cm', padding: 0.05, r: 0.1, colour: darken(C.JOKER_GREY, 0.1), emboss: 0.05, hover: true, on_demand_tooltip: { hand: name } }, nodes: [
         { n: UIT.C, config: { align: 'cl', padding: 0, minw: 5 }, nodes: [
             { n: UIT.C, config: { align: 'cm', padding: 0.01, r: 0.1, colour: C.HAND_LEVELS[Math.min(7, h.level)]!, minw: 1.5, outline: 0.8, outline_colour: C.WHITE }, nodes: [
                 { n: UIT.T, config: { text: `${loc('k_level_prefix')}${h.level}`, scale: 0.5, colour: C.UI.TEXT_DARK } },
@@ -92,6 +93,31 @@ export function currentHandRow(name: HandName, h: HandInfo): UINodeDef | null {
 export function currentHands(hands: Record<HandName, HandInfo>): UINodeDef {
     return { n: UIT.ROOT, config: { align: 'cm', minw: 3, padding: 0.1, r: 0.1, colour: C.CLEAR }, nodes: [
         { n: UIT.R, config: { align: 'cm', padding: 0.04 }, nodes: HAND_ORDER.map((n) => currentHandRow(n, hands[n])) },
+    ] };
+}
+
+/** 牌型提示里那排示例牌的区域（`CardArea(2,2, 3.5·CARD_W, 0.75·CARD_H, {card_limit = 5, type = 'title'})`） */
+export type HandTipArea = UIObject & { kind: 'hand_tip'; hand: string };
+
+/** `create_UIBox_hand_tip`（`UI_definitions.lua:3131`）：白底里一排半尺寸的示例牌；没有示例的牌型是空行 */
+export function handTip(hand: string, hasExample: boolean): { def: UINodeDef; area: HandTipArea | null } {
+    if (!hasExample) return { def: { n: UIT.R, config: { align: 'cm' }, nodes: [] }, area: null };
+    const CARD_W = (2.4 * 35) / 41;
+    const CARD_H = (2.4 * 47) / 41;
+    const area: HandTipArea = { kind: 'hand_tip', hand, T: { x: 0, y: 0, w: 3.5 * CARD_W, h: 0.75 * CARD_H } };
+    return { def: { n: UIT.R, config: { align: 'cm', colour: C.WHITE, r: 0.1 }, nodes: [
+        { n: UIT.C, config: { align: 'cm' }, nodes: [{ n: UIT.O, config: { object: area } }] },
+    ] }, area };
+}
+
+/** `create_popup_UIBox_tooltip`（`UI_definitions.lua:1284`）：红边白底，逐行深色字，末尾接 `filler` */
+export function popupTooltip(text: readonly string[], filler: UINodeDef | null, title?: string): UINodeDef {
+    const rows: UINodeDef[] = [];
+    if (title) rows.push({ n: UIT.R, config: { align: 'cm' }, nodes: [{ n: UIT.C, config: { align: 'cm' }, nodes: [{ n: UIT.T, config: { text: title, colour: C.UI.TEXT_DARK, scale: 0.4 } }] }] });
+    for (const line of text) rows.push({ n: UIT.R, config: { align: 'cm', padding: 0.03 }, nodes: [{ n: UIT.T, config: { text: line, colour: C.UI.TEXT_DARK, scale: 0.4 } }] });
+    if (filler) rows.push(filler);
+    return { n: UIT.ROOT, config: { align: 'cm', padding: 0.05, r: 0.1, colour: C.RED, emboss: 0.05 }, nodes: [
+        { n: UIT.C, config: { align: 'cm', padding: 0.05, r: 0.1, colour: C.WHITE, emboss: 0.05 }, nodes: rows },
     ] };
 }
 

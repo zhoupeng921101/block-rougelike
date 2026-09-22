@@ -68,7 +68,9 @@ import { type GameOverState, createGameOver, createWin } from '../../ui/definiti
 import { mostPlayedHandUsage } from '../../core/round-scores';
 import { Motion } from '../moveable';
 import { Jimbo } from '../jimbo';
-import { type Tab, type VoucherArea, changeTab, currentHands, runInfo, usedVouchers } from '../../ui/definitions/run-info';
+import { type Tab, type VoucherArea, changeTab, currentHands, handTip, popupTooltip, runInfo, usedVouchers } from '../../ui/definitions/run-info';
+import { HAND_DESCRIPTIONS, HAND_EXAMPLES } from '../../ui/descriptions.generated';
+import { MiniCard } from '../mini-card';
 
 /**
  * 版本的文字标记。
@@ -1733,6 +1735,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.overlay.jimbo?.destroy();
         for (const v of this.overlay.vouchers) v.sprite.destroy();
         this.overlay = null;
+        this.syncHandRowHovers();
     }
 
     /** `G.FUNCS.run_info`：`G.UIDEF.run_info()` 挂成 overlay（灰底 0.7，不缓动），第一页牌型 */
@@ -1760,6 +1763,92 @@ ${String(e instanceof Error ? e.message : e)}`)
         });
         const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
         this.mountOverlay(def, bg, 0.7);
+        this.syncHandRowHovers();
+    }
+
+    /** Poker Hands 页每一行的悬停区（UIBoxView 只给按钮建命中区） */
+    private handRowHovers: Array<{ zone: GameObjects.Zone; el: UIElement }> = [];
+    /** 当前显示的牌型说明：提示框与五张示例牌 */
+    private handTipShown: { view: UIBoxView; cards: MiniCard[]; major: { T: Rect }; el: UIElement; start: number } | null = null;
+
+    private syncHandRowHovers(): void {
+        for (const h of this.handRowHovers) h.zone.destroy();
+        this.handRowHovers = [];
+        this.hideHandTip();
+        const inner = this.overlay?.view.box.getById('tab_contents')?.config.object as UIBox | undefined;
+        if (!inner) return;
+        for (const el of inner.root.walk()) {
+            const tip = el.config.on_demand_tooltip as { hand: string } | undefined;
+            if (!tip) continue;
+            const zone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(203);
+            zone.on('pointerover', () => this.showHandTip(el, tip.hand));
+            zone.on('pointerout', () => { if (this.handTipShown?.el === el) this.hideHandTip(); });
+            this.handRowHovers.push({ zone, el });
+        }
+    }
+
+    /**
+     * `UIElement:hover` 的 `on_demand_tooltip`：`create_popup_UIBox_tooltip{text = 牌型说明, filler = create_UIBox_hand_tip}`，
+     * 行在下半屏挂 `tm`（上提 0.1）、上半屏 `bm`（下压 0.1）。示例牌半尺寸，计分的放大 0.25 并弹一下、不计分的缩 0.15
+     */
+    private showHandTip(el: UIElement, hand: string): void {
+        this.hideHandTip();
+        const o = this.overlay;
+        if (!o) return;
+        const example = HAND_EXAMPLES[hand];
+        const tip = handTip(hand, !!example);
+        const slide = o.motion.VT.y - o.motion.T.y;
+        const major = { T: { x: el.x, y: el.y + slide, w: el.T.w, h: el.T.h } };
+        const lower = el.y > TILE_H / 2;
+        const box = new UIBox(popupTooltip(HAND_DESCRIPTIONS[hand] ?? [], tip.def), { align: lower ? 'tm' : 'bm', offset: { x: 0, y: lower ? -0.1 : 0.1 }, major });
+        const view = new UIBoxView(this, box, 205);
+        view.setResolution(this.mapping.pxPerTile / toPx(1));
+        const cards = (example ?? []).map(([key]) => new MiniCard(this, key, 0.5 * CARD_W, 0.5 * CARD_H, 207));
+        this.handTipShown = { view, cards, major, el, start: this.time.now / 1000 };
+        example?.forEach(([, scoring], i) => { if (scoring) this.time.delayedCall(0, () => cards[i]?.juiceUp(0.3, 0.2)); });
+        this.sound.play('paper1', { rate: 0.95 + Math.random() * 0.1, volume: 0.3 });
+    }
+
+    private hideHandTip(): void {
+        const t = this.handTipShown;
+        if (!t) return;
+        t.view.destroy();
+        for (const c of t.cards) c.destroy();
+        this.handTipShown = null;
+    }
+
+    /** 每帧：悬停区跟着行走；示例牌按 CardArea `title` 分支摆（`card_w` 是整张卡宽，牌本身半宽） */
+    private followRunInfoHovers(now: number): void {
+        const o = this.overlay;
+        if (!o) return;
+        const slide = o.motion.VT.y - o.motion.T.y;
+        for (const { zone, el } of this.handRowHovers) {
+            zone.setPosition(toPx(el.x), toPx(el.y + slide)).setSize(toPx(el.T.w), toPx(el.T.h));
+            zone.input!.hitArea.setTo(0, 0, toPx(el.T.w), toPx(el.T.h));
+        }
+        const t = this.handTipShown;
+        if (!t) return;
+        Object.assign(t.major.T, { x: t.el.x, y: t.el.y + slide });
+        t.view.box.followMajor();
+        t.view.update(now);
+        const areaEl = [...t.view.box.root.walk()].find((e) => (e.config.object as { kind?: string } | undefined)?.kind === 'hand_tip');
+        if (!areaEl) return;
+        const n = t.cards.length;
+        const example = HAND_EXAMPLES[(areaEl.config.object as unknown as { hand: string }).hand] ?? [];
+        const grown = now - t.start;
+        t.cards.forEach((card, i) => {
+            const k = i + 1;
+            const cw = 0.5 * CARD_W;
+            const ch = 0.5 * CARD_H;
+            const maxCards = Math.max(n, 5);
+            const x = areaEl.x + (areaEl.T.w - CARD_W) * ((k - 1) / Math.max(maxCards - 1, 1) - (0.5 * (n - maxCards)) / Math.max(maxCards - 1, 1)) + 0.5 * (CARD_W - cw);
+            const y = areaEl.y + areaEl.T.h / 2 - ch / 2 + 0.03 * Math.sin(0.666 * now + x) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - (n > 1 ? 0.2 : 0);
+            const r = (0.2 * (-n / 2 - 0.5 + k)) / n + 0.02 * Math.sin(2 * now + x);
+            // `ease_value(card.T, 'scale', ±, nil, 'REAL', true, 0.2)`：0.2 秒线性从 0.95 缓到 1.2 / 0.8
+            const p = Math.min(1, grown / 0.2);
+            const scale = 0.95 + (example[i]?.[1] ? 0.25 : -0.15) * p;
+            card.place(x, y, r, scale);
+        });
     }
 
     /** Vouchers 页当前那几格（`usedVouchers` 建页时写） */
@@ -1816,6 +1905,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         o.view.update(now);
         o.jimbo?.update(now);
         this.placeRunInfoVouchers(now);
+        this.followRunInfoHovers(now);
     }
 
     private onOverlayButton(name: string, el?: UIElement): void {
@@ -1823,6 +1913,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             const tab = el.config.ref_table as Tab;
             changeTab(this.overlay.view.box, tab);
             this.syncRunInfoVouchers(tab.label === DICTIONARY.b_vouchers);
+            this.syncHandRowHovers();
             this.sound.play('button', { volume: 0.3 });
             this.juice.jiggle += 0.5;
             return;
