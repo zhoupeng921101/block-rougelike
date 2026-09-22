@@ -893,6 +893,29 @@ ${String(e instanceof Error ? e.message : e)}`)
     private packSlide = 0;
     private packTexts: DynaText[] = [];
 
+    /** 为哪一版选盲注界面收起过（开包时收、关包后还原） */
+    private blindSelectCollapsed: UIBoxView | null = null;
+
+    /**
+     * 标签在选盲注时开了包（`use_card`，`button_callbacks.lua:2306`）：`G.blind_select` 的 offset 记进 `py`、改成 `ROOM.T.y+39` 滑下去；
+     * 关包（`end_consumeable`，`:2709`）等外框滑走、手牌收回（0.2 + 0.2 秒）后还原。左侧提示框不动
+     */
+    private collapseBlindSelect(open: boolean): void {
+        const views = this.blindSelectViews;
+        if (!views) {
+            this.blindSelectCollapsed = null;
+            return;
+        }
+        const select = views.select;
+        if (open && this.blindSelectCollapsed !== select) {
+            select.slideTo(39 - (select.box.config.offset?.y ?? 0));
+            this.blindSelectCollapsed = select;
+        } else if (!open && this.blindSelectCollapsed === select) {
+            this.blindSelectCollapsed = null;
+            this.time.delayedCall(400, () => { if (this.blindSelectViews?.select === select && !this.run.openPack) select.slideTo(0); });
+        }
+    }
+
     private rebuildPackCards(): void {
         this.packSlide = this.packUi?.view.slideOffset.y ?? 0;
         // 发下来的手牌接着上一版精灵的缓动走（挑牌 / 用塔罗之后整个重建）
@@ -901,6 +924,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         const pack = this.run.openPack;
         if (!pack) this.retirePack();
         this.clearPackCards();
+        this.collapseBlindSelect(!!pack);
         // `end_consumeable`：粒子淡出 1 秒后移除
         if (this.packFx && this.packFx.pack !== pack) {
             for (const p of this.packFx.systems) p.fadeOutAndRemove(1);
@@ -1799,7 +1823,9 @@ ${String(e instanceof Error ? e.message : e)}`)
             const key = run.blindTags[type];
             const sprite = card && [...card.root.walk()].find((e) => e.UIT === UIT.O && (e.config.object as { atlas?: string } | undefined)?.atlas === 'tags');
             if (!sprite || !key) continue;
-            this.addTagHover(() => ({ x: sprite.x, y: sprite.y, w: sprite.T.w, h: sprite.T.h }), key, () => run.orbitalChoice(type),
+            // 悬停区跟着卡片那块的滑动走（开包时收到屏幕下面，区也跟下去）
+            const slid = () => this.blindSelectViews?.select.slideOffset ?? { x: 0, y: 0 };
+            this.addTagHover(() => ({ x: sprite.x + slid().x, y: sprite.y + slid().y, w: sprite.T.w, h: sprite.T.h }), key, () => run.orbitalChoice(type),
                 () => this.blindSelectViews?.select.childView(card)?.juiceObject(sprite.config.object!, this.time.now / 1000, 0.05, 0.02));
             this.blindTagTargets.add(this.tagHoverZones[this.tagHoverZones.length - 1]!.target);
         }
@@ -2432,7 +2458,6 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.skipBlindBtn.setVisible(false);
             this.rerollBtn.setVisible(false);
         }
-        this.blindSelectViews?.select.setVisible(!run.openPack);
         if (this.roundEval) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn]) b.setVisible(false);
         // 商店里 Next Round / Reroll 由商店 UI 接管；开包时的 Skip 在开包界面上
         if (inShop || run.openPack) for (const b of [this.nextBtn, this.rerollBtn, this.skipBlindBtn]) b.setVisible(false);
