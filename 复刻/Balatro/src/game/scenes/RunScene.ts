@@ -97,6 +97,7 @@ import { type Tab, type VoucherArea, changeTab, currentHands, handTip, popupTool
 import { HAND_DESCRIPTIONS, HAND_EXAMPLES } from '../../ui/descriptions.generated';
 import { MiniCard } from '../mini-card';
 import { LOGO_ATLAS, MainMenu, type MenuContext } from '../main-menu';
+import { Splash } from '../splash';
 
 /**
  * 版本的文字标记。
@@ -267,6 +268,8 @@ export class RunScene extends Scene {
     private bgQuad: GameObjects.Shader | null = null;
     /** 主菜单（`G.STAGE == MAIN_MENU`）：URL 上没有 `?seed` 时进这里，局里的东西全藏着 */
     private mainMenu: MainMenu | null = null;
+    /** 开机 splash（`Game:splash_screen`）：直接打开页面时先走这段，走完进主菜单 */
+    private splash: Splash | null = null;
     /** 正在播放出牌动画时不接受输入 */
     private animating = false;
     /** 计分过程中的实时累加器，只用于显示 */
@@ -348,8 +351,8 @@ export class RunScene extends Scene {
             ...Array.from({ length: 6 }, (_, i) => `glass${i + 1}`),
             // 版本（`set_edition`）、蜡封、造牌 / 给钱的定音鼓
             'foil1', 'holo1', 'polychrome1', 'timpani', 'gold_seal',
-            // 主菜单标志溶出来（`magic_crumple3`）
-            'magic_crumple3',
+            // 主菜单标志溶出来（`magic_crumple3`）；开机 splash 的几声
+            'magic_crumple3', 'magic_crumple2', 'magic_crumple', 'introPad1', 'splash_buildup', 'whoosh_long',
         ]) {
             this.load.audio(key, `/assets/sounds/${key}.ogg`);
         }
@@ -454,7 +457,9 @@ export class RunScene extends Scene {
             // 开局先进盲注选择（原作如此）：能看到这一格跳过给什么标签，再决定打还是跳
             this.showBlindSelect();
         } else {
-            this.enterMainMenu(params.get('menu') === 'game' ? 'game' : null);
+            this.hideRun();
+            if (params.get('menu') === 'game') this.enterMainMenu('game');
+            else this.startSplash();
         }
         this.setupCrt();
         this.applyRoomCamera();
@@ -3719,6 +3724,14 @@ ${String(e instanceof Error ? e.message : e)}`)
     }
 
     update(time: number, delta: number): void {
+        if (this.splash) {
+            const p = this.input.activePointer;
+            const P = this.mapping.pxPerTile;
+            this.placeRoom(stepRoomJuice(this.juice, delta / 1000, time / 1000, SETTINGS.screenshake,
+                { x: p.x / P, y: p.y / P }, { x: this.mapping.roomX, y: this.mapping.roomY }));
+            this.splash.update(time / 1000);
+            return;
+        }
         if (this.mainMenu) {
             this.updateMainMenu(time, delta);
             return;
@@ -3786,7 +3799,14 @@ ${String(e instanceof Error ? e.message : e)}`)
      * `Game:main_menu`：`prep_stage(MAIN_MENU)` 清掉局里的一切，只剩旋涡、标志、黑桃 A 与三块 UI。
      * 复刻件的场景仍按局来建（Options / 图鉴 / 开局设置都长在它上面），这里把局里看得见的东西全藏起来、不再逐帧更新
      */
-    private enterMainMenu(context: MenuContext): void {
+    private enterMainMenu(context: MenuContext, real0 = 12): void {
+        this.mainMenu = new MainMenu(this, context, (name) => this.onMainMenuButton(name), this.mapping.pxPerTile / toPx(1), real0);
+        this.fullscreenQuads.push(this.mainMenu.splash);
+        this.placeRoom({ x: this.mapping.roomX, y: this.mapping.roomY, r: 0 });
+    }
+
+    /** 主菜单与 splash 时局里看得见的东西全藏起来（局照常建，Options / 图鉴 / 开局设置都长在场景上） */
+    private hideRun(): void {
         this.hudView.setVisible(false);
         this.hudBlindView.setVisible(false);
         for (const a of this.areaViews) a.view.setVisible(false);
@@ -3795,8 +3815,19 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.deckZone.disableInteractive();
         this.blindChipZone.disableInteractive();
         this.bgQuad?.setVisible(false);
-        this.mainMenu = new MainMenu(this, context, (name) => this.onMainMenuButton(name), this.mapping.pxPerTile / toPx(1));
-        this.fullscreenQuads.push(this.mainMenu.splash);
+    }
+
+    /** `Game:splash_screen`：走完（或被点掉）进主菜单；从 splash 走完的 `REAL` 接着走 */
+    private startSplash(): void {
+        const splash = new Splash(this, (context, real) => {
+            this.fullscreenQuads.splice(0, this.fullscreenQuads.length, ...this.fullscreenQuads.filter((q) => q !== splash.back && q !== splash.front));
+            this.splash = null;
+            this.enterMainMenu(context, context === 'splash' ? real : 12);
+        });
+        this.splash = splash;
+        this.fullscreenQuads.push(splash.back, splash.front);
+        // `queue_L_cursor_press`：splash 时点一下 = `escape` = 跳到主菜单
+        this.input.on('pointerdown', () => this.splash?.skip());
     }
 
     /**

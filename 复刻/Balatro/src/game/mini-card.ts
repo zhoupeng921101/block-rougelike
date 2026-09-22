@@ -8,7 +8,8 @@
  */
 import type { GameObjects, Scene } from 'phaser';
 
-import { CENTERS_ATLAS, DECK_ATLAS } from '../core/atlas';
+import { CENTERS_ATLAS, DECK_ATLAS, JOKER_ATLAS } from '../core/atlas';
+import { JOKER_CENTERS } from '../core/jokers/centers.generated';
 import type { Edition } from '../core/editions';
 import { ENHANCEMENT_CENTERS } from '../core/enhancements';
 import { cardShadowParallaxX } from './align-cards';
@@ -56,6 +57,8 @@ export class MiniCard {
         depth: number,
         look: MiniCardLook = {},
     ) {
+        // `j_*`：一张小丑（开机 splash 中间那张 `j_joker`），只有底板一层、画小丑图集
+        const joker = JOKER_CENTERS[key];
         const [suit, rank] = key.split('_') as [string, string];
         const id = serial++;
         const cardTime = cardTimeOf(1000 + id);
@@ -68,8 +71,10 @@ export class MiniCard {
         const layerLook = look.greyed
             ? { edition: look.edition, played: greyedChain.length > 1 }
             : { edition: look.edition, debuff: look.debuff };
-        this.base = new LayeredQuad(scene, { ...common, name: `mini_base_${id}`, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: basePos, shader }, depth, layerLook);
-        this.front = look.enhancement === 'm_stone'
+        this.base = joker
+            ? new LayeredQuad(scene, { ...common, name: `mini_base_${id}`, textureKey: 'jokers', atlas: JOKER_ATLAS, pos: joker.pos, shader }, depth, layerLook)
+            : new LayeredQuad(scene, { ...common, name: `mini_base_${id}`, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: basePos, shader }, depth, layerLook);
+        this.front = joker || look.enhancement === 'm_stone'
             ? null
             : new LayeredQuad(scene, { ...common, name: `mini_front_${id}`, textureKey: cardsTexture(), atlas: DECK_ATLAS, pos: { x: RANK_COL[rank]!, y: SUIT_ROW[suit]! }, shader }, depth + 0.02, layerLook);
         this.seal = look.seal
@@ -77,7 +82,9 @@ export class MiniCard {
             : null;
         this.shadow = look.shadow === false
             ? null
-            : makeShaderQuad(scene, { ...common, name: `mini_shadow_${id}`, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: basePos, shadow: true }).setDepth(depth - 0.5);
+            : joker
+                ? makeShaderQuad(scene, { ...common, name: `mini_shadow_${id}`, textureKey: 'jokers', atlas: JOKER_ATLAS, pos: joker.pos, shadow: true }).setDepth(depth - 0.5)
+                : makeShaderQuad(scene, { ...common, name: `mini_shadow_${id}`, textureKey: 'centers', atlas: CENTERS_ATLAS, pos: basePos, shadow: true }).setDepth(depth - 0.5);
         scene.events.on('postupdate', this.onPostUpdate);
     }
 
@@ -150,7 +157,11 @@ export class MiniCard {
         }
     }
 
+    private destroyed = false;
+
     destroy(): void {
+        if (this.destroyed) return;
+        this.destroyed = true;
         this.scene.events.off('postupdate', this.onPostUpdate);
         this.base.destroy();
         this.front?.destroy();

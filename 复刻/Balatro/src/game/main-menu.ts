@@ -7,7 +7,8 @@
  * - `G.SPLASH_LOGO`：`balatro` 图 13·1.1 宽，`cm` 钉在 `title_top` 上，走 `dissolve` shader，`dissolve` 从 1 线性缓到 0
  * - 三块 UI：按钮 `bmi` 从下面 10 格滑上来、Profile `bli` 从左边 10 格滑进来（下一帧才建）、版本号 `tri`
  *
- * 各事件的时刻按 `change_context`：页面直接打开是 `nil`（原作 `skip_splash` 的那条路），局里点 Main Menu 回来是 `'game'`。
+ * 各事件的时刻按 `change_context`：开机 splash 走完是 `'splash'`（旋涡的白闪 `mid_flash` 1.6 → 0、4 秒；`REAL` 接着 splash 的走），
+ * splash 被点掉是 `nil`，局里点 Main Menu 回来是 `'game'`。
  * 这些事件都是 `blockable = false, blocking = false`，从进主菜单那一刻并行计时。
  *
  * 不做的：`j_blueprint` 解锁之后 4 秒把 A 换成随机一张未解锁的小丑 / 优惠券（新档没解锁 Blueprint，走不到）；
@@ -32,7 +33,7 @@ import { UIBoxView } from './ui-draw';
 /** `G.ASSET_ATLAS.balatro`（`game.lua:991`）：一整张 333×216 */
 export const LOGO_ATLAS: AtlasSpec = { key: 'balatro', path: 'assets/textures/balatro.png', w: 333, h: 216, frameW: 333, frameH: 216 };
 
-export type MenuContext = 'game' | null;
+export type MenuContext = 'game' | 'splash' | null;
 
 /** `SC_scale = 1.1`（`debug_splash_size_toggle` 关） */
 const SC_SCALE = 1.1;
@@ -61,8 +62,11 @@ export class MainMenu {
         private readonly context: MenuContext,
         private readonly onButton: (name: string, el: UIElement) => void,
         private resolution: number,
+        /** 进主菜单时的 `G.TIMERS.REAL`：不是从 splash 来的拨到 12，从 splash 来的接着走 */
+        real0 = 12,
     ) {
         this.t0 = scene.time.now / 1000;
+        const flash0 = context === 'splash' ? 1.6 : 0;
         this.splash = scene.add.shader(
             {
                 name: 'splash',
@@ -70,12 +74,13 @@ export class MainMenu {
                 vertexSource: BACKGROUND_VERT,
                 setupUniforms: (setUniform: (n: string, v: unknown) => void) => {
                     // `G.TIMERS.REAL` 进主菜单时拨到 12；`REAL_SHADER = reduced_motion and 300 or REAL`（`game.lua:2699`）
-                    const real = 12 + scene.time.now / 1000 - this.t0;
-                    setUniform('time', SETTINGS.reduced_motion ? 300 : real);
+                    const age = scene.time.now / 1000 - this.t0;
+                    setUniform('time', SETTINGS.reduced_motion ? 300 : real0 + age);
                     setUniform('vort_speed', 0.4);
                     setUniform('colour_1', C.RED);
                     setUniform('colour_2', C.BLUE);
-                    setUniform('mid_flash', 0);
+                    // `ease_value(splash_args, 'mid_flash', −1.6, …, 4)`：线性
+                    setUniform('mid_flash', flash0 * Math.max(0, 1 - age / 4));
                     setUniform('vort_offset', 0);
                     setUniform('uScreenSize', [scene.scale.width, scene.scale.height]);
                 },
@@ -129,10 +134,15 @@ export class MainMenu {
     update(now: number): void {
         const age = now - this.t0;
         const game = this.context === 'game';
+        const splash = this.context === 'splash';
         const sound = this.scene.sound;
 
-        // 黑桃 A 溶进来：`game` 等 1.5 秒，否则立刻
+        // 黑桃 A 溶进来：`game` 等 1.5 秒，否则立刻。从 splash 来的静音、慢一倍多（2.5），自己配 `whoosh1` 与一声 `crumple`
         this.at('card', game ? 1.5 : 0, age, () => {
+            if (splash) {
+                sound.play('whoosh1', { rate: Math.random() * 0.1 + 0.3, volume: 0.3 });
+                sound.play(`crumple${1 + Math.floor(Math.random() * 5)}`, { rate: Math.random() * 0.2 + 0.6, volume: 0.65 });
+            }
             this.card.setVisible(true);
             const card = this.card;
             playEnter(this.scene, {
@@ -144,16 +154,16 @@ export class MainMenu {
                 setTargetR: () => undefined,
                 disableInput: () => undefined,
                 destroy: () => undefined,
-            }, [C.WHITE, C.WHITE] as Colour[], false, 1.2);
+            }, [C.WHITE, C.WHITE] as Colour[], splash, splash ? 2.5 : 1.2);
         });
-        // 标志溶出来：`magic_crumple3`（音高 1.3）、`whoosh1`，`dissolve` 0.9 秒缓到 0
-        this.at('logo', game ? 2 : 0.5, age, () => {
-            sound.play('magic_crumple3', { rate: 1.3, volume: 0.9 });
+        // 标志溶出来：`magic_crumple3`（音高 1.3；splash 来的是 `magic_crumple2`、音高 1）、`whoosh1`，`dissolve` 0.9（splash 2.3）秒缓到 0
+        this.at('logo', splash ? 1.8 : game ? 2 : 0.5, age, () => {
+            sound.play(splash ? 'magic_crumple2' : 'magic_crumple3', { rate: splash ? 1 : 1.3, volume: 0.9 });
             sound.play('whoosh1', { rate: 0.4, volume: 0.8 });
-            this.logoEase = { start: now, dur: 0.9 };
+            this.logoEase = { start: now, dur: splash ? 2.3 : 0.9 };
         });
         // `set_main_menu_UI`：按钮从下面 10 格滑上来，Profile 下一帧从左边 10 格滑进来
-        this.at('ui', game ? 3 : 1.5, age, () => {
+        this.at('ui', splash ? 4.05 : game ? 3 : 1.5, age, () => {
             this.buttons = this.mount(mainMenuButtons(), 'bmi', 60);
             this.buttons.slideFrom(10);
         });

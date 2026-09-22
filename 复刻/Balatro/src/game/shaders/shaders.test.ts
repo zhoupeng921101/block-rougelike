@@ -23,6 +23,7 @@ import { DISSOLVE_FRAG, DISSOLVE_VERT } from './dissolve';
 import { OVERLAY_FRAGS } from './editions.generated';
 import { FLAME_FRAG } from './flame';
 import { SPLASH_FRAG } from './splash';
+import { FLASH_FRAG, VORTEX_FRAG, VORTEX_VERT } from './vortex';
 
 const BIN = join(
     process.cwd(),
@@ -53,6 +54,9 @@ describe('shader 按 GLSL ES 1.00 编译', () => {
         ['crt', 'vert', CRT_VERT],
         ['flame', 'frag', FLAME_FRAG],
         ['splash', 'frag', SPLASH_FRAG],
+        ['vortex', 'vert', VORTEX_VERT],
+        ['vortex', 'frag', VORTEX_FRAG],
+        ['flash', 'frag', FLASH_FRAG],
         ...Object.entries(OVERLAY_FRAGS).map(([n, src]) => [n, 'frag', src] as [string, 'frag', string]),
     ];
 
