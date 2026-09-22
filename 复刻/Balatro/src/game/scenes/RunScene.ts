@@ -77,6 +77,8 @@ import { queueUseConsumable } from '../use-sequence';
 import { LOOK } from '../look';
 import { SETTINGS, masterGain, saveSettings, wobble } from '../settings';
 import { type SettingsHooks, controlFuncs, handleControlButton, optionsMenu, settingsMenu } from '../../ui/definitions/options';
+import { type RunSetupState, runSetup, seededRunRow } from '../../ui/definitions/run-setup';
+import { TEXT_HOOK, keyboardInput, selectTextInput, textInputFuncs, textInputKey } from '../../ui/definitions/text-input';
 import { VoucherSprite } from '../voucher-sprite';
 import { BACKGROUND_FRAG, BACKGROUND_VERT } from '../shaders/background';
 import { CRT_FRAG, CRT_VERT, crtUniforms } from '../shaders/crt';
@@ -363,6 +365,12 @@ export class RunScene extends Scene {
         this.hudView = new UIBoxView(this, hudBox, 40, (name) => {
             if (name === 'run_info') this.openRunInfo();
             else if (name === 'options') this.openOptions();
+        });
+        // 钩住文本框时，键盘直接往里敲（`love.textinput` / `keypressed` → `text_input_key`）
+        this.input.keyboard?.on('keydown', (ev: KeyboardEvent) => {
+            if (!TEXT_HOOK.el) return;
+            const key = ev.key === 'Backspace' ? 'backspace' : ev.key === 'Enter' ? 'return' : ev.key;
+            if (textInputKey(key) === 'release') this.releaseTextInput();
         });
 
         // `game.lua:2617`：`G.HUD_blind = UIBox{definition = create_UIBox_HUD_blind(), config = {major = row_blind, align = 'cm'}}`
@@ -2662,6 +2670,7 @@ ${String(e instanceof Error ? e.message : e)}`)
 
     private closeOverlay(): void {
         if (!this.overlay) return;
+        this.closeRunSetupExtras();
         this.hidePopup();
         this.overlay.view.destroy();
         this.overlay.blocker.destroy();
@@ -2758,6 +2767,132 @@ ${String(e instanceof Error ? e.message : e)}`)
     }
 
     private seeded = false;
+
+    /** 开局设置开着时：`G.run_setup_seed` / `G.setup_seed`、牌组预览那一叠、屏幕键盘 */
+    private runSetup: { state: RunSetupState; deck: DeckSprite; keyboard: UIBoxView | null } | null = null;
+
+    /** `G.FUNCS.setup_run`：`G.UIDEF.run_setup()` 挂成 overlay */
+    private openRunSetup(fromGameOver: boolean): void {
+        const state: RunSetupState = { run_setup_seed: false, setup_seed: '' };
+        const now = () => this.time.now / 1000;
+        const inputFuncs = textInputFuncs(now);
+        const funcs = {
+            ...controlFuncs(),
+            ...inputFuncs,
+            // `toggle_seeded_run`：勾上就在这一行挂出说明 + 种子框 + Paste Seed，取消就拆掉（放开输入）
+            toggle_seeded_run: (e: UIElement) => {
+                const slot = e.config.object as { seedSlot?: boolean } | UIBox | undefined;
+                if (slot instanceof UIBox && !state.run_setup_seed) {
+                    e.box.replaceObject(e, { kind: 'empty', T: { x: 0, y: 0, w: 0, h: 0 }, seedSlot: true } as never);
+                    if (TEXT_HOOK.el) this.releaseTextInput();
+                } else if (!(slot instanceof UIBox) && state.run_setup_seed) {
+                    e.box.replaceObject(e, new UIBox(seededRunRow(state), { align: 'cm', offset: { x: 0, y: 0 } }, inputFuncs));
+                }
+            },
+        };
+        const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
+        this.mountOverlay(runSetup(state, LOOK.mobileUi, funcs, fromGameOver), bg, 0.7);
+        this.runSetup = { state, deck: new DeckSprite(this, { deckHeight: 0.75, thinDraw: 1, mainDeck: false, depth: 201 }), keyboard: null };
+    }
+
+    private closeRunSetupExtras(): void {
+        const r = this.runSetup;
+        if (!r) return;
+        r.deck.destroy();
+        r.keyboard?.destroy();
+        TEXT_HOOK.el = null;
+        TEXT_HOOK.args = null;
+        this.runSetup = null;
+    }
+
+    /** 放开种子框（`text_input_key('return')`），收起屏幕键盘 */
+    private releaseTextInput(): void {
+        textInputKey('return');
+        this.runSetup?.keyboard?.destroy();
+        if (this.runSetup) this.runSetup.keyboard = null;
+    }
+
+    /** 开局设置的几个按钮。认得就返回 true */
+    private handleRunSetupButton(name: string, el?: UIElement): boolean {
+        const r = this.runSetup;
+        if (!r) return false;
+        if (name === 'select_text_input' && el) {
+            selectTextInput(el);
+            // 移动版：在种子框那一行上方 4 格弹出屏幕键盘（`keyboard_offset or -4`，`major = e.UIBox`）
+            if (LOOK.mobileUi && !r.keyboard) {
+                const box = new UIBox(keyboardInput(true), { align: 'cm', offset: { x: 0, y: -4 }, major: { T: { x: el.box.T.x, y: el.box.T.y, w: el.box.T.w, h: el.box.T.h } } });
+                r.keyboard = new UIBoxView(this, box, 230, (n, e) => this.onOverlayButton(n, e));
+                r.keyboard.setResolution(this.mapping.pxPerTile / toPx(1));
+            }
+            return true;
+        }
+        if (name === 'key_button' && el) {
+            const key = (el.config.ref_table as { key: string }).key;
+            if (textInputKey(key) === 'release') this.releaseTextInput();
+            return true;
+        }
+        if (name === 'paste_seed') {
+            // `paste_seed`：清空再把剪贴板的前 8 个字逐个敲进去（不在字表里的跳过）
+            void navigator.clipboard?.readText().then((text) => {
+                const inputEl = this.overlay?.view.box && this.findTextInput();
+                if (!inputEl) return;
+                selectTextInput(inputEl);
+                for (let i = 0; i < 8; i++) textInputKey('backspace');
+                for (const ch of text.slice(0, 8)) textInputKey(ch);
+                this.releaseTextInput();
+            }).catch(() => undefined);
+            return true;
+        }
+        if (name === 'start_setup_run') {
+            // `start_setup_run`：勾了 Seeded Run 且敲了种子就用它（`G.GAME.seeded`），否则随机种子
+            saveSettings();
+            const params = new URLSearchParams(location.search);
+            const seed = r.state.run_setup_seed && r.state.setup_seed ? r.state.setup_seed : null;
+            params.set('seed', seed ?? randomSeed());
+            if (seed) params.delete('rs');
+            else params.set('rs', '1');
+            location.search = params.toString();
+            return true;
+        }
+        return false;
+    }
+
+    /** 种子框（`id = 'text_input'` 的那个按钮），在 overlay 里嵌套的盒子中找 */
+    private findTextInput(): UIElement | null {
+        const walk = (box: UIBox): UIElement | null => {
+            for (const e of box.root.walk()) {
+                if (e.config.id === 'text_input') return e;
+                if (e.config.object instanceof UIBox) {
+                    const hit = walk(e.config.object);
+                    if (hit) return hit;
+                }
+            }
+            return null;
+        };
+        return this.overlay ? walk(this.overlay.view.box) : null;
+    }
+
+    /** 每帧：牌组预览那一叠跟着它的格子（含 overlay 的滑动）；屏幕键盘更新 */
+    private followRunSetup(now: number): void {
+        const r = this.runSetup;
+        const o = this.overlay;
+        if (!r || !o) return;
+        const find = (box: UIBox): UIElement | null => {
+            for (const e of box.root.walk()) {
+                if (e.config.id === 'run_setup_deck') return e;
+                if (e.config.object instanceof UIBox) {
+                    const hit = find(e.config.object);
+                    if (hit) return hit;
+                }
+            }
+            return null;
+        };
+        const el = find(o.view.box);
+        const slide = o.view.slideOffset;
+        if (el) r.deck.update({ x: el.x + slide.x, y: el.y + slide.y, w: el.T.w, h: el.T.h }, 10);
+        else r.deck.update({ x: 0, y: 0, w: 0, h: 0 }, 0);
+        r.keyboard?.update(now);
+    }
 
     /** `G.FUNCS.options`：`create_UIBox_options()` 挂成 overlay（灰底 0.7） */
     private openOptions(): void {
@@ -2997,6 +3132,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.placeRunInfoVouchers(now);
         this.placeDeckViewCards(now);
         this.followRunInfoHovers(now);
+        this.followRunSetup(now);
     }
 
     private onOverlayButton(name: string, el?: UIElement): void {
@@ -3033,12 +3169,18 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
         // 复刻件没有主菜单与开局设置（牌组 / 赌注 / 种子都定死）：
         // 「New Run」换一个随机种子重开，「Main Menu」同种子重开。都走整页重载，URL 上的 ?seed 就是这一局的种子
-        if (name === 'notify_then_setup_run' || name === 'setup_run' || name === 'go_to_menu') {
+        // New Run：开局设置（`setup_run`）；从结束界面来的没有 Back（`notify_then_setup_run` → `from_game_over`）
+        if (name === 'setup_run' || name === 'notify_then_setup_run') {
+            this.closeOverlay();
+            this.openRunSetup(name === 'notify_then_setup_run');
+            return;
+        }
+        if (this.handleRunSetupButton(name, el)) return;
+        // 复刻件没有主菜单：「Main Menu」同种子重开（整页重载，URL 上的 ?seed 就是这一局的种子）
+        if (name === 'go_to_menu') {
             saveSettings();
             const params = new URLSearchParams(location.search);
-            params.set('seed', name === 'go_to_menu' ? this.run.seed : randomSeed());
-            // 随机出来的种子不算「玩家给的种子」（Options 里不显示种子那一行）
-            if (name !== 'go_to_menu') params.set('rs', '1');
+            params.set('seed', this.run.seed);
             location.search = params.toString();
         }
     }

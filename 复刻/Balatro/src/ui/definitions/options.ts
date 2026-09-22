@@ -121,6 +121,8 @@ export type OptionCycleArgs = {
     label?: string;
     options: readonly (string | number)[];
     current_option: number;
+    /** 换掉中间那块（牌组 / 赌注选择：中间是整块卡片而不是一串字） */
+    mid?: UINodeDef;
     opt_callback?: (to: { to_key: number; to_val: string | number }) => void;
     colour?: Colour;
     scale?: number;
@@ -158,13 +160,18 @@ export function createOptionCycle(args: OptionCycleArgs): UINodeDef {
     });
     let t: UINodeDef = { n: UIT.C, config: { align: 'cm', padding: 0.1, r: 0.1, colour: C.CLEAR }, nodes: [
         arrow('l'),
-        { n: UIT.C, config: { id: 'cycle_main', align: 'cm', minw: w, minh: h, r: 0.1, padding: 0.05, colour, emboss: 0.1, hover: true, can_collide: true }, nodes: [
-            { n: UIT.R, config: { align: 'cm' }, nodes: [
-                { n: UIT.R, config: { align: 'cm' }, nodes: [{ n: UIT.O, config: { object: text } }] },
-                { n: UIT.R, config: { align: 'cm', minh: 0.05 }, nodes: [] },
+        args.mid
+            ? { n: UIT.C, config: { id: 'cycle_main' }, nodes: [
+                { n: UIT.R, config: { align: 'cm', minh: 0.05 }, nodes: [args.mid] },
                 disabled ? null : choicePips,
+            ] }
+            : { n: UIT.C, config: { id: 'cycle_main', align: 'cm', minw: w, minh: h, r: 0.1, padding: 0.05, colour, emboss: 0.1, hover: true, can_collide: true }, nodes: [
+                { n: UIT.R, config: { align: 'cm' }, nodes: [
+                    { n: UIT.R, config: { align: 'cm' }, nodes: [{ n: UIT.O, config: { object: text } }] },
+                    { n: UIT.R, config: { align: 'cm', minh: 0.05 }, nodes: [] },
+                    disabled ? null : choicePips,
+                ] },
             ] },
-        ] },
         arrow('r'),
     ] };
     t = { n: UIT.R, config: { align: 'cm', colour: C.CLEAR, padding: 0 }, nodes: [t] };
