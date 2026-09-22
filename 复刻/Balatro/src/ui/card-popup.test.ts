@@ -4,14 +4,14 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { type PopupCard, type PopupGame, abilityTable, cardHPopup } from './definitions/card-popup';
+import { type PopupCard, type PopupGame, abilityTable, cardHPopup, tagAbilityTable } from './definitions/card-popup';
 import { P_CENTERS } from './descriptions.generated';
 import { DynaText } from './dynatext';
 import oracle from './popup-oracle.generated.json';
 import { UIBox, type UIElement, type UINodeDef, UIT } from './uibox';
 
 type Texts = Record<string, { name: string; main: string[]; info: Array<{ name: string; rows: string[] }> }>;
-const O = oracle as unknown as { texts: Texts; layouts: Record<string, Array<[number, string, number, number, number, number]>> };
+const O = oracle as unknown as { texts: Texts; tags: Texts; layouts: Record<string, Array<[number, string, number, number, number, number]>> };
 
 const HANDS = ['Flush Five', 'Flush House', 'Five of a Kind', 'Straight Flush', 'Four of a Kind', 'Full House', 'Flush', 'Straight', 'Three of a Kind', 'Two Pair', 'Pair', 'High Card'];
 const GAME: PopupGame = {
@@ -79,6 +79,22 @@ describe('提示框文本：274 张卡逐行对拍', () => {
         const arr = <T,>(v: T[] | object): T[] => (Array.isArray(v) ? v : []);
         const want = O.texts[key]!;
         expect(got).toEqual({ name: want.name, main: arr(want.main), info: arr(want.info).map((b) => ({ name: b.name, rows: arr(b.rows) })) });
+    });
+});
+
+describe('标签提示框：Tag:get_uibox_table 逐行对拍', () => {
+    const keys = Object.keys(O.tags);
+    it('24 个标签 + Orbital 没掷过牌型', () => expect(keys).toHaveLength(25));
+    it.each(keys)('%s', (id) => {
+        const [key, variant] = id.split('/');
+        const aut = tagAbilityTable(key!, variant === 'unrolled' ? undefined : 'Pair', { handsPlayed: 7, unusedDiscards: 3, skips: 2 }, GAME);
+        const arr = <T,>(v: T[] | object): T[] => (Array.isArray(v) ? v : []);
+        const want = O.tags[id]!;
+        expect({
+            name: Array.isArray(aut.name) ? rowText(aut.name) : '',
+            main: aut.main.map(rowText),
+            info: aut.info.map((b) => ({ name: b.name ?? '', rows: b.map(rowText) })),
+        }).toEqual({ name: want.name, main: arr(want.main), info: arr(want.info).map((b) => ({ name: b.name, rows: arr(b.rows) })) });
     });
 });
 

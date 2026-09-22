@@ -172,6 +172,34 @@ def main():
             raise RuntimeError(f'{key}: {res}')
         texts[key] = ui_oracle.to_py(res)
 
+    # 标签：原样加载 tag.lua，对每个标签调 Tag:get_uibox_table（G.GAME 取 hands_played 7、unused_discards 3、skips 2；
+    # Orbital 分别测掷过牌型（Pair）与没掷过两种）
+    lua.execute((SRC / 'tag.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+      G.GAME.hands_played = 7; G.GAME.unused_discards = 3; G.GAME.skips = 2
+      function TAG_TEXT(key, orbital)
+        local proto = G.P_TAGS[key]
+        local tag = setmetatable({ key = key, name = proto.name, config = copy_table(proto.config), ability = { orbital_hand = orbital } }, { __index = Tag })
+        local sprite = tag:get_uibox_table({})
+        local AUT = sprite.ability_UIBox_table
+        local t = { name = (type(AUT.name) == 'table') and ROW_TEXT(AUT.name) or '', main = {}, info = {} }
+        for _, row in ipairs(AUT.main) do t.main[#t.main+1] = ROW_TEXT(row) end
+        for _, box in ipairs(AUT.info) do
+          local b = { name = box.name or '', rows = {} }
+          for _, row in ipairs(box) do b.rows[#b.rows+1] = ROW_TEXT(row) end
+          t.info[#t.info+1] = b
+        end
+        return t
+      end
+    ''')
+    tags = {}
+    for key in sorted(lua.eval('G.P_TAGS').keys()):
+        ok, res = lua.eval(f'pcall(TAG_TEXT, "{key}", "Pair")')
+        if not ok:
+            raise RuntimeError(f'{key}: {res}')
+        tags[key] = ui_oracle.to_py(res)
+    tags['tag_orbital/unrolled'] = ui_oracle.to_py(lua.eval('TAG_TEXT("tag_orbital", "[" .. localize("k_poker_hand") .. "]")'))
+
     layouts = {}
     cases = {
         'joker': 'MAKE_CARD("j_joker", {area = G.jokers})',
@@ -186,7 +214,7 @@ def main():
     for name, expr in cases.items():
         layouts[name] = ui_oracle.to_py(lua.eval(f'DUMP2(POPUP({expr}))'))
 
-    OUT.write_text(json.dumps({'texts': texts, 'layouts': layouts}, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+    OUT.write_text(json.dumps({'texts': texts, 'tags': tags, 'layouts': layouts}, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     print(f'{OUT.name}: {len(texts)} texts, {len(layouts)} layouts')
 
 

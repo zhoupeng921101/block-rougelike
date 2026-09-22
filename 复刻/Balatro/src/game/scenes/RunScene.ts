@@ -38,7 +38,7 @@ import type { BoosterKind } from '../../core/boosters';
 import { type BackgroundColours, applyBlindColours, backgroundFor, packMainColour } from '../../ui/blind-colour';
 import { C, type Colour, HEX, lighten, mixColours, setColour, tickColours } from '../../ui/colours';
 import { buyAndUseButton, shopBuyButton, useAndSellButtons } from '../../ui/definitions/card-buttons';
-import { type PopupCard, abilityTable, cardHPopup, infoBoxes } from '../../ui/definitions/card-popup';
+import { type PopupCard, abilityTable, cardHPopup, infoBoxes, tagAbilityTable } from '../../ui/definitions/card-popup';
 import { popupGame, popupOfCard, popupOfCenter, popupOfConsumable, popupOfJoker } from '../popup-adapter';
 import { type HudState, createHud, makeHudState } from '../../ui/definitions/hud';
 import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
@@ -57,7 +57,7 @@ import { type PackCardsObject, createBoosterPack, packCardsArea } from '../../ui
 import { type CardAreaObject, createShop, createShopSign, priceTag, shopAreas } from '../../ui/definitions/shop';
 import { DeckSprite } from '../deck-sprite';
 import { numberFormat } from '../../ui/format';
-import { UIBox } from '../../ui/uibox';
+import { UIBox, UIT } from '../../ui/uibox';
 import { RED_DECK, WIN_ANTE } from '../../core/run';
 import { JokerSprite } from '../joker-sprite';
 import { LOOK } from '../look';
@@ -188,6 +188,7 @@ export class RunScene extends Scene {
      */
     /** `G.HUD_tags`：手上的标签，右下角往上叠。`run.tags` 变了就整列重建 */
     private hudTags: { list: readonly object[]; views: UIBoxView[] } = { list: [], views: [] };
+    private readonly hudTagTargets = new Set<object>();
 
     /** 这一局输了（`G.STATE = GAME_OVER`）。`Run` 停在那一关不再推进 */
     private runOver = false;
@@ -287,7 +288,7 @@ export class RunScene extends Scene {
         for (const key of [
             'cardSlide1', 'cardSlide2', 'chips1', 'chips2', 'card1', 'button', 'generic1',
             'coin1', 'coin2', 'coin3', 'coin6', 'other1', 'tarot1', 'cancel', 'multhit1', 'highlight1',
-            'negative', 'whoosh2', 'win', 'whoosh1',
+            'negative', 'whoosh2', 'win', 'whoosh1', 'paper1', 'tarot2',
             ...Array.from({ length: 11 }, (_, i) => `voice${i + 1}`),
             ...Array.from({ length: 5 }, (_, i) => `crumple${i + 1}`),
         ]) {
@@ -1217,6 +1218,56 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.popup = { sprite, major, views };
     }
 
+    /**
+     * 标签的提示框（`Tag:generate_UI` 的 `hover`）：`get_uibox_table` → `card_h_popup`，`cl` 挂在精灵左边、再左移 0.1
+     */
+    private showTagPopup(target: { readonly rect: Rect }, key: string, orbital: string | undefined): void {
+        this.hidePopup();
+        const run = this.run;
+        const g = popupGame(run, LOOK.mobileUi);
+        const aut = tagAbilityTable(key, orbital, { handsPlayed: run.round?.handsPlayed ?? run.handsPlayed, unusedDiscards: run.unusedDiscards, skips: run.skips }, g);
+        const card: PopupCard = { centerKey: key, ability: { set: 'Tag', name: TAG_CENTERS[key]?.name } };
+        const major = { T: { ...target.rect } };
+        const box = new UIBox(cardHPopup(card, aut), { align: 'cl', offset: { x: -0.1, y: 0 }, major });
+        const views = [new UIBoxView(this, box, 90)];
+        const info = infoBoxes(aut);
+        if (info) views.push(new UIBoxView(this, new UIBox(info, { align: 'cl', offset: { x: -0.03, y: 0 }, major: box.getById('h_popup_main')!.asMajor }), 90));
+        for (const v of views) v.setResolution(this.mapping.pxPerTile / toPx(1));
+        this.popup = { sprite: target as unknown as Pickable, major, views };
+        this.sound.play('paper1', { rate: Math.random() * 0.1 + 0.55, volume: 0.42 });
+        this.sound.play('tarot2', { rate: Math.random() * 0.1 + 0.55, volume: 0.09 });
+    }
+
+    /**
+     * 标签精灵的悬停区（UIBoxView 只给按钮建命中区）。每帧跟着元素的位置走；打过 / 跳过的格子标签行被挪到 10 tile 以下，区也跟着走
+     */
+    private tagHoverZones: Array<{ zone: GameObjects.Zone; target: { readonly rect: Rect } }> = [];
+
+    private addTagHover(rect: () => Rect, key: string, orbital: () => string | undefined): void {
+        const target = { get rect() { return rect(); } };
+        const zone = this.add.zone(0, 0, 1, 1).setOrigin(0, 0).setInteractive().setDepth(43);
+        zone.on('pointerover', () => this.showTagPopup(target, key, orbital()));
+        zone.on('pointerout', () => { if (this.popup?.sprite === (target as unknown as Pickable)) this.hidePopup(); });
+        this.tagHoverZones.push({ zone, target });
+    }
+
+    private clearTagHovers(filter: (t: { readonly rect: Rect }) => boolean = () => true): void {
+        this.tagHoverZones = this.tagHoverZones.filter((h) => {
+            if (!filter(h.target)) return true;
+            if (this.popup?.sprite === (h.target as unknown as Pickable)) this.hidePopup();
+            h.zone.destroy();
+            return false;
+        });
+    }
+
+    private followTagHovers(): void {
+        for (const { zone, target } of this.tagHoverZones) {
+            const r = target.rect;
+            zone.setPosition(toPx(r.x), toPx(r.y)).setSize(toPx(r.w), toPx(r.h));
+            zone.input!.hitArea.setTo(0, 0, toPx(r.w), toPx(r.h));
+        }
+    }
+
     private hidePopup(): void {
         if (!this.popup) return;
         for (const v of this.popup.views) v.destroy();
@@ -1538,7 +1589,18 @@ ${String(e instanceof Error ? e.message : e)}`)
         for (const v of Object.values(this.blindSelectViews)) v.setResolution(this.mapping.pxPerTile / toPx(1));
         // `blind_choice_handler`：跳过的那一格盖一个斜着的「SKIPPED」（`tmi` 挂卡片、下移 2.2，跟着卡走）
         for (const type of ['Small', 'Big'] as const) if (state.states[type] === 'Skipped') this.addSkippedAlert(type);
+        // 卡上「or」旁边的标签精灵
+        for (const type of ['Small', 'Big'] as const) {
+            const card = opts[type];
+            const key = run.blindTags[type];
+            const sprite = card && [...card.root.walk()].find((e) => e.UIT === UIT.O && (e.config.object as { atlas?: string } | undefined)?.atlas === 'tags');
+            if (!sprite || !key) continue;
+            this.addTagHover(() => ({ x: sprite.x, y: sprite.y, w: sprite.T.w, h: sprite.T.h }), key, () => run.orbitalChoice(type));
+            this.blindTagTargets.add(this.tagHoverZones[this.tagHoverZones.length - 1]!.target);
+        }
     }
+
+    private readonly blindTagTargets = new Set<object>();
 
     /** 选盲注界面上跳过那几格的「SKIPPED」戳 */
     private skippedAlerts: UIBoxView[] = [];
@@ -1567,6 +1629,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.blindSelectViews.prompt.destroy();
         for (const v of this.skippedAlerts) v.destroy();
         this.skippedAlerts = [];
+        this.clearTagHovers((t) => this.blindTagTargets.has(t));
+        this.blindTagTargets.clear();
         this.blindSelectViews = null;
         this.blindSelectState = null;
     }
@@ -1920,6 +1984,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.packUi?.view.update(time / 1000);
         this.layoutShop();
         this.followPick(time / 1000);
+        this.followTagHovers();
         this.followPopup(time / 1000);
         tickColours(time / 1000);
         this.roundEval?.view.update(time / 1000);
@@ -1935,6 +2000,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         const cur = this.hudTags;
         if (cur.list.length !== tags.length || cur.list.some((t, i) => t !== tags[i])) {
             for (const v of cur.views) v.destroy();
+            this.clearTagHovers((t) => this.hudTagTargets.has(t));
+            this.hudTagTargets.clear();
             const views: UIBoxView[] = [];
             let prev: UIBox | null = null;
             for (const tag of tags) {
@@ -1945,6 +2012,9 @@ ${String(e instanceof Error ? e.message : e)}`)
                 view.setResolution(this.mapping.pxPerTile / toPx(1));
                 views.push(view);
                 prev = box;
+                const sprite = [...box.root.walk()].find((e) => e.UIT === UIT.O)!;
+                this.addTagHover(() => ({ x: sprite.x, y: sprite.y, w: sprite.T.w, h: sprite.T.h }), tag.key, () => tag.orbitalHand);
+                this.hudTagTargets.add(this.tagHoverZones[this.tagHoverZones.length - 1]!.target);
             }
             this.hudTags = { list: [...tags], views };
         }

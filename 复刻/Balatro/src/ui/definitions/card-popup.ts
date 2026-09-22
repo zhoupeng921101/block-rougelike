@@ -285,6 +285,30 @@ export function abilityTable(card: PopupCard, g: PopupGame): CardUi {
     return generateCardUi(center(card.centerKey), null, specific, cardType, badges, false, loc.main_start, loc.main_end, g);
 }
 
+/** `Tag:get_uibox_table` 读的 `G.GAME` 那几项 */
+export type TagPopupGame = { handsPlayed: number; unusedDiscards: number; skips: number };
+
+/**
+ * `tag.lua:546` 的 `Tag:get_uibox_table`：按标签名填 `loc_vars`，再 `generate_card_ui(G.P_TAGS[key], nil, loc_vars, 'Tag')`。
+ * `hide_ability` 在 1.0.1o 里从没被赋值，所以恒按已发现画。Orbital 没有掷过牌型时显示 `[poker hand]`
+ */
+export function tagAbilityTable(key: string, orbitalHand: string | undefined, t: TagPopupGame, g: PopupGame): CardUi {
+    const c = center(key);
+    const cfg = c.config as Record<string, number>;
+    let locVars: Array<string | number> = [];
+    switch (c.name) {
+        case 'Investment Tag': locVars = [cfg.dollars!]; break;
+        case 'Handy Tag': locVars = [cfg.dollars_per_hand!, cfg.dollars_per_hand! * t.handsPlayed]; break;
+        case 'Garbage Tag': locVars = [cfg.dollars_per_discard!, cfg.dollars_per_discard! * t.unusedDiscards]; break;
+        case 'Juggle Tag': locVars = [cfg.h_size!]; break;
+        case 'Top-up Tag': locVars = [cfg.spawn_jokers!]; break;
+        case 'Skip Tag': locVars = [cfg.skip_bonus!, cfg.skip_bonus! * (t.skips + 1)]; break;
+        case 'Orbital Tag': locVars = [orbitalHand ?? `[${locMisc('k_poker_hand')}]`, cfg.levels!]; break;
+        case 'Economy Tag': locVars = [cfg.max!]; break;
+    }
+    return generateCardUi(c, null, locVars, 'Tag', undefined, false, undefined, undefined, g);
+}
+
 // ————————————————————————————————————————————————————————————————
 // generate_card_ui
 // ————————————————————————————————————————————————————————————————

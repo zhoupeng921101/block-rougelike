@@ -213,6 +213,10 @@ export class Run {
      * 不管标签是不是 Orbital（掷点在界面代码里，`UI_definitions.lua:1622`）
      */
     private orbitalChoices = new Map<number, Record<BlindType, HandName>>();
+    /** 选盲注界面那一格的 Orbital Tag 升哪个牌型（提示框读）。这个 Ante 还没掷过是 undefined */
+    orbitalChoice(type: BlindType): HandName | undefined {
+        return this.orbitalChoices.get(this.ante)?.[type];
+    }
     /** `G.GAME.used_vouchers`：已兑换的优惠券 */
     readonly usedVouchers = new Set<string>();
     /**
