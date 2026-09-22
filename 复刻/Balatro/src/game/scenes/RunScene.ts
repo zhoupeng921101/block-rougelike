@@ -45,12 +45,12 @@ import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
 import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/definitions/hud-blind';
 import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
-import { type BlindSelectState, type BlindType, cardAlert, createBlindPrompt, createBlindSelect, hudTag } from '../../ui/definitions/blind-select';
+import { type BlindSelectState, type BlindType, blindChoiceBox, cardAlert, createBlindPrompt, createBlindSelect, hudTag } from '../../ui/definitions/blind-select';
 import { mostPlayedHand } from '../../core/round';
 import { runModifiers } from '../../core/jokers/modifiers';
 import { type EvalRow, type EvalStep, RoundEval, evalTimeline } from '../../ui/definitions/round-eval';
 import { BLIND_TEXT, DICTIONARY } from '../../ui/lang.generated';
-import type { Rect, UIElement, UINodeDef } from '../../ui/uibox';
+import type { Rect, UIElement, UIFuncs, UINodeDef } from '../../ui/uibox';
 import { cardAreas } from '../areas';
 import { type Placed, alignConsumeable, alignHand, alignJokers, alignPackHand, alignPlay } from '../align-cards';
 import { type PackCardsObject, createBoosterPack, packCardsArea } from '../../ui/definitions/booster-pack';
@@ -439,8 +439,19 @@ ${String(e instanceof Error ? e.message : e)}`)
         }
         this.run.rerollBoss();
         this.sound.play('other1', { volume: 0.5 });
-        // 重掷之后会再轮一次 `new_blind_choice`，标签可能开出一个包
-        this.showBlindSelect();
+        // `reroll_boss`：只换 Boss 那张卡（`G.blind_select_opts.boss` 重建、塞回原来的 O 节点），别的卡不动。
+        // 原作旧卡滑出、0.3 秒后新卡从下面滑上来——界面的滑入动画还没做，这里直接换
+        const b = this.blindSelectState;
+        const old = b?.opts.Boss;
+        const el = old && [...b.select.root.walk()].find((e) => e.config.object === old);
+        if (b && el) {
+            b.state.choices.Boss = this.run.bossKey;
+            const box = blindChoiceBox('Boss', b.state, b.loc, b.funcs);
+            b.opts.Boss = box;
+            b.select.replaceObject(el, box);
+            // 重掷之后会再轮一次 `new_blind_choice`，标签可能开出一个包
+            this.showBlindSelect(false);
+        } else this.showBlindSelect();
     }
 
     /**
@@ -1501,12 +1512,13 @@ ${String(e instanceof Error ? e.message : e)}`)
         };
         // `loc_blind_states`：英文里各状态的显示名与键同名
         const loc = { ...state.states };
-        const { def, opts } = createBlindSelect(state, this.areas.hand.w, loc);
-        this.blindSelectState = { state, loc, opts };
+        const { def, opts, funcs } = createBlindSelect(state, this.areas.hand.w, loc);
+        this.blindSelectState = { state, loc, opts, funcs, select: null as unknown as UIBox };
         const hand = this.areas.hand;
         const select = new UIBox(def, { align: 'bmi', offset: { x: 0, y: 29 }, major: { T: hand } });
         select.config.offset = { x: 0, y: 0.8 - (hand.y - this.areas.jokers.y) + select.T.h };
         select.realign();
+        this.blindSelectState.select = select;
         const prompt = new UIBox(createBlindPrompt(run.vouchers.directorsCut), {
             align: 'cm', offset: { x: 0, y: 0 }, major: this.hudView.box.getById('row_blind')!.asMajor,
         }, {
@@ -1531,7 +1543,13 @@ ${String(e instanceof Error ? e.message : e)}`)
     /** 选盲注界面上跳过那几格的「SKIPPED」戳 */
     private skippedAlerts: UIBoxView[] = [];
     /** 当前选盲注界面读的那几张表。**跳过盲注不重建界面**（原作只改 `blind_states`，每帧的 handler 切外观） */
-    private blindSelectState: { state: BlindSelectState; loc: Record<BlindType, string>; opts: Partial<Record<BlindType, UIBox>> } | null = null;
+    private blindSelectState: {
+        state: BlindSelectState;
+        loc: Record<BlindType, string>;
+        opts: Partial<Record<BlindType, UIBox>>;
+        funcs: UIFuncs;
+        select: UIBox;
+    } | null = null;
 
     private addSkippedAlert(type: BlindType): void {
         const card = this.blindSelectState?.opts[type];

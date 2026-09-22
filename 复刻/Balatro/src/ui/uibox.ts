@@ -278,6 +278,19 @@ export class UIBox implements Major {
         this.followMajor();
     }
 
+    /**
+     * 换掉某个 O 节点里装的东西（`reroll_boss`：`par.config.object = 新的 Boss 卡; par.config.object:recalculate()`）。
+     * **只重排新放进去的那个**，外层与别的孩子不动（整盒重排会把 handler 用 `align` 挪走的行复位）；绘制层按 `version` 重建
+     */
+    replaceObject(el: UIElement, obj: UIObject): void {
+        el.config.object = obj;
+        if (obj instanceof UIBox) {
+            obj.attachTo(el.asMajor);
+            obj.recalculate();
+        }
+        this.version++;
+    }
+
     /** `alignment.offset` 改了之后重新对齐（`blind_choice_handler` 把选盲注卡往上提） */
     realign(): void {
         if (this.config.major) this.attachTo(this.config.major);

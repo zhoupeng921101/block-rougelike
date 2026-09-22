@@ -245,18 +245,10 @@ export function createBlindPrompt(rerollBoss = false): UINodeDef {
  * `create_UIBox_blind_select` 的卡片部分与外层定义。三张卡的 UIBox 先建好（它们自己跑 `blind_choice_handler`），
  * 外层按 `G.hand.T.w` 撑宽。外层怎么挂由调用方给（`game.lua:3645`：`bmi` 对齐手牌区，offset 见那里）
  */
-export function createBlindSelect(s: BlindSelectState, handW: number, locBlindStates: Record<BlindType, string>): { def: UINodeDef; opts: Partial<Record<BlindType, UIBox>> } {
+export function createBlindSelect(s: BlindSelectState, handW: number, locBlindStates: Record<BlindType, string>): { def: UINodeDef; opts: Partial<Record<BlindType, UIBox>>; funcs: UIFuncs } {
     const opts: Partial<Record<BlindType, UIBox>> = {};
     const funcs = blindChoiceFuncs(s, opts);
-    for (const type of ['Small', 'Big', 'Boss'] as const) {
-        const colour = slotColour(s, type);
-        const bg = type === 'Boss' ? mixColours(C.BLACK, colour, 0.8) : undefined;
-        opts[type] = new UIBox(
-            { n: UIT.ROOT, config: { align: 'cm', colour: C.CLEAR }, nodes: [dynContainer([createBlindChoice(type, s, locBlindStates)], false, colour, bg)] },
-            { align: 'bmi', offset: { x: 0, y: 0 } },
-            funcs,
-        );
-    }
+    for (const type of ['Small', 'Big', 'Boss'] as const) opts[type] = blindChoiceBox(type, s, locBlindStates, funcs);
     const def: UINodeDef = { n: UIT.ROOT, config: { align: 'tm', minw: handW, r: 0.15, colour: C.CLEAR }, nodes: [
         { n: UIT.R, config: { align: 'cm', padding: 0.5 }, nodes: [
             { n: UIT.O, config: { align: 'cm', object: opts.Small } },
@@ -264,7 +256,18 @@ export function createBlindSelect(s: BlindSelectState, handW: number, locBlindSt
             { n: UIT.O, config: { align: 'cm', object: opts.Boss } },
         ] },
     ] };
-    return { def, opts };
+    return { def, opts, funcs };
+}
+
+/** 一张卡的 UIBox（`G.blind_select_opts.small / big / boss`）。`reroll_boss` 单独重建 Boss 那张 */
+export function blindChoiceBox(type: BlindType, s: BlindSelectState, locBlindStates: Record<BlindType, string>, funcs: UIFuncs): UIBox {
+    const colour = slotColour(s, type);
+    const bg = type === 'Boss' ? mixColours(C.BLACK, colour, 0.8) : undefined;
+    return new UIBox(
+        { n: UIT.ROOT, config: { align: 'cm', colour: C.CLEAR }, nodes: [dynContainer([createBlindChoice(type, s, locBlindStates)], false, colour, bg)] },
+        { align: 'bmi', offset: { x: 0, y: 0 } },
+        funcs,
+    );
 }
 
 /** 卡片里用到的 `G.FUNCS` */
