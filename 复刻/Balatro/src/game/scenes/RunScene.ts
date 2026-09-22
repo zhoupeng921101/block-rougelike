@@ -382,7 +382,7 @@ ${String(e instanceof Error ? e.message : e)}`)
             this.refresh();
             return;
         }
-        this.destroyBlindSelect();
+        this.retireBlindSelect();
         // `Blind:set_blind`（`blind.lua:126`）：左上盲注面板 offset −10 → 0，从上面落下来
         this.hudBlindView.slideFrom(-10);
         this.selected.clear();
@@ -473,6 +473,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (this.run.state === 'shop') {
             if (this.run.openPack) return;
             this.sound.play('cardSlide2', { volume: 0.4 });
+            this.retireShop();
             this.run.leaveShop();
             this.showBlindSelect();
             return;
@@ -602,8 +603,9 @@ ${String(e instanceof Error ? e.message : e)}`)
     private cashOut(): void {
         const state = this.roundEval;
         if (!state?.cashView) return;
-        state.view.destroy();
-        state.cashView.destroy();
+        // `cash_out`（`button_callbacks.lua:3026`）：结算面板滑到 `ROOM.T.y+15`（Cash Out 按钮跟着），滑走后才拆
+        state.view.slideTo(22.8);
+        this.retire([state.view, state.cashView]);
         this.roundEval = null;
         this.pendingPayout = 0;
         this.sound.play('coin1', { volume: 0.5 });
@@ -722,6 +724,71 @@ ${String(e instanceof Error ? e.message : e)}`)
                 : `${consumable.center.name} 要选 ${min}–${Math.min(5, max)} 张手牌`;
         }
         return `${consumable.center.name} 现在用不了`;
+    }
+
+    /**
+     * 离场中的界面：原作把 offset 改到屏幕外、等它滑走再 `remove()`。复刻件把视图（与跟着它的卡）交给这里，
+     * 每帧推进，滑到位或 1.5 秒后销毁。`step` 返回 true 表示可以销毁了
+     */
+    private retiring: Array<{ step: (now: number) => boolean; destroy: () => void; start: number }> = [];
+
+    private retire(views: UIBoxView[], extra: { step?: (now: number) => void; destroy?: () => void } = {}): void {
+        this.retiring.push({
+            start: this.time.now / 1000,
+            step: (now) => {
+                for (const v of views) v.update(now);
+                extra.step?.(now);
+                return views.every((v) => v.settled);
+            },
+            destroy: () => {
+                for (const v of views) v.destroy();
+                extra.destroy?.();
+            },
+        });
+    }
+
+    private stepRetiring(now: number): void {
+        this.retiring = this.retiring.filter((r) => {
+            if (!r.step(now) && now - r.start < 1.5) return true;
+            r.destroy();
+            return false;
+        });
+    }
+
+    /**
+     * 离开商店（`toggle_shop`，`button_callbacks.lua:2601`）：外框滑到 `ROOM.T.y+29`、招牌升到 −15，货架上的卡跟着外框走，
+     * 滑出去之后才销毁。复刻件的 `clearShop` 会立即拆，所以先把这些对象从场景的字段里摘出来交给 `retire`
+     */
+    private retireShop(): void {
+        const ui = this.shopUi;
+        if (!ui) return;
+        const slots = this.shopSlots;
+        const jokerMax = this.run.shop?.jokerMax ?? 2;
+        const owned: Array<{ destroy(): void }> = [
+            ...ui.tags, ...this.shopSprites, ...this.packSprites, ...this.shopConsumableSprites, ...this.voucherSprites, ...this.shopCardSprites, ...this.shopLabels,
+        ];
+        for (const t of ui.tags) t.followSlide(ui.view);
+        this.shopUi = null;
+        this.shopSprites = [];
+        this.packSprites = [];
+        this.shopConsumableSprites = [];
+        this.voucherSprites = [];
+        this.shopCardSprites = [];
+        this.shopLabels = [];
+        this.shopSlots = [];
+        this.hidePopup();
+        this.unpick();
+        ui.view.slideTo(34.3);
+        ui.sign.slideTo(-15);
+        this.retire([ui.view, ui.sign], {
+            step: (now) => {
+                this.placeShopSlots(slots, jokerMax, ui.view.slideOffset.y);
+                for (const t of ui.tags) t.update(now);
+            },
+            destroy: () => { for (const o of owned) o.destroy(); },
+        });
+        this.shopShownFor = null;
+        this.signShownFor = null;
     }
 
     private clearShop(): void {
@@ -1326,15 +1393,19 @@ ${String(e instanceof Error ? e.message : e)}`)
     private layoutShop(): void {
         const shop = this.run.shop;
         if (!shop) return;
-        const groups: Array<[ShopSlot['group'], number, number]> = [['items', shop.jokerMax, CARD_W], ['vouchers', 1, CARD_W], ['packs', 2, CARD_W * 1.27]];
-        const dy = this.shopUi?.view.slideOffset.y ?? 0;
+        this.placeShopSlots(this.shopSlots, shop.jokerMax, this.shopUi?.view.slideOffset.y ?? 0);
+    }
+
+    /** 货架 / 优惠券 / 补充包三格的卡与价签，按外框当前的滑动量 `dy` 摆 */
+    private placeShopSlots(all: ShopSlot[], jokerMax: number, dy: number): void {
+        const groups: Array<[ShopSlot['group'], number, number]> = [['items', jokerMax, CARD_W], ['vouchers', 1, CARD_W], ['packs', 2, CARD_W * 1.27]];
         for (const [group, limit, cardW] of groups) {
-            const slots = this.shopSlots.filter((x) => x.group === group);
+            const slots = all.filter((x) => x.group === group);
             if (slots.length === 0) continue;
             alignPlay({ ...slots[0]!.area, y: slots[0]!.area.y + dy }, slots.map((x) => ({ highlighted: x.sprite.highlighted, prevX: x.sprite.prevX || slots[0]!.area.x, w: x.w, h: x.h })), limit, cardW)
                 .forEach((p, k) => slots[k]!.sprite.place(p, 0));
         }
-        for (const x of this.shopSlots) {
+        for (const x of all) {
             const r = x.sprite.rect;
             Object.assign(x.tagMajor.T, { x: r.x, y: r.y });
             x.tagView.box.followMajor();
@@ -1655,6 +1726,27 @@ ${String(e instanceof Error ? e.message : e)}`)
         if (this.blindSelectViews) view.followSlide(this.blindSelectViews.select);
         view.setResolution(this.mapping.pxPerTile / toPx(1));
         this.skippedAlerts.push(view);
+    }
+
+    /**
+     * 选了盲注（`select_blind`，`button_callbacks.lua:2635`）：卡片那块滑到 offset 40、左侧提示框升到 −10，滑走后才拆
+     */
+    private retireBlindSelect(): void {
+        const v = this.blindSelectViews;
+        if (!v) return;
+        const end = v.select.box.config.offset?.y ?? 0;
+        v.select.slideTo(40 - end);
+        v.prompt.slideTo(-10);
+        const alerts = this.skippedAlerts;
+        this.skippedAlerts = [];
+        this.blindSelectViews = null;
+        this.clearTagHovers((t) => this.blindTagTargets.has(t));
+        this.blindTagTargets.clear();
+        this.blindSelectState = null;
+        this.retire([v.select, v.prompt], {
+            step: (now) => { for (const a of alerts) a.update(now); },
+            destroy: () => { for (const a of alerts) a.destroy(); },
+        });
     }
 
     private destroyBlindSelect(): void {
@@ -2185,6 +2277,7 @@ ${String(e instanceof Error ? e.message : e)}`)
         // `end_round`：没够分就直接 `G.STATE = GAME_OVER`，不用点任何按钮
         if (this.round?.phase === 'lost' && !this.animating) this.gameOver();
         this.stepOverlay(time / 1000);
+        this.stepRetiring(time / 1000);
         if (this.shopUi) {
             const hidden = !!this.run.openPack;
             // 开包时外框自己滑到屏幕下面（`slideTo`），价签跟着卡一起收起
