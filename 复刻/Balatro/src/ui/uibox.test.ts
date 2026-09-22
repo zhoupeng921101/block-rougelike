@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { cardAreas } from '../game/areas';
-import { type BlindSelectState, cardAlert, createBlindPrompt, createBlindSelect } from './definitions/blind-select';
+import { type BlindSelectState, cardAlert, createBlindPrompt, createBlindSelect, currentBlinds, blindChoiceFuncs } from './definitions/blind-select';
 import { createButtons } from './definitions/buttons';
 import { type EvalRow, RoundEval, evalTimeline } from './definitions/round-eval';
 import { cardAreaBox } from './definitions/card-area';
@@ -19,6 +19,9 @@ import { createHudBlind, makeHudBlindState } from './definitions/hud-blind';
 import { type GameOverState, createGameOver, createWin } from './definitions/game-over';
 import { hudBlindFuncs } from './definitions/hud-blind-funcs';
 import { makeHudState, createHud } from './definitions/hud';
+import { type Tab, changeTab, currentHands, runInfo, usedVouchers } from './definitions/run-info';
+import { VOUCHER_CENTERS } from '../core/vouchers';
+import { initialHands } from '../core/scoring';
 import oracle from './oracle.generated.json';
 import { UIBox, type UIElement } from './uibox';
 
@@ -224,5 +227,43 @@ describe('UIBox 对拍 Lua 原作引擎', () => {
         expectSame(dump(over), cases.find((c) => c.name === 'game_over')!.elements);
         const win = new UIBox(createWin(s, [0, 1, 0, 0]), { align: 'cm', offset: { x: 0, y: 0 }, major: room });
         expectSame(dump(win), cases.find((c) => c.name === 'win')!.elements);
+    });
+
+    /** Run Info 的第一页：外框 + 标签页 + 12 行牌型（三个五张同点的没露过脸，不出行） */
+    it('G.UIDEF.run_info：Poker Hands 页', () => {
+        const hands = initialHands();
+        hands.Pair.level = 3; hands.Pair.chips = 40; hands.Pair.mult = 4; hands.Pair.played = 4;
+        const box = new UIBox(runInfo({ hands: () => currentHands(hands), blinds: () => currentHands(hands), vouchers: () => currentHands(hands) }),
+            { align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: 0, y: 0, w: 21, h: 11.2 } } });
+        expectSame(dump(box), cases.find((c) => c.name === 'run_info')!.elements);
+        const inner = box.getById('tab_contents')!.config.object as UIBox;
+        expectSame(dump(inner), cases.find((c) => c.name === 'run_info_hands')!.elements);
+    });
+
+    it('G.UIDEF.run_info：切到 Blinds 页（change_tab）', () => {
+        const s: BlindSelectState = {
+            ante: 1, choices: { Small: 'bl_small', Big: 'bl_big', Boss: 'bl_head' },
+            states: { Small: 'Skipped', Big: 'Select', Boss: 'Upcoming' },
+            tags: { Small: 'tag_economy', Big: 'tag_investment' }, mostPlayedHand: 'High Card', probabilities: 1,
+        };
+        const hands = initialHands();
+        hands.Pair.level = 3; hands.Pair.chips = 40; hands.Pair.mult = 4; hands.Pair.played = 4;
+        const box = new UIBox(runInfo({ hands: () => currentHands(hands), blinds: () => currentBlinds(s, { ...s.states }), vouchers: () => currentHands(hands), blindFuncs: blindChoiceFuncs(s, {}) }),
+            { align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: 0, y: 0, w: 21, h: 11.2 } } });
+        const tab = box.getById('tab_but_Blinds')!.config.ref_table as Tab;
+        changeTab(box, tab);
+        expectSame(dump(box), cases.find((c) => c.name === 'run_info_blinds_outer')!.elements);
+        expectSame(dump(box.getById('tab_contents')!.config.object as UIBox), cases.find((c) => c.name === 'run_info_blinds')!.elements);
+    });
+
+    it('G.UIDEF.run_info：切到 Vouchers 页', () => {
+        const hands = initialHands();
+        const pool = Object.keys(VOUCHER_CENTERS).sort((a, b) => VOUCHER_CENTERS[a]!.order - VOUCHER_CENTERS[b]!.order);
+        const used = new Set(['v_overstock_norm', 'v_clearance_sale', 'v_grabber', 'v_wasteful']);
+        const box = new UIBox(runInfo({ hands: () => currentHands(hands), blinds: () => currentHands(hands), vouchers: () => usedVouchers(pool, used).def }),
+            { align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: 0, y: 0, w: 21, h: 11.2 } } });
+        changeTab(box, box.getById('tab_but_Vouchers')!.config.ref_table as Tab);
+        expectSame(dump(box), cases.find((c) => c.name === 'run_info_vouchers_outer')!.elements);
+        expectSame(dump(box.getById('tab_contents')!.config.object as UIBox), cases.find((c) => c.name === 'run_info_vouchers')!.elements);
     });
 });

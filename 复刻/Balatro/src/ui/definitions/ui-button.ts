@@ -19,6 +19,10 @@ export type ButtonArgs = {
     col?: boolean;
     /** 每帧跑的 `G.FUNCS[func]`（置灰之类） */
     func?: string;
+    /** 单选组里的一个（标签页按钮）：点了就把同组别的 `chosen` 清掉，被选中的头上画一个红三角 */
+    choice?: boolean;
+    chosen?: boolean;
+    refTable?: object;
 };
 
 /** `UIBox_button` */
@@ -36,6 +40,6 @@ export function uiboxButton(args: ButtonArgs): UINodeDef {
         { n: UIT.T, config: { text: v, scale, colour: textColour, shadow: args.shadow } },
     ] }));
     return { n: args.col ? UIT.C : UIT.R, config: { align: 'cm' }, nodes: [
-        { n: UIT.C, config: { align: 'cm', padding: args.padding ?? 0, r: 0.1, hover: true, colour, button, minh, shadow: true, func: args.func, id: args.id }, nodes: labelNodes },
+        { n: UIT.C, config: { align: 'cm', padding: args.padding ?? 0, r: 0.1, hover: true, colour, button, minh, shadow: true, func: args.func, id: args.id, choice: args.choice, chosen: args.chosen, ref_table: args.refTable }, nodes: labelNodes },
     ] };
 }

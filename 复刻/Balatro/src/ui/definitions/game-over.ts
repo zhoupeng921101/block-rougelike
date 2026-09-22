@@ -16,6 +16,7 @@ import type { Rect, UINodeDef, UIObject } from '../uibox';
 import { UIT } from '../uibox';
 import type { BlindChipObject } from './blind-select';
 import { scoreNumberScale } from './blind-select';
+import { genericOptions } from './overlay';
 import { uiboxButton } from './ui-button';
 import type { SpriteObject } from './hud';
 
@@ -155,23 +156,6 @@ export function roundScoresRow(s: GameOverState, score: Score, textColour?: Colo
     ] };
 }
 
-/** `create_UIBox_generic_options`（`no_back` 那一支——两个结束界面都不带返回键） */
-function genericOptions(args: { bgColour: Colour; outlineColour?: Colour; colour?: Colour; padding: number; contents: UINodeDef[] }): UINodeDef {
-    const ROOM = { w: 21, h: 11.2 };
-    const infotip: UIObject = { T: { x: 0, y: 0, w: 0, h: 0 } };
-    return { n: UIT.ROOT, config: { align: 'cm', minw: ROOM.w * 5, minh: ROOM.h * 5, padding: 0.1, r: 0.1, colour: args.bgColour }, nodes: [
-        { n: UIT.R, config: { align: 'cm', minh: 1, r: 0.3, padding: 0.07, minw: 1, colour: args.outlineColour ?? C.JOKER_GREY, emboss: 0.1 }, nodes: [
-            { n: UIT.C, config: { align: 'cm', minh: 1, r: 0.2, padding: 0.15, minw: 1, colour: args.colour ?? C.L_BLACK }, nodes: [
-                // 原文 `args.padding or 0.2`：两个结束界面都传 0，**Lua 里 0 是真值**，所以是 0
-                { n: UIT.R, config: { align: 'cm', padding: args.padding, minw: 7 }, nodes: args.contents },
-            ] },
-        ] },
-        { n: UIT.R, config: { align: 'cm' }, nodes: [
-            { n: UIT.O, config: { id: 'overlay_menu_infotip', object: infotip } },
-        ] },
-    ] };
-}
-
 /** `jimbo_spot`：`Moveable(0,0,G.CARD_W*1.1, G.CARD_H*1.1)` */
 function jimboSpot(): UINodeDef {
     const spot: UIObject = { T: { x: 0, y: 0, w: CARD_W * 1.1, h: CARD_H * 1.1 } };
@@ -211,7 +195,7 @@ export function createGameOver(s: GameOverState, bgColour: Colour): UINodeDef {
                 { n: UIT.T, config: { text, scale: 0.5, colour: C.UI.TEXT_LIGHT } },
             ] },
         ] });
-    const t = genericOptions({ bgColour, padding: 0, contents: [
+    const t = genericOptions({ bgColour, padding: 0, noBack: true, contents: [
         { n: UIT.R, config: { align: 'cm' }, nodes: [
             { n: UIT.O, config: { object: new DynaText({ string: [loc('ph_game_over')], colours: [C.RED], shadow: true, float: true, scale: 1.5, pop_in: 0.4, maxw: 6.5 }) } },
         ] },
@@ -243,7 +227,7 @@ export function createGameOver(s: GameOverState, bgColour: Colour): UINodeDef {
 
 /** `create_UIBox_win`。`bgColour` 是 `eased_green`（alpha 由场景从 0 缓到 0.5） */
 export function createWin(s: GameOverState, bgColour: Colour): UINodeDef {
-    const t = genericOptions({ bgColour, colour: C.BLACK, outlineColour: C.EDITION, padding: 0, contents: [
+    const t = genericOptions({ bgColour, colour: C.BLACK, outlineColour: C.EDITION, padding: 0, noBack: true, contents: [
         { n: UIT.R, config: { align: 'cm' }, nodes: [
             { n: UIT.O, config: { object: new DynaText({ string: [loc('ph_you_win')], colours: [C.EDITION], shadow: true, float: true, spacing: 10, rotate: true, scale: 1.5, pop_in: 0.4, maxw: 6.5 }) } },
         ] },

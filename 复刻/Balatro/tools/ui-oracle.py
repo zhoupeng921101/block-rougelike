@@ -532,7 +532,7 @@ def main():
       ease_value = function() end
       local prev_localize = localize
       localize = function(args, misc_cat)
-        if misc_cat == 'poker_hands' then return args end
+        if misc_cat == 'poker_hands' or misc_cat == 'blind_states' then return args end  -- en-us 里两张表都与键同名
         return prev_localize(args, misc_cat)
       end
       G.GAME.round_resets.ante = 2
@@ -563,6 +563,65 @@ def main():
     ''')
     for name, var in [('game_over', 'GAME_OVER'), ('win', 'WIN')]:
         cases.append({'name': name, **to_py(lua.eval(f'DUMP({var})'))})
+
+    # Run Info：overlay_menu 挂 G.ROOM_ATTACH，第一页 Poker Hands。牌型：Pair 3 级打过 4 次，三个五张同点的没露过脸
+    lua.execute(r'''
+      G.C.HAND_LEVELS = { HEX("efefef"), HEX("95acff"), HEX("65efaf"), HEX('fae37e'), HEX('ffc052'), HEX('f87d75'), HEX('caa0ef') }
+      G.C.CHIPS = HEX('009dff'); G.C.MULT = HEX('FE5F55'); G.C.UI.TEXT_DARK = HEX("4F6367")
+      G.GAME.stake = 1
+      local rows = {
+        {'Flush Five', 160, 16, false}, {'Flush House', 140, 14, false}, {'Five of a Kind', 120, 12, false},
+        {'Straight Flush', 100, 8, true}, {'Four of a Kind', 60, 7, true}, {'Full House', 40, 4, true}, {'Flush', 35, 4, true},
+        {'Straight', 30, 4, true}, {'Three of a Kind', 30, 3, true}, {'Two Pair', 20, 2, true}, {'Pair', 40, 4, true}, {'High Card', 5, 1, true},
+      }
+      G.GAME.hands = {}
+      for _, r in ipairs(rows) do
+        G.GAME.hands[r[1]] = { chips = r[2], mult = r[3], visible = r[4], level = r[1] == 'Pair' and 3 or 1, played = r[1] == 'Pair' and 4 or 0 }
+      end
+      RUN_INFO = OVERLAY(G.UIDEF.run_info())
+    ''')
+    cases.append({'name': 'run_info', **to_py(lua.eval('DUMP(RUN_INFO)'))})
+    cases.append({'name': 'run_info_hands', **to_py(lua.eval("DUMP(RUN_INFO:get_UIE_by_ID('tab_contents').config.object)"))})
+    # 第二页 Blinds：原文 change_tab（换掉 tab_contents 里的盒子、整盒重排）。选盲注那组状态：小盲注跳过、大盲注当前
+    lua.execute(r'''
+      G.OVERLAY_MENU = RUN_INFO
+      G.STAGE_OBJECTS = setmetatable({}, {__index = function(t, k) t[k] = {}; return t[k] end})
+      for _, k in ipairs({'clicked', 'hovering', 'dragging', 'released_on', 'focused', 'cursor_down', 'cursor_up', 'cursor_hover'}) do G.CONTROLLER[k] = G.CONTROLLER[k] or {} end
+      G.GAME.round_resets.blind_states = { Small = 'Skipped', Big = 'Select', Boss = 'Upcoming' }
+      G.GAME.blind_on_deck = 'Big'
+      G.FUNCS.change_tab(RUN_INFO:get_UIE_by_ID('tab_but_Blinds'))
+      RUN_INFO.alignment.prev_type = ''
+      RUN_INFO:align_to_major()
+      RUN_INFO.T.x = RUN_INFO.role.major.T.x + RUN_INFO.role.offset.x
+      RUN_INFO.T.y = RUN_INFO.role.major.T.y + RUN_INFO.role.offset.y
+      RUN_INFO.UIRoot:initialize_VT()
+    ''')
+    cases.append({'name': 'run_info_blinds_outer', **to_py(lua.eval('DUMP(RUN_INFO)'))})
+    cases.append({'name': 'run_info_blinds', **to_py(lua.eval("DUMP(RUN_INFO:get_UIE_by_ID('tab_contents').config.object)"))})
+    # 第三页 Vouchers：兑换过 Overstock、Clearance Sale、Grabber、Wasteful（四格一行）。CardArea / Card 只桩出尺寸
+    import re
+    vsrc = (pathlib.Path(__file__).resolve().parents[1] / 'src/core/vouchers.generated.ts').read_text(encoding='utf-8')
+    pool = sorted(((int(o), k) for k, o in re.findall(r'(v_\w+): \{"order":(\d+)', vsrc)))
+    lua.execute('VOUCHER_POOL = {' + ','.join(f"{{key='{k}', order={o}}}" for o, k in pool) + '}')
+    lua.execute(r'''
+      G.P_CENTER_POOLS = { Voucher = VOUCHER_POOL }
+      G.P_CENTERS = {}
+      for _, v in ipairs(VOUCHER_POOL) do G.P_CENTERS[v.key] = v end
+      G.CARD_W, G.CARD_H = 2.4*35/41, 2.4*47/41
+      G.ROOM = { T = { x = 0, y = 0, w = 21, h = 11.2 } }
+      CardArea = function(x, y, w, h, cfg) local a = Moveable(x, y, w, h); a.emplace = function() end; return a end
+      Card = function(x, y, w, h) local c = Moveable(x, y, w, h); c.ability = {}; c.start_materialize = function() end; return c end
+      G.GAME.used_vouchers = { v_overstock_norm = true, v_clearance_sale = true, v_grabber = true, v_wasteful = true }
+      G.FUNCS.change_tab(RUN_INFO:get_UIE_by_ID('tab_but_Vouchers'))
+      RUN_INFO.alignment.prev_type = ''
+      RUN_INFO:align_to_major()
+      RUN_INFO.T.x = RUN_INFO.role.major.T.x + RUN_INFO.role.offset.x
+      RUN_INFO.T.y = RUN_INFO.role.major.T.y + RUN_INFO.role.offset.y
+      RUN_INFO.UIRoot:initialize_VT()
+      G.GAME.used_vouchers = {}
+    ''')
+    cases.append({'name': 'run_info_vouchers_outer', **to_py(lua.eval('DUMP(RUN_INFO)'))})
+    cases.append({'name': 'run_info_vouchers', **to_py(lua.eval("DUMP(RUN_INFO:get_UIE_by_ID('tab_contents').config.object)"))})
 
     OUT.write_text(json.dumps(cases, indent=1), encoding='utf-8')
     print(f'{OUT.name}: ' + ', '.join(f"{c['name']} {len(c['elements'])} elements" for c in cases))

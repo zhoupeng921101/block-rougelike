@@ -45,7 +45,7 @@ import { type AreaCount, cardAreaBox } from '../../ui/definitions/card-area';
 import { createButtons } from '../../ui/definitions/buttons';
 import { type HudBlindState, createHudBlind, makeHudBlindState } from '../../ui/definitions/hud-blind';
 import { hudBlindFuncs } from '../../ui/definitions/hud-blind-funcs';
-import { type BlindSelectState, type BlindType, blindChoiceBox, cardAlert, createBlindPrompt, createBlindSelect, hudTag } from '../../ui/definitions/blind-select';
+import { type BlindSelectState, type BlindType, blindChoiceBox, blindChoiceFuncs, cardAlert, currentBlinds, createBlindPrompt, createBlindSelect, hudTag } from '../../ui/definitions/blind-select';
 import { mostPlayedHand } from '../../core/round';
 import { runModifiers } from '../../core/jokers/modifiers';
 import { type EvalRow, type EvalStep, RoundEval, evalTimeline } from '../../ui/definitions/round-eval';
@@ -68,6 +68,7 @@ import { type GameOverState, createGameOver, createWin } from '../../ui/definiti
 import { mostPlayedHandUsage } from '../../core/round-scores';
 import { Motion } from '../moveable';
 import { Jimbo } from '../jimbo';
+import { type Tab, type VoucherArea, changeTab, currentHands, runInfo, usedVouchers } from '../../ui/definitions/run-info';
 
 /**
  * 版本的文字标记。
@@ -199,6 +200,8 @@ export class RunScene extends Scene {
         alpha: { from: number; to: number; start: number };
         blocker: GameObjects.Zone;
         jimbo: Jimbo | null;
+        /** Run Info 的 Vouchers 页：每格里的卡 */
+        vouchers: Array<{ sprite: VoucherSprite; area: VoucherArea }>;
     } | null = null;
     private roundEval: {
         ev: RoundEval;
@@ -311,7 +314,8 @@ export class RunScene extends Scene {
             offset: { x: -0.7, y: 0 },
             major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } },
         });
-        this.hudView = new UIBoxView(this, hudBox, 40);
+        // 左侧面板上的按钮：Run Info 打开 overlay；Options 还没做
+        this.hudView = new UIBoxView(this, hudBox, 40, (name) => { if (name === 'run_info') this.openRunInfo(); });
 
         // `game.lua:2617`：`G.HUD_blind = UIBox{definition = create_UIBox_HUD_blind(), config = {major = row_blind, align = 'cm'}}`
         const row = hudBox.getById('row_blind')!;
@@ -1682,17 +1686,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         const bg: Colour = [...(kind === 'win' ? C.GREEN : run.ante <= WIN_ANTE ? C.RED : C.BLUE)] as Colour;
         bg[3] = 0;
         const def = kind === 'win' ? createWin(this.gameOverState(), bg) : createGameOver(this.gameOverState(), bg);
-        const box = new UIBox(def, { align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } } });
-        const view = new UIBoxView(this, box, 200, (name) => this.onOverlayButton(name));
-        view.setResolution(this.mapping.pxPerTile / toPx(1));
-        const motion = new Motion({ x: box.T.x, y: box.T.y + 10, r: 0, scale: 1 });
-        motion.T.y = box.T.y;
-        // 原作 `G.SETTINGS.paused` + 光标上下文层：底下的东西点不到也悬停不到
-        const blocker = this.add.zone(-toPx(TILE_W * 3), -toPx(TILE_H * 3), toPx(TILE_W * 7), toPx(TILE_H * 7))
-            .setOrigin(0, 0).setInteractive().setDepth(199);
-        const overlay = { view, motion, bg, alpha: { from: 0, to: kind === 'win' ? 0.5 : 0.8, start: this.time.now / 1000 }, blocker, jimbo: null as Jimbo | null };
-        this.overlay = overlay;
-        this.juice.jiggle += 1;
+        const overlay = this.mountOverlay(def, bg, kind === 'win' ? 0.5 : 0.8);
+        const box = overlay.view.box;
         // 2.5 秒后 `jimbo_spot` 换成说俏皮话的 Jimbo（`game.lua:3966` / `state_events.lua:42`）。
         // 输了只在没赢过时出（无尽模式里输了没有）；俏皮话 `lq_1..10` / `wq_1..7`，无种子的 `math.random`
         if (kind === 'win' || run.ante <= WIN_ANTE) {
@@ -1709,12 +1704,105 @@ ${String(e instanceof Error ? e.message : e)}`)
         this.hidePopup();
     }
 
+    /**
+     * `G.FUNCS.overlay_menu`（`button_callbacks.lua:1377`）：`cm` 挂房间、offset 从 y=10 改成 0，靠 VT 的弹簧滑上来；
+     * 挡板吞掉底下的点击与悬停（原作 `G.SETTINGS.paused` + 光标上下文层），房间 jiggle +1
+     */
+    private mountOverlay(def: UINodeDef, bg: Colour, alphaTo: number): NonNullable<RunScene['overlay']> {
+        const box = new UIBox(def, { align: 'cm', offset: { x: 0, y: 0 }, major: { T: { x: 0, y: 0, w: TILE_W, h: TILE_H } } });
+        const view = new UIBoxView(this, box, 200, (name, el) => this.onOverlayButton(name, el));
+        view.setResolution(this.mapping.pxPerTile / toPx(1));
+        const motion = new Motion({ x: box.T.x, y: box.T.y + 10, r: 0, scale: 1 });
+        motion.T.y = box.T.y;
+        const blocker = this.add.zone(-toPx(TILE_W * 3), -toPx(TILE_H * 3), toPx(TILE_W * 7), toPx(TILE_H * 7))
+            .setOrigin(0, 0).setInteractive().setDepth(199);
+        const overlay = {
+            view, motion, bg, alpha: { from: bg[3], to: alphaTo, start: this.time.now / 1000 }, blocker,
+            jimbo: null as Jimbo | null, vouchers: [] as Array<{ sprite: VoucherSprite; area: VoucherArea }>,
+        };
+        this.overlay = overlay;
+        this.juice.jiggle += 1;
+        this.hidePopup();
+        return overlay;
+    }
+
     private closeOverlay(): void {
         if (!this.overlay) return;
         this.overlay.view.destroy();
         this.overlay.blocker.destroy();
         this.overlay.jimbo?.destroy();
+        for (const v of this.overlay.vouchers) v.sprite.destroy();
         this.overlay = null;
+    }
+
+    /** `G.FUNCS.run_info`：`G.UIDEF.run_info()` 挂成 overlay（灰底 0.7，不缓动），第一页牌型 */
+    private openRunInfo(): void {
+        if (this.overlay || this.animating) return;
+        const run = this.run;
+        const state: BlindSelectState = {
+            ante: run.ante,
+            choices: { Small: 'bl_small', Big: 'bl_big', Boss: run.bossKey },
+            states: { Small: run.blindState('small'), Big: run.blindState('big'), Boss: run.blindState('boss') },
+            tags: run.blindTags,
+            mostPlayedHand: mostPlayedHand(run.hands),
+            probabilities: 1,
+        };
+        const pool = Object.keys(VOUCHER_CENTERS).sort((a, b) => VOUCHER_CENTERS[a]!.order - VOUCHER_CENTERS[b]!.order);
+        const def = runInfo({
+            hands: () => currentHands(run.hands),
+            blinds: () => currentBlinds(state, { ...state.states }),
+            blindFuncs: blindChoiceFuncs(state, {}),
+            vouchers: () => {
+                const r = usedVouchers(pool, run.usedVouchers);
+                this.runInfoVoucherAreas = r.areas;
+                return r.def;
+            },
+        });
+        const bg: Colour = [C.GREY[0], C.GREY[1], C.GREY[2], 0.7];
+        this.mountOverlay(def, bg, 0.7);
+    }
+
+    /** Vouchers 页当前那几格（`usedVouchers` 建页时写） */
+    private runInfoVoucherAreas: VoucherArea[] = [];
+
+    /** 切到 Vouchers 页时给每格造卡（原作 `Card(...)` + `emplace`），离开这一页就拆掉 */
+    private syncRunInfoVouchers(showing: boolean): void {
+        const o = this.overlay;
+        if (!o) return;
+        for (const v of o.vouchers) v.sprite.destroy();
+        o.vouchers = [];
+        if (!showing) return;
+        for (const area of this.runInfoVoucherAreas) {
+            for (const key of area.keys) {
+                o.vouchers.push({ sprite: new VoucherSprite(this, VOUCHER_CENTERS[key]!, () => undefined, { card: 202, shadow: 201.5 }), area });
+            }
+        }
+    }
+
+    /**
+     * `align_cards` 的 voucher 分支（一格一张时同 title）：卡在格子里居中，转角 `0.02·sin(2t + x)`、上下浮 `0.03·sin(0.666t + x)`
+     */
+    private placeRunInfoVouchers(now: number): void {
+        const o = this.overlay;
+        if (!o || o.vouchers.length === 0) return;
+        const inner = o.view.box.getById('tab_contents')?.config.object as UIBox | undefined;
+        if (!inner) return;
+        const slide = o.motion.VT.y - o.motion.T.y;
+        const byArea = new Map<VoucherArea, VoucherSprite[]>();
+        for (const v of o.vouchers) byArea.set(v.area, [...(byArea.get(v.area) ?? []), v.sprite]);
+        for (const [area, cards] of byArea) {
+            const el = [...inner.root.walk()].find((e) => e.config.object === area);
+            if (!el) continue;
+            const n = cards.length;
+            const maxCards = Math.max(n, 2);
+            cards.forEach((card, i) => {
+                const k = i + 1;
+                const x0 = el.x + (area.T.w - CARD_W) * ((k - 1) / Math.max(maxCards - 1, 1) - (0.5 * (n - maxCards)) / Math.max(maxCards - 1, 1));
+                const y = el.y + slide + area.T.h / 2 - CARD_H / 2 + 0.03 * Math.sin(0.666 * now + x0) + Math.abs((0.5 * (-n / 2 + k - 0.5)) / n) - (n > 1 ? 0.2 : 0);
+                const r = (0.2 * (-n / 2 - 0.5 + k)) / n + 0.02 * Math.sin(2 * now + x0);
+                card.place({ x: x0, y, r }, i);
+            });
+        }
     }
 
     private stepOverlay(dt: number, now: number): void {
@@ -1727,9 +1815,18 @@ ${String(e instanceof Error ? e.message : e)}`)
         o.bg[3] = o.alpha.from + (o.alpha.to - o.alpha.from) * p;
         o.view.update(now);
         o.jimbo?.update(now);
+        this.placeRunInfoVouchers(now);
     }
 
-    private onOverlayButton(name: string): void {
+    private onOverlayButton(name: string, el?: UIElement): void {
+        if (name === 'change_tab' && el && this.overlay) {
+            const tab = el.config.ref_table as Tab;
+            changeTab(this.overlay.view.box, tab);
+            this.syncRunInfoVouchers(tab.label === DICTIONARY.b_vouchers);
+            this.sound.play('button', { volume: 0.3 });
+            this.juice.jiggle += 0.5;
+            return;
+        }
         if (name === 'copy_seed') {
             void navigator.clipboard?.writeText(this.run.seed).catch(() => undefined);
             return;
@@ -1848,9 +1945,8 @@ ${String(e instanceof Error ? e.message : e)}`)
         const run = this.run;
         const round = this.round;
 
-        const vouchersLine = run.usedVouchers.size > 0
-            ? `优惠券：${[...run.usedVouchers].map((k) => VOUCHER_CENTERS[k].name).join('、')}`
-            : '';
+        // 兑换过的优惠券在 Run Info 的 Vouchers 页里
+        const vouchersLine = '';
         // 标签的图标在右下角那一列（`G.HUD_tags`）；这里只标出没实现行为的
         const tagsLine = run.tags.some((t) => !isTagImplemented(t.key))
             ? `标签 ⚠未实现：${run.tags.filter((t) => !isTagImplemented(t.key)).map((t) => t.center.name).join('、')}`

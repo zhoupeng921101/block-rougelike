@@ -412,8 +412,16 @@ export class UIBox implements Major {
     private alignToMajor(): void {
         const major = this.config.major;
         const type = this.config.align ?? '';
-        if (!major || type === '' || type === 'a') return;
+        if (!major || type === 'a') return;
         const off = this.config.offset ?? { x: 0, y: 0 };
+        // 没有 `align`（`tab_contents` 里装的页）：不按任何边对齐，`role.offset` 就是 `offset`，照样跟着 major 走
+        if (type === '') {
+            this.offset.x = off.x;
+            this.offset.y = off.y;
+            this.T.x = major.T.x + this.offset.x;
+            this.T.y = major.T.y + this.offset.y;
+            return;
+        }
         const has = (c: string) => type.includes(c);
         const inner = has('i');
         if (has('m')) this.offset.x = 0.5 * major.T.w - this.mid.T.w / 2 + off.x - this.mid.T.x + this.T.x;
@@ -432,7 +440,7 @@ export class UIBox implements Major {
      */
     followMajor(): void {
         const major = this.config.major;
-        if (!major || !this.config.align || this.config.align === 'a') return;
+        if (!major || this.config.align === 'a') return;
         this.T.x = major.T.x + this.offset.x;
         this.T.y = major.T.y + this.offset.y;
         for (const el of this.root.walk()) {

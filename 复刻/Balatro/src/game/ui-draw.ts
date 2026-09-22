@@ -349,6 +349,22 @@ export class UIBoxView {
                 else g.fillRect(0, 0, toPx(w), toPx(h));
             }
             this.drawOutline(g, el, w, h, sp, hover);
+            // `ui.lua:847`：单选组里被选中的那个（标签页按钮）头上一个上下跳的红三角（`get_chosen_triangle_from_rect`）
+            if (cfg.chosen) {
+                const bob = Math.min(0.6 * Math.sin(t * 9) * 2 + 0.2, 0);
+                const W = w * TILESIZE;
+                const tri = (ox: number, oy: number) => pts([
+                    { x: (W / 2 - 3 + ox) * U, y: (-8 + bob + oy) * U },
+                    { x: (W / 2 + ox) * U, y: (-2.2 + bob + oy) * U },
+                    { x: (W / 2 + 3 + ox) * U, y: (-8 + bob + oy) * U },
+                ]);
+                if (cfg.shadow && SHADOWS_ON) {
+                    g.fillStyle(0x000000, 0.3 * colour[3]);
+                    g.fillPoints(tri(-sp.x * parallax * 0.5, -sp.y * parallax * 0.5), true);
+                }
+                g.fillStyle(rgb(C.RED), 1);
+                g.fillPoints(tri(0, 0), true);
+            }
             return;
         }
 

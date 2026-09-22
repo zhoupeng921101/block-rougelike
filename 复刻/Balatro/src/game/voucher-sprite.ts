@@ -25,6 +25,8 @@ export class VoucherSprite {
         scene: Scene,
         readonly center: VoucherCenter,
         private readonly onClick: () => void,
+        /** 卡与阴影的基准深度（Run Info 的 Vouchers 页要压在 overlay 之上） */
+        depthBase?: { card: number; shadow: number },
     ) {
         const quad = {
             name: `voucher_${center.order}_${Math.random().toString(36).slice(2, 7)}`,
@@ -38,7 +40,7 @@ export class VoucherSprite {
             tilt: () => this.hoverTilt,
         };
         this.layers = new LayeredQuad(scene, quad, 2, { set: 'Voucher' });
-        this.placed = new PlacedLayers(scene, this.layers, quad, this.w / toPx(1), this.h / toPx(1));
+        this.placed = new PlacedLayers(scene, this.layers, quad, this.w / toPx(1), this.h / toPx(1), depthBase);
 
         makeClickable(this.shader, this.w, this.h, {
             onClick: () => this.onClick(),

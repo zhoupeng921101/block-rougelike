@@ -79,7 +79,7 @@ export function dynContainer(inner: UINodeDef[], horizontal: boolean, colourOver
 }
 
 /** `:1568`：「or」与标签、跳过按钮 */
-function createBlindTag(type: 'Small' | 'Big', tagKey: string): UINodeDef | null {
+function createBlindTag(type: 'Small' | 'Big', tagKey: string, runInfo = false): UINodeDef | null {
     const center = TAG_CENTERS[tagKey];
     if (!center) return null;
     const size = 0.8;
@@ -96,8 +96,12 @@ function createBlindTag(type: 'Small' | 'Big', tagKey: string): UINodeDef | null
         ] },
         { n: UIT.R, config: { id: `tag_${type}`, align: 'cm', r: 0.1, padding: 0.1, minw: 1, can_collide: true }, nodes: [
             { n: UIT.C, config: { id: 'tag_desc', align: 'cm', minh: 1 }, nodes: [tagUi] },
-            { n: UIT.C, config: { align: 'cm', colour: C.UI.BACKGROUND_INACTIVE, minh: 0.6, minw: 2, maxw: 2, padding: 0.07, r: 0.1, shadow: true, hover: true, one_press: true, button: 'skip_blind', func: 'hover_tag_proxy' }, nodes: [
+            !runInfo ? { n: UIT.C, config: { align: 'cm', colour: C.UI.BACKGROUND_INACTIVE, minh: 0.6, minw: 2, maxw: 2, padding: 0.07, r: 0.1, shadow: true, hover: true, one_press: true, button: 'skip_blind', func: 'hover_tag_proxy' }, nodes: [
                 { n: UIT.T, config: { text: loc('b_skip_blind'), scale: 0.4, colour: C.UI.TEXT_INACTIVE } },
+            ] }
+            // Run Info 里：不能点，换成「Skip Reward」
+            : { n: UIT.C, config: { align: 'cm', padding: 0.1, emboss: 0.05, colour: mixColours(C.BLUE, C.BLACK, 0.4), r: 0.1, maxw: 2, hover: true, func: 'hover_tag_proxy' }, nodes: [
+                { n: UIT.T, config: { text: loc('b_skip_reward'), scale: 0.35, colour: C.WHITE } },
             ] },
         ] },
     ] };
@@ -140,7 +144,7 @@ export function cardAlert(args: { text?: string; noBg?: boolean; bgCol?: Colour;
 }
 
 /** `:1592`（非 `run_info` 那一支） */
-export function createBlindChoice(type: BlindType, s: BlindSelectState, locBlindStates: Record<BlindType, string>, stake = 1): UINodeDef {
+export function createBlindChoice(type: BlindType, s: BlindSelectState, locBlindStates: Record<BlindType, string>, stake = 1, runInfo = false): UINodeDef {
     const key = s.choices[type];
     const center = BLIND_CENTERS[key];
     if (!center) throw new Error(`没有盲注 ${key}`);
@@ -148,8 +152,8 @@ export function createBlindChoice(type: BlindType, s: BlindSelectState, locBlind
     const stake_sprite = stakeSprite(stake, 0.5);
 
     let extras: UINodeDef | null = null;
-    if (type === 'Small' || type === 'Big') extras = createBlindTag(type, s.tags[type]);
-    else {
+    if (type === 'Small' || type === 'Big') extras = createBlindTag(type, s.tags[type], runInfo);
+    else if (!runInfo) {
         const dt1 = new DynaText({ string: [{ string: loc('ph_up_ante_1'), colour: C.FILTER }], colours: [C.BLACK], scale: 0.55, silent: true, shadow: true, bump: true, maxw: 3 });
         const dt2 = new DynaText({ string: [{ string: loc('ph_up_ante_2'), colour: C.WHITE }], colours: [C.GREEN], scale: 0.35, silent: true, shadow: true, maxw: 3 });
         const dt3 = new DynaText({ string: [{ string: loc('ph_up_ante_3'), colour: C.WHITE }], colours: [C.GREEN], scale: 0.35, silent: true, shadow: true, maxw: 3 });
@@ -168,14 +172,22 @@ export function createBlindChoice(type: BlindType, s: BlindSelectState, locBlind
     const blind_col = slotColour(s, type);
     const blind_amt = getBlindAmount(s.ante) * center.mult;
 
-    return { n: UIT.R, config: { id: type, align: 'tm', func: 'blind_choice_handler', minh: 10, ref_table: { deck: null as string | null }, r: 0.1, padding: 0.05 }, nodes: [
+    // Run Info 里顶上那格是状态牌（Current 红 / Defeated 灰 / Skipped 蓝 / Upcoming 橙），不是按钮
+    const state = s.states[type] === 'Select' ? 'Current' : s.states[type];
+    const runInfoColour = state === 'Defeated' ? C.GREY : state === 'Skipped' ? C.BLUE : state === 'Upcoming' ? C.ORANGE : state === 'Current' ? C.RED : C.GOLD;
+    const topButton: UINodeDef = !runInfo
+        // `G.F_MOBILE`：按钮 1.2 高、字号 0.65（本产物是移动版）
+        ? { n: UIT.R, config: { id: 'select_blind_button', align: 'cm', colour: C.ORANGE, minh: 1.2, minw: 2.7, maxw: 2.7, padding: 0.07, r: 0.1, shadow: true, hover: true, one_press: true, button: 'select_blind' }, nodes: [
+            { n: UIT.T, config: { ref_table: locBlindStates, ref_value: type, scale: 0.65, colour: C.UI.TEXT_LIGHT, shadow: true } },
+        ] }
+        // `localize(blind_state, 'blind_states')`：en-us 里与键同名
+        : { n: UIT.R, config: { id: 'select_blind_button', align: 'cm', colour: runInfoColour, minh: 0.6, minw: 2.7, padding: 0.07, r: 0.1, emboss: 0.08 }, nodes: [
+            { n: UIT.T, config: { text: state, scale: 0.45, colour: C.UI.TEXT_LIGHT, shadow: true } },
+        ] };
+
+    return { n: UIT.R, config: { id: type, align: 'tm', func: 'blind_choice_handler', minh: runInfo ? undefined : 10, ref_table: { deck: null as string | null, run_info: runInfo }, r: 0.1, padding: 0.05 }, nodes: [
         { n: UIT.R, config: { align: 'cm', colour: mixColours(C.BLACK, C.L_BLACK, 0.5), r: 0.1, outline: 1, outline_colour: C.L_BLACK }, nodes: [
-            { n: UIT.R, config: { align: 'cm', padding: 0.2 }, nodes: [
-                // `G.F_MOBILE`：按钮 1.2 高、字号 0.65（本产物是移动版）
-                { n: UIT.R, config: { id: 'select_blind_button', align: 'cm', colour: C.ORANGE, minh: 1.2, minw: 2.7, maxw: 2.7, padding: 0.07, r: 0.1, shadow: true, hover: true, one_press: true, button: 'select_blind' }, nodes: [
-                    { n: UIT.T, config: { ref_table: locBlindStates, ref_value: type, scale: 0.65, colour: C.UI.TEXT_LIGHT, shadow: true } },
-                ] },
-            ] },
+            { n: UIT.R, config: { align: 'cm', padding: 0.2 }, nodes: [topButton] },
             { n: UIT.R, config: { id: 'blind_name', align: 'cm', padding: 0.07 }, nodes: [
                 { n: UIT.R, config: { align: 'cm', r: 0.1, outline: 1, outline_colour: blind_col, colour: darken(blind_col, 0.3), minw: 2.9, emboss: 0.1, padding: 0.07, line_emboss: 1 }, nodes: [
                     { n: UIT.O, config: { object: new DynaText({ string: [loc_name], colours: [C.WHITE], shadow: true, float: true, scale: 0.45, maxw: 2.8 }) } },
@@ -242,6 +254,16 @@ export function createBlindPrompt(rerollBoss = false): UINodeDef {
 }
 
 /**
+ * Run Info 的 Blinds 页（`G.UIDEF.current_blinds`，`UI_definitions.lua:3266`）：三张 `run_info` 版的卡，各套一个黑描边
+ */
+export function currentBlinds(s: BlindSelectState, locBlindStates: Record<BlindType, string>): UINodeDef {
+    const col = (type: BlindType): UINodeDef => ({ n: UIT.C, config: { align: 'tm', padding: 0.1, outline: 2, r: 0.1, line_emboss: 0.2, outline_colour: C.BLACK }, nodes: [
+        createBlindChoice(type, s, locBlindStates, 1, true),
+    ] });
+    return { n: UIT.ROOT, config: { align: 'cm', colour: C.CLEAR, padding: 0.2 }, nodes: [col('Small'), col('Big'), col('Boss')] };
+}
+
+/**
  * `create_UIBox_blind_select` 的卡片部分与外层定义。三张卡的 UIBox 先建好（它们自己跑 `blind_choice_handler`），
  * 外层按 `G.hand.T.w` 撑宽。外层怎么挂由调用方给（`game.lua:3645`：`bmi` 对齐手牌区，offset 见那里）
  */
@@ -290,7 +312,8 @@ export function blindChoiceFuncs(s: BlindSelectState, opts: Partial<Record<Blind
         /** `button_callbacks.lua:2741`：轮到的卡亮起、上提 0.9；其余盖灰、上提 0.2，按钮失效 */
         blind_choice_handler: (e: UIElement) => {
             const id = e.config.id as BlindType;
-            const ref = e.config.ref_table as { deck: string | null };
+            const ref = e.config.ref_table as { deck: string | null; run_info?: boolean };
+            if (ref.run_info) return;
             const box = opts[id];
             if (!box) return;
             const onDeck = blindOnDeck(s);
