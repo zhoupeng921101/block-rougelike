@@ -286,9 +286,13 @@ export class RunScene extends Scene {
     /** 盲注选择界面上的「跳过盲注」（调试按钮；卡片上的 Skip Blind 接管之后只在标签开包时露出来） */
     private skipBlindBtn!: GameObjects.Text;
 
-    constructor() {
-        super('Run');
+    constructor(key = 'Run') {
+        super(key);
     }
+
+    /** 换局时交给下一个场景实例的东西（音乐接着放，不断） */
+    private static carry: { music: Music } | null = null;
+    private static serial = 0;
 
     private get round(): Round | null {
         return this.run.round;
@@ -366,7 +370,7 @@ export class RunScene extends Scene {
     /** 关包后粒子还在淡出（`booster_pack_sparkles` 没 `REMOVED`）：那一包的种类与到期时刻 */
     private packFade: { kind: string; until: number } | null = null;
 
-    create(): void {
+    create(data?: { wipe?: string }): void {
         const seed = new URLSearchParams(location.search).get('seed') ?? 'ALEEB';
 
         resetCardCounters();
@@ -405,7 +409,8 @@ export class RunScene extends Scene {
             hudBlindFuncs(this.hudBlindState),
         ), 41);
         this.deckSprite = new DeckSprite(this);
-        this.music = new Music(this);
+        this.music = RunScene.carry?.music.rebind(this) ?? new Music(this);
+        RunScene.carry = null;
         for (const key of [...MUSIC_KEYS, 'ambientOrgan1', 'ambientFire1', 'ambientFire2', 'ambientFire3']) this.load.audio(key, `/assets/sounds/${key}.ogg`);
         this.createFlames();
         this.load.start();
@@ -456,11 +461,9 @@ export class RunScene extends Scene {
         this.skipBlindBtn = this.makeButton(toPx(17.0), toPx(10.2), '跳过盲注', '#a07a2c', () => this.doSkipBlind());
 
         const params = new URLSearchParams(location.search);
-        // 前一页放完 `wipe_on` 跳过来的：接着放 `wipe_off`，参数随即从地址栏抹掉（刷新不重放）
-        const wipeKey = params.get('wipe');
+        // 上一个场景实例放完 `wipe_on` 换过来的：接着放 `wipe_off`
+        const wipeKey = data?.wipe;
         if (wipeKey) {
-            params.delete('wipe');
-            history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
             // 从主菜单进局：`G.C.BACKGROUND` 在主菜单是黑的，`start_run` 再缓到盲注色——方块的颜色跟着变
             if (params.has('seed')) {
                 const black = backgroundTarget({ new_colour: C.BLACK, contrast: 1 });
@@ -478,7 +481,10 @@ export class RunScene extends Scene {
         }
         this.setupCrt();
         this.applyRoomCamera();
-        this.scale.on('resize', () => this.applyRoomCamera());
+        const onResize = () => this.applyRoomCamera();
+        this.scale.on('resize', onResize);
+        // 换局时整个场景实例被拆掉：挂在全局 ScaleManager 上的监听要一起摘
+        this.events.once('destroy', () => this.scale.off('resize', onResize));
     }
 
     // ————————————————————————————————————————————————————————————————
@@ -3870,12 +3876,25 @@ ${String(e instanceof Error ? e.message : e)}`)
         });
     }
 
-    /** 换局 / 回主菜单：先放 `wipe_on`，0.7 秒（场景切换那一刻）整页跳转，新页接着放 `wipe_off` */
+    /**
+     * `delete_run` + `start_run` / `main_menu`：地址栏换成新局面（刷新仍能回到这里），拆掉这个场景实例、起一个新的。
+     * 新实例的字段全是新的（不用 `scene.restart`——那会复用同一个对象，上一局的状态全留着）；音乐交过去接着放
+     */
+    private swapScene(params: URLSearchParams, wipe: string): void {
+        history.replaceState(null, '', `${location.pathname}?${params.toString()}`);
+        saveSettings();
+        RunScene.carry = { music: this.music };
+        const game = this.game;
+        const next = new RunScene(`Run${++RunScene.serial}`);
+        game.scene.remove(this.scene.key);
+        game.scene.add(next.sys.settings.key, next, true, { wipe });
+    }
+
+    /** 换局 / 回主菜单：先放 `wipe_on`，0.7 秒（场景切换那一刻）换场景实例，新实例接着放 `wipe_off` */
     private wipeTo(params: URLSearchParams): void {
         if (this.wipe) return;
         const key = randomCardKey();
-        params.set('wipe', key);
-        this.startWipe('on', key, () => { location.search = params.toString(); });
+        this.startWipe('on', key, () => this.swapScene(params, key));
     }
 
     /** 主菜单这一帧：房间的余振、旋涡与标志、overlay、提示框、音乐（`music1`，没有局就没有火与管风琴） */
@@ -4298,7 +4317,10 @@ ${String(e instanceof Error ? e.message : e)}`)
         // 而 Phaser 按 depth 排序——默认 depth 0 会与卡牌底板同级，
         // 于是正面层（depth 1）排在它之后、不被捕获，CRT 下卡牌就只剩白底。
         // 放在所有游戏内容之上、CRT 之下。
-        this.add.captureFrame('scene').setDepth(500);
+        // 纹理名按场景实例区分：换局时新旧两个实例会短暂并存，旧的那张随实例一起拆掉
+        const frameKey = `scene_${this.sys.settings.key}`;
+        this.add.captureFrame(frameKey).setDepth(500);
+        this.events.once('destroy', () => { if (this.textures.exists(frameKey)) this.textures.remove(frameKey); });
 
         const crt = this.add.shader(
             {
@@ -4320,7 +4342,7 @@ ${String(e instanceof Error ? e.message : e)}`)
                 },
             },
             0, 0, 1, 1,
-            ['scene'],
+            [frameKey],
         );
         crt.setDepth(1000);
         this.fullscreenQuads.push(crt);

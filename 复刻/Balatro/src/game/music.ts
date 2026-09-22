@@ -68,7 +68,14 @@ export class Music {
     private pitchMod = 1;
     private lastT = -1;
 
-    constructor(private readonly scene: Scene) {}
+    constructor(private scene: Scene) {}
+
+    /** 换局时交给新的场景实例：音轨是全局 SoundManager 上的，接着放 */
+    rebind(scene: Scene): this {
+        this.scene = scene;
+        this.lastT = -1;
+        return this;
+    }
 
     /** 素材到齐了才能起（音乐 14M，在场景起来之后才加载） */
     get ready(): boolean {
