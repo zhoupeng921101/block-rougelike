@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3B 审计问卷</title>
+<style>
+/* 布局：左侧 8 列方格进度（每题一格，答完涂黑，像往 8×8 盘面里落子）+ 右侧单列题目；底部常驻提交条。
+   不加载任何外部资源，双击打开、断网也能用。 */
+:root{
+  --bg:#ECEFF3; --surface:#FFFFFF; --ink:#151A24; --muted:#586173; --line:#D3D9E2;
+  --accent:#2A56D6; --accent-soft:#E3EAFB; --accent-ink:#FFFFFF;
+  --cell:#151A24; --cell-empty:#DCE1E9;
+  --sev-block:#B8281D; --sev-high:#BF5A0B; --sev-mid:#876600; --sev-low:#667083;
+  --ok:#1D7448; --err:#B42318;
+  --f-display:"Source Han Serif SC","Noto Serif SC","Songti SC","STZhongsong","SimSun",serif;
+  --f-body:"PingFang SC","Microsoft YaHei","Source Han Sans SC","Noto Sans SC",system-ui,sans-serif;
+  --f-mono:"Cascadia Mono","JetBrains Mono",Consolas,ui-monospace,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0E1219; --surface:#161B25; --ink:#E5E8EE; --muted:#9AA3B4; --line:#2B3241;
+    --accent:#7FA0FF; --accent-soft:#1D2742; --accent-ink:#0E1219;
+    --cell:#E5E8EE; --cell-empty:#252C39;
+    --sev-block:#FF7D71; --sev-high:#FFA35C; --sev-mid:#E3BE4C; --sev-low:#9AA3B4;
+    --ok:#5BD39A; --err:#FF8A80;
+    color-scheme:dark;
+  }
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.wrap{max-width:1160px;margin:0 auto;padding:36px 16px 150px}
+
+.top{display:grid;gap:14px;margin-bottom:28px}
+.eyebrow{margin:0;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--muted)}
+h1{margin:0;font-family:var(--f-display);font-weight:900;font-size:clamp(30px, 4.4vw, 42px);line-height:1.2;text-wrap:balance}
+.lede{margin:0;max-width:64ch;color:var(--muted)}
+.lede b{color:var(--ink);font-weight:500}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-top:6px}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 14px;margin-bottom:-1px;cursor:pointer;color:var(--muted);font-weight:500}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.tabs .n{font-family:var(--f-mono);font-size:12px;margin-left:4px}
+
+.layout{display:grid;grid-template-columns:232px minmax(0,1fr);gap:36px;align-items:start}
+.side{position:sticky;top:20px;display:grid;gap:18px}
+.gsec{display:grid;gap:6px}
+.gsec-h{display:flex;justify-content:space-between;align-items:baseline;font-size:13px}
+.gsec-h a{color:var(--ink);text-decoration:none;font-weight:500}
+.gsec-h a:hover{text-decoration:underline}
+.gsec-h span{font-family:var(--f-mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.board{display:grid;grid-template-columns:repeat(8, 1fr);gap:3px}
+.cell{aspect-ratio:1;max-width:100%;padding:0;border:1px solid var(--line);background:var(--cell-empty);border-radius:2px;cursor:pointer}
+.cell.done{background:var(--cell);border-color:var(--cell)}
+.cell.defer{background:repeating-linear-gradient(135deg, var(--cell) 0 1.5px, transparent 1.5px 5px);border-color:var(--cell)}
+.legend{display:flex;flex-wrap:wrap;gap:10px 14px;margin:0;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:11px;height:11px;margin-right:5px;vertical-align:-1px;border:1px solid var(--line);background:var(--cell-empty);border-radius:2px}
+.legend i.done{background:var(--cell);border-color:var(--cell)}
+.legend i.defer{background:repeating-linear-gradient(135deg, var(--cell) 0 1.5px, transparent 1.5px 4px);border-color:var(--cell)}
+
+@media (max-width: 860px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:24px}
+  .side{position:static;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr))}
+  .legend{grid-column:1 / -1}
+}
+
+.sec{display:grid;gap:14px;margin-bottom:40px}
+.sec-head{display:flex;align-items:baseline;gap:12px;scroll-margin-top:20px}
+.sec-id{font-family:var(--f-mono);font-weight:700;font-size:14px;color:var(--muted)}
+.sec h2{margin:0;font-family:var(--f-display);font-weight:700;font-size:24px;line-height:1.3}
+.sec-note{margin:-6px 0 4px;color:var(--muted);max-width:64ch}
+
+.q{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px 20px 16px;display:grid;gap:10px;scroll-margin-top:20px;min-width:0}
+.q.is-done{border-color:color-mix(in srgb, var(--ink) 28%, var(--line))}
+.q-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.qid{font-family:var(--f-mono);font-weight:700;font-size:13px}
+.ref{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.sev{font-size:12px;line-height:1;padding:4px 7px;border:1px solid currentColor;border-radius:3px}
+.sev-block{color:var(--sev-block)} .sev-high{color:var(--sev-high)} .sev-mid{color:var(--sev-mid)} .sev-low{color:var(--sev-low)}
+.defer{margin-left:auto;font-size:12.5px;padding:4px 10px;border:1px dashed var(--line);border-radius:3px;background:none;color:var(--muted);cursor:pointer}
+.defer[aria-pressed="true"]{border-style:solid;border-color:var(--ink);color:var(--ink);background:repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 14%, transparent) 0 1.5px, transparent 1.5px 6px)}
+.q h3{margin:0;font-size:17px;font-weight:700;line-height:1.45;text-wrap:balance}
+.q h3 .hint{font-size:12.5px;font-weight:400;color:var(--muted);margin-left:8px}
+.ctx{margin:0;color:var(--muted);font-size:14px;max-width:70ch}
+
+.who-card{border-color:var(--ink)}
+.who-card label{font-weight:700;font-size:17px}
+.who-card input{width:100%;max-width:320px;padding:9px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+.who-card input:focus{border-color:var(--accent)}
+.who-card.missing input{border-color:var(--err)}
+
+.opts{display:grid;gap:8px;margin-top:4px}
+.opt{display:grid;grid-template-columns:18px minmax(0,1fr);gap:12px;align-items:start;padding:11px 14px;border:1px solid var(--line);border-radius:4px;cursor:pointer;background:var(--surface)}
+.opt:hover{border-color:color-mix(in srgb, var(--ink) 35%, var(--line))}
+.opt.on{border-color:var(--accent);background:var(--accent-soft)}
+.opt input{appearance:none;-webkit-appearance:none;width:18px;height:18px;margin:3px 0 0;border:2px solid var(--muted);border-radius:2px;background:var(--surface);cursor:pointer}
+.opt input[type="radio"]:checked{border-color:var(--cell);background:var(--cell);box-shadow:inset 0 0 0 3px var(--surface)}
+.opt input[type="checkbox"]:checked{border-color:var(--cell);background:var(--cell)}
+.opt-txt{display:grid;gap:2px;min-width:0}
+.opt-txt .t{font-weight:500}
+.opt-txt .d{font-size:13.5px;color:var(--muted)}
+.opt-other{display:grid;gap:8px}
+.other-in{width:100%;padding:9px 12px;border:1px solid var(--accent);border-radius:4px;background:var(--surface)}
+
+.glyphs{display:flex;flex-wrap:wrap;gap:10px 14px;margin-top:6px}
+.glyph{display:grid;justify-items:center;gap:3px;font-size:11.5px;color:var(--muted)}
+.glyph svg{display:block;color:var(--cell);width:auto;max-width:100%}
+
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg .opt{grid-template-columns:18px auto;padding:7px 12px;align-items:center}
+.seg .opt input{margin:0}
+
+.note summary{cursor:pointer;font-size:13px;color:var(--muted);width:max-content}
+.note summary:hover{color:var(--ink)}
+.note[open] summary{margin-bottom:6px}
+textarea{width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);resize:vertical;min-height:64px;line-height:1.6}
+textarea:focus{border-color:var(--accent)}
+
+.endnote{color:var(--muted);font-size:14px;margin:0}
+
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom, 0px))}
+.bar-in{max-width:1128px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px}
+.bar-info{display:grid;gap:2px;min-width:0;flex:1 1 280px}
+#prog{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums}
+#status{font-size:13.5px;color:var(--muted);overflow-wrap:anywhere}
+#status.ok{color:var(--ok)} #status.err{color:var(--err)}
+.bar-act{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13.5px}
+.btn{padding:9px 18px;border-radius:4px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);padding-inline:26px}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+
+/* 汇总 */
+.sum{display:grid;gap:14px}
+.drop{background:var(--surface);border:1.5px dashed var(--line);border-radius:6px;padding:26px 24px;display:grid;gap:6px}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop p{margin:0;color:var(--muted);max-width:66ch}
+.drop .drop-t{color:var(--ink);font-weight:700;font-size:17px}
+.linkbtn{color:var(--accent);text-decoration:underline;cursor:pointer}
+.errs{margin:0;font-size:13.5px;color:var(--err)}
+.sum-top{display:grid;gap:10px;margin-bottom:8px}
+.who{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;padding:5px 10px;border:1px solid var(--line);border-radius:3px;background:var(--surface);font-variant-numeric:tabular-nums}
+.chip b{font-weight:500}
+.sum-act{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.sum-sec{margin:22px 0 2px;font-family:var(--f-display);font-weight:700;font-size:20px}
+.sq{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 20px;display:grid;gap:10px;min-width:0}
+.sq h3{margin:0;font-size:16px;font-weight:700;line-height:1.45}
+.tally{display:grid;gap:8px}
+.tl{display:grid;grid-template-columns:minmax(0,1fr) minmax(60px,140px) 2.2em;gap:4px 12px;align-items:center;font-size:14px}
+.tl-track{height:8px;background:var(--cell-empty);border-radius:1px;overflow:hidden}
+.tl-fill{display:block;height:100%;background:var(--cell)}
+.tl-n{font-family:var(--f-mono);font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
+.tl-who{grid-column:1 / -1;font-size:12.5px;color:var(--muted);margin-top:-4px}
+.sub{margin:4px 0 0;font-size:12.5px;color:var(--muted)}
+.quotes{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.quotes li{font-size:14px;padding-left:12px;border-left:2px solid var(--line);white-space:pre-wrap;overflow-wrap:anywhere}
+.quotes li b{font-weight:500;margin-right:6px}
+.defer-line{margin:0;font-size:13px;color:var(--muted)}
+.muted{color:var(--muted);margin:0;font-size:14px}
+
+@media (prefers-reduced-motion: no-preference){
+  .opt,.cell,.btn,.defer,.drop{transition:border-color .12s, background-color .12s}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">代号：3B · 核心规则审计 · 对照 2026-10-22 起点版</p>
+    <h1>3B 审计问卷</h1>
+    <p class="lede">《3B审计.md》只列问题、不做裁定。这里把要拍板的地方拆成 <b id="qcount">57</b> 道题：A 组是挡住后续设计的根问题，B 组是结构问题，C 组确认一批和原作对不上的地方是有意改动还是误译。拿不准的标「待讨论」，想法不在选项里就选「其他」自己写。答案会自动存在这个浏览器里，关掉再开还在。答完点底部「提交」，会下载一份答卷文件，把它发给发问卷的人。</p>
+    <div class="tabs" role="tablist" aria-label="视图">
+      <button type="button" role="tab" id="tab-fill" aria-selected="true" aria-controls="panel-fill">填写</button>
+      <button type="button" role="tab" id="tab-sum" aria-selected="false" aria-controls="panel-sum">汇总<span class="n" id="sum-n"></span></button>
+    </div>
+  </header>
+
+  <div id="panel-fill" role="tabpanel" aria-labelledby="tab-fill" class="layout">
+    <aside class="side" id="side" aria-label="答题进度"></aside>
+    <main id="form"></main>
+  </div>
+
+  <section id="panel-sum" role="tabpanel" aria-labelledby="tab-sum" class="sum" hidden>
+    <div class="drop" id="drop">
+      <p class="drop-t">把答卷文件拖到这里</p>
+      <p>每位策划提交后会下载一个「3B审计答卷-名字-时间.md」。收齐后一起拖进来，或者<label class="linkbtn" for="files">选择文件</label>。可以分几次加；同一个名字有多份时只算最新那份。导入的答卷只存在这个浏览器里。</p>
+      <input type="file" id="files" multiple accept=".md,.json,.txt" hidden>
+      <p class="errs" id="sum-errs" hidden></p>
+    </div>
+    <div id="sum-body"></div>
+  </section>
+</div>
+
+<div class="bar" id="bar">
+  <div class="bar-in">
+    <div class="bar-info">
+      <span id="prog"></span>
+      <span id="status" aria-live="polite"></span>
+    </div>
+    <div class="bar-act">
+      <div class="confirm" id="confirm" hidden>
+        <span id="confirm-msg"></span>
+        <button type="button" class="btn" id="go-empty">去第一道没答的</button>
+        <button type="button" class="btn" id="force">仍然提交</button>
+      </div>
+      <button type="button" class="btn" id="copy" hidden>复制答卷文本</button>
+      <button type="button" class="btn primary" id="submit">提交</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const VERSION = "2026-10-22";
+const KIND = "3b-audit-answer";
+const OTHER = "__other";
+const DRAFT_KEY = "3b-audit-draft-v1";
+const IMPORT_KEY = "3b-audit-imported-v1";
+const SEV = { "阻塞": "block", "高": "high", "中": "mid", "低": "low" };
+const TRIAGE = [["fix", "误译，改回原作意思"], ["keep", "有意改动"], ["redo", "整条重做"]];
+
+const SHAPES = {
+  tetro: [["I", [[0,0],[1,0],[2,0],[3,0]]], ["O", [[0,0],[1,0],[0,1],[1,1]]], ["T", [[0,0],[1,0],[2,0],[1,1]]], ["S", [[1,0],[2,0],[0,1],[1,1]]], ["Z", [[0,0],[1,0],[1,1],[2,1]]], ["J", [[1,0],[1,1],[1,2],[0,2]]], ["L", [[0,0],[0,1],[0,2],[1,2]]]],
+  text: [["单格", [[0,0]]], ["双格", [[0,0],[1,0]]], ["L 拐角", [[0,0],[0,1],[1,1]]], ["田字", [[0,0],[1,0],[0,1],[1,1]]], ["S/Z", [[1,0],[2,0],[0,1],[1,1]]], ["直线", [[0,0],[1,0],[2,0],[3,0]]]]
+};
+
+const SECTIONS = [
+  { id: "A", title: "根问题", note: "审计认为这六组不定下来，后面没法往下设计；清单里大部分逐条问题都是它们的下游。", items: [
+    { id: "A1", ref: "R1", sev: "阻塞", title: "「回合」指什么？", ctx: "这个词在 48 条基因里出现，至少有两种意思：§2.2 和 #24、#29 指一组方块队列；#1「每回合第 8 次放置」、#21「每回合结束得 $4」在原作里都按盲注计。", type: "one", opts: [
+      ["queue", "一组方块队列", "发一组、放完再发下一组。按盲注计的基因要改写"],
+      ["blind", "一个盲注", "一关就是一回合。§2.2 里的「回合」要换个词"],
+      ["split", "拆成两个词", "例如「轮」指一组队列、「关」指一个盲注，清单统一重写"] ] },
+    { id: "A2", ref: "R1", sev: "阻塞", title: "一个盲注给玩家多少预算？", ctx: "现在有三种口径：§2.4 是方块用完仍未达标就失败；#69、#123 是放置次数；8.6 草图是「剩余出牌次数（每次 $1）」。", type: "one", opts: [
+      ["blocks", "方块数", "方块库抽完仍未达标就失败（§2.4）"],
+      ["placements", "放置次数", "每盲注最多放 N 块（#69、#123）"],
+      ["rounds", "队列组数", "每盲注最多发 N 组，相当于 Balatro 的出牌次数（8.6 草图）"],
+      ["none", "不设预算", "网格不满就能一直放，失败只看空间"] ] },
+    { id: "A3", ref: "R1", sev: "阻塞", title: "待放置区一次给几块、怎么补？", ctx: "8.5 草图最多 5 块，Block 类惯例是 3 块。#32、#123、#124 还会再加上限，+5 之后是 10 块，界面放不下。", type: "one", opts: [
+      ["g3", "一组 3 块", "放完一组再发下一组（Block 式）"],
+      ["g5", "一组 5 块", "放完一组再发下一组（8.5 草图）"],
+      ["hand", "手牌式", "上限 N 块，放一块补一块（Balatro 式）"] ] },
+    { id: "A4", ref: "R1", sev: "阻塞", title: "有没有弃置？", ctx: "16 条基因引用弃置，规则里没有这个机制；8.5 草图上有删除区，垃圾桶上带计数。", type: "one", opts: [
+      ["blind", "有，每盲注固定次数", "和 Balatro 的弃牌次数一样"],
+      ["round", "有，每组队列固定次数"],
+      ["no", "没有", "16 条依赖弃置的基因改写或删除"] ] },
+    { id: "A5", ref: "R1", sev: "阻塞", title: "一次弃置能弃几块？", ctx: "#18 要一次弃 3 块，#122 写「首弃只弃 1 块」；8.5 界面是逐块拖进删除区。", type: "one", opts: [
+      ["one", "一次 1 块", "#18、#122 按单块重写"],
+      ["many", "一次可选多块", "需要多选交互"],
+      ["na", "不适用", "上一题选了没有弃置"] ] },
+    { id: "A6", ref: "R2", sev: "阻塞", title: "网格在盲注之间保留还是重置？", ctx: "两头都有暗示：§7.1「填塞盲开局自带方块」和 8.5 草图的预置格，倾向每盲注开新盘；#115、#131、#146 的永久塌陷、永久黑块，倾向一直保留。这一题决定空间压力是局内累积还是每盲注清零。", type: "one", opts: [
+      ["reset", "每个盲注重新开盘", "可带盲注自己的预置块；「永久」类代价改成只管本盲注"],
+      ["keep", "保留到本局结束", "空间压力一路累积，死格的分量极重"],
+      ["ante", "每轮清一次", "小盲、大盲、Boss 打完一轮再清空，轮内保留"] ] },
+    { id: "A7", ref: "R3", sev: "阻塞", title: "盲注结束后，用过的方块回不回方块库？", ctx: "方块放进网格后会被消掉一部分，剩下的格子留在网格里。Balatro 能做牌组构筑，前提是每个盲注把全部牌洗回、强化永久留在牌上。这一题不定，改造、特殊方块和牌库规划都没有落点。", type: "one", opts: [
+      ["whole", "整块洗回", "不管网格里还剩几格，下一盲注整块回库，强化跟着块走"],
+      ["consume", "不回，放下即消耗", "方块库越用越少，靠商店和基因补充"],
+      ["pool", "没有回库这回事", "方块库是无限加权池，见 A14"] ] },
+    { id: "A8", ref: "R3", sev: "阻塞", title: "强化挂在块上还是格上？", ctx: "改造和特殊方块的附魔挂在哪，决定了一块被消掉一部分之后，强化还在不在。", type: "one", opts: [
+      ["block", "挂在块上", "整块一个强化，该块任一格被消就触发"],
+      ["cell", "挂在格上", "每格单独带强化，只有被消的那格触发"],
+      ["shape", "挂在形状上", "强化的是某种形状的全部块"] ] },
+    { id: "A9", ref: "R3", sev: "阻塞", title: "「消除 1 块 L 块」怎么算？", ctx: "被消的一条线常由多次放置的残块拼成。「每消除 1 块 X 块」这种写法有 20 条基因在用。", type: "one", opts: [
+      ["any", "含任意一格就算 1 块", "本次消除里只要有该块的格子"],
+      ["all", "剩下的格全被消才算", "该块残留在网格里的格子，本次全部被消"],
+      ["cell", "按格算", "每消 1 格算 1 次"] ] },
+    { id: "A10", ref: "R4", sev: "阻塞", title: "形状集合以哪个为准？", ctx: "§2.1 文字是单格、双格长条、L 拐角、田字、S/Z、直线；配图是七种四格骨牌。图里没有单格和双格，文字里没有 T 和 J；#38 说 L 是 3 格，配图里的 L 是 4 格。", type: "one", glyphs: { tetro: SHAPES.tetro, text: SHAPES.text }, opts: [
+      ["tetro", "配图：七种四格骨牌", "全是 4 格，按格数分奇偶的基因全部失效"],
+      ["text", "文字：单格到直线，L 为 3 格", "配图要重画"],
+      ["mixed", "合并：1～5 格都有，含 T 和 J", "在备注里列出完整清单"] ] },
+    { id: "A11", ref: "R4", sev: "阻塞", title: "花色类协同用什么承载？", ctx: "清单把扑克的花色、点数、人头全压到了「形状」上。红桃（圆核）和黑桃（尖棱）都映射到单格，区别只在核的纹样；长条、S/Z、直线、T 没有花色，进不了任何花色流派。", type: "one", opts: [
+      ["axis", "单独一条颜色或材质轴", "和形状互相独立，任何形状都可以是任何颜色"],
+      ["shape", "形状就是花色", "维持现状，给每种形状都补一个花色"],
+      ["none", "不要花色类协同", "相关基因删除，或改写成按形状"] ] },
+    { id: "A12", ref: "R4", sev: "阻塞", title: "方块要不要点数？", ctx: "「序数」全文没定义，但 #17、#75、#80、#86、#110、#112、#119 依赖它；§3.1 的「被消除方块基础值」是不是点数也没说。", type: "one", opts: [
+      ["yes", "要", "每块带一个数值，同时就是方块基础值"],
+      ["cells", "用格数代替", "只有 1～5 几档，奇偶、斐波那契类条件按格数判"],
+      ["no", "不要", "7 条基因改写或删除"] ] },
+    { id: "A13", ref: "R4", sev: "阻塞", title: "人头牌（J、Q、K）怎么处理？", ctx: "L 拐角同时被当成梅花、人头、J、Q、K 五样东西，梅花流和人头流在方块上完全重合。", type: "one", opts: [
+      ["tag", "改成独立标签", "例如「冠饰」，任何形状都能带"],
+      ["merge", "L 块就是人头，J、Q、K 合并", "不再区分三种人头"],
+      ["drop", "取消人头概念", "约 20 条相关基因改写"] ] },
+    { id: "A14", ref: "R5", sev: "阻塞", title: "方块库是有限牌组还是加权池？", ctx: "§5.1 写每种形状实际多少张（有限牌组），§5.2 写抽取权重纯随机（加权池），12 条基因写「储备库 52 枚」，8.5 草图是 7 种 × 5 块。参照：Balatro 1.0.1o 是 52 张有限牌组、每盲注洗回；Block 1.3.28 是按分数档切换的加权池，17 档 × 31 种形状。", type: "one", opts: [
+      ["deck", "有限牌组", "每种形状具体多少块；「瘦身」「注入」「库中剩 N 块」都成立"],
+      ["pool", "加权池", "无限抽取，只调权重；「库中剩 N 块」类基因失效"],
+      ["hybrid", "混合", "有限牌组，抽空后按权重补"] ] },
+    { id: "A15", ref: "R5", sev: "阻塞", title: "发牌参不参照棋盘？", ctx: "§5.2 标题「好用优先抽取」和正文「纯随机」矛盾。方块游戏有一种 Balatro 没有的失败：一组方块全都放不下。", type: "one", opts: [
+      ["random", "纯随机", "死局算运气，靠生存工具兜底（见 B1）"],
+      ["floor", "随机加保底", "每组至少有一块放得下"],
+      ["adaptive", "参照棋盘调度", "Block 的做法，这层干预玩家看不见"] ] },
+    { id: "A16", ref: "R6", sev: "阻塞", title: "网格边长 N 定多少？", ctx: "草图是 8×8。N≥5 时「≥5 格连续直线」恒成立，因为整行本来就是 N 格。", type: "one", opts: [
+      ["8", "8×8"], ["9", "9×9"], ["10", "10×10"],
+      ["vary", "按关卡变化", "在备注写范围"] ] },
+    { id: "A17", ref: "R6", sev: "阻塞", title: "消除类型按什么定义？", ctx: "§3.3 写 4 种，科技表 12 种，基因里还有「2 组双线」「三线同消」等说法。网格消除其实只有四个维度：完成几行（r）、几列（c）、是否同形态、是否清屏。十字只要 r≥1 且 c≥1 就成立。", type: "one", opts: [
+      ["native", "按网格维度重建", "由 r、c、同色、清屏推出一张新类型表"],
+      ["keep12", "保留现有 12 种", "补判定函数、优先级和每种的基础值"],
+      ["lines", "只按线数分档", "1 线、2 线、3 线……再加清屏，不分行列和十字"] ] },
+    { id: "A18", ref: "R6", sev: "阻塞", title: "一次消除同时满足几种类型时怎么计？", ctx: "现在没有优先级。比如一行一列同时完成，既是双线也是十字。", type: "one", opts: [
+      ["top", "只取最高的一种", "和 Balatro 的牌型一样，一次只算一种"],
+      ["stack", "全部叠加"],
+      ["contains", "底注取最高一种，「含 X」类基因按包含关系各自触发", "Balatro「含对子」的语义"] ] },
+    { id: "A19", ref: "R6", sev: "阻塞", title: "下面这几种类型，哪些直接删掉？", ctx: "「连续直线 ≥5 格」在 N≥5 时恒成立；「拐角双线」在只消满行满列的规则下写不出判定；两种清屏是同花顺、五条的硬译。没勾的表示改写后保留，都不删就勾最后一项。", type: "many", other: false, opts: [
+      ["straight", "连续直线 ≥5 格", "折轨科技；#10、#13、#46 等 7 条基因"],
+      ["corner", "拐角双线", "矢列科技"],
+      ["clear", "清屏（同形态连续直线型）", "湮域科技"],
+      ["fullclear", "全清屏（同形态五线型）", "归寂科技"],
+      ["none", "都不删", "全部改写后保留"] ] }
+  ]},
+  { id: "B", title: "结构问题", note: "不挡着往下写，但会让一批内容失效或无法实现。", items: [
+    { id: "B1", ref: "§2.1", sev: "高", title: "给玩家哪些看得见的生存工具？", ctx: "§7.2 说空间是主约束，网格满了就输，但构筑几乎全在作用于分数。玩家最常见的死因构筑帮不上，死亡会被归到发牌运气上。", type: "many", opts: [
+      ["discard", "弃置"], ["hold", "暂存一块"], ["rotate", "旋转"], ["preview", "预览下一组"],
+      ["clear", "清格道具", "例如垂湮改造"] ] },
+    { id: "B2", ref: "§2.2", sev: "高", title: "多久结算一次分数？", ctx: "Balatro 一个盲注大约结算 4 次（每手一次）；3B 每次消除结算一次，一个盲注可能几十次。按次数计的基因价值会成倍放大，目标分曲线不能照搬，演出时长也会成问题。", type: "one", opts: [
+      ["clear", "每次消除结算一次", "目标分曲线重新定标"],
+      ["round", "一组放完合并结算一次", "更接近 Balatro 的「一手」"] ] },
+    { id: "B3", ref: "§2.2", sev: "高", title: "行列交叉的那一格算几次？", ctx: "改造 #4「可同时计入 2 条线」暗示默认只算一次。格子按什么顺序计分、重触发作用在哪些格上，也跟着这一题。", type: "one", opts: [
+      ["once", "算一次"], ["twice", "每条线各算一次"] ] },
+    { id: "B4", ref: "§2.2", sev: "高", title: "基因按什么顺序结算，能不能换位？", ctx: "#73 血祭（右侧）、#129 拓印（右侧）、#130 思潮（最左）都依赖相对位置。", type: "one", opts: [
+      ["lr", "按槽位从左到右，可拖动换位", "Balatro 的做法"],
+      ["fixed", "固定顺序，不能换位", "相对位置类基因要改写"] ] },
+    { id: "B5", ref: "§2.3", sev: "高", title: "「代价」列怎么配？", ctx: "#1–#30 多是在复述触发条件，#31–#60 几乎全是「无直接负面」，#97–#150 集中写「本盲注目标分 +X%」。×2～×4 的收益配 +5% 目标分，等于没有代价。", type: "one", opts: [
+      ["power", "按强度重配", "强效果必须有真实负面，弱效果可以没有"],
+      ["slot", "代价就是占槽", "代价列只写真实负面，删掉机会成本类描述"],
+      ["keep", "维持现状"] ] },
+    { id: "B6", ref: "§2.3", sev: "高", title: "「本盲注目标分 +X%」指什么？", ctx: "多个基因的 +X% 叠起来，又是一笔线性税。", type: "one", opts: [
+      ["once", "只算拿到它的那个盲注"],
+      ["each", "持有期间每个盲注都算"],
+      ["perm", "永久累积，卖掉也不退"] ] },
+    { id: "B7", ref: "§2.3", sev: "高", title: "永久死格在消除判定里算什么？", ctx: "石核、钢铁（不可消除），黑块、塌陷格（不可放置）。如果这种格子让所在行列再也凑不满，一格就堵死一行加一列，8×8 里是 16 条线中的 2 条。", type: "one", opts: [
+      ["filled", "算「已填」", "所在行列照样能凑满消除，死格本身留下"],
+      ["hole", "算「空洞」", "所在行列永远凑不满"],
+      ["drop", "取消这类代价"] ] },
+    { id: "B8", ref: "§2.3", sev: "高", title: "两套版本系统留哪套？", ctx: "§4.1 的镀金是正面与负面同时翻倍；改造 #11 是闪箔、镭射、多彩，照搬 Balatro。「镀金」还被 #74 当成蜡封用。", type: "one", opts: [
+      ["gild", "只留镀金", "正负同时翻倍"],
+      ["foil", "只留闪箔、镭射、多彩", "可以再加负片，用来扩槽"],
+      ["both", "两套都要", "改名区分"] ] },
+    { id: "B9", ref: "§2.4", sev: "中", title: "关卡与元结构怎么叠？", ctx: "§2.3 一段话里有两套：「与小丑牌一致的轮次结构」和「地图参考 Bad North，选关解锁」；§8 又是星系、章节、关卡，外加 3 种难度。", type: "one", opts: [
+      ["nested", "星系 → 章节 → 关卡", "每关是小盲、大盲、Boss 三连"],
+      ["linear", "只用 Balatro 式线性轮次", "去掉地图"],
+      ["map", "只用地图选关", "每个节点是一个盲注"] ] },
+    { id: "B10", ref: "§2.4", sev: "中", title: "要不要跳过盲注？", ctx: "地图草图上有「跳过：下一个商店科技免费并变为彩色」，这是 Balatro 的标签；#120 也依赖跳过。", type: "one", opts: [
+      ["yes", "要", "跳过换标签奖励"],
+      ["no", "不要", "#120 和草图上的跳过奖励删掉"] ] },
+    { id: "B11", ref: "§2.5", sev: "中", title: "金钱从哪来？", ctx: "规则正文一处没写，只在基因和 8.6 草图上零星出现。", type: "many", opts: [
+      ["blind", "盲注通关奖励"],
+      ["left", "剩余次数奖励", "8.6 草图上的「每次 $1」"],
+      ["interest", "利息", "原作每 $5 得 $1，存款按 $25 封顶"] ] },
+    { id: "B12", ref: "§2.5", sev: "中", title: "商店卖什么？", ctx: "商店规则、刷新费、补给包都没定义；草图里有疑似优惠券的位置。#7、#11、#81、#111 都在改刷新费。", type: "many", opts: [
+      ["gene", "基因"], ["tech", "科技"], ["mod", "改造"], ["pack", "补给包"],
+      ["voucher", "优惠券", "永久改底层参数"],
+      ["block", "方块", "直接买进方块库"] ] },
+    { id: "B13", ref: "§2.5", sev: "中", title: "传说基因从哪拿？", ctx: "3B 标价 $20，等于默认进商店。原作的传说小丑不进商店，只能用幽灵牌「灵魂」拿到；3B 没有幻灵清单。", type: "one", opts: [
+      ["shop", "进商店"],
+      ["special", "不进商店，走特殊途径", "要补幻灵或等价物"] ] },
+    { id: "B14", ref: "§2.6", sev: "中", title: "「连消」指什么？", ctx: "§6「连消叠倍流」靠的是连击和断连击，规则里没有连击；清单里的「连消流」（21 条）指的是多线同消。连击是 Block 的核心奖励之一。", type: "one", opts: [
+      ["combo", "连击", "连续几次放置都有消除"],
+      ["multi", "多线同消"],
+      ["both", "两样都要", "分开命名"] ] },
+    { id: "B15", ref: "§2.6", sev: "中", title: "基因槽能不能扩？", ctx: "现在固定 6 个，没有扩槽手段；原作靠负片版本扩槽。", type: "one", opts: [
+      ["fixed", "固定 6 个"],
+      ["grow", "6 个起，可以扩", "在备注写扩槽手段"] ] },
+    { id: "B16", ref: "§2.6", sev: "中", title: "道具栏放几个消耗品？", ctx: "容量没定义，原作默认 2 个。", type: "one", opts: [
+      ["2", "2 个"], ["3", "3 个"] ] },
+    { id: "B17", ref: "§2.7", sev: "低", title: "四张 Balatro 原作截图怎么处理？", ctx: "8.1、8.2 两张、8.7 章节结算是原作截图改字或打码，画面里能看到 1.0.1o-FULL、白色赌注、魔术牌组和扑克牌面。只能作内部示意，不能进任何对外材料。", type: "one", opts: [
+      ["redraw", "换成自绘线框"],
+      ["internal", "保留，只在内部用"] ] },
+    { id: "B18", ref: "§2.7", sev: "低", title: "「BIG BLOCK BANG」那套美术是哪来的？", ctx: "审计没查到来源，对外使用前要确认。", type: "text", ph: "来源、授权情况、能不能对外用" },
+    { id: "B19", ref: "§2.8", sev: "高", title: "消耗品能不能放进网格？", ctx: "改造方块、科技方块、幻灵方块都带「方块」后缀，和能放进网格的方块撞名；放在哪也有道具栏、入包、待放置区三种说法。", type: "one", opts: [
+      ["no", "不能", "去掉「方块」后缀，统一放道具栏"],
+      ["yes", "能", "消耗品本身是一种可放置的特殊方块，放下就生效"] ] },
+    { id: "B20", ref: "§2.8", sev: "高", title: "强化的名字以哪套为准？", ctx: "玻璃牌有琉璃、脆化、晶核三个名字，钢铁牌有铁芯、铁核、钢铁方块，黄金牌有金箔、鎏金、金核，效果互相矛盾。", type: "one", opts: [
+      ["s44", "§4.4 那套", "琉璃、铁芯、金箔、万态"],
+      ["new", "重新起一套", "在备注写"] ] },
+    { id: "B21", ref: "§2.9", sev: "高", title: "三张清单怎么处理？", ctx: "150、12、22 条全部逐条对应原作。R4–R6 和大部分逐条问题，都来自把扑克特有的结构硬译成方块；对外还有被看成 Balatro 换皮的风险。", type: "one", opts: [
+      ["regrow", "从方块原生维度重新长出来", "先定形状、颜色、位置、连击、空间，只保留合得上的原作条目"],
+      ["fix", "保留逐条对应，只修判定不了的"],
+      ["cut", "先砍成一个小的首发集", "例如 40～60 条，之后再扩"] ] },
+    { id: "B22", ref: "§2.9", sev: "高", title: "表里的「原小丑名称」列怎么办？", type: "one", opts: [
+      ["keep", "保留", "内部对照用"],
+      ["internal", "只留在内部版本", "对外文档删掉"],
+      ["drop", "删除"] ] },
+    { id: "B23", ref: "§3.3", sev: "高", title: "科技的每级数值和基础值怎么定？", ctx: "12 条每级数值全部 1:1 抄自 Balatro 的 HANDS.csv，顺序和网格难度对不上：折轨（+30/+3）恒成立，枢衡比三棱容易却更值钱。各类型的基础底注和基础倍率全文没有，计分没法实现。", type: "one", opts: [
+      ["regrade", "按网格难度重新定标", "连同基础值表一起出"],
+      ["keep", "保留每级数值，只补基础值表"] ] },
+    { id: "B24", ref: "§3.3", sev: "中", title: "「本盲注仅可使用 1 次」要不要？", ctx: "原作没有这条限制，科技 #8、#12 又漏写了；它和基因 #64（科技免费）、#76（每用一张 +X）、改造 #5（生成科技）冲突，科技会积压。", type: "one", opts: [
+      ["drop", "去掉，随时可用"],
+      ["keep", "保留", "在备注写计数单位：每张、每类型还是合计"] ] },
+    { id: "B25", ref: "§3.3", sev: "中", title: "难达成的科技要不要软锁？", ctx: "原作的 X 行星、谷神星、阋神星要先打出过对应牌型才进池（game.lua:567-569）。没有软锁，近乎达不成的科技会作为死牌出现在商店里。", type: "one", opts: [
+      ["yes", "要", "先达成过对应类型才进池"],
+      ["no", "不要"] ] }
+  ]},
+  { id: "C", title: "与原作的出入", note: "这些地方和 Balatro 1.0.1o 原表不一致，表里没写理由。逐条选：误译就改回，有意就保留。", items: [
+    { id: "C1", ref: "§3.0 A", sev: "高", type: "triage", title: "11 条成长型倍率写成了「×0.x」", ctx: "#76、#85、#88、#92、#93、#117、#120、#125、#132、#135、#137。原作从 ×1 起每次 +×0.x 累积，3B 字面是把分数缩小；#85 的代价栏还真把它解释成了负向乘区。" },
+    { id: "C2", ref: "§3.0 A", sev: "高", type: "triage", title: "3 条写成了「×1」", ctx: "#89、#146、#150，字面等于无效果。原作 #89 是 X = 空槽数，#146、#150 是从 ×1 起每次 +×1。" },
+    { id: "C3", ref: "§3.0 A", sev: "中", type: "triage", title: "成长型被压成了固定值或一次性", ctx: "#46 长径、#72 棱堡、#104 窜升、#116 副线、#145 微尘。" },
+    { id: "C4", ref: "§3.0 A", sev: "中", type: "triage", title: "逐张连乘被压成了每次消除乘一次", ctx: "#119 朝拜、#126 古墟。原作每张匹配的牌各乘一次，#126 打满 5 张约 ×7.6。" },
+    { id: "C5", ref: "§3.2", sev: "高", type: "triage", title: "#94 纹岩：石核变成了纯负面", ctx: "原作石头牌是 +50 筹码的正收益；3B 的石核不可消除、不加分，基因只剩负面，仍卖 $6。" },
+    { id: "C6", ref: "§3.1", sev: "高", type: "triage", title: "#44 驰行：删了重置", ctx: "原作一有人头计分就清零，3B 变成只涨不跌。" },
+    { id: "C7", ref: "§3.1", sev: "高", type: "triage", title: "#6 蚀灭：删了进池门槛", ctx: "原作要等大麦克香蕉灭绝才进池；3B 里 $4 的普通 ×3 开局就能买。另外「基础倍率 ×3」字面只乘基础倍率一项。" },
+    { id: "C8", ref: "§3.1", sev: "高", type: "triage", title: "#42 拒购：触发条件变了", ctx: "原作要先打开补充包再点跳过；3B 写「跳过不购买」，直接离店就白拿。" },
+    { id: "C9", ref: "§3.4", sev: "高", type: "triage", title: "改造 #3 玄匣、#5 御铸：产物对调", ctx: "原作女祭司生成星球（科技），皇帝生成塔罗（改造），3B 正好反过来。" },
+    { id: "C10", ref: "§3.4", sev: "高", type: "triage", title: "改造 #4 骈纹：皇后被换掉了", ctx: "原作皇后是倍率牌（+4 倍率），3B 写成「计入 2 条线」；倍率牌从此没有对应物。" },
+    { id: "C11", ref: "§3.4", sev: "高", type: "triage", title: "改造 #11：闪箔和镭射写反了", ctx: "原作闪箔 +50 筹码、镭射 +10 倍率，3B 写成闪箔 +倍率、镭射 +分值，也没给数值。" },
+    { id: "C12", ref: "§3.4", sev: "高", type: "triage", title: "改造 #19 刃凝：月亮映射错了", ctx: "月亮转梅花，应该是三叶，3B 写成了尖棱（黑桃）。" },
+    { id: "C13", ref: "§3.4", sev: "高", type: "triage", title: "改造 #22 棱隅：世界映射错了", ctx: "世界转黑桃，应该是尖棱，3B 写成了 L 拐角（人头），等于把转花色改成了转点数。" }
+  ]},
+  { id: "D", title: "补充", note: "选填，不计入进度。", items: [
+    { id: "D1", type: "text", optional: true, title: "还有什么要补充？", ctx: "审计没覆盖到的，或者你觉得哪道题本身问错了，都写在这里。", ph: "随便写" }
+  ]}
+];
+
+const ALL = SECTIONS.flatMap(s => s.items);
+const QMAP = Object.fromEntries(ALL.map(q => [q.id, q]));
+const COUNTED = ALL.filter(q => !q.optional);
+const optList = q => q.type === "triage" ? TRIAGE : q.opts.concat(q.other === false ? [] : [[OTHER, "其他"]]);
+
+let answers = {};
+let who = "";
+const me = { last: null, lastText: "", dirty: false };
+
+function h(tag, props, kids) {
+  const n = document.createElement(tag);
+  if (props) for (const k in props) {
+    const v = props[k];
+    if (v == null || v === false) continue;
+    if (k === "class") n.className = v;
+    else if (k === "text") n.textContent = v;
+    else n.setAttribute(k, v === true ? "" : v);
+  }
+  if (kids != null) for (const c of [].concat(kids)) if (c != null && c !== false) n.append(c);
+  return n;
+}
+
+function glyph(name, cells) {
+  const NS = "http://www.w3.org/2000/svg";
+  const w = Math.max(...cells.map(c => c[0])) + 1, hgt = Math.max(...cells.map(c => c[1])) + 1;
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("viewBox", "0 0 " + (w * 7 - 1) + " " + (hgt * 7 - 1));
+  svg.setAttribute("aria-hidden", "true");
+  svg.style.height = (hgt * 7 - 1) + "px";
+  for (const [x, y] of cells) {
+    const r = document.createElementNS(NS, "rect");
+    r.setAttribute("x", x * 7); r.setAttribute("y", y * 7);
+    r.setAttribute("width", 6); r.setAttribute("height", 6);
+    r.setAttribute("fill", "currentColor");
+    svg.append(r);
+  }
+  return h("span", { class: "glyph" }, [svg, name]);
+}
+
+/* ---------- 题目渲染 ---------- */
+function renderForm() {
+  const form = document.getElementById("form");
+  form.replaceChildren();
+  form.append(h("section", { class: "sec" }, [
+    h("article", { class: "q who-card", id: "who-card" }, [
+      h("label", { for: "who", text: "你的名字" }),
+      h("input", { type: "text", id: "who", autocomplete: "name", placeholder: "例如：张三", maxlength: "40" }),
+      h("p", { class: "ctx", text: "会写进答卷文件，汇总时用来区分是谁答的。" })
+    ])
+  ]));
+  for (const s of SECTIONS) {
+    const sec = h("section", { class: "sec", "aria-labelledby": "h-" + s.id });
+    sec.append(h("div", { class: "sec-head", id: "sec-" + s.id }, [h("span", { class: "sec-id", text: s.id }), h("h2", { id: "h-" + s.id, text: s.title })]));
+    if (s.note) sec.append(h("p", { class: "sec-note", text: s.note }));
+    for (const q of s.items) sec.append(renderQ(q));
+    form.append(sec);
+  }
+  form.append(h("p", { class: "endnote", text: "到底了。看一眼左边的方格，确认后点下方「提交」。" }));
+}
+
+function renderQ(q) {
+  const art = h("article", { class: "q", id: "q-" + q.id });
+  art.append(h("div", { class: "q-head" }, [
+    h("span", { class: "qid", text: q.id }),
+    q.ref && h("span", { class: "ref", text: q.ref }),
+    q.sev && h("span", { class: "sev sev-" + SEV[q.sev], text: q.sev }),
+    q.optional ? null : h("button", { type: "button", class: "defer", "data-defer": q.id, "aria-pressed": "false", text: "待讨论" })
+  ]));
+  const title = h("h3", { id: "t-" + q.id, text: q.title });
+  if (q.type === "many") title.append(h("span", { class: "hint", text: "可多选" }));
+  art.append(title);
+  if (q.ctx) art.append(h("p", { class: "ctx", text: q.ctx }));
+
+  if (q.type === "text") {
+    art.append(h("textarea", { id: q.id + "-text", "data-text": q.id, rows: "4", placeholder: q.ph || "写在这里", "aria-labelledby": "t-" + q.id }));
+    return art;
+  }
+  const multi = q.type === "many";
+  const compact = q.type === "triage";
+  const box = h("div", { class: compact ? "seg" : "opts", role: multi ? "group" : "radiogroup", "aria-labelledby": "t-" + q.id });
+  const opts = compact ? TRIAGE : q.opts;
+  for (const [v, t, d] of opts) box.append(renderOpt(q, v, t, d, multi, q.glyphs && q.glyphs[v]));
+  if (!compact && q.other !== false) box.append(renderOther(q, multi));
+  art.append(box);
+  art.append(h("details", { class: "note" }, [
+    h("summary", { text: "加备注" }),
+    h("textarea", { id: q.id + "-note", "data-note": q.id, rows: "3", placeholder: "理由、前提、要找谁确认……", "aria-label": q.id + " 备注" })
+  ]));
+  return art;
+}
+
+function renderOpt(q, v, t, d, multi, shapes) {
+  const id = q.id + "-" + v;
+  const txt = h("span", { class: "opt-txt" }, [h("span", { class: "t", text: t }), d ? h("span", { class: "d", text: d }) : null]);
+  if (shapes) txt.append(h("span", { class: "glyphs" }, shapes.map(([n, c]) => glyph(n, c))));
+  return h("label", { class: "opt", for: id }, [
+    h("input", { type: multi ? "checkbox" : "radio", name: q.id, id, value: v, "data-opt": q.id }),
+    txt
+  ]);
+}
+
+function renderOther(q, multi) {
+  const lab = renderOpt(q, OTHER, "其他", "选项里没有的方案，写在下面", multi);
+  const inp = h("input", { type: "text", class: "other-in", id: q.id + "-other", "data-other": q.id, placeholder: "写下你的方案", "aria-label": q.id + " 其他方案" });
+  inp.hidden = true;
+  return h("div", { class: "opt-other" }, [lab, inp]);
+}
+
+function renderSide() {
+  const side = document.getElementById("side");
+  side.replaceChildren();
+  for (const s of SECTIONS) {
+    const qs = s.items.filter(q => !q.optional);
+    if (!qs.length) continue;
+    const board = h("div", { class: "board" });
+    for (const q of qs) board.append(h("button", { type: "button", class: "cell", id: "cell-" + q.id, "data-jump": q.id, title: q.id + " " + q.title, "aria-label": q.id }));
+    side.append(h("div", { class: "gsec" }, [
+      h("div", { class: "gsec-h" }, [h("a", { href: "#sec-" + s.id, "data-jump-sec": s.id, text: s.id + " · " + s.title }), h("span", { id: "gc-" + s.id })]),
+      board
+    ]));
+  }
+  side.append(h("p", { class: "legend" }, [
+    h("span", null, [h("i", { class: "done" }), "已答"]),
+    h("span", null, [h("i", { class: "defer" }), "待讨论"]),
+    h("span", null, [h("i"), "未答"])
+  ]));
+}
+
+/* ---------- 答案状态 ---------- */
+function A(id) { return answers[id] || (answers[id] = {}); }
+function picks(q, a) {
+  a = a || answers[q.id] || {};
+  if (q.type === "many") return Array.isArray(a.c) ? a.c : [];
+  return a.c != null && a.c !== "" ? [a.c] : [];
+}
+function isAnswered(q) {
+  const a = answers[q.id];
+  if (!a) return false;
+  if (q.type === "text") return !!(a.t && a.t.trim());
+  return picks(q).length > 0;
+}
+function isDeferred(q) { return !!(answers[q.id] && answers[q.id].d); }
+
+function stats() {
+  let answered = 0, deferred = 0;
+  for (const q of COUNTED) { if (isAnswered(q)) answered++; else if (isDeferred(q)) deferred++; }
+  return { answered, deferred, empty: COUNTED.length - answered - deferred, total: COUNTED.length };
+}
+function firstEmpty() { return COUNTED.find(q => !isAnswered(q) && !isDeferred(q)); }
+
+function syncQ(q) {
+  const art = document.getElementById("q-" + q.id);
+  const a = answers[q.id] || {};
+  if (q.type === "text") {
+    art.querySelector("[data-text]").value = a.t || "";
+  } else {
+    const sel = picks(q);
+    art.querySelectorAll("input[data-opt]").forEach(inp => { inp.checked = sel.includes(inp.value); });
+    const oi = art.querySelector("[data-other]");
+    if (oi) oi.value = a.o || "";
+    const nt = art.querySelector("[data-note]");
+    if (nt) { nt.value = a.n || ""; if (a.n) nt.closest("details").open = true; }
+  }
+  refreshQ(q);
+}
+
+function refreshQ(q) {
+  const art = document.getElementById("q-" + q.id);
+  if (q.type !== "text") {
+    const sel = picks(q);
+    art.querySelectorAll("input[data-opt]").forEach(inp => inp.closest(".opt").classList.toggle("on", inp.checked));
+    const oi = art.querySelector("[data-other]");
+    if (oi) oi.hidden = !sel.includes(OTHER);
+  }
+  const btn = art.querySelector("[data-defer]");
+  if (btn) btn.setAttribute("aria-pressed", isDeferred(q) ? "true" : "false");
+  const done = isAnswered(q);
+  art.classList.toggle("is-done", done);
+  const cell = document.getElementById("cell-" + q.id);
+  if (cell) {
+    cell.classList.toggle("done", done);
+    cell.classList.toggle("defer", !done && isDeferred(q));
+    cell.setAttribute("aria-label", q.id + (done ? " 已答" : isDeferred(q) ? " 待讨论" : " 未答"));
+  }
+}
+
+function applyAll() {
+  document.getElementById("who").value = who;
+  for (const q of ALL) syncQ(q);
+  updateProgress();
+}
+
+function updateProgress() {
+  const s = stats();
+  document.getElementById("prog").textContent = "已答 " + s.answered + " / " + s.total + (s.deferred ? " · 待讨论 " + s.deferred : "") + (s.empty ? " · 未答 " + s.empty : "");
+  for (const sec of SECTIONS) {
+    const el = document.getElementById("gc-" + sec.id);
+    if (!el) continue;
+    const qs = sec.items.filter(q => !q.optional);
+    el.textContent = qs.filter(isAnswered).length + "/" + qs.length;
+  }
+  if (!document.getElementById("confirm").hidden) hideConfirm();
+}
+
+function cleaned() {
+  const out = {};
+  for (const q of ALL) {
+    const a = answers[q.id];
+    if (!a) continue;
+    const o = {};
+    const sel = picks(q);
+    if (q.type === "many" && sel.length) o.c = sel.slice();
+    else if (q.type !== "many" && q.type !== "text" && sel.length) o.c = sel[0];
+    if (sel.includes(OTHER) && a.o && a.o.trim()) o.o = a.o.trim();
+    if (q.type === "text" && a.t && a.t.trim()) o.t = a.t.trim();
+    if (a.n && a.n.trim()) o.n = a.n.trim();
+    if (a.d && !q.optional) o.d = true;
+    if (Object.keys(o).length) out[q.id] = o;
+  }
+  return out;
+}
+
+/* ---------- 本机草稿 ---------- */
+function loadJSON(key) {
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+function saveJSON(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; }
+}
+let draftTimer = 0;
+function scheduleDraft() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(saveDraft, 400);
+}
+function saveDraft() {
+  saveJSON(DRAFT_KEY, { answers: cleaned(), who, last: me.last, dirty: me.dirty, savedAt: new Date().toISOString() });
+}
+
+function touched(q) {
+  if (q) refreshQ(q);
+  updateProgress();
+  if (me.last) me.dirty = true;
+  scheduleDraft();
+  renderStatus();
+}
+
+/* ---------- 交互 ---------- */
+function wire() {
+  const form = document.getElementById("form");
+  form.addEventListener("change", e => {
+    const t = e.target;
+    if (!t.dataset || !t.dataset.opt) return;
+    const q = QMAP[t.dataset.opt];
+    const a = A(q.id);
+    if (q.type === "many") {
+      const set = new Set(Array.isArray(a.c) ? a.c : []);
+      if (t.checked) set.add(t.value); else set.delete(t.value);
+      if (q.id === "A19" && t.checked) {
+        if (t.value === "none") { set.clear(); set.add("none"); } else set.delete("none");
+        form.querySelectorAll('input[name="A19"]').forEach(i => { i.checked = set.has(i.value); });
+      }
+      a.c = [...set];
+    } else {
+      a.c = t.value;
+    }
+    touched(q);
+    if (t.value === OTHER && t.checked) {
+      const oi = document.getElementById(q.id + "-other");
+      if (oi) oi.focus();
+    }
+  });
+  form.addEventListener("input", e => {
+    const d = e.target.dataset || {};
+    if (e.target.id === "who") { who = e.target.value; document.getElementById("who-card").classList.remove("missing"); touched(null); }
+    else if (d.other) { A(d.other).o = e.target.value; touched(QMAP[d.other]); }
+    else if (d.note) { A(d.note).n = e.target.value; touched(QMAP[d.note]); }
+    else if (d.text) { A(d.text).t = e.target.value; touched(QMAP[d.text]); }
+  });
+  form.addEventListener("click", e => {
+    const b = e.target.closest("[data-defer]");
+    if (!b) return;
+    const a = A(b.dataset.defer);
+    a.d = !a.d;
+    touched(QMAP[b.dataset.defer]);
+  });
+  document.getElementById("side").addEventListener("click", e => {
+    const c = e.target.closest("[data-jump]");
+    const s = e.target.closest("[data-jump-sec]");
+    if (c) jump("q-" + c.dataset.jump);
+    else if (s) { e.preventDefault(); jump("sec-" + s.dataset.jumpSec); }
+  });
+  document.getElementById("submit").addEventListener("click", () => submit(false));
+  document.getElementById("force").addEventListener("click", () => submit(true));
+  document.getElementById("copy").addEventListener("click", copyLast);
+  document.getElementById("go-empty").addEventListener("click", () => { const q = firstEmpty(); hideConfirm(); if (q) jump("q-" + q.id); });
+  document.getElementById("tab-fill").addEventListener("click", () => showTab("fill"));
+  document.getElementById("tab-sum").addEventListener("click", () => showTab("sum"));
+  wireImport();
+}
+
+function jump(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  const focusable = el.querySelector("input,textarea,button");
+  if (focusable) setTimeout(() => focusable.focus({ preventScroll: true }), reduce ? 0 : 350);
+}
+
+/* ---------- 状态条 ---------- */
+function stamp(d) {
+  const p = n => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+function fmt(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return "";
+  const p = n => String(n).padStart(2, "0");
+  return (d.getMonth() + 1) + "月" + d.getDate() + "日 " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+let statusOverride = null;
+function setStatus(text, kind) { statusOverride = { text, kind }; paintStatus(); }
+function renderStatus() { statusOverride = null; paintStatus(); }
+function paintStatus() {
+  const el = document.getElementById("status");
+  let text, kind = "";
+  if (statusOverride) { text = statusOverride.text; kind = statusOverride.kind || ""; }
+  else if (me.last && !me.dirty) { text = "已于 " + fmt(me.last.at) + " 保存为「" + me.last.file + "」。把这个文件发给发问卷的人。"; kind = "ok"; }
+  else if (me.last) text = "有修改还没提交（上次 " + fmt(me.last.at) + "）。再点「重新提交」会下载一份新文件。";
+  else text = "答案会自动存在这个浏览器里。答完点「提交」，会下载一份答卷文件。";
+  el.textContent = text;
+  el.className = kind;
+  document.getElementById("submit").textContent = me.last ? "重新提交" : "提交";
+  document.getElementById("copy").hidden = !me.lastText;
+}
+
+function showConfirm(n) {
+  document.getElementById("confirm-msg").textContent = "还有 " + n + " 题没答，也没标待讨论。";
+  document.getElementById("confirm").hidden = false;
+  document.getElementById("submit").hidden = true;
+}
+function hideConfirm() {
+  document.getElementById("confirm").hidden = true;
+  document.getElementById("submit").hidden = false;
+}
+
+/* ---------- 提交：生成答卷文件并下载 ---------- */
+const cellText = s => String(s).replace(/\|/g, "\\|").replace(/\r?\n/g, "<br>");
+const itemText = s => String(s).replace(/\r?\n/g, "\n  ");
+const safeName = s => String(s).replace(/[\\/:*?"<>|\s]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 40) || "未署名";
+const DATA_MARK = "<!-- 3b-audit-data：下面是给汇总页读取的数据，请不要改动 -->";
+
+function buildAnswerMd(body) {
+  const L = [];
+  L.push("# 3B 审计问卷 · 答卷", "");
+  L.push("- 填写人：" + body.name);
+  L.push("- 提交时间：" + stamp(new Date(body.submittedAt)));
+  L.push("- 问卷版本：" + body.v + "（对照《3B审计.md》）");
+  L.push("- 已答 " + body.answered + " / " + body.total + " · 待讨论 " + body.deferred + " · 未答 " + (body.total - body.answered - body.deferred), "");
+  for (const s of SECTIONS) {
+    L.push("## " + s.id + " · " + s.title, "");
+    for (const q of s.items) {
+      const a = body.answers[q.id] || {};
+      L.push("### " + q.id + " " + q.title, "");
+      const lines = [];
+      if (q.type === "text") {
+        if (a.t) lines.push("回答：" + itemText(a.t));
+      } else {
+        const opts = optList(q);
+        const label = v => { const o = opts.find(x => x[0] === v); return o ? o[1] : v; };
+        const sel = picks(q, a);
+        if (sel.length) lines.push("选择：" + sel.map(label).join("、"));
+        if (a.o) lines.push("其他方案：" + itemText(a.o));
+      }
+      if (a.n) lines.push("备注：" + itemText(a.n));
+      if (a.d) lines.push("待讨论");
+      if (!lines.length) lines.push(q.optional ? "（没写）" : "（未答）");
+      for (const l of lines) L.push("- " + l);
+      L.push("");
+    }
+  }
+  L.push(DATA_MARK, "", "```json", JSON.stringify(Object.assign({ kind: KIND }, body), null, 1), "```", "");
+  return L.join("\n");
+}
+
+function download(filename, text) {
+  const blob = new Blob([text], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = h("a", { href: url, download: filename });
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function submit(force) {
+  if (!who.trim()) {
+    document.getElementById("who-card").classList.add("missing");
+    setStatus("先在最上面填上你的名字。", "err");
+    jump("who-card");
+    return;
+  }
+  const s = stats();
+  if (!force && s.empty > 0) { showConfirm(s.empty); return; }
+  hideConfirm();
+  const now = new Date();
+  const body = { v: VERSION, name: who.trim(), submittedAt: now.toISOString(), answered: s.answered, deferred: s.deferred, total: s.total, answers: cleaned() };
+  const p = n => String(n).padStart(2, "0");
+  const file = "3B审计答卷-" + safeName(body.name) + "-" + now.getFullYear() + p(now.getMonth() + 1) + p(now.getDate()) + "-" + p(now.getHours()) + p(now.getMinutes()) + ".md";
+  const text = buildAnswerMd(body);
+  try {
+    download(file, text);
+  } catch (e) {
+    me.lastText = text;
+    setStatus("浏览器没让下载。点「复制答卷文本」，把内容发给发问卷的人。", "err");
+    document.getElementById("copy").hidden = false;
+    return;
+  }
+  me.last = { at: body.submittedAt, file };
+  me.lastText = text;
+  me.dirty = false;
+  saveDraft();
+  renderStatus();
+}
+
+async function copyLast() {
+  if (!me.lastText) return;
+  try {
+    await navigator.clipboard.writeText(me.lastText);
+    setStatus("答卷文本已复制，可以直接粘贴发出去。", "ok");
+  } catch (e) {
+    const ta = h("textarea", { "aria-hidden": "true", style: "position:fixed;left:-9999px;top:0" });
+    ta.value = me.lastText;
+    document.body.append(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e2) {}
+    ta.remove();
+    setStatus(ok ? "答卷文本已复制，可以直接粘贴发出去。" : "复制没成功。请直接把下载的文件发出去。", ok ? "ok" : "err");
+  }
+}
+
+/* ---------- 汇总：导入答卷文件 ---------- */
+let imported = {};
+
+function parseAnswerFile(text) {
+  text = String(text).replace(/^﻿/, "");
+  let json = null;
+  const t = text.trim();
+  if (t.startsWith("{")) json = t;
+  else {
+    const m = text.lastIndexOf(DATA_MARK);
+    const from = m >= 0 ? m : 0;
+    const i = text.indexOf("```json", from);
+    if (i >= 0) {
+      const start = text.indexOf("\n", i) + 1;
+      const end = text.lastIndexOf("```");
+      if (start > 0 && end > start) json = text.slice(start, end);
+    }
+  }
+  if (!json) return null;
+  try {
+    const d = JSON.parse(json);
+    if (d && d.kind === KIND && d.answers && typeof d.answers === "object") return d;
+  } catch (e) {}
+  return null;
+}
+
+async function importFiles(files) {
+  const bad = [];
+  let changed = false;
+  for (const f of files) {
+    let text = "";
+    try { text = await f.text(); } catch (e) { bad.push(f.name); continue; }
+    const d = parseAnswerFile(text);
+    if (!d) { bad.push(f.name); continue; }
+    const key = String(d.name || "未署名").trim() || "未署名";
+    const prev = imported[key];
+    if (!prev || String(prev.data.submittedAt || "") <= String(d.submittedAt || "")) {
+      imported[key] = { data: d, file: f.name };
+      changed = true;
+    }
+  }
+  if (changed) saveJSON(IMPORT_KEY, imported);
+  const errs = document.getElementById("sum-errs");
+  errs.hidden = !bad.length;
+  errs.textContent = bad.length ? "这些文件里没找到答卷数据，没有导入：" + bad.join("、") : "";
+  renderSummary();
+}
+
+function wireImport() {
+  const drop = document.getElementById("drop");
+  const input = document.getElementById("files");
+  input.addEventListener("change", () => { if (input.files && input.files.length) importFiles([...input.files]); input.value = ""; });
+  ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => { const fs = e.dataTransfer && e.dataTransfer.files; if (fs && fs.length) importFiles([...fs]); });
+  // 拖到页面别处不让浏览器直接打开文件
+  window.addEventListener("dragover", e => e.preventDefault());
+  window.addEventListener("drop", e => e.preventDefault());
+  document.getElementById("sum-body").addEventListener("click", e => {
+    if (e.target.closest("#export")) exportSummary();
+    else if (e.target.closest("#clear")) clearImported(e.target.closest("#clear"));
+    else { const rm = e.target.closest("[data-rm]"); if (rm) { delete imported[rm.dataset.rm]; saveJSON(IMPORT_KEY, imported); renderSummary(); } }
+  });
+}
+
+let clearArmed = false;
+function clearImported(btn) {
+  if (!clearArmed) { clearArmed = true; btn.textContent = "确认清空？"; setTimeout(() => { clearArmed = false; const b = document.getElementById("clear"); if (b) b.textContent = "清空"; }, 3000); return; }
+  clearArmed = false;
+  imported = {};
+  saveJSON(IMPORT_KEY, imported);
+  renderSummary();
+}
+
+function sortedRows() {
+  return Object.keys(imported).map(k => ({ id: k, data: imported[k].data, file: imported[k].file }))
+    .sort((a, b) => String(b.data.submittedAt || "").localeCompare(String(a.data.submittedAt || "")));
+}
+
+function showTab(which) {
+  const fill = which === "fill";
+  document.getElementById("tab-fill").setAttribute("aria-selected", fill ? "true" : "false");
+  document.getElementById("tab-sum").setAttribute("aria-selected", fill ? "false" : "true");
+  document.getElementById("panel-fill").hidden = !fill;
+  document.getElementById("panel-sum").hidden = fill;
+  document.getElementById("bar").hidden = !fill;
+  if (!fill) renderSummary();
+}
+
+function quoteList(items) {
+  return h("ul", { class: "quotes" }, items.map(([name, text]) => h("li", null, [h("b", { text: name }), text])));
+}
+
+function renderSummary() {
+  const box = document.getElementById("sum-body");
+  const rows = sortedRows();
+  document.getElementById("sum-n").textContent = rows.length ? String(rows.length) : "";
+  box.replaceChildren();
+  if (!rows.length) return;
+  const nm = id => id;
+  box.append(h("div", { class: "sum-top" }, [
+    h("p", { class: "muted", text: "已导入 " + rows.length + " 份答卷。每题下面列出谁选了什么，以及「其他」和备注里写的内容。" }),
+    h("div", { class: "who" }, rows.map(r => h("span", { class: "chip", title: r.file }, [
+      h("b", { text: r.id }),
+      " · " + fmt(r.data.submittedAt) + " · 已答 " + (r.data.answered != null ? r.data.answered : "?") + "/" + (r.data.total != null ? r.data.total : "?") + " ",
+      h("button", { type: "button", class: "linkbtn", "data-rm": r.id, "aria-label": "移除 " + r.id, style: "background:none;border:0;padding:0;font-size:12px", text: "移除" })
+    ]))),
+    h("div", { class: "sum-act" }, [
+      h("button", { type: "button", class: "btn primary", id: "export", text: "导出汇总 Markdown" }),
+      h("button", { type: "button", class: "btn", id: "clear", text: "清空" })
+    ])
+  ]));
+  for (const s of SECTIONS) {
+    box.append(h("h2", { class: "sum-sec", text: s.id + " · " + s.title }));
+    for (const q of s.items) box.append(sumQ(q, rows, nm));
+  }
+}
+
+function sumQ(q, rows, nm) {
+  const card = h("article", { class: "sq" });
+  card.append(h("div", { class: "q-head" }, [h("span", { class: "qid", text: q.id }), q.ref ? h("span", { class: "ref", text: q.ref }) : null]), h("h3", { text: q.title }));
+  const get = r => (r.data.answers || {})[q.id] || {};
+  const n = rows.length;
+  if (q.type === "text") {
+    const list = rows.filter(r => get(r).t);
+    card.append(list.length ? quoteList(list.map(r => [nm(r.id), get(r).t])) : h("p", { class: "muted", text: "没人写" }));
+  } else {
+    const tally = h("div", { class: "tally" });
+    for (const [v, t] of optList(q)) {
+      const whoPicked = rows.filter(r => picks(q, get(r)).includes(v));
+      const pct = n ? Math.round(whoPicked.length / n * 100) : 0;
+      tally.append(h("div", { class: "tl" }, [
+        h("span", { text: t }),
+        h("span", { class: "tl-track" }, [h("span", { class: "tl-fill", style: "width:" + pct + "%" })]),
+        h("span", { class: "tl-n", text: String(whoPicked.length) }),
+        whoPicked.length ? h("span", { class: "tl-who", text: whoPicked.map(r => nm(r.id)).join("、") }) : null
+      ]));
+    }
+    card.append(tally);
+    const others = rows.filter(r => get(r).o);
+    if (others.length) card.append(h("p", { class: "sub", text: "「其他」里写的" }), quoteList(others.map(r => [nm(r.id), get(r).o])));
+  }
+  const notes = rows.filter(r => get(r).n);
+  if (notes.length) card.append(h("p", { class: "sub", text: "备注" }), quoteList(notes.map(r => [nm(r.id), get(r).n])));
+  const def = rows.filter(r => get(r).d);
+  if (def.length) card.append(h("p", { class: "defer-line", text: "待讨论：" + def.map(r => nm(r.id)).join("、") }));
+  return card;
+}
+
+/* ---------- 导出汇总 Markdown ---------- */
+function buildMarkdown(rows, nm) {
+  const L = [];
+  L.push("# 3B 审计问卷 · 答卷汇总", "");
+  L.push("- 问卷版本：" + VERSION + "（对照《3B审计.md》）");
+  L.push("- 导出时间：" + stamp(new Date()));
+  L.push("- 答卷：" + rows.length + " 份", "");
+  L.push("| 提交人 | 提交时间 | 已答 | 待讨论 |", "|---|---|--:|--:|");
+  for (const r of rows) {
+    const d = r.data;
+    L.push("| " + cellText(nm(r.id)) + " | " + (d.submittedAt ? stamp(new Date(d.submittedAt)) : "") + " | " + (d.answered != null ? d.answered : "?") + "/" + (d.total != null ? d.total : "?") + " | " + (d.deferred || 0) + " |");
+  }
+  L.push("");
+  for (const s of SECTIONS) {
+    L.push("## " + s.id + " · " + s.title, "");
+    for (const q of s.items) mdQ(q, rows, nm, L);
+  }
+  return L.join("\n");
+}
+
+function mdQ(q, rows, nm, L) {
+  const get = r => (r.data.answers || {})[q.id] || {};
+  const tags = [q.ref, q.sev, q.type === "many" ? "可多选" : null, q.optional ? "选填" : null].filter(Boolean).join(" · ");
+  L.push("### " + q.id + " " + q.title, "");
+  if (tags) L.push("> " + tags, "");
+  const list = (label, items) => {
+    if (!items.length) return;
+    if (label) L.push(label, "");
+    for (const [name, text] of items) L.push("- **" + name + "**：" + itemText(text));
+    L.push("");
+  };
+  if (q.type === "text") {
+    const items = rows.filter(r => get(r).t).map(r => [nm(r.id), get(r).t]);
+    if (items.length) list("", items); else L.push("没人写", "");
+  } else {
+    L.push("| 选项 | 人数 | 谁选的 |", "|---|--:|---|");
+    for (const [v, t] of optList(q)) {
+      const whoPicked = rows.filter(r => picks(q, get(r)).includes(v));
+      L.push("| " + cellText(t) + " | " + whoPicked.length + " | " + cellText(whoPicked.map(r => nm(r.id)).join("、")) + " |");
+    }
+    L.push("");
+    list("「其他」里写的：", rows.filter(r => get(r).o).map(r => [nm(r.id), get(r).o]));
+  }
+  list("备注：", rows.filter(r => get(r).n).map(r => [nm(r.id), get(r).n]));
+  const def = rows.filter(r => get(r).d);
+  if (def.length) L.push("待讨论：" + def.map(r => nm(r.id)).join("、"), "");
+  if (!q.optional) {
+    const blank = rows.filter(r => { const a = get(r); return !a.d && !a.t && !picks(q, a).length; });
+    if (blank.length) L.push("未作答：" + blank.map(r => nm(r.id)).join("、"), "");
+  }
+}
+
+function exportSummary() {
+  const rows = sortedRows();
+  if (!rows.length) return;
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  download("3B审计答卷汇总-" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + ".md", buildMarkdown(rows, id => id));
+}
+
+/* ---------- 启动 ---------- */
+function start() {
+  const d = loadJSON(DRAFT_KEY);
+  if (d) {
+    answers = d.answers || {};
+    who = d.who || "";
+    me.last = d.last || null;
+    me.dirty = !!d.dirty;
+  }
+  imported = loadJSON(IMPORT_KEY) || {};
+  document.getElementById("qcount").textContent = String(COUNTED.length);
+  renderSide();
+  renderForm();
+  applyAll();
+  wire();
+  renderStatus();
+  const n = Object.keys(imported).length;
+  document.getElementById("sum-n").textContent = n ? String(n) : "";
+}
+start();
+</script>
+</body>
+</html>
