@@ -13,3 +13,9 @@ __pycache__/
 
 # 源包统一放这里（内容仍由上面的 *.apk 规则忽略）
 源包/
+
+# Solar Smash 2.7.5 的拆包数据与复刻工程：不属于本作的三款参考，
+# 复刻工程直接用了原作素材，只能本地学习，不入库
+/SolarSmash/
+
+# Demo/ 的 Unity 与 TEngine 生成物规则在 Demo/.gitignore

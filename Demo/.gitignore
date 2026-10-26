@@ -1,0 +1,88 @@
+# 3B 的 Unity 工程。规则取自 block-client 工程的同名文件，去掉了它的业务专属条目；
+# 路径以本目录为根。
+
+# Unity 生成物
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/[Aa]ssets/_Recovery/
+/[Aa]ssets/_Recovery.meta
+# meta 只在对应资源也被忽略时才忽略
+!/[Aa]ssets/**/*.meta
+
+# 崩溃报告与编辑器回放日志
+sysinfo.txt
+replay_pid*.log
+crashlytics-build.properties
+
+# IDE 与解决方案（Unity 按需重新生成）
+.vs/
+.idea/
+.vscode/
+.gradle/
+ExportedObj/
+.consulo/
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+[Aa]ssets/Plugins/Editor/JetBrains*
+
+# 打包产物
+*.apk
+*.aab
+*.unitypackage
+# 包被忽略时 meta 也要一起忽略：git worktree 不复制被忽略的文件，
+# 否则槽位编辑器会把孤儿 meta 删掉、主工程又重新生成
+*.unitypackage.meta
+
+# HybridCLR：热更 DLL 编译产物与 AOT 生成物，每次构建重新生成
+[Hh]ybridCLRData/
+/[Aa]ssets/AssetRaw/DLL/
+[Aa]ssets/Launcher/HybridCLRGenerate/
+[Aa]ssets/Launcher/HybridCLRGenerate.meta
+# AOT 指纹的 Player 侧载体：出包前生成、构建后删除，只有构建中断才会残留
+/[Aa]ssets/TEngine/Settings/[Rr]esources/PlayerAOTFingerprint.txt
+/[Aa]ssets/TEngine/Settings/[Rr]esources/PlayerAOTFingerprint.txt.meta
+
+# YooAsset：资源包产物与随包清单，构建时生成
+Bundles/
+Sandbox/
+package/
+yoo/
+[Aa]ssets/StreamingAssets/
+[Aa]ssets/StreamingAssets.meta
+[Aa]ssets/TEngine/AssetSetting/Resources/BuiltinFileManifest.asset
+[Aa]ssets/TEngine/AssetSetting/Resources/BuiltinFileManifest.asset.meta
+
+# Luban 导表缓存
+.luban_cache/
+
+# 测试输出
+TestResults/
+
+# 系统杂项
+.DS_Store
+Thumbs.db
+Thumbs.db.meta
+~$*
