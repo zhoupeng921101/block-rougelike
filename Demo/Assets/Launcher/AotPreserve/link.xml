@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  手写 AOT 保活,与 HybridCLRGenerate/link.xml(Generate 自动生成、每次覆盖)分开放,避免被覆盖。
+
+  Fantasy.Unity 与 MemoryPack.Core 整程序集保留:协议与 handler 走热更,新消息的代码(热更侧源生成的
+  序列化、handler 基类与网络调用)可能调用这两个包构建时无人引用过的 API,托管裁剪会把它们裁掉,
+  已发出的包无法经热更补回。自动生成的 link.xml 只覆盖生成当时热更代码引用到的面,管不到之后的协议热更。
+
+  Unity.Notifications.Android / iOS 整程序集保留:热更 NotifyPlatform 排本地推送,AOT 侧无人引用,裁剪后真机调用即找不到方法。
+
+  UnityEngine.AndroidJNIModule 整程序集、Handheld 类型保留:热更 Haptics 经 JNI 调系统震动(Android)/ Handheld.Vibrate(iOS),
+  AOT 侧无人引用,裁剪掉后热更代码调用时找不到方法。
+
+  DOTween 与 DOTween.Modules 整程序集保留:热更代码直接调用 DOTween 核心 API 与官方扩展(UI / Sprite / 物理 / 音频),
+  之后热更新增的调用在出包时无人引用,裁剪掉后真机调用即找不到方法,已发出的包无法经热更补回。
+-->
+<linker>
+  <assembly fullname="DOTween" preserve="all" />
+  <assembly fullname="DOTween.Modules" preserve="all" />
+  <assembly fullname="Fantasy.Unity" preserve="all" />
+  <assembly fullname="MemoryPack.Core" preserve="all" />
+  <assembly fullname="UnityEngine.AndroidJNIModule" preserve="all" />
+  <assembly fullname="Unity.Notifications.Android" preserve="all" />
+  <assembly fullname="Unity.Notifications.iOS" preserve="all" />
+  <assembly fullname="UnityEngine.CoreModule">
+    <type fullname="UnityEngine.Handheld" preserve="all" />
+  </assembly>
+</linker>

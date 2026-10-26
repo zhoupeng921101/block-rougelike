@@ -81,6 +81,11 @@ yoo/
 # 测试输出
 TestResults/
 
+# 截图(UnityMCP 截图默认落点与验收截图)
+/Captures/
+/[Aa]ssets/Screenshots/
+/[Aa]ssets/Screenshots.meta
+
 # 系统杂项
 .DS_Store
 Thumbs.db
