@@ -31,7 +31,7 @@
 # 工程默认不定义的工具宏包住的代码同样两遍都不编,该道另按其 $ToolDefines 清单逐宏再编一遍 Editor 程序集。
 # 仍不在覆盖内:玩家侧误用编辑器 API(引用集仍是编辑器那套)、IL 后处理(HybridCLR 注入),
 # 由实现期与出包实测承接(手段见 devflow-client 卡「自检」节)。
-# 测试只覆盖规则核心(dotnet单测 跑 DotNet\Tests);其余代码的测试不在覆盖内,正确性缺陷由每日审查(daily-code-review)承接。
+# 测试只覆盖规则核心与文本表(dotnet单测 跑 DotNet\Tests);其余代码的测试不在覆盖内,正确性缺陷由每日审查(daily-code-review)承接。
 #
 # 各道读取面按道登记在 hooks\校验库.ps1 ClientGateScanSurface,拼出客户端验证面:槽位交付 跑不跑本检查、
 # 集成交付 push 点验不验票、凭据容忍哪些漂移,都按它判。加道须同批登记;启动时互核扫描数组与登记,

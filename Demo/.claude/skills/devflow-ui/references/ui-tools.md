@@ -64,7 +64,11 @@ block-client 的 `ExImage` / `ItemContainer` / `LoopGridView`(SuperScrollView)/ 
 > `IPointerDownHandler` / `IDragHandler` / `IPointerUpHandler` 接口(战斗盘面的拖拽落子按工程计划从 block-client 移植)。
 > **长按与按钮音效工程内无现成设施**,要用得先立项做。
 
-字体:**本作还没有正式字体资产**。`Assets/AssetRaw/Fonts/` 是空目录;现有 `UIMainMenuPanel` 的 Text 用 Unity 内置字体(无中文字形);`Assets/Launcher/Resources/Fonts/LauncherFont.otf` 是启动器专用的子集字体,只含启动器源码里出现的字,业务窗**不引用**(超出子集的字画不出来,`启动器字体核对` 只核启动器侧)。TMP 只有自带的 LiberationSans SDF(无中文)。首发要中英双语,中文字体资产要先立项定,在那之前新窗沿用内置字体并在呈报里列为占位项。
+字体:**新文字一律 TMP(`TextMeshProUGUI`,前缀 `m_tmp`),字体直接挂主字体资产 `Assets/AssetRaw/Fonts/SourceHanSansSC-Bold SDF.asset`**(思源黑体 SC Bold,OFL,动态 SDF、多图集,中英共用)。
+- 新建的 TMP 组件默认挂 TMP 设置里的 LiberationSans(无中文字形,中文成豆腐块),搭好就把 `font` 换成主字体资产。**不改 TMP Settings 的默认字体**:它在 `Resources/` 下,改了主字体会在包里多一份。漏换由 `dotnet单测` 的文本表用例按 guid 拦。
+- 玩家看得到的文案走 key 表 `Assets/AssetRaw/Configs/l10n/texts.json`(`[{key, zh, en}]`,一行一条、按 key 排序)。静态文案在 TMP 节点上挂 `LocalizedText`(`GameLogic/UI/Common/`)填 `_textKey`;带参数的句子与分数由窗用 `TextTable.Format` 画,并在 `TextTable.LanguageChanged` 里重画(窗内经 `AddServiceEvent` 登记)。代码里要用的 key 写进 `GameLogic/Module/L10n/TextKeys.cs`。
+- 主字体资产被编辑器写脏(保存时把动态图集与字形写进文件,涨到数 MB)不能入库:对它右键 Clear Dynamic Data 再保存,或 git checkout;`dotnet单测` 会拦。
+- 存量:`UIMainMenuPanel` 的字标「3B / BLACK BLOCK」与版本号仍是旧版 Text + 内置字体(只有 ASCII)。`Assets/Launcher/Resources/Fonts/LauncherFont.otf` 是启动器专用的子集字体,只含启动器源码里出现的字,业务窗**不引用**(`启动器字体核对` 只核启动器侧)。像素中文字体留给美术定,换字体只换主字体资产这一处。
 
 ## 四、截图与目视自检辅助
 

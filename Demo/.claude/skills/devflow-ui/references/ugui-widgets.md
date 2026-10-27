@@ -20,11 +20,11 @@
 
 ```
 Button [Image, Button]
-  └ Text [Text]
+  └ 文字 [TextMeshProUGUI(主字体资产,raycastTarget 关), LocalizedText]
 ```
 
 - `targetGraphic` 接到自身 Image。**别删那个 Image**——删了按钮没有点击反馈图形,且 Raycast 目标也没了。
-- 子 `Text` 若代码不引用就保持无前缀名;要引用则改成 `m_text_Xxx` 且窗内唯一。
+- 子文字节点若代码不引用就保持无前缀名;要引用则改成 `m_tmp_Xxx` 且窗内唯一。先例:`UIMainMenuPanel` 的 `m_btn_Language`。
 - 纯点击热区、不要图 → 不搭本控件,改用透明 `Image` + 同节点 `Button`,做法见 `ui-tools.md`§三。
 
 ### ScrollRect — 前缀 `m_scroll`
@@ -90,7 +90,7 @@ InputField [Image, InputField]
 Text [Text]
 ```
 
-- 字体现状与取用口径见 `ui-tools.md`「字体」段:正式字体未定,启动器子集字体 `LauncherFont` 不给业务窗用。
+- 新界面不再建旧版 `Text`:文字一律 TMP(`m_tmp`)挂主字体资产,口径见 `ui-tools.md`「字体」段。本节只管存量的旧版 `Text`。
 - `verticalOverflow` / `horizontalOverflow` 设 Overflow。留 Truncate 时,
   一旦容器高度装不下行高,整行文字会被丢弃(不是截一半,是一个字都不画);客户端自检「文本截断核对」只拦得到非拉伸锚点的那部分。
 
@@ -146,8 +146,7 @@ ProgressBar [Slider]
 |---|---|
 | Image / RawImage / CanvasGroup / 三种 LayoutGroup | 单组件节点,直接 `manage_components` 加 |
 | 列表 / 网格铺 item | block-client 的 `ItemContainer`(模板重复容器)与 `LoopGridView` / `LoopListView`(SuperScrollView 虚拟列表)都未搬入。量小的由宿主持模板引用、经 `UIPartFactory` 实例化;量大到要回收复用的先立项搬 SuperScrollView,不在业务里自写虚拟列表 |
-| Dropdown | **工程不做**。前缀表只有 `m_tmpDropdown` 无 legacy 项,而 TMP 无中文字体资产 |
-| 任何 TMP 控件 | 同上。要用先解决中文 TMP 字体资产,那是独立立项 |
+| Dropdown | 前缀表只有 `m_tmpDropdown` 无 legacy 项,要做就用 `TMP_Dropdown`,文字挂主字体资产;本篇还没有它的手搭条目 |
 | 弹窗壳 / 列表行 等业务复合件 | 参照既有 panel 手搭 |
 
 ## 全局约束(手搭一律适用)

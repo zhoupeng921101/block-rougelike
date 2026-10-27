@@ -61,7 +61,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PROJECT_DIR}\.
 | [工程链接核对.ps1](工程链接核对.ps1) | 工具 csproj 链接目标存在性静态扫描:`Demo/` 下入仓 `.csproj` 的 `<Compile>` / `<ProjectReference>` 目标须存在;展不开的属性与 `@(` / `%(` 项跳过打 NOTE。 | `工程链接核对.ps1 -ProjectDir <Demo>` | 0/1/2 |
 | [进程编码核对.ps1](进程编码核对.ps1) | 编辑器工具捕获子进程输出静态扫描:`Assets/Editor` / `Assets/TEngine/Editor` 两面须走本面共用原语(`EditorProcess.cs` / `ShellHelper.cs`),原语自身须设编码(判据见头注)。 | `进程编码核对.ps1 -ProjectDir <Demo>` | 0/1/2 |
 | [启动器字体核对.ps1](启动器字体核对.ps1) | 启动器子集字体覆盖静态扫描:`Assets/Launcher` 下 `.cs` 的全部用字(含注释,与字体生成脚本同口径)须在 `LauncherFont.otf` 的 cmap 里;不覆盖面与修法(重跑 `.claude/scripts/subset_launcher_font.py`)见头注。 | `启动器字体核对.ps1 -ProjectDir <Demo>` | 0/1/2 |
-| [dotnet单测.ps1](dotnet单测.ps1) | 规则核心单测:restore 后 `dotnet test DotNet/Tests/Tests.csproj`;镜像库(netstandard2.1 + C# 9,通配链接 `Assets/GameScripts/HotFix/GameRules`)编不过、用例失败或一个用例都没跑判 FAIL,restore 失败判 INFRA(见头注)。 | `dotnet单测.ps1 -ProjectDir <Demo>` | 0/1/2 |
+| [dotnet单测.ps1](dotnet单测.ps1) | 规则核心单测与文本表校验:restore 后 `dotnet test DotNet/Tests/Tests.csproj`;镜像库(netstandard2.1 + C# 9,通配链接 `Assets/GameScripts/HotFix/GameRules`)编不过、用例失败或一个用例都没跑判 FAIL,restore 失败判 INFRA(见头注)。 | `dotnet单测.ps1 -ProjectDir <Demo>` | 0/1/2 |
 | [Editor程序集编译.ps1](Editor程序集编译.ps1) | 客户端自检唯一编译道:Assembly-CSharp-Editor 连带引用闭包真编一遍,再按 `PlatformDefinePolicy.json` 各出包平台的 define 并行编运行时程序集,工具宏另编一遍(见头注)。闭包里 Assets 与工程内嵌包下有 asmdef 的 csproj 过期先按实扫写临时副本再编;须编辑器重生成或纯环境类错误判 INFRA。比对面、INFRA 各类与「排除 csproj 过期」的给法见头注。 | `Editor程序集编译.ps1 -ProjectDir <Demo>` | 0/1/2 |
 
 ## 交付前自审(会话调用,不发凭据)
