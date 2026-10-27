@@ -99,6 +99,9 @@ Label: wayfinder:map
 - [规则核心：一步的推进与结算管线](issues/20-规则核心-一步的推进与结算管线.md) —— **已落地 198e7784**：`Place` / `Discard` 返回 `StepResult`（被拒不改状态），`StartBlind` 也返回事件；17 段管线、13 种事件类只有整数、枚举、布尔和有序 int 列表。
   判线定类型是只读的 `ResolveClear`，预览和真落子共用；计分全整数、千分值逐项取整、饱和；六个钩子挂点与按（来源，id）查的注册表，本图为空。
   默认库三个种子用最简策略都打得完，胜、预算耗尽、放不下三种结局都走到了。自检 PASS，单测 121 个（新加 45 个）；编辑器 Console 没看。给 22 补了两条约束（基因校验、等级上限）。
+- [规则核心：局内存档快照](issues/22-规则核心-局内存档快照.md) —— **已落地 36f96a77**。编辑器 Console 是事后补验的：主工程编辑器关着 Auto Refresh，手拨 MCP 触发重编后，`GameRules` 0 错误，19、20 的代码也一并编过了。
+  `RunSnapshot.Write` / `Read` 出入规范 JSON，成员与次序同 09 的 v1 样例；自写的读写器只认整数子集，1 MiB、16 层，读档不抛异常、报错误码加成员路径。错误码 11 种，形状从严。
+  `Validate()` 补齐 09 §5；随机流的四条改在 `Read` 构造之前查。样档 `Tests/GameRules/Samples/run-v1.json`。任一步后存读接着打与不中断的一局逐步相同。自检 PASS，单测 190 个（新加 69 个）。
 
 ## Not yet specified
 
@@ -136,3 +139,7 @@ Label: wayfinder:map
 - **PC 上的拖拽器不分鼠标按键**：右键也能把块拖起来，移植时必改。
 - **block-client 的计分文件本来就双端编译**：`BlockScoring.cs` 被服务端 csproj 链接编入，所以不得引入引擎类型。规则核心可以照这个先例。
 - **`BoardGestureFlow.cs` 有 1108 行**，耦合 `BlockGameState`（单例）、`BoardPlayFlow`、`ServerDealSync`、`MergeOrderState`，不是拿来就能用的。
+- **主工程编辑器关着 Auto Refresh**（`kAutoRefreshMode=0`，22 号票查到）：改完代码切到前台不会重编，`Library/ScriptAssemblies/GameRules.dll` 的时间不动。
+  执行票要看编辑器编译结果：会话没有 UnityMCP 时，按 unity-check「会话侧拨号超时」手拨 `uvx --from mcpforunityserver==9.7.3 mcp-for-unity`，
+  绑 `Demo@<hash>`（按路径 `E:/block-rougelike/Demo/Assets` 认），在带落点守卫的 `execute_code` 里 Refresh + `RequestScriptCompilation()`，
+  再查 `EditorUtility.scriptCompilationFailed` 和 `read_console`。手拨要用户授权（22 号票这样做过一次）。
