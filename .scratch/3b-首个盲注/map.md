@@ -102,6 +102,9 @@ Label: wayfinder:map
 - [规则核心：局内存档快照](issues/22-规则核心-局内存档快照.md) —— **已落地 36f96a77**。编辑器 Console 是事后补验的：主工程编辑器关着 Auto Refresh，手拨 MCP 触发重编后，`GameRules` 0 错误，19、20 的代码也一并编过了。
   `RunSnapshot.Write` / `Read` 出入规范 JSON，成员与次序同 09 的 v1 样例；自写的读写器只认整数子集，1 MiB、16 层，读档不抛异常、报错误码加成员路径。错误码 11 种，形状从严。
   `Validate()` 补齐 09 §5；随机流的四条改在 `Read` 构造之前查。样档 `Tests/GameRules/Samples/run-v1.json`。任一步后存读接着打与不中断的一局逐步相同。自检 PASS，单测 190 个（新加 69 个）。
+- [文本表与字体的基础件](issues/15-文本表与字体的基础件.md) —— **已落地 5c5e41bb / 97e0765f**：`texts.json` 先放主界面三个 key；`TextTable` 在主界面打开前异步读表，切语言重读、发 `LanguageChanged`；`LocalizedText`（字段 `_textKey`）、`TextKeys` 都已建；主字体是思源黑体 SC Bold 动态多图集 TMP 资产，入库的是清空态。
+  主界面加了「按钮列」和语言按钮，编辑器里中英热切、删偏好后按系统语言取默认值都验过；Windows 包中文正常，主字体只在 YooAsset 的一个包里（15 MB）。
+  `DotNet/Tests/L10n` 做了 14 第 8 条的五项，另加一项「主字体资产不带动态数据」：编辑器存盘会把图集写进资产（7.7 KB → 2 MB 多），这项拦。四种故意出错都红。自检 PASS，单测 208 个（新加 18 个）。
 
 ## Not yet specified
 
@@ -116,6 +119,7 @@ Label: wayfinder:map
 - 基因栏在战斗界面放哪（审计 §2.6）。本图没有基因。
 - 手柄与 Steam Deck 操作、点选式拾取、改键。本图只做鼠标加键盘；它们和拖拽吐同一组事件，以后只在输入层补（见 [PC 操作](issues/12-PC上的落子与旋转操作.md)）。
 - 启动器文案的双语。`LoadText.cs` 在热更程序集之前就跑，用不上 key 表，首发前要单独处理（见 [文本 key 表的接法](issues/14-文本key表的接法.md)）。
+- 分发时把第三方许可放进包目录。思源黑体的 OFL 全文现在只被 Fonts 组打成一个 YooAsset 包随包带走，玩家看不到；本图的目的地是能玩，不是分发（见 [文本表与字体的基础件](issues/15-文本表与字体的基础件.md)）。
 - 强化 4 种与版本 3 种的效果，包括万态「可填入任意空格」怎么落子。本图只在块实例上留槽、在逐格段留触发点（见切片边界票）。
 - 阶段 2 的收尾：devflow 回归矩阵转绿、置备槽位、用小任务走通领取 → 交付。本图走主工程通道、不用槽位，属工程计划阶段 2 的验收（见 [阶段 2 的落地状态](issues/01-阶段2的落地状态.md)）。
 
@@ -143,3 +147,7 @@ Label: wayfinder:map
   执行票要看编辑器编译结果：会话没有 UnityMCP 时，按 unity-check「会话侧拨号超时」手拨 `uvx --from mcpforunityserver==9.7.3 mcp-for-unity`，
   绑 `Demo@<hash>`（按路径 `E:/block-rougelike/Demo/Assets` 认），在带落点守卫的 `execute_code` 里 Refresh + `RequestScriptCompilation()`，
   再查 `EditorUtility.scriptCompilationFailed` 和 `read_console`。手拨要用户授权（22 号票这样做过一次）。
+- **主字体资产会被编辑器写脏**（15 号票实测）：Play 或预制体里出过字之后，任何一次 SaveAssets 都会把图集像素和字形表写进 `SourceHanSansSC-Bold SDF.asset`（7.7 KB → 2 MB 多），`dotnet单测` 会红。
+  清法：在 Inspector 里对它右键 Clear Dynamic Data 再保存，或者 git checkout。出包时 TMP 自己会清回同样的状态，不产生 diff。
+- **经 MCP 触发出包**，用 `EditorApplication.update` 挂一次性回调来调 `WindowsBuild.Build()`。用 `delayCall` 编辑器在后台时迟迟不触发，过后会再出一次包（15 号票因此出了两次，`PackageVersion.json` 多加了一次）。
+- **新建的 TMP 组件默认挂 LiberationSans**（无中文），要改挂主字体资产 `AssetRaw/Fonts/SourceHanSansSC-Bold SDF.asset`；自检按 guid 拦。
