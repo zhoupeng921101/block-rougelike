@@ -88,6 +88,11 @@ Label: wayfinder:map
 - [消除演出的节奏](issues/21-消除演出的节奏.md) —— **先把整份事件排成时间表再播**：被消线接着预览光带一起亮，再按 07 的次序逐格跳「+点数」，每格跳完就退场；计数框就是落了位的预览徽章，入账时合成得分，飞进累计分。
   每格 0.06 秒，逐格段封顶 1 秒、超出就等比压缩：单线 0.67 秒解锁、1.47 秒演完，最大 1.25 秒解锁；一个盲注约锁 6–7 秒，Balatro 1.0.1o 约 30 秒。
   **用户选定**：托盘在最后一格退场时解锁，尾巴和下一手并行（改了 12 的锁止点）；本图不做快进和速度档，只留 `Speed` 倍率。不成线、弃置、发组都不锁。时长放表现层 `ClearPacing` 常量表，占位。
+- [规则核心的工程骨架](issues/16-规则核心的工程骨架.md) —— **已落地 520ca0ec / 28934a64 / 5e4b0d75**：`GameRules` 程序集（命名空间 `GameRules`，进热更清单、排在 GameLogic 前）和第一批随机件（`RngStreams` / `SeedText` / `RngKeys` / `RngOps`）都已入库；
+  `Demo/DotNet/` 下的镜像库和 NUnit 测试工程已建，research/08 向量表与源码禁用清单都已成用例。客户端自检第十四道 `dotnet单测` 冷跑 4.2 秒、热跑 1.9 秒，首次 restore 没联网。
+  五种故意出错都让自检变红；Windows 包带 `GameRules.dll`，能进主界面。tengine-conventions 新开「规则核心」一节。
+- [规则核心：盘面、方块实例与区](issues/19-规则核心-盘面方块实例与区.md) —— **已落地 055db9dc**：`Core/` 五个文件原样包进命名空间，`BlockShapeMap` 裁到 19 个朝向；`BoardState` 三层只有两个写口和 `SetDead`，`BoardCells` 是唯一的位序换算；`RunState` / `BlindState` 带 `Clone`、只读视图和 `Validate()`（id、盘面不变式、区守恒）。
+  开盲注按 id 排序后用 `shuffle@1.1` 洗、从槽 0 发组。满列在 `FullLines()` 里已排成升序，`ClearType` 枚举序不是优先级。自检 PASS，单测 76 个（新加 36 个）。编辑器 Console 还没看：主工程编辑器没刷新。
 
 ## Not yet specified
 
@@ -109,9 +114,9 @@ Label: wayfinder:map
 
 <!-- 不是待决策，是后面每个 session 都该记着的事实 -->
 
-- **阶段 2 已入库（c49c2609），但验收没跑**（已解决的旧坑：开图时 208 个文件卡在暂存区）。
-  devflow 回归矩阵没全绿、没置备槽位；主工程通道用到的客户端自检与单仓提交在真工程上跑通过。
-  03 号票要求的 `Demo/.gitignore` 三行现在可以加了。
+- **阶段 2 已完成**（4e025276）：移植件 c49c2609，回归矩阵 43/43 转绿（e6b539f8），槽位 dev1、dev2 已置备，
+  验收任务「主界面右下角显示版本号」走通领取 → 交付（47ef0219，**交付会推送到 origin**）。
+  本图仍走主工程通道（不推送）。03 号票要求的 `Demo/.gitignore` 三行现在可以加了。
 - **在仓根起的会话挂不上 devflow 的 hook**。`Demo/.claude/settings.json` 的提交检查、命令通路检查、写入补 BOM
   都按 `${CLAUDE_PROJECT_DIR}\.claude\devflow\hooks\…` 取路径，仓根没有 `.claude/settings.json`。task 票的会话要在 `Demo/` 起。
 - **auto 模式会拒 `-ExecutionPolicy Bypass`**（分类器判 Security Weaken）。本机 CurrentUser 策略是 RemoteSigned，
