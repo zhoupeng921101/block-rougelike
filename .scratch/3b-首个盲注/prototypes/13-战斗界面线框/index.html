@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>战斗界面线框</title>
+<!--
+  PROTOTYPE —— 用完即弃，不进 Unity 工程。
+  票：13 · 战斗界面线框（.scratch/3b-首个盲注/issues/13-战斗界面线框.md）
+  三个布局方案画在同一张 1920×1080 画布上，?variant=A|B|C 切换，按窗口等比缩放。
+  其余参数：scene=idle|drag|discard|off|win|lose，tray=3|5，ann=1（标注尺寸），notes=1（说明）。
+  方块是占位色块，数值是占位数值票（11）的数。
+-->
+<style>
+:root{
+  --panel:#141b33; --line:#2f3d6b; --text:#dfe6ff; --dim:#8b95b8;
+  --accent:#ffd34d; --hl:#5ee7ff; --chips:#3d7fe6; --mult:#e64a4a; --res:#7d86a3; --ok:#5be38a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#03050b;overflow:hidden;font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif}
+#viewport{position:fixed;left:0;top:0;right:0}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;color:var(--text);overflow:hidden;
+  background:radial-gradient(ellipse at 50% 40%,#16204a 0,#0a0f1f 60%,#060912 100%)}
+.box{position:absolute}
+.panel{background:var(--panel);border:2px solid var(--line);border-radius:12px}
+.res{border:2px dashed var(--res);border-radius:12px;color:var(--res);
+  background:repeating-linear-gradient(45deg,rgba(125,134,163,.07) 0 14px,transparent 14px 28px)}
+.res-chip{display:inline-block;border:1.5px dashed var(--res);color:var(--res);border-radius:8px;padding:3px 10px;font-size:17px;white-space:nowrap}
+.lbl{font-size:20px;color:var(--dim)}
+.big{font-weight:700}
+.kbd{display:inline-block;border:1.5px solid var(--dim);border-radius:6px;padding:0 8px;margin-left:12px;font-size:18px;line-height:26px;color:var(--dim)}
+.btn{background:#26305a;border:2px solid #4a5a9a;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;white-space:nowrap}
+.colbg{position:absolute;background:rgba(14,20,42,.92);border-right:2px solid var(--line)}
+
+.board{background:#0d152c;outline:4px solid #3a4c8a;outline-offset:6px;border-radius:4px}
+.cell{position:absolute;border-radius:5px}
+.cell.e{background:#18233f}
+.blk{position:absolute;border-radius:4px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.28),inset 0 3px 0 rgba(255,255,255,.28)}
+.kI{background:#46cde6}.kO{background:#f0c63f}.kT{background:#a46bff}.kS{background:#46d06d}
+.kZ{background:#f05252}.kJ{background:#3b78ff}.kL{background:#ff983a}
+.ghost{opacity:.42;outline:3px dashed #fff;outline-offset:-3px}
+.clr{filter:brightness(1.45) saturate(1.2)}
+.band{position:absolute;background:rgba(94,231,255,.18);box-shadow:0 0 24px 4px rgba(94,231,255,.5);pointer-events:none}
+.held{position:absolute;z-index:20;filter:drop-shadow(0 14px 16px rgba(0,0,0,.65))}
+.ptr{position:absolute;z-index:21;width:22px;height:22px;margin:-11px 0 0 -11px;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 2px #000}
+.pc{position:relative}
+
+.foot{position:absolute;border:2px dashed rgba(125,134,163,.45);border-radius:12px}
+.foot span{position:absolute;right:10px;bottom:-26px;font-size:16px;color:var(--res);white-space:nowrap}
+.foot.h span{bottom:auto;top:-24px}
+.slot{position:absolute;background:#111933;border:2px solid var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;transition:transform .12s}
+.slot.hover,.slot:not(.empty):hover{border-color:var(--hl);box-shadow:0 0 0 4px rgba(94,231,255,.3);transform:translateY(-6px)}
+.slot.gray .pc{filter:grayscale(1) brightness(.6);opacity:.55}
+.slot.gray .pts{opacity:.45}
+.slot.empty{border-style:dashed;background:transparent}
+.slot-empty{font-size:18px;color:var(--dim)}
+.pts{position:absolute;right:10px;bottom:6px;font-size:18px;color:var(--accent);font-weight:700}
+.st{position:absolute;left:10px;top:6px;font-size:15px;color:var(--hl);white-space:nowrap}
+.slot.gray .st{color:var(--dim)}
+
+.disc{border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:3px solid #4a5a9a;background:#151d3a}
+.disc .d-lbl{font-size:24px}
+.disc .d-num{font-size:60px;font-weight:700;line-height:1;color:var(--accent)}
+.disc .d-sub{font-size:17px;color:var(--dim)}
+.disc.hover{border-color:var(--hl);background:#123048;box-shadow:0 0 0 6px rgba(94,231,255,.25),0 0 40px rgba(94,231,255,.5)}
+.disc.hover .d-lbl{color:var(--hl)}
+.disc.off{border-style:dashed;border-color:#555c74;background:repeating-linear-gradient(-45deg,#151a2a 0 16px,#10141f 16px 32px)}
+.disc.off .d-num,.disc.off .d-lbl{color:#6b7288}
+.disc.small .trash{display:none}
+.trash{width:44px;height:40px;border:3px solid currentColor;border-top-width:6px;border-radius:0 0 8px 8px;opacity:.55;margin-bottom:6px}
+.d-call{position:absolute;z-index:23;transform:translate(-50%,-100%);background:var(--hl);color:#04212b;font-size:22px;font-weight:700;padding:6px 14px;border-radius:8px;white-space:nowrap}
+
+.bar{height:14px;border-radius:7px;background:#0c1226;border:1.5px solid var(--line);overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,#3d8bff,#5ee7ff)}
+.num-box{display:inline-flex;align-items:center;justify-content:center;min-width:110px;height:72px;border-radius:10px;font-size:48px;font-weight:700;color:#fff;background:#1b2444}
+.num-box.chips{background:var(--chips)} .num-box.mult{background:var(--mult)}
+.pv-off .num-box{color:#4a5578}
+.xs{font-size:40px;margin:0 14px;color:var(--dim)}
+.badge{position:absolute;z-index:22;background:#0b1126;border:2px solid var(--hl);border-radius:10px;padding:6px 14px;display:flex;align-items:center;gap:10px;font-size:26px;white-space:nowrap;transform:translate(-50%,-100%)}
+.badge .num-box{min-width:56px;height:40px;font-size:26px}
+
+.types{display:flex;flex-direction:column;padding:12px 16px}
+.types .hd{font-size:20px;color:var(--dim);display:flex;justify-content:space-between;padding:6px 8px 10px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.trow{display:flex;align-items:center;height:56px;padding:0 8px;border-radius:8px;font-size:24px}
+.trow .nm{flex:1} .trow .lv{color:var(--dim);font-size:17px;width:44px}
+.trow .c{color:#7fb0ff;width:56px;text-align:right} .trow .m{color:#ff8a8a;width:60px;text-align:right}
+.trow.on{background:rgba(94,231,255,.18);outline:2px solid var(--hl)}
+.rt{font-size:17px;padding:10px 14px 0;line-height:1.4}
+.rg{display:grid;gap:12px;padding:12px 14px 14px;flex:1}
+.rs{border:2px dashed #59617c;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#6c7491}
+.rs.x{opacity:.5}
+
+.ovl{position:absolute;left:0;top:0;width:1920px;height:1080px;background:rgba(3,6,14,.74);z-index:40}
+.card{z-index:41;background:#17203f;border:3px solid #4a5a9a;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.card.win{border-color:var(--ok)} .card.lose{border-color:var(--mult)}
+.card .ttl{font-size:84px;font-weight:700;line-height:1}
+.card.win .ttl{color:var(--ok)} .card.lose .ttl{color:var(--mult)}
+.card .why{font-size:26px}
+.card .sc{font-size:30px}
+.card .btn{width:340px;height:76px}
+
+/* 标注模式：每个区域标名字、左上角坐标、宽×高 */
+.ann .box{outline:1.5px solid rgba(255,225,77,.85)}
+.ann .box::after{content:attr(data-tag);position:absolute;left:0;top:0;background:#ffe14d;color:#111;font-size:14px;line-height:20px;padding:0 6px;border-radius:0 0 4px 0;white-space:nowrap;z-index:60;pointer-events:none;font-weight:400}
+
+/* 切换条和说明：故意做成白底，和设计本身区分开 */
+#bar{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;max-width:calc(100vw - 16px);
+  background:#fff;color:#111;border-radius:14px;padding:6px 10px;box-shadow:0 6px 24px rgba(0,0,0,.5);font:14px/1.2 "Microsoft YaHei",sans-serif;z-index:100}
+#bar button{font:inherit;border:1px solid #bbb;background:#f3f3f3;border-radius:8px;padding:5px 9px;cursor:pointer}
+#bar button.on{background:#111;color:#fff;border-color:#111}
+#vlabel{font-weight:700;min-width:160px;text-align:center}
+.sep{width:1px;height:22px;background:#ccc;margin:0 4px}
+#state{color:#777;font-family:Consolas,monospace;font-size:12px}
+#notes{position:fixed;right:10px;top:10px;width:480px;max-width:calc(100vw - 20px);max-height:calc(100vh - 100px);overflow:auto;background:rgba(255,255,255,.97);color:#111;border-radius:12px;padding:14px 18px;
+  font:14px/1.6 "Microsoft YaHei",sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.5);z-index:99;display:none}
+#notes.open{display:block}
+#notes h2{font-size:18px;margin:0 0 6px} #notes h3{font-size:14px;margin:12px 0 2px;color:#444}
+#notes ul{margin:0;padding-left:18px} #notes p{margin:4px 0}
+#notes .warn{color:#b00020;font-weight:700}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage"></div></div>
+<aside id="notes"></aside>
+<div id="bar">
+  <button id="prev" title="上一个方案（←）">◀</button><span id="vlabel"></span><button id="next" title="下一个方案（→）">▶</button>
+  <span class="sep"></span><span id="scenes" style="display:flex;gap:4px;flex-wrap:wrap"></span>
+  <span class="sep"></span><button id="trayBtn"></button><button id="annBtn">标注尺寸 (M)</button><button id="notesBtn">说明 (N)</button>
+  <span id="state"></span>
+</div>
+<script>
+const SCORE = 186, TARGET = 350, LIB = 19, LIBN = 28, DISC = 2;
+const TYPES = [['清屏',60,4],['五线',55,4],['同形态十字',50,4],['多线',45,3],['同形态',40,3],['三线',35,3],
+               ['拐角',30,2],['十字',25,2],['平行线',20,2],['双线',15,2],['单线',10,1]];
+// 场景 2 的局面：把 I 横放在第 6 行第 3–6 格，同时填满第 6 行和第 6 列 → 十字（不在角上）
+const BOARD = ['OO.ZZJ..','OO..ZJ..','.TTT.JJ.','..T..L..','S....L..','SS....ZZ','.S..LLZ.','...IIII.'];
+const K = {I:[[0,0],[0,1],[0,2],[0,3]],O:[[0,0],[0,1],[1,0],[1,1]],T:[[0,0],[0,1],[0,2],[1,1]],S:[[0,1],[0,2],[1,0],[1,1]],
+           Z:[[0,0],[0,1],[1,1],[1,2]],J:[[0,0],[1,0],[1,1],[1,2]],L:[[0,2],[1,0],[1,1],[1,2]]};
+const SCENES = [['idle','1 静止'],['drag','2 拖到盘上'],['discard','3 拖到弃置区'],['off','4 弃置用完'],['win','5 胜利浮层'],['lose','6 失败浮层']];
+const GENE_T = '预留：基因栏 · 默认 4 槽，最多 6 · 放哪不在本图定';
+const ITEM_T = '预留：道具栏 · 默认 2 格，最多 3';
+
+function box(tag, x, y, w, h, html = '', cls = '') {
+  return `<div class="box ${cls}" data-tag="${tag} · (${Math.round(x)},${Math.round(y)}) ${Math.round(w)}×${Math.round(h)}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${html}</div>`;
+}
+function dims(k) { const c = K[k]; return [Math.max(...c.map(p => p[1])) + 1, Math.max(...c.map(p => p[0])) + 1]; }
+function pieceHTML(k, cs) {
+  const [w, h] = dims(k), g = Math.max(3, Math.round(cs * 0.05));
+  return `<div class="pc" style="width:${w * cs}px;height:${h * cs}px">${K[k].map(([r, c]) =>
+    `<i class="blk k${k}" style="left:${c * cs}px;top:${r * cs}px;width:${cs - g}px;height:${cs - g}px"></i>`).join('')}</div>`;
+}
+function board(x, y, cs, s) {
+  const drag = s.scene === 'drag';
+  let h = '';
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+    const k = BOARD[r][c], ghost = drag && r === 5 && c >= 2 && c <= 5, clr = drag && (r === 5 || c === 5);
+    const cls = k === '.' ? (ghost ? 'blk kI ghost' : 'e') : `blk k${k}${clr ? ' clr' : ''}`;
+    h += `<i class="cell ${cls}" style="left:${c * cs + 2}px;top:${r * cs + 2}px;width:${cs - 4}px;height:${cs - 4}px"></i>`;
+  }
+  if (drag) h += `<div class="band" style="left:0;top:${5 * cs}px;width:${8 * cs}px;height:${cs}px"></div>` +
+                 `<div class="band" style="left:${5 * cs}px;top:0;width:${cs}px;height:${8 * cs}px"></div>`;
+  return box(`网格 8×8 · 格 ${cs}px`, x, y, cs * 8, cs * 8, h, 'board');
+}
+function held(k, x, y, cs, op = 1) {
+  const [w, h] = dims(k);
+  return `<div class="held" style="left:${x}px;top:${y}px;opacity:${op}">${pieceHTML(k, cs)}</div>` +
+         `<div class="ptr" style="left:${x + w * cs / 2}px;top:${y + h * cs / 2}px"></div>`;
+}
+// 场景 2：手上的 I 在虚影旁边一点（块心贴指针、还没对齐格）；场景 3：手上的 S 块心在弃置区中心
+function dragLayer(s, gx, gy, cs, D) {
+  if (s.scene === 'drag') return held('I', gx + 2.2 * cs, gy + 4.85 * cs, cs);
+  if (s.scene === 'discard') return held('S', D.x + D.w / 2 - 1.5 * cs, D.y + D.h / 2 - cs, cs, .85);
+  return '';
+}
+function trayItems(s) {
+  return [{k:'I',p:3},{k:'L',p:2},{k:'S',p:4},{k:'T',p:1},{k:'O',p:2}].slice(0, s.tray).map((t, i) => {
+    let st = 'normal';
+    if (i === 2) st = 'gray';
+    if (s.scene === 'idle' && i === 1) st = 'hover';
+    if (s.scene === 'drag' && i === 0) st = 'empty';
+    if (s.scene === 'discard' && i === 2) st = 'empty';
+    return {...t, st};
+  });
+}
+function slotHTML(x, y, w, h, t) {
+  const cs = Math.floor(Math.min(w, h) / 5.2);
+  const inner = t.st === 'empty' ? '<span class="slot-empty">拿在手上</span>' : pieceHTML(t.k, cs) + `<span class="pts">${t.p} 点</span>`;
+  const tag = {hover: '悬停', gray: '置灰：怎么转都放不下', empty: ''}[t.st];
+  return `<div class="slot ${t.st}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${inner}${tag ? `<span class="st">${tag}</span>` : ''}</div>`;
+}
+function trayH(s, cx, y, w, h, gap) {
+  const it = trayItems(s), n = it.length, tot = n * w + (n - 1) * gap, tot5 = 5 * w + 4 * gap;
+  let out = n < 5 ? `<div class="foot h" style="left:${cx - tot5 / 2}px;top:${y}px;width:${tot5}px;height:${h}px"><span>扩到 5 块时的占位</span></div>` : '';
+  return out + box(`待放置区 · ${n} 块 · 槽 ${w}×${h}`, cx - tot / 2, y, tot, h, it.map((t, i) => slotHTML(i * (w + gap), 0, w, h, t)).join(''));
+}
+function trayV(s, x, cy, w, h, gap) {
+  const it = trayItems(s), n = it.length, tot = n * h + (n - 1) * gap, tot5 = 5 * h + 4 * gap;
+  let out = n < 5 ? `<div class="foot" style="left:${x}px;top:${cy - tot5 / 2}px;width:${w}px;height:${tot5}px"><span>扩到 5 块时的占位</span></div>` : '';
+  return out + box(`待放置区（竖排）· ${n} 块 · 槽 ${w}×${h}`, x, cy - tot / 2, w, tot, it.map((t, i) => slotHTML(0, i * (h + gap), w, h, t)).join(''));
+}
+function discard(D, s) {
+  const st = s.scene === 'discard' ? 'hover' : (s.scene === 'off' || s.scene === 'lose') ? 'off' : 'normal';
+  const n = st === 'off' ? 0 : DISC;
+  const name = {normal: '常态', hover: '块悬在上面', off: '次数用完'}[st];
+  const lbl = {normal: '弃置区', hover: '松手即弃置', off: '弃置已用完'}[st];
+  const sub = {normal: '剩余弃置次数', hover: '剩余弃置次数', off: '拖进来会弹回'}[st];
+  const inner = `<div class="trash"></div><div class="d-lbl">${lbl}</div><div class="d-num">${n}</div><div class="d-sub">${sub}</div>`;
+  let out = box(`弃置区 · ${name}`, D.x, D.y, D.w, D.h, inner, `disc ${st}${D.h < 220 ? ' small' : ''}`);
+  if (st === 'hover') out += `<div class="d-call" style="left:${Math.min(D.x + D.w / 2, 1770)}px;top:${D.y - 12}px">松手弃置 · 剩余 ${n} → ${n - 1}</div>`;
+  return out;
+}
+function reserve(title, n, cols, base, unit) {
+  let g = '';
+  for (let i = 1; i <= n; i++) g += `<div class="rs ${i > base ? 'x' : ''}">${unit} ${i}${i > base ? '（扩）' : ''}</div>`;
+  return `<div style="display:flex;flex-direction:column;height:100%"><div class="rt">${title}</div><div class="rg" style="grid-template-columns:repeat(${cols},1fr)">${g}</div></div>`;
+}
+function backBtn(x, y, w, h, fs = 28) {
+  return box('返回主界面', x, y, w, h, `<span style="font-size:${fs}px">返回主界面</span><span class="kbd">Esc</span>`, 'btn');
+}
+function pvNums(on) {
+  return on ? '<span class="num-box chips">25</span><span class="xs">×</span><span class="num-box mult">2</span>'
+            : '<span class="num-box">—</span><span class="xs">×</span><span class="num-box">—</span>';
+}
+function typesTable(on) {
+  return `<div class="types"><div class="hd"><span>消除类型 · 本级</span><span>底注 × 倍率</span></div>${TYPES.map(([n, c, m]) =>
+    `<div class="trow ${n === on ? 'on' : ''}"><span class="nm">${n}</span><span class="lv">Lv1</span><span class="c">${c}</span><span class="m">×${m}</span></div>`).join('')}</div>`;
+}
+function overlay(s, cx, cy) {
+  if (s.scene !== 'win' && s.scene !== 'lose') return '';
+  const win = s.scene === 'win', w = 660, h = win ? 400 : 480;
+  const body = `<div class="ttl">${win ? '胜利' : '失败'}</div>` +
+    (win ? '' : '<div class="why">这组块怎么转都放不下，弃置次数已用完</div><div class="lbl" style="font-size:16px;margin-top:-10px">另一种原因的文案：方块库已抽完，仍未达到目标分</div>') +
+    `<div class="sc"><span class="lbl">累计分</span> <b>${win ? 362 : 248}</b> <span class="lbl">/ 目标分</span> <b>${TARGET}</b></div>` +
+    '<div class="btn">返回主界面<span class="kbd">Esc</span></div>';
+  return '<div class="ovl"></div>' + box('结果浮层', cx - w / 2, cy - h / 2, w, h, body, 'card ' + (win ? 'win' : 'lose'));
+}
+
+// ───────── A：三栏·草图向 ─────────
+function VA(s) {
+  const cs = 80, gx = 640, gy = 230, D = {x: 1620, y: 890, w: 260, h: 170}, drag = s.scene === 'drag';
+  let h = '';
+  h += box('标题区（可省）', 40, 24, 380, 96, '<div style="font-size:30px;font-weight:700;letter-spacing:4px;padding:26px 24px;color:#9fb0e8">BIG BLOCK BANG</div>', 'panel');
+  h += box('盲注信息', 600, 24, 720, 96, `<div style="display:flex;align-items:center;height:100%;padding:0 24px;gap:28px">
+    <div style="font-size:28px">第 1 盲注 · 普通盲注</div><div style="font-size:34px;color:var(--accent)"><span class="lbl">目标分 </span>${TARGET}</div>
+    <span class="res-chip">预留：首领效果 / 奖励</span></div>`, 'panel');
+  h += box('方块库剩余', 1500, 24, 380, 96, `<div style="display:flex;align-items:baseline;padding:20px 24px;gap:14px"><span class="lbl">方块库剩余</span>
+    <span class="big" style="font-size:48px">${LIB}</span><span class="lbl">/ ${LIBN} 块</span></div>`, 'panel');
+  h += box('消除类型表（常驻）', 40, 150, 420, 710, typesTable(drag ? '十字' : null), 'panel');
+  h += box('累计分 / 目标分', 640, 140, 640, 76, `<div style="display:flex;align-items:center;height:100%;padding:0 20px;gap:16px">
+    <span class="lbl">累计分</span><span class="big" style="font-size:44px">${SCORE}</span><div class="bar" style="flex:1"><i style="width:${SCORE / TARGET * 100}%"></i></div>
+    <span class="lbl">/ ${TARGET}</span></div>`, 'panel');
+  h += board(gx, gy, cs, s);
+  h += box('预留：基因栏', 1500, 150, 380, 400, reserve(GENE_T, 6, 2, 4, '基因'), 'res');
+  h += box('预留：道具栏', 1500, 570, 380, 170, reserve(ITEM_T, 3, 3, 2, '道具'), 'res');
+  h += backBtn(40, 950, 300, 90);
+  h += trayH(s, 960, 900, 150, 160, 20);
+  h += discard(D, s);
+  h += dragLayer(s, gx, gy, cs, D);
+  if (drag) h += `<div class="badge" style="left:${gx + 4.2 * cs}px;top:${gy + 4.85 * cs - 10}px">十字 <span class="lbl">Lv1</span><span class="num-box chips">25</span>×<span class="num-box mult">2</span></div>`;
+  return h + overlay(s, gx + 4 * cs, gy + 4 * cs);
+}
+
+// ───────── B：左读数柱 ─────────
+function VB(s) {
+  const cs = 84, gx = 870, gy = 220, D = {x: 1700, y: 430, w: 190, h: 300}, drag = s.scene === 'drag';
+  let h = '<div class="colbg" style="left:0;top:0;width:500px;height:1080px"></div>';
+  h += box('盲注信息', 30, 30, 440, 150, `<div style="padding:16px 22px"><div style="font-size:30px">第 1 盲注 · 普通盲注</div>
+    <div style="margin-top:8px" class="lbl">目标分 <span style="font-size:40px;color:var(--accent);font-weight:700">${TARGET}</span></div></div>
+    <span class="res-chip" style="position:absolute;right:16px;bottom:16px;font-size:15px">预留：首领效果 / 奖励</span>`, 'panel');
+  h += box('累计分', 30, 200, 440, 190, `<div style="padding:14px 22px"><div class="lbl">累计分</div>
+    <div class="big" style="font-size:84px;line-height:1.05">${SCORE}</div><div class="bar" style="margin-top:8px"><i style="width:${SCORE / TARGET * 100}%"></i></div>
+    <div class="lbl" style="margin-top:6px">目标 ${TARGET} · 还差 ${TARGET - SCORE}</div></div>`, 'panel');
+  h += box('预览位（固定）', 30, 410, 440, 200, `<div class="${drag ? 'pv-on' : 'pv-off'}" style="padding:14px 22px"><div class="lbl">这一手（拖动预览）</div>
+    <div style="font-size:40px;margin:4px 0 10px;${drag ? '' : 'color:#4a5578'}">${drag ? '十字 <span class="lbl">Lv1</span>' : '—'}</div><div>${pvNums(drag)}</div></div>`, 'panel');
+  h += box('方块库剩余', 30, 630, 440, 120, `<div style="display:flex;align-items:baseline;gap:14px;padding:28px 22px"><span class="lbl">方块库剩余</span>
+    <span class="big" style="font-size:52px">${LIB}</span><span class="lbl">/ ${LIBN} 块</span></div>`, 'panel');
+  h += box('预留：金钱', 30, 770, 440, 120, '<div class="rt">预留：金钱、利息（阶段 5）</div>', 'res');
+  h += backBtn(30, 960, 440, 90);
+  h += box('预留：基因栏', 560, 30, 860, 170, reserve(GENE_T, 6, 6, 4, '基因'), 'res');
+  h += box('预留：道具栏', 1460, 30, 430, 170, reserve(ITEM_T, 3, 3, 2, '道具'), 'res');
+  h += board(gx, gy, cs, s);
+  h += trayH(s, gx + 4 * cs, 910, 150, 150, 16);
+  h += discard(D, s);
+  h += dragLayer(s, gx, gy, cs, D);
+  return h + overlay(s, gx + 4 * cs, gy + 4 * cs);
+}
+
+// ───────── C：大盘·侧托盘 ─────────
+function VC(s) {
+  const cs = 100, gx = 364, gy = 196, D = {x: 1684, y: 640, w: 212, h: 356}, drag = s.scene === 'drag';
+  let h = '<div class="colbg" style="left:0;top:0;width:1920px;height:100px;border-right:0;border-bottom:2px solid var(--line)"></div>';
+  h += backBtn(24, 16, 224, 68, 24);
+  h += box('盲注信息', 272, 12, 540, 76, `<div style="display:flex;align-items:center;gap:18px;height:100%;padding:0 18px">
+    <span style="font-size:26px">第 1 盲注 · 普通</span><span style="font-size:30px;color:var(--accent)"><span class="lbl">目标 </span>${TARGET}</span>
+    <span class="res-chip" style="font-size:15px">预留：首领效果</span></div>`, 'panel');
+  h += box('累计分 → 目标分（进度条）', 836, 12, 680, 76, `<div style="display:flex;align-items:center;gap:16px;height:100%;padding:0 18px">
+    <span class="lbl">累计分</span><span class="big" style="font-size:44px">${SCORE}</span>
+    <div class="bar" style="flex:1;height:22px;border-radius:11px"><i style="width:${SCORE / TARGET * 100}%"></i></div><span class="lbl">/ ${TARGET}</span></div>`, 'panel');
+  h += box('方块库剩余', 1540, 12, 356, 76, `<div style="display:flex;align-items:baseline;gap:12px;padding:14px 18px"><span class="lbl">方块库</span>
+    <span class="big" style="font-size:40px">${LIB}</span><span class="lbl">/ ${LIBN}</span></div>`, 'panel');
+  const nb = 'style="height:48px;font-size:32px;min-width:80px"';
+  h += box('预览条（固定，盘正上方）', gx, 116, 800, 64, `<div style="display:flex;align-items:center;justify-content:center;gap:16px;height:100%;font-size:28px">${drag
+    ? `十字 <span class="lbl">Lv1</span><span class="num-box chips" ${nb}>25</span>×<span class="num-box mult" ${nb}>2</span>`
+    : '<span style="color:#56608a;font-size:22px">拖块到盘上、成线时显示：类型 · 底注 × 倍率</span>'}</div>`, 'panel');
+  h += box('预留：基因栏（竖排）', 24, 196, 300, 800, reserve(GENE_T, 6, 1, 4, '基因'), 'res');
+  h += board(gx, gy, cs, s);
+  h += trayV(s, 1204, gy + 4 * cs, 240, 150, 12);
+  h += box('预留：道具栏', 1684, 196, 212, 380, reserve(ITEM_T, 3, 1, 2, '道具'), 'res');
+  h += discard(D, s);
+  h += dragLayer(s, gx, gy, cs, D);
+  return h + overlay(s, gx + 4 * cs, gy + 4 * cs);
+}
+
+const V = {A: {name: '三栏·草图向', render: VA}, B: {name: '左读数柱', render: VB}, C: {name: '大盘·侧托盘', render: VC}};
+const NOTES = {
+  A: {
+    one: '照草图摆：左栏常驻 11 种类型表，右栏留给基因与道具，托盘在下，弃置区在右下角。',
+    read: ['顶部：盲注信息（中）、方块库剩余（右上）', '盘上方：累计分 / 目标分', '左栏：11 种类型 + 本级底注 × 倍率，拖动时高亮命中的那一行',
+           '右栏：预留基因栏 6 槽、道具栏 3 格', '底部：返回主界面（左下）、托盘（中）、弃置区（右下）'],
+    preview: '徽章贴着手上那块的上沿，跟着指针走；左栏同时高亮那一行。',
+    pros: ['最接近草图，也和 §8.3 选关界面「左边类型、右边科技 / 宝箱 / 方块库」同位，局外接上时不用改版',
+           '类型表常驻：11 种类型和各自的底注、倍率一直看得见，最利于学会「瞄着类型放」', '预览就在落点旁边，视线不用离开盘面'],
+    cons: ['盘面最小：格 80px（640×640）',
+           '贴上沿的徽章会压住被消的那一列在手上那块正上方的格（场景 2 里第 6 列）。12 允许放这里，但遇到竖向消除，「不盖将被消的行列」守不住',
+           '信息分散在左、中、右三处，读数时视线要跳'],
+    gap: '托盘按 5 块算，右缘到弃置区 245px（槽宽 150）', pv: '<span class="warn">✗ 竖向消除时会压住被消列的一段</span>'
+  },
+  B: {
+    one: '所有数字收进左边一根栏，从上往下读；右边是干净的操作区，基因栏横在盘上方。',
+    read: ['左栏：盲注信息 → 累计分（最大字号）+ 进度 → 预览位 → 方块库剩余 → 预留金钱 → 返回主界面',
+           '右上：预留基因栏 6 槽（横排，「从左到右结算」照字面可读）、道具栏 3 格', '中：盘（格 84px）', '下：托盘', '盘右侧中部：弃置区'],
+    preview: '固定在左栏的预览位，紧挨累计分：类型名 + 底注 × 倍率；不拖的时候是空位。',
+    pros: ['预览永远不盖盘面，12 的约束天然满足', '「这一手值多少」和「还差多少」在同一栏里上下相邻',
+           '基因栏横在盘上方，以后接基因时从左到右的结算顺序直接可读', '操作区只有盘、托盘、弃置区，拖拽路径干净'],
+    cons: ['拖动时要瞟一眼左栏才知道类型，视线离开落点 400px 以上',
+           '弃置区挨着盘的右侧（隔 150px）：误弃风险从「托盘旁」挪到「盘右缘」，块心冲出最右列 150px 才会进弃置区',
+           '左栏吃掉了横向 500px，盘并没有比 A 大多少（格 84 vs 80）'],
+    gap: '托盘上沿到弃置区下沿 180px；弃置区左缘到盘右缘约 150px', pv: '✓ 固定在盘外'
+  },
+  C: {
+    one: '托盘竖排到盘的右侧，把盘放到最大；HUD 压成顶部一条，预览是盘正上方的固定横条。',
+    warn: '偏离规则 §8.5「下方是待放置区」，选它要改规则。',
+    read: ['顶部一条：返回主界面、盲注信息、累计分进度条（主角）、方块库剩余', '盘正上方：预览横条', '左：预留基因栏（竖排）',
+           '中：盘（格 100px，800×800）', '盘右：托盘竖排', '最右：预留道具栏（上）、弃置区（下）'],
+    preview: '盘正上方的固定横条：离落点近，又不压盘。',
+    pros: ['盘面最大：格 100px，边长比 A 大 25%，格子和颜色都更好认', '横屏的纵向最紧，托盘让出纵向；鼠标横着拖比竖着拖顺手',
+           '预览横条贴着盘顶，抬眼就能看，不压虚影和被消行列', '累计分做成横贯顶部的进度条，「还差多少」最直观'],
+    cons: ['要改规则 §8.5「下方是待放置区」', '12 的吸附口径「向上吸附不吸进最底两行」是照托盘在下写的，要按托盘在右重定（比如不吸进最右两列）',
+           '基因栏只能竖排，「从左到右结算」得读成「从上到下」。基因栏放哪不在本图，但这个版式会推着它走', '以后移植手机竖屏要整套重排（手机不在本图）'],
+    gap: '托盘右缘到弃置区 240px（托盘宽 240）', pv: '✓ 固定在盘外'
+  }
+};
+const COMMON = `<h3>三套都有</h3><ul>
+  <li>结果浮层：胜 / 负、失败原因、累计分与目标分、返回主界面（场景 5、6）</li>
+  <li>「返回主界面」按钮带 Esc 提示</li>
+  <li>托盘按 5 块留了虚线占位，弃置区的间隔按 5 块量</li>
+  <li>托盘块的悬停态（场景 1 第 2 块，鼠标真放上去也会亮）与置灰态（第 3 块）</li>
+  <li>弃置区三态：常态（场景 1）、块悬在上面（场景 3）、次数用完（场景 4）</li>
+  <li>块心进弃置区时，手上的块会盖住弃置区中部，所以悬停态把剩余次数挂在区的上沿（青色签）</li>
+  <li>预留位：基因栏 6 槽、道具栏 3 格；基因栏最终放哪不在本图（地图 Out of scope）</li></ul>
+  <h3>线框自己加的</h3><ul><li>托盘块右下角标了点数：§8.5 没列，但点数计进底分，看不见就没法规划</li></ul>
+  <h3>不上界面</h3><ul><li>连击（切片边界票：只记数）</li></ul>
+  <p style="color:#666;margin-top:10px">数值全是占位：目标 350、弃置 3、方块库 28。方块是占位色块。<br>
+  键位：← → 换方案，1–6 换场景，T 托盘 3 / 5 块，M 标注尺寸，N 说明。</p>`;
+
+const q = new URLSearchParams(location.search);
+const S = {
+  variant: V[q.get('variant')] ? q.get('variant') : 'A',
+  scene: SCENES.some(x => x[0] === q.get('scene')) ? q.get('scene') : 'idle',
+  tray: q.get('tray') === '5' ? 5 : 3, ann: q.get('ann') === '1', notes: q.get('notes') === '1'
+};
+const $ = id => document.getElementById(id);
+$('scenes').innerHTML = SCENES.map(([k, n]) => `<button data-s="${k}">${n}</button>`).join('');
+
+function notesHTML(v) {
+  const n = NOTES[v], li = a => a.map(x => `<li>${x}</li>`).join('');
+  return `<h2>${v} — ${V[v].name}</h2><p>${n.one}</p>${n.warn ? `<p class="warn">⚠ ${n.warn}</p>` : ''}
+    <h3>读序</h3><ul>${li(n.read)}</ul><h3>预览放哪</h3><p>${n.preview}</p>
+    <h3>好处</h3><ul>${li(n.pros)}</ul><h3>代价</h3><ul>${li(n.cons)}</ul>
+    <h3>对照 PC 操作票的约束</h3><ul><li>弃置区间隔：${n.gap}</li><li>预览不盖虚影与将消行列：${n.pv}</li></ul>${COMMON}`;
+}
+function fit() {
+  const bh = $('bar').offsetHeight + 16, vw = innerWidth, vh = innerHeight - bh, k = Math.min(vw / 1920, vh / 1080), st = $('stage');
+  $('viewport').style.height = vh + 'px';
+  st.style.transform = `scale(${k})`;
+  st.style.left = (vw - 1920 * k) / 2 + 'px';
+  st.style.top = (vh - 1080 * k) / 2 + 'px';
+}
+function render() {
+  $('stage').className = S.ann ? 'ann' : '';
+  $('stage').innerHTML = V[S.variant].render(S);
+  $('vlabel').textContent = `${S.variant} — ${V[S.variant].name}`;
+  document.querySelectorAll('#scenes button').forEach(b => b.classList.toggle('on', b.dataset.s === S.scene));
+  $('trayBtn').textContent = `托盘 ${S.tray} 块 (T)`;
+  $('annBtn').classList.toggle('on', S.ann);
+  $('notesBtn').classList.toggle('on', S.notes);
+  $('notes').innerHTML = notesHTML(S.variant);
+  $('notes').classList.toggle('open', S.notes);
+  $('state').textContent = `variant=${S.variant} scene=${S.scene} tray=${S.tray}`;
+  const p = new URLSearchParams({variant: S.variant, scene: S.scene, tray: S.tray});
+  if (S.ann) p.set('ann', '1');
+  if (S.notes) p.set('notes', '1');
+  try { history.replaceState(null, '', '?' + p); } catch (e) { /* file:// 下有的浏览器不让改地址 */ }
+  fit();
+}
+function cycle(d) { const ks = Object.keys(V); S.variant = ks[(ks.indexOf(S.variant) + d + ks.length) % ks.length]; render(); }
+$('prev').onclick = () => cycle(-1);
+$('next').onclick = () => cycle(1);
+$('scenes').onclick = e => { if (e.target.dataset.s) { S.scene = e.target.dataset.s; render(); } };
+$('trayBtn').onclick = () => { S.tray = S.tray === 3 ? 5 : 3; render(); };
+$('annBtn').onclick = () => { S.ann = !S.ann; render(); };
+$('notesBtn').onclick = () => { S.notes = !S.notes; render(); };
+addEventListener('keydown', e => {
+  if (e.target.closest('input,textarea,[contenteditable]')) return;
+  if (e.key === 'ArrowLeft') cycle(-1);
+  else if (e.key === 'ArrowRight') cycle(1);
+  else if (e.key >= '1' && e.key <= '6') { S.scene = SCENES[+e.key - 1][0]; render(); }
+  else if (e.key === 't' || e.key === 'T') $('trayBtn').click();
+  else if (e.key === 'm' || e.key === 'M') $('annBtn').click();
+  else if (e.key === 'n' || e.key === 'N') $('notesBtn').click();
+});
+addEventListener('resize', fit);
+render();
+</script>
+</body>
+</html>
