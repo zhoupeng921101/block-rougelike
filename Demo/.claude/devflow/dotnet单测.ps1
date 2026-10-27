@@ -43,7 +43,8 @@ try {
   $restoreOut = cmd /c ("dotnet restore `"" + $testProj + "`" -nodeReuse:false -v q 2>&1")
   $restoreCode = $LASTEXITCODE
   if ($restoreCode -eq 0) {
-    $testOut = cmd /c ("dotnet test `"" + $testProj + "`" --no-restore -nodeReuse:false -v q 2>&1")
+    # -v q 也会把测试的控制台 logger 压成只剩摘要,失败用例名与断言消息要单给 logger 定 minimal。
+    $testOut = cmd /c ("dotnet test `"" + $testProj + "`" --no-restore -nodeReuse:false -v q --logger `"console;verbosity=minimal`" 2>&1")
     $testCode = $LASTEXITCODE
   }
 }
