@@ -50,6 +50,7 @@ description: devflow 客户端实现段:在槽位 Unity 工程实现功能 + 客
   - **落点**:槽位 `Assets/Editor/Tests/`(已被 .gitignore 忽略,不入库、不进检查凭据)。
   - **谁跑**:交付入口不执行任何测试;建了测须自行在槽位编辑器 Test Runner 跑一遍并把结果写进呈报。
   - **谁删**:`槽位交付.ps1` 检查通过后自动删除,未通过保留现场。
+  - **例外:规则核心**(`Assets/GameScripts/HotFix/GameRules/`)的单测常驻入库,写进 `Demo/DotNet/Tests/`,由客户端自检的 `dotnet单测` 那一道跑;编码约束见 `tengine-conventions.md`「规则核心」。上面几条只管其余代码的临时测试。
 - **含新增资产的交付先落定派生物**(触发 = `自审触发判定.ps1` 报 `ASSET-SETTLE: required`,判据在该脚本):先让活编辑器把资产导入收敛(sprite atlas 等派生物重序列化)再调用 `槽位交付.ps1`;落定须发生在检查运行窗口之外,否则界外 churn 使检查判 STALE。
 
 > 理由见 .claude/devflow/rationale.md#temp-test-delete-after-gate、.claude/devflow/rationale.md#newasset-settle-before-gate-premise

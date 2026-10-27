@@ -6,7 +6,8 @@
 # Convention source of truth: .claude/rules-ondemand/tengine-conventions.md, "客户端命名空间".
 # $rules 只覆盖规约中已落地的部分:
 #   runtime (GameScripts incl. GameProto handwritten/tests) -> none (global namespace)
-#     except HotFix/Network/ -> FantasyNetwork (网络边界层,见该规则的 Overrides 注释)
+#     except HotFix/GameRules/ -> GameRules (规则核心,见该规则的 Overrides 注释)
+#     and HotFix/Network/ -> FantasyNetwork (网络边界层,见该规则的 Overrides 注释)
 #   AOT launcher domain (Assets/Launcher)                   -> Launcher
 #   project-owned editor tools (Assets/Editor)              -> none (global namespace)
 #   generated code and vendored third-party: excluded by path, keep their own namespaces.
@@ -37,8 +38,11 @@ $rules = @(
      # 全局即 CS0101。该目录自成 FantasyNetwork 程序集(HotFix/Network/FantasyNetwork.asmdef),
      # B 段覆盖检查由该 asmdef 满足。
      # 协议生成物落 Network/NetworkProtocol/,命名空间 Fantasy 由导出模板写入(改它须改模板)。
+     # 规则核心(GameRules 程序集)落命名空间 GameRules:落全局会静默顶替 UnityEngine.Grid / Event 这类同名类型,
+     # 带命名空间则 GameLogic 里撞名就是 CS0104 歧义报错(规约正本 = tengine-conventions「规则核心」)。
      # 前缀更长者须排在前:匹配到即 break。
-     Overrides = @(@{ Prefix = "GameScripts/HotFix/Network/NetworkProtocol/"; Expected = @("Fantasy") },
+     Overrides = @(@{ Prefix = "GameScripts/HotFix/GameRules/"; Expected = @("GameRules") },
+                   @{ Prefix = "GameScripts/HotFix/Network/NetworkProtocol/"; Expected = @("Fantasy") },
                    @{ Prefix = "GameScripts/HotFix/Network/"; Expected = @("FantasyNetwork") }) },
   @{ Root = "Launcher"; Expected = @("Launcher")
      Excludes = @("Launcher/HybridCLRGenerate/")               # HybridCLR generated (global namespace)

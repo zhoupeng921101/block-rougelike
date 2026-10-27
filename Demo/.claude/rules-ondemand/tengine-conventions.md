@@ -41,18 +41,17 @@ references 对 API 的事实描述(签名/参数/行为)与代码不符时,以�
 
 ## 客户端命名空间
 
-业务代码与编辑器工具不声明命名空间,类型落全局命名空间:隔离由 asmdef 的程序集边界承担,模块划分由目录承担,命名空间不再重复表达同一件事。框架层与跨程序集按名反射处保留命名空间(见下表与旁注)。
+业务代码与编辑器工具不声明命名空间,类型落全局命名空间:隔离由 asmdef 的程序集边界承担,模块划分由目录承担,命名空间不再重复表达同一件事。框架层、规则核心与跨程序集按名反射处保留命名空间(见下表与旁注)。
 
 | 路径 | 命名空间 |
 |---|---|
-| `Assets/GameScripts/HotFix/**` | 无(全局) |
+| `Assets/GameScripts/HotFix/GameRules/**` | `GameRules`(规则核心,见下文「规则核心」) |
+| `Assets/GameScripts/HotFix/**`(其余) | 无(全局) |
 | `Assets/Editor/**` | 无(全局) |
 | `Assets/Launcher/**` | `Launcher` |
 | `Assets/TEngine/**` | `TEngine` |
 
 不受本规约约束(按路径排除,各自保留原命名空间):HybridCLR 生成物 `Launcher/HybridCLRGenerate/`(开热更后才有)、vendored 第三方 `ThirdParty/`;接 Luban 后的配置生成物与 Luban 运行时库同样排除,命名空间沿用生成器的 `GameConfig`。`AssemblyInfo.cs` 按设计不声明命名空间,不参与扫描。
-
-> 规则核心程序集(阶段 3 建)的命名空间建时定,定了补进上表与扫描脚本。
 
 > 扫描脚本的排除项与 `Overrides` 里还留着 block-client 布局的几条路径(`GameProto/` 下的 Luban 产物、`Editor/ToolbarExtender/`、`Editor/GameConfigEditor/`、`HotFix/Network/` 的两条覆写),本作没有这些目录,不生效;改动对应目录时与上表一并核。
 
@@ -74,6 +73,24 @@ references 对 API 的事实描述(签名/参数/行为)与代码不符时,以�
 
 > 流程类型名以字符串序列化在 `ProcedureSetting.asset`:改流程类的命名空间或类名须联动该 asset,否则运行期按名反射取不到类型。这也是 `Launcher` 保留命名空间的原因——它的类型名要作为字符串写进资产,带一层稳定前缀比裸类名更不易与业务层撞名。
 > 程序集名与目录名的对应关系见 [architecture.md](../references/tengine/architecture.md)「命名规则」。
+
+---
+
+## 规则核心
+
+**适用**:`Assets/GameScripts/HotFix/GameRules/`(程序集 `GameRules`)。它两端编:Unity 按 asmdef 编进包,dotnet 侧经 `Demo/DotNet/GameRules/` 镜像库通配链接同一份源码跑单测与跑局。两端编的必须是同一份代码,同一种子每次跑出的结果也必须一样;违反时单测与出包行为不一致,或同种子复现不了同一局。
+
+| 约束 | 谁拦 |
+|---|---|
+| 不引 UnityEngine,不写 `#if UNITY_*`(镜像库没有 Unity 宏,分支在两端走不同的路) | asmdef `noEngineReferences` + 镜像库;`#if` 由源码禁用清单拦 |
+| 不用 `record`、`init`,不用 C# 10 以上语法、.NET 6 以上 API | 镜像库(netstandard2.1 + C# 9) |
+| 不碰非确定来源:`System.Random`、`DateTime.Now` / `UtcNow`、`Guid.NewGuid`、`Environment.TickCount`、`Stopwatch`;随机只经 `RngStreams` 取整数,不调 `NextDouble` | 源码禁用清单(`Demo/DotNet/Tests/GameRules/SourceBanTests.cs`) |
+| 不拿字符串哈希、默认对象哈希派生任何东西;可观察的结果(事件顺序、存档文本、发块)不依赖 `Dictionary` / `HashSet` 的遍历序,要遍历的用有序列表 | 静态扫不出:跑局测试的子进程比对兜底(CoreCLR 每个进程的字符串哈希都不同),建成前靠自审 |
+| 格式化与大小写转换一律 InvariantCulture | 跑局测试换区域设置的那一路,建成前靠自审 |
+
+- 单测常驻入库,写进 `Demo/DotNet/Tests/`(按模块分目录),由客户端自检的 `dotnet单测` 那一道跑;只走公开 API,不开 `InternalsVisibleTo`。
+- 从 block-client 拷来的文件只在首尾各加一行 `namespace GameRules {` / `}`,正文不重新缩进,对照上游时 diff 只多两行。
+- 要引第三方库时,asmdef 与镜像库的引用在同一笔改动里一起加,版本对齐 Unity 包里那份;只加一侧,两端引用集就不一致。
 
 ---
 

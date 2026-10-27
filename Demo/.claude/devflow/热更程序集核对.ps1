@@ -32,9 +32,9 @@ param(
 )
 $ErrorActionPreference = "Stop"
 
-# 本作当前只有业务层 GameLogic 一个热更程序集;规则核心(纯 C#)与 Luban 配置程序集建出来时随之加入,
-# 加入前须实测出包(见新游戏/工程计划.md 阶段 3 与 Luban 接入)。
-$Whitelist = @("GameLogic.dll")
+# 本作的热更程序集:规则核心 GameRules(纯 C#,被 GameLogic 引用)与业务层 GameLogic;Luban 配置程序集建出来时随之加入,
+# 加入前须实测出包(见新游戏/工程计划.md Luban 接入)。
+$Whitelist = @("GameRules.dll", "GameLogic.dll")
 
 # 返回 @{ Items; Err }:Err 非空 = 该键判不了(缺失 / 重复 / 写法解析不出),调用方判 INFRA。
 # 键名区分大小写(两个 asset 里有只差大小写的同名键)。键出现多于一处即报重复:只取首处会拿

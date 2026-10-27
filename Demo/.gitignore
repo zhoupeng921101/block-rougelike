@@ -48,6 +48,11 @@ ExportedObj/
 *.mdb.meta
 [Aa]ssets/Plugins/Editor/JetBrains*
 
+# dotnet 侧规则核心工程（Unity 不导入；csproj 手写入库，产物不入库）
+!/DotNet/**/*.csproj
+/DotNet/**/[Bb]in/
+/DotNet/**/[Oo]bj/
+
 # 打包产物
 *.apk
 *.aab

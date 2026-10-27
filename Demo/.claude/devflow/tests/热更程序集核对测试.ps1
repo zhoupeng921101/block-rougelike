@@ -19,7 +19,7 @@ if (-not (Test-Path $Target)) { Write-Host "INFRA: target not found: $Target"; e
 $script:fx = Join-Path $env:TEMP ("flowtest-hotasm-" + [Guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Force -Path $script:fx | Out-Null
 
-$script:Hot    = @("GameLogic.dll")   # 与被测脚本 $Whitelist 同值(本作只有 GameLogic 一个热更程序集)
+$script:Hot    = @("GameRules.dll", "GameLogic.dll")   # 与被测脚本 $Whitelist 同值
 $script:Aot    = @("mscorlib.dll", "TEngine.Runtime.dll")
 $script:AsmRef = "{fileID: 5897886265953266890, guid: 0123456789abcdef0123456789abcdef, type: 3}"
 

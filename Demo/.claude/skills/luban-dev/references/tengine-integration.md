@@ -4,7 +4,7 @@
 
 ## 概述
 
-TEngine 项目使用 Luban 作为配置表方案,生成格式为 **cs-bin**(C# 代码)+ **bin**(二进制数据),通过 YooAsset 资源系统加载二进制数据。block-client 的生成代码位于热更程序集 `GameScripts/HotFix/GameProto/`;本作工程计划把它叫「配置生成物」程序集,等第一张表时建,程序集名与是否进热更清单接入时定(现在热更程序集只有 GameLogic)。
+TEngine 项目使用 Luban 作为配置表方案,生成格式为 **cs-bin**(C# 代码)+ **bin**(二进制数据),通过 YooAsset 资源系统加载二进制数据。block-client 的生成代码位于热更程序集 `GameScripts/HotFix/GameProto/`;本作工程计划把它叫「配置生成物」程序集,等第一张表时建,程序集名与是否进热更清单接入时定(现在热更程序集是 GameRules 与 GameLogic)。
 
 ## 项目目录结构(block-client 形态)
 

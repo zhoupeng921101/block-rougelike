@@ -47,6 +47,8 @@ $script:ClientGateScanSurface = [ordered]@{
   "工程链接核对.ps1"     = '^Demo/.*\.(cs|csproj)$'
   "进程编码核对.ps1"     = '^Demo/Assets/(Editor|TEngine/Editor)/.*\.cs$'
   "启动器字体核对.ps1"   = '^Demo/Assets/Launcher/(.*\.cs|Resources/Fonts/LauncherFont\.otf)$'
+  # 规则核心正本(镜像库通配链接它)+ DotNet 下的镜像库、测试工程与其 props。
+  "dotnet单测.ps1"       = '^Demo/(Assets/GameScripts/HotFix/GameRules/.*\.(cs|asmdef)|DotNet/.*\.(cs|csproj|props|targets))$'
   # 面比这道自己改的文件宽得多:它拦的是「热更程序集改签名,坏的是 Editor 程序集的调用点」,
   # 触发改动与报错文件恒不在一处,故 Assets 下任一 .cs / asmdef / asmref 都得让它跑一遍。
   # 另含 Packages 下入库的程序集定义:Assembly-CSharp-Editor 经 ProjectReference 连带编嵌入包(如

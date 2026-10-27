@@ -33,7 +33,7 @@
 | MCP 场景/GO/UI/脚本/Editor | mcp-tools.md | — |
 | MCP 材质/Shader/动画/VFX | mcp-visual.md | — |
 
-本作的工程形态与这些篇目的出入(它们写于 block-client):只有 `GameLogic` 一个热更程序集,没有底座层 `GameBase`、联网层与登录启动管线,UI 框架(UIModule / UIPanelMono)在 `GameLogic/Module/UIModule`;HybridCLR 暂关、Windows 走 Mono;Luban 尚未接入。以 `新游戏/工程计划.md`「阶段 1 落地时定的」为准。
+本作的工程形态与这些篇目的出入(它们写于 block-client):热更程序集只有规则核心 `GameRules`(纯 C#)与业务层 `GameLogic` 两个,没有底座层 `GameBase`、联网层与登录启动管线,UI 框架(UIModule / UIPanelMono)在 `GameLogic/Module/UIModule`;HybridCLR 暂关、Windows 走 Mono;Luban 尚未接入。以 `新游戏/工程计划.md`「阶段 1 落地时定的」为准。
 
 ## 按需规则路由
 

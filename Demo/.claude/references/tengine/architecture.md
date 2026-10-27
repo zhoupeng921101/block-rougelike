@@ -14,18 +14,18 @@
 | 框架层 | `TEngine.Runtime` | `TEngine` | AOT | ModuleSystem / EventSystem / ResourceModule 等框架核心 |
 | 启动器层 | `Launcher` | `Launcher` | AOT | 启动器 UI、主包流程状态机、热更程序集加载引导 |
 | 配置层 | `GameConfig`（**未建**） | `GameConfig` | 热更 | Luban 生成的配置表与序列化库；随第一张配置表建 |
-| 规则核心层 | **未建** | 建时定 | 建时定 | 不依赖 UnityEngine 的纯 C# 玩法规则（盘面、计分、事件队列）；随阶段 3 第一批代码建 |
+| 规则核心层 | `GameRules` | `GameRules` | 热更 | 不依赖 UnityEngine 的纯 C# 玩法规则（随机流、盘面、计分、事件）；`Demo/DotNet/` 下另有镜像库与单测工程链接同一份源码（编码约束见 [tengine-conventions.md](../../rules-ondemand/tengine-conventions.md)「规则核心」） |
 | 业务层 | `GameLogic` | 无（全局） | 热更 | 表现层：UI 框架（UIModule / UIPanelMono）、各界面与玩法表现，热更主入口 |
 | 框架工具层 | `TEngine.Editor` | `TEngine.Editor` | Editor | 框架自带编辑器扩展 |
 | 业务工具层 | `Assembly-CSharp-Editor`（`Assets/Editor/` 下无 asmdef，落 Unity predefined） | 无（全局） | Editor | 项目自有编辑器工具（UI 脚本生成器、出包入口等） |
 | 插件层·Editor | 各插件自有 | 上游原名 | Editor | vendored 第三方编辑器扩展 |
 
-两层「未建」的规划见 `新游戏/工程计划.md`「阶段 1 落地时定的」；建之前不要为它们预留空 asmdef（空程序集 Unity 不产出 dll）。
+配置层「未建」的规划见 `新游戏/工程计划.md`「阶段 1 落地时定的」；建之前不要为它预留空 asmdef（空程序集 Unity 不产出 dll）。
 
 ### 命名规则
 
 1. 程序集名 = `<职责名>[.Editor]`，`.Editor` 后缀当且仅当 `includePlatforms: [Editor]`
-2. 业务层与业务工具层不声明命名空间；框架层、启动器层、配置层的根命名空间 = 程序集名（落点表正本 = [tengine-conventions.md](../../rules-ondemand/tengine-conventions.md)「客户端命名空间」）
+2. 业务层与业务工具层不声明命名空间；框架层、启动器层、配置层、规则核心层的根命名空间 = 程序集名（落点表正本 = [tengine-conventions.md](../../rules-ondemand/tengine-conventions.md)「客户端命名空间」）
 
 规则的用处是从名字反推层与编译域，不必查 asmdef 或 HybridCLR 配置：
 
@@ -34,7 +34,7 @@
 | `TEngine.Runtime` | 框架层 | AOT |
 | `TEngine.Editor` | 框架工具层 | Editor |
 | `Launcher` | 启动器层 | AOT |
-| `Game*`，无 `.Editor` 后缀 | 配置层 / 业务层 | **热更** |
+| `Game*`，无 `.Editor` 后缀 | 配置层 / 规则核心层 / 业务层 | **热更** |
 | 落 `Assets/Editor/`、无 asmdef | 业务工具层 | Editor |
 | 其余 | 插件层 | 按 `.Editor` 后缀判 |
 
@@ -62,7 +62,7 @@
 三条硬禁止：
 
 1. **框架层 ✗→ 业务层 / 配置层**。上游框架依赖本工程业务，框架升级即冲突。
-2. **AOT 层（框架层 / 启动器层）✗→ 热更层（业务层 / 配置层）**。AOT 编译期引用热更程序集，打包时 AOT dll 内嵌对热更 dll 的引用，开热更后加载顺序失效。HybridCLR 暂关期间这条照守，否则以后开热更要拆引用。无工具拦这条：asmdef 之间的引用本就一律显式，AOT 程序集的 `references` 里出现 `GameLogic` / `GameConfig` 即越界，改 asmdef 时自己看。
+2. **AOT 层（框架层 / 启动器层）✗→ 热更层（业务层 / 配置层 / 规则核心层）**。AOT 编译期引用热更程序集，打包时 AOT dll 内嵌对热更 dll 的引用，开热更后加载顺序失效。HybridCLR 暂关期间这条照守，否则以后开热更要拆引用。无工具拦这条：asmdef 之间的引用本就一律显式，AOT 程序集的 `references` 里出现 `GameLogic` / `GameConfig` / `GameRules` 即越界，改 asmdef 时自己看。
 3. **任何 Runtime 层 ✗→ 业务工具层 / 框架工具层**。Editor 程序集不进包。
 
 热更代码另不得引用主包 internal 类型。
@@ -106,7 +106,8 @@ block-rougelike/Demo/Assets/
 ├── Editor/                   # 项目自有编辑器工具（UIScriptGenerator、Build/WindowsBuild 等）
 ├── ThirdParty/               # vendored 第三方插件（TextMesh Pro）
 └── GameScripts/HotFix/       # 热更代码（GameScripts 下别无他物）
-    └── GameLogic/            # 唯一的热更程序集
+    ├── GameRules/            # 规则核心程序集（纯 C#，noEngineReferences；只被 GameLogic 引用）
+    └── GameLogic/            # 业务层程序集
         ├── GameApp.cs        # 热更主入口
         ├── GameModule.cs     # 模块统一访问入口
         ├── Module/UIModule/  # UI 框架（UIModule、UIPanelMono、WindowAttribute、资源加载器、错误日志窗）
