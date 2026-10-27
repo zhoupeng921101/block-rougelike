@@ -96,6 +96,9 @@ Label: wayfinder:map
   五种故意出错都让自检变红；Windows 包带 `GameRules.dll`，能进主界面。tengine-conventions 新开「规则核心」一节。
 - [规则核心：盘面、方块实例与区](issues/19-规则核心-盘面方块实例与区.md) —— **已落地 055db9dc**：`Core/` 五个文件原样包进命名空间，`BlockShapeMap` 裁到 19 个朝向；`BoardState` 三层只有两个写口和 `SetDead`，`BoardCells` 是唯一的位序换算；`RunState` / `BlindState` 带 `Clone`、只读视图和 `Validate()`（id、盘面不变式、区守恒）。
   开盲注按 id 排序后用 `shuffle@1.1` 洗、从槽 0 发组。满列在 `FullLines()` 里已排成升序，`ClearType` 枚举序不是优先级。自检 PASS，单测 76 个（新加 36 个）。编辑器 Console 还没看：主工程编辑器没刷新。
+- [规则核心：一步的推进与结算管线](issues/20-规则核心-一步的推进与结算管线.md) —— **已落地 198e7784**：`Place` / `Discard` 返回 `StepResult`（被拒不改状态），`StartBlind` 也返回事件；17 段管线、13 种事件类只有整数、枚举、布尔和有序 int 列表。
+  判线定类型是只读的 `ResolveClear`，预览和真落子共用；计分全整数、千分值逐项取整、饱和；六个钩子挂点与按（来源，id）查的注册表，本图为空。
+  默认库三个种子用最简策略都打得完，胜、预算耗尽、放不下三种结局都走到了。自检 PASS，单测 121 个（新加 45 个）；编辑器 Console 没看。给 22 补了两条约束（基因校验、等级上限）。
 
 ## Not yet specified
 
