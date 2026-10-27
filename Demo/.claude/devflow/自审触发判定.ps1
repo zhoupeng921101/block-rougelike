@@ -171,8 +171,9 @@ if ($CheckRuleTable) {
   foreach ($g in $gaps) { Write-Host ("RULE-TABLE GAP  : " + $g) }
   $docCount = @($script:RuleReadTable | ForEach-Object { $_.Doc } | Select-Object -Unique).Count
   $branchCount = @($script:RuleReadTable | ForEach-Object { @($_.PathRe; $_.DirRe; $_.ContentRe) } | Where-Object { $_ }).Count
+  $aheadCount = @($script:RuleReadTable | ForEach-Object { @($_.Ahead) } | Where-Object { $_ }).Count
   if ($gaps.Count -gt 0) { Write-Host ("RULE-TABLE      : FAIL (" + $gaps.Count + " gap(s);改判据表跟上改名 / 搬家,正本 = hooks/校验库.ps1 RuleReadTable)"); exit 1 }
-  Write-Host ("RULE-TABLE      : PASS (" + $script:RuleReadTable.Count + " 条判据 / " + $branchCount + " 支 / " + $docCount + " 篇;每篇存在,每支判据在仓内已跟踪文件里有命中)")
+  Write-Host ("RULE-TABLE      : PASS (" + $script:RuleReadTable.Count + " 条判据 / " + $branchCount + " 支 / " + $docCount + " 篇;每篇存在,每支判据在仓内已跟踪文件里有命中;" + $aheadCount + " 支 Ahead 预置、尚无着落)")
   exit 0
 }
 # 基线双端分列(正本 = flow-config ClientBaseline / FantasyBaseline),不合成一个值:

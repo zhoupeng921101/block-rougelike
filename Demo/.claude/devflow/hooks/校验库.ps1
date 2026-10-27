@@ -500,6 +500,9 @@ function ConvertTo-Entries($lines) {
 #   PathRe    路径判据,事前事后都用;@() = 不按路径判
 #   DirRe     目录判据,只在事前用:改动范围前缀落在该目录面内即命中(新建目录下还没有文件时靠它);@() = 无
 #   ContentRe 内容判据,只在事后用:改动到的 .cs / .prefab 的新增行(untracked 文件整份算新增);@() = 不按内容判
+#   Ahead     预置支(可缺省):上三个字段里**原样**列出的元素串,本工程还没有该类代码 / 资产、防漂移自检暂免零命中。
+#             点名照常生效——新工程第一次写出这类件正是该读篇的时候,删支会让点名在最需要时落空。该支一有着落,
+#             自检即报缺口要求从 Ahead 撤掉(转回常规防漂移核);Ahead 里列了表里没有的串也报缺口。
 # 三个判据字段都是正则数组,任一元素命中即算该字段命中;一个元素 = 一支能单独改名失效的判据:本工程的目录、文件名词干、
 # 类名 / API 名各占一个元素,扩展名、可选后缀(Docs?、Async)、外部 API 族(MongoDB 驱动写方法、Unity PlayerPrefs)这类
 # 形态变体留在同一元素里。拆开是为了让防漂移自检逐支核着落——写成一条 `A|B` 时 B 改名失效、A 仍命中,自检照报 PASS。
@@ -523,10 +526,12 @@ $script:RuleReadTable = @(
   @{ Doc = '.claude/rules-ondemand/ui-image-assets.md'; Side = 'client'
      PathRe = @('^Demo/Assets/AssetRaw/UI/.*\.(png|jpe?g|tga|psd)$')
      DirRe = @('^Demo/Assets/AssetRaw/UI/Atlas(/|$)', '^Demo/Assets/AssetRaw/UI/Texture(/|$)')
-     ContentRe = @('\bSpriteName\b', '\bSpriteBind\b') },
+     ContentRe = @('\bSpriteName\b', '\bSpriteBind\b')
+     Ahead = @('^Demo/Assets/AssetRaw/UI/.*\.(png|jpe?g|tga|psd)$', '^Demo/Assets/AssetRaw/UI/Atlas(/|$)', '\bSpriteBind\b') },
   @{ Doc = '.claude/rules-ondemand/ui-blocking-layer.md'; Side = 'client'
      PathRe = @('^Demo/Assets/GameScripts/.*Mask[^/]*\.cs$'); DirRe = @()
-     ContentRe = @('\bm_btn_Mask\b', '\[Window\s*\(\s*UILayer\.', '\bICanvasRaycastFilter\b', '\bfullScreen\s*:') },
+     ContentRe = @('\bm_btn_Mask\b', '\[Window\s*\(\s*UILayer\.', '\bICanvasRaycastFilter\b', '\bfullScreen\s*:')
+     Ahead = @('^Demo/Assets/GameScripts/.*Mask[^/]*\.cs$', '\bm_btn_Mask\b', '\bICanvasRaycastFilter\b') },
   @{ Doc = '.claude/references/tengine/hotfix-workflow.md'; Side = 'client'
      PathRe = @('^Demo/Assets/GameScripts/.*\.asmdef$', '^Demo/Assets/GameScripts/HotFix/GameLogic/GameApp[^/]*\.cs$',
                 '^Demo/Assets/Launcher/.*\.cs$', '^Demo/Assets/TEngine/Settings/UpdateSetting\.asset$',
@@ -537,7 +542,8 @@ $script:RuleReadTable = @(
      DirRe = @('^Demo/Assets/GameScripts/HotFix/GameLogic/UI(/|$)'); ContentRe = @() },
   @{ Doc = '.claude/references/tengine/ui-patterns.md'; Side = 'client'
      PathRe = @('^Demo/Assets/GameScripts/.*Part\.cs$')
-     DirRe = @('^Demo/Assets/GameScripts/HotFix/GameLogic/UI/(.*/)?Part(/|$)', '^Demo/Assets/AssetRaw/UI/Prefabs/Parts(/|$)'); ContentRe = @() }
+     DirRe = @('^Demo/Assets/GameScripts/HotFix/GameLogic/UI/(.*/)?Part(/|$)', '^Demo/Assets/AssetRaw/UI/Prefabs/Parts(/|$)'); ContentRe = @()
+     Ahead = @('^Demo/Assets/GameScripts/.*Part\.cs$', '^Demo/Assets/GameScripts/HotFix/GameLogic/UI/(.*/)?Part(/|$)', '^Demo/Assets/AssetRaw/UI/Prefabs/Parts(/|$)') }
 )
 
 function Get-RuleReadMatchers($Table = $null) {
@@ -654,11 +660,18 @@ function Get-RuleReadTableGap([string]$ClientRepo, [string]$FantasyRepo, [string
   # .prefab 按原文。$DocRoot = 篇路径的基(主工程 Demo);$Table 缺省 = RuleReadTable(测试注入小表用)。
   # 回缺口描述数组,空 = 每篇存在,且 PathRe / DirRe / ContentRe 的**每个元素**在其所属仓的已跟踪文件里至少命中一个
   # (内容判据按上句口径;按元素核,不按字段核:字段内别的元素命中不抵这一支落空),且没有元素含顶层 `|`
-  # (该拆成两个元素)。仓不存在、git 查询失败抛出,由调用方判 INFRA。
+  # (该拆成两个元素)。Ahead 预置支反过来:零命中放过,有命中报缺口(该撤标了);Ahead 里列了表里没有的串报缺口。
+  # 仓不存在、git 查询失败抛出,由调用方判 INFRA。
   if ($null -eq $Table) { $Table = $script:RuleReadTable }
   $gap = New-Object System.Collections.Generic.List[string]
   foreach ($doc in @($Table | ForEach-Object { [string]$_.Doc } | Select-Object -Unique)) {
     if (-not [System.IO.File]::Exists((Join-Path $DocRoot $doc))) { $gap.Add($doc + " 篇不存在(相对 " + $DocRoot + ")") }
+  }
+  foreach ($r in $Table) {
+    $all = @(foreach ($k in @("PathRe", "DirRe", "ContentRe")) { @($r[$k]) | Where-Object { $_ } | ForEach-Object { [string]$_ } })
+    foreach ($a in @(@($r.Ahead) | Where-Object { $_ } | ForEach-Object { [string]$_ })) {
+      if ($all -cnotcontains $a) { $gap.Add([string]$r.Doc + " Ahead 列的 '" + $a + "' 不是本条判据里的元素(原样照抄判据串)") }
+    }
   }
   $repos = @{ client = $ClientRepo; server = $FantasyRepo }
   $matchers = Get-RuleReadMatchers $Table
@@ -671,16 +684,20 @@ function Get-RuleReadTableGap([string]$ClientRepo, [string]$FantasyRepo, [string
     $pending = New-Object System.Collections.Generic.List[object]
     foreach ($m in $mine) {
       $tag = [string]$m.Rule.Doc + " [" + $side + "] "
+      $ahead = @(@($m.Rule.Ahead) | Where-Object { $_ } | ForEach-Object { [string]$_ })
       foreach ($k in @("Path", "Dir", "Content")) {
         $parts = $m.Parts[$k]
         for ($i = 0; $i -lt $parts.Count; $i++) {
           $rx = $parts[$i]
           $label = $k + "Re[" + $i + "] '" + $rx.ToString() + "'"
+          $isAhead = $ahead -ccontains $rx.ToString()
+          $aheadMsg = $tag + $label + " 是 Ahead 预置支但已有着落:从 Ahead 撤掉"
           if (Test-RegexTopLevelAlternation $rx.ToString()) { $gap.Add($tag + $label + " 含顶层 |:拆成两个元素,每支单独核着落") }
-          if ($k -eq "Content") { $pending.Add(@{ Rx = $rx; Msg = ($tag + $label + " 在已跟踪的 .cs(代码,不含注释与字面量)/ .prefab 里零命中") }); continue }
+          if ($k -eq "Content") { $pending.Add(@{ Rx = $rx; Ahead = $isAhead; AheadMsg = $aheadMsg; Msg = ($tag + $label + " 在已跟踪的 .cs(代码,不含注释与字面量)/ .prefab 里零命中") }); continue }
           $found = $false
           foreach ($f in $tracked) { if ($rx.IsMatch($f)) { $found = $true; break } }
-          if (-not $found) { $gap.Add($tag + $label + " 在已跟踪文件里零命中") }
+          if ($isAhead) { if ($found) { $gap.Add($aheadMsg) } }
+          elseif (-not $found) { $gap.Add($tag + $label + " 在已跟踪文件里零命中") }
         }
       }
     }
@@ -698,9 +715,11 @@ function Get-RuleReadTableGap([string]$ClientRepo, [string]$FantasyRepo, [string
       foreach ($p in $pending) { if ($p.Rx.IsMatch($text)) { $any = $true; break } }
       if (-not $any) { continue }
       if ($f -match '\.cs$') { $text = ConvertTo-CsCodeOnly $text }
-      for ($i = $pending.Count - 1; $i -ge 0; $i--) { if ($pending[$i].Rx.IsMatch($text)) { $pending.RemoveAt($i) } }
+      for ($i = $pending.Count - 1; $i -ge 0; $i--) {
+        if ($pending[$i].Rx.IsMatch($text)) { if ($pending[$i].Ahead) { $gap.Add([string]$pending[$i].AheadMsg) }; $pending.RemoveAt($i) }
+      }
     }
-    foreach ($p in $pending) { $gap.Add([string]$p.Msg) }
+    foreach ($p in $pending) { if (-not $p.Ahead) { $gap.Add([string]$p.Msg) } }
   }
   return , $gap.ToArray()
 }

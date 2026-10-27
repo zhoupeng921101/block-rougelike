@@ -6,16 +6,16 @@
 # 跑法:powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests\自审触发判定测试.ps1;末行 RESULT 全通过为过。
 #
 # 重点覆盖三处曾静默漏判的形态:
-#   ①服务端 MongoDB 驱动写接口(UpdateOneAsync 等)只在内容里出现、路径不命中任何路径规则;
+#   ①安全面 API(文件读写、外部数据反序列化、起外部进程)只在内容里出现、路径不命中任何路径规则;
 #   ②中文文件名进了**已提交** diff——git 缺省 core.quotepath 把它转成带引号的八进制转义串,
 #     扩展名判据被尾引号挡住,ASSET-SETTLE / UI-EVIDENCE 漏判;
 #   ③提交信息首行是空行——主题须取第一个非空行(与 校验库 Get-SubjectFormatGap 同口径)。
 # RULES(R 段)另锁:路径判据(已提交的中文名图)、内容判据的三条输入路(已提交 .cs、已提交 .prefab、untracked .cs)、
-# hunk 里以 +++ 开头的新增行照算内容、只看新增行(文件里早有的写法不算)、两端各自的判据;没命中时恰一行 not-required;
-# 服务端功能代码面认 GameBase 与 Entity/Game Examples、不认 Entity/Generate(R7b / R10);untracked 文件读不到只 WARN 不 INFRA(N9)。
+# hunk 里以 +++ 开头的新增行照算内容、只看新增行(文件里早有的写法不算);没命中时恰一行 not-required;本作判据表没有
+# 服务端篇,服务端改动一篇不点名(N7 / R10);untracked 文件读不到只 WARN 不 INFRA(N9)。
 # 判据表自检(CT 段)另锁逐支核着落:同字段别的元素命中不抵一支落空、元素含顶层 | 单报(CT4c);.cs 只在注释 / 字面量里
-# 命中的元素报零命中、.prefab 按原文(CT4d)。
-# 开工前读(PW 段)经 SLOT_ACQUIRE_NOEXEC=1 dot-source 槽位领取.ps1 调 Get-PreworkRuleLines:新目录靠 DirRe(含服务端 GameBase)、
+# 命中的元素报零命中、.prefab 按原文(CT4d);Ahead 预置支零命中放过、有着落报撤标(CT4e)。
+# 开工前读(PW 段)经 SLOT_ACQUIRE_NOEXEC=1 dot-source 槽位领取.ps1 调 Get-PreworkRuleLines:新目录靠 DirRe、
 # 已有目录按已跟踪文件展开、前缀不分大小写与 \ /、两端都给、一篇没中、没给前缀、判不成走 degraded;PW5 静态核两处 ACQUIRED 出口之前都打。
 # diff 基点护栏(DB 段,读隔离 LOCALAPPDATA 按 JSON 解析):两端算出分叉点各记 guard-ok、只给一端只记那一端、
 # 无共同祖先回落记 degraded 且原 WARN 照打、参数 INFRA 两样都不记。
@@ -216,7 +216,7 @@ try {
 
   # N9 untracked .cs 被独占打开、读不到:RULES 内容判据跳过它并打 WARN,不升 INFRA,其余照判
   $lockRel = "Demo/Assets/Editor/Shop/ShopLocked.cs"
-  Write-F $nClientRepo $lockRel "class K { void F() { FeatureGateBinder.PassGate(1); } }`n"
+  Write-F $nClientRepo $lockRel "class K { void F() { img.SpriteName = `"x`"; } }`n"
   $lockFs = [System.IO.File]::Open((Join-Path $nClientRepo $lockRel), [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::None)
   try { $r = Run-SR $nClient "" "" } finally { $lockFs.Dispose() }
   [System.IO.File]::Delete((Join-Path $nClientRepo $lockRel))
@@ -308,11 +308,18 @@ try {
   $tCmt = @(
     @{ Doc = '.claude/a.md'; Side = 'client'; PathRe = @(); DirRe = @()
        ContentRe = @('\bNewApi\b', '\bLineOnlyApi\b', '\bBlockOnlyApi\b', '\bStrOnlyApi\b', '\bPrefabOnlyApi\b') })
+  # Ahead 预置支:零命中的放过;已有着落的(路径支 / 内容支各一)报该撤标;列了表里没有的串报一条
+  $tAhead = @(
+    @{ Doc = '.claude/a.md'; Side = 'client'
+       PathRe = @('^Demo/Assets/X/.*\.cs$', '^Demo/Assets/Future/.*\.cs$'); DirRe = @()
+       ContentRe = @('\bFooApi\b', '\bFutureApi\b')
+       Ahead = @('^Demo/Assets/Future/.*\.cs$', '\bFutureApi\b', '^Demo/Assets/X/.*\.cs$', '\bFooApi\b', '\bNotInRule\b') })
   $ctRes = & {
     . (Join-Path $dfDir "hooks\校验库.ps1")
     # 不套 @():被调函数以 `return , $x` 回数组,外面再套 @() 得「元素是数组的 1 元数组」(静态扫描 R15 同款)。
     @{ Good = (Get-RuleReadTableGap $tClientRepo $tServer $tDocRoot $tTable); Bad = (Get-RuleReadTableGap $tClientRepo $tServer $tDocRoot $tBad)
-       Alt = (Get-RuleReadTableGap $tClientRepo "" $tDocRoot $tAlt); Cmt = (Get-RuleReadTableGap $tClientRepo "" $tDocRoot $tCmt) }
+       Alt = (Get-RuleReadTableGap $tClientRepo "" $tDocRoot $tAlt); Cmt = (Get-RuleReadTableGap $tClientRepo "" $tDocRoot $tCmt)
+       Ahead = (Get-RuleReadTableGap $tClientRepo "" $tDocRoot $tAhead) }
   }
   Assert-True ($ctRes.Good.Count -eq 0) ("CT4a 路径 / 目录 / 内容判据都有着落、篇都在 -> 零缺口 | " + ($ctRes.Good -join " / "))
   $bt = $ctRes.Bad -join "`n"
@@ -327,6 +334,11 @@ try {
   $cmtOk = ($ctRes.Cmt.Count -eq $cmtWant.Count)
   foreach ($w in $cmtWant) { if ($mt -notmatch $w) { $cmtOk = $false } }
   Assert-True $cmtOk ("CT4d .cs 只在注释 / 字面量里命中的元素报零命中,代码与 .prefab 原文里的照算着落 | " + $mt)
+  $ht = $ctRes.Ahead -join "`n"
+  $aheadWant = @("PathRe\[0\] .*Ahead 预置支但已有着落", "ContentRe\[0\] .*Ahead 预置支但已有着落", "NotInRule.*不是本条判据里的元素")
+  $aheadOk = ($ctRes.Ahead.Count -eq $aheadWant.Count -and $ht -notmatch 'Future')
+  foreach ($w in $aheadWant) { if ($ht -notmatch $w) { $aheadOk = $false } }
+  Assert-True $aheadOk ("CT4e Ahead 预置支零命中放过、有着落报撤标、列了表外的串单报 | " + $ht)
 
   # ================= PW:槽位领取「开工前读」(同一张判据表的事前口径) =================
   $acquireScript = Join-Path $dfDir "槽位领取.ps1"
@@ -337,7 +349,7 @@ try {
       . $acquireScript -Topic 'noexec-probe'
       @{
         # 同上,不套 @()
-        Both  = (Get-PreworkRuleLines $pClientRepo $pServer @("Demo/Assets/AssetRaw/UI/NewAtlas/NewThing/", "unityproject\assets\gamescripts\hotfix\gamelogic\module\shop") @("examples/Server/APP/Hotfix/Game Examples/Gate/Player"))
+        Both  = (Get-PreworkRuleLines $pClientRepo $pServer @("Demo/Assets/AssetRaw/UI/Atlas/NewThing/", "demo\assets\gamescripts\hotfix\gamelogic\module\shop") @("examples/Server/APP/Hotfix/Game Examples/Gate/Player"))
         Miss  = (Get-PreworkRuleLines $pClientRepo "" @("Demo/说明.txt") @())
         GBase = (Get-PreworkRuleLines $pClientRepo $pServer @() @("examples/Server/APP/GameBase/Gate/NewThing", "examples/Server/APP/GameBase/Gate/Quest/NewThing"))
         Empty = (Get-PreworkRuleLines $pClientRepo $pServer @() @(" "))
@@ -345,17 +357,16 @@ try {
       }
     } finally { $env:SLOT_ACQUIRE_NOEXEC = $oldNoExec }
   }
+  # 本作判据表没有服务端篇:两端都给时服务端前缀不出行。
   $want = @(
-    '^开工前读:\.claude/rules-ondemand/tengine-conventions\.md <- unityproject\\assets\\gamescripts\\hotfix\\gamelogic\\module\\shop$',
-    '^开工前读:\.claude/rules-ondemand/ui-image-assets\.md <- Demo/Assets/AssetRaw/UI/NewAtlas/NewThing/$',
-    '^开工前读:\.claude/references/systems/local-storage\.md <- unityproject\\assets\\gamescripts\\hotfix\\gamelogic\\module\\shop$',
-    '^开工前读:\.claude/rules-ondemand/server-perf\.md <- examples/Server/APP/Hotfix/Game Examples/Gate/Player$')
+    '^开工前读:\.claude/rules-ondemand/tengine-conventions\.md <- demo\\assets\\gamescripts\\hotfix\\gamelogic\\module\\shop$',
+    '^开工前读:\.claude/rules-ondemand/ui-image-assets\.md <- Demo/Assets/AssetRaw/UI/Atlas/NewThing/$')
   $pwOk = ($pw.Both.Count -eq $want.Count)
   for ($i = 0; $pwOk -and $i -lt $want.Count; $i++) { if ($pw.Both[$i] -notmatch $want[$i]) { $pwOk = $false } }
-  Assert-True $pwOk ("PW1 新目录靠 DirRe、已有目录按已跟踪文件展开(大小写与 \ 不计)、两端都给,客户端在前 | " + ($pw.Both -join " / "))
+  Assert-True $pwOk ("PW1 新目录靠 DirRe、已有目录按已跟踪文件展开(大小写与 \ 不计)、按判据表次序出行 | " + ($pw.Both -join " / "))
   Assert-True ($pw.Miss.Count -eq 1 -and $pw.Miss[0] -match '^开工前读:无') ("PW2 所给前缀一篇没中:恰一行「开工前读:无」 | " + ($pw.Miss -join " / "))
   Assert-True ($pw.Empty.Count -eq 0) "PW3 没给前缀(空白不算)不打任何行"
-  Assert-True ($pw.GBase.Count -eq 2 -and $pw.GBase[0] -match '^开工前读:\.claude/references/systems/quest-stat\.md <- examples/Server/APP/GameBase/Gate/Quest/NewThing$' -and $pw.GBase[1] -match '^开工前读:\.claude/rules-ondemand/server-perf\.md <- examples/Server/APP/GameBase/Gate/NewThing\(另 1 条前缀\)$') ("PW6 服务端 GameBase 下的新目录靠 DirRe 点名 server-perf、其 Quest 子目录另点 quest-stat | " + ($pw.GBase -join " / "))
+  Assert-True ($pw.GBase.Count -eq 1 -and $pw.GBase[0] -match '^开工前读:无') ("PW6 只给服务端前缀:本作判据表没有服务端篇,恰一行「开工前读:无」 | " + ($pw.GBase -join " / "))
   $pwTel = @(Get-ChildItem (Join-Path $env:LOCALAPPDATA "claude-wf-3b\telemetry") -Filter "wf-*.jsonl" -EA SilentlyContinue |
              ForEach-Object { [System.IO.File]::ReadAllLines($_.FullName) } | Where-Object { $_ } | ForEach-Object { $_ | ConvertFrom-Json } |
              Where-Object { $_.guard -eq "rules-prework" })

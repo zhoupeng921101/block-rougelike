@@ -1,6 +1,6 @@
 ﻿# bat编码核对测试.ps1 — bat编码核对.ps1 的 CLI 层契约测试(黑盒断言,夹具落 %TEMP%,真 git 仓)。
 # 覆盖:基线纯 ASCII / 已跟踪 .bat 含中文 -> 点名行号 / 已忽略 .bat 在面外 / 未跟踪未忽略的新 .bat
-#   (含中文名)在面内 / 已删未提交跳过 / 非 git 检出、git 报错两类 INFRA。
+#   (含中文名)在面内 / 已删未提交跳过 / 仓根下 Demo/ 之外的 .bat 在面外 / 非 git 检出、git 报错两类 INFRA。
 # 真 git 仓是必要的:扫描面 = 入仓候选(已跟踪 + 未跟踪未忽略),忽略规则与索引都要真 git 才成立。
 # T4 与 T7 是回归位:主工程/人工入库通道先自检、再 add,旧实现只扫已跟踪,新建的中文 .bat 自检照过后入仓;
 #   git 报错时旧实现的 `>` 重定向先建出空清单文件,读到空清单直接 PASS,头注的 INFRA 分支走不到。
@@ -59,6 +59,11 @@ try {
   [System.IO.File]::Delete((Join-Path (Split-Path $pd -Parent) "Demo\Tools\gone.bat"))
   $r = Invoke-ScanCheck $Target $pd
   Assert-True ($r.code -eq 0) "T5 已删未提交的 .bat -> PASS"
+
+  # T5b 面外:仓根下 Demo/ 之外的 .bat(本仓另有 参考/、复刻/ 等非工程目录,含中文的 bat 不归本道)
+  $pd = New-Repo @{ "参考/tools/导出.bat" = "rem 参考工具`r`n" } @{ "复刻/run.bat" = "rem 复刻`r`n" }
+  $r = Invoke-ScanCheck $Target $pd
+  Assert-True ($r.code -eq 0) "T5b Demo/ 之外的 .bat(已跟踪与未跟踪)不在面内 -> PASS"
 
   # T6 INFRA:目标不是 git 检出
   $bare = Join-Path $script:fx "notgit"
