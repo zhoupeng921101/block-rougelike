@@ -20,10 +20,14 @@ namespace GameRules
 
         int LevelOf(ClearType type);
 
+        ClearTypeBase BaseOf(ClearType type);
+
         BlockInstance FindInstance(int instanceId);
 
         bool CanPlace(int instanceId, int rot, int row, int col);
 
         bool CanPlaceAnyRotation(int instanceId);
+
+        ClearResolution ResolveClear(int instanceId, int rot, int row, int col);
     }
 }

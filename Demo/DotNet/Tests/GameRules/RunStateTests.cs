@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
 using NUnit.Framework;
 
 namespace GameRules.Tests
@@ -71,7 +69,7 @@ namespace GameRules.Tests
         [Test]
         public void IssueId_OnlyIncreases()
         {
-            RunState run = RunState.NewRun(Seed, new RuleConfig(new LibraryEntry[0]));
+            RunState run = RunState.NewRun(Seed, TestRules.Config());
             Assert.AreEqual(1, run.NextInstanceId);
             Assert.AreEqual(1, run.IssueId());
             Assert.AreEqual(2, run.IssueId());
@@ -117,7 +115,7 @@ namespace GameRules.Tests
         [Test]
         public void StartBlind_DealsWhatIsLeft_WhenLibraryIsShort()
         {
-            var config = new RuleConfig(new[] { new LibraryEntry(TetrominoKind.O, 1), new LibraryEntry(TetrominoKind.I, 2) });
+            RuleConfig config = TestRules.Config(new LibraryEntry(TetrominoKind.O, 1), new LibraryEntry(TetrominoKind.I, 2));
             RunState run = RunState.NewRun(Seed, config);
             run.StartBlind(PlaceholderTuning.FirstBlind);
 
@@ -157,7 +155,7 @@ namespace GameRules.Tests
         [Test]
         public void PlacementQueries_AskByInstance_AndRespectDeadCells()
         {
-            var config = new RuleConfig(new[] { new LibraryEntry(TetrominoKind.O, 1), new LibraryEntry(TetrominoKind.I, 1) });
+            RuleConfig config = TestRules.Config(new LibraryEntry(TetrominoKind.O, 1), new LibraryEntry(TetrominoKind.I, 1));
             RunState run = RunState.NewRun(Seed, config);
             Assert.IsFalse(run.CanPlace(1, 0, 0, 0), "开盲注前没有盘面");
             run.StartBlind(PlaceholderTuning.FirstBlind);
@@ -237,28 +235,6 @@ namespace GameRules.Tests
 
         private static string Inv(FormattableString s) => FormattableString.Invariant(s);
 
-        /// <summary>测试用的全量转储:只为比较「改拷贝不影响原件」,不是存档格式。</summary>
-        private static string Dump(RunState run)
-        {
-            var sb = new StringBuilder();
-            sb.Append(Inv($"seed={run.Seed} next={run.NextInstanceId}\n"));
-            foreach (BlockInstance b in run.Library) sb.Append(Inv($"lib {b.Id} {b.Kind} {b.Points} {b.Enhancement} {b.Edition}\n"));
-            sb.Append("levels=").Append(string.Join(",", run.TypeLevels.Select(l => l.ToString(CultureInfo.InvariantCulture)))).Append('\n');
-            sb.Append(Inv($"genes={run.Genes.Count}\n"));
-            foreach (RngStreamState s in run.Rng.Export()) sb.Append(Inv($"rng {s.Key} {s.S0:x16} {s.S1:x16}\n"));
-            BlindState b2 = run.Blind;
-            sb.Append(Inv($"blind {b2.Outcome} {b2.FailReason} step={b2.Step} group={b2.Group} score={b2.Score} combo={b2.Combo} discards={b2.DiscardsLeft}\n"));
-            sb.Append("draw=").Append(string.Join(",", b2.Draw)).Append('\n');
-            for (int i = 0; i < b2.Tray.Count; i++) sb.Append(Inv($"tray[{i}]={b2.Tray[i].Id}@{b2.Tray[i].Rot}\n"));
-            for (int cell = 0; cell < BoardCells.Count; cell++)
-            {
-                sb.Append(Inv($"{b2.Board.OwnerAt(cell)}{(b2.Board.IsDead(cell) ? "x" : "")} "));
-            }
-            sb.Append('\n');
-            sb.Append("discarded=").Append(string.Join(",", b2.Discarded)).Append('\n');
-            sb.Append("departed=").Append(string.Join(",", b2.Departed)).Append('\n');
-            sb.Append(Inv($"temp={b2.TempBlocks.Count}\n"));
-            return sb.ToString();
-        }
+        private static string Dump(RunState run) => TestRules.Dump(run);
     }
 }

@@ -63,7 +63,7 @@ namespace GameRules
             var run = new RunState(config, new RngStreams(seed), 1, new List<BlockInstance>(), levels, new List<GeneSlot>(), null);
             foreach (LibraryEntry e in config.DefaultLibrary)
             {
-                run._library.Add(new BlockInstance(run.IssueId(), e.Kind, e.Points, Enhancement.None, Edition.None));
+                run._library.Add(new BlockInstance(run.IssueId(), e.Kind, e.Points, e.Enhancement, e.Edition));
             }
             return run;
         }
@@ -84,6 +84,15 @@ namespace GameRules
             if (t < 0 || t >= ClearTypes.Count) throw new ArgumentOutOfRangeException(nameof(type), type, "不是消除类型");
             return _typeLevels[t];
         }
+
+        /// <summary>这种类型按当前等级的底注与基础倍率。界面的类型表、拖动预览与结算读底注(段 #7)用的是这一个查表。</summary>
+        public ClearTypeBase BaseOf(ClearType type) => Config.ClearTypes.Get(type, LevelOf(type));
+
+        /// <summary>
+        /// 基因钩子:在基因栏最右边加一格。本图没有基因来源,只有单测调用(同 <see cref="BoardState.SetDead"/>);
+        /// 槽数上限、买卖与换位归阶段 5。
+        /// </summary>
+        public void AddGene(int geneId) => _genes.Add(new GeneSlot(geneId));
 
         /// <summary>按 id 找方块库或本盲注临时块里的实例,找不到返回 null。</summary>
         public BlockInstance FindInstance(int instanceId)
@@ -106,10 +115,10 @@ namespace GameRules
         }
 
         /// <summary>
-        /// 开盲注:库里全部 id 按升序排,再用 <c>shuffle@段.层</c> 那条流从后往前洗(08 号票),洗完的列表就是抽牌顺序;然后发第一组。
-        /// 盲注内抽牌不再消耗随机。上一个盲注还在进行时调用是流程错误。
+        /// 开盲注:库里全部 id 按升序排,再用 <c>shuffle@段.层</c> 那条流从后往前洗(08 号票),洗完的列表就是抽牌顺序;然后发第一组、判一次负。
+        /// 盲注内抽牌不再消耗随机。不算一步(步数仍为 0),但同样返回事件(07 号票 §4)。上一个盲注还在进行时调用是流程错误。
         /// </summary>
-        public void StartBlind(BlindSpec spec)
+        public StepResult StartBlind(BlindSpec spec)
         {
             if (spec == null) throw new ArgumentNullException(nameof(spec));
             if (Blind != null && Blind.Outcome == BlindOutcome.InProgress) throw new InvalidOperationException("上一个盲注还没结束");
@@ -117,8 +126,71 @@ namespace GameRules
             foreach (BlockInstance b in _library) blind.DrawList.Add(b.Id);
             blind.DrawList.Sort();
             Rng.Get(RngKeys.Shuffle(spec.Segment, spec.Layer)).Shuffle(blind.DrawList);
-            blind.DealGroup();
             Blind = blind;
+            return StepPipeline.AfterBlindStart(this);
+        }
+
+        /// <summary>
+        /// 落子一步:校验 → 落子 → 判线 → 结算 → 判胜 → 发组 → 判负,一次推进到下一个稳定状态(07 号票 §4 的 17 段)。
+        /// 被拒不抛异常、不改状态。落点以参数的 rot 为准,不看槽上存的朝向。
+        /// </summary>
+        public StepResult Place(int instanceId, int rot, int row, int col) => StepPipeline.Place(this, instanceId, rot, row, col);
+
+        /// <summary>弃置一步:槽置空、进弃置堆、次数减一,不计分、连击不变,然后同样走步收尾、判胜、发组、判负。被拒不抛异常、不改状态。</summary>
+        public StepResult Discard(int instanceId) => StepPipeline.Discard(this, instanceId);
+
+        /// <summary>
+        /// 判线、定类型(07 号票 §8):这块按 rot 落在 (row, col) 会消什么、算哪种类型。只读,不碰随机流、不跑钩子、不用 Clone。
+        /// 拖动预览和真落子(段 #3、#5)都调它。只问几何,不问块在不在待放置区;rot 不在 0..3 抛异常(同 <see cref="CanPlace"/>)。
+        /// </summary>
+        public ClearResolution ResolveClear(int instanceId, int rot, int row, int col)
+        {
+            BlockInstance block = FindInstance(instanceId);
+            if (block == null || Blind == null || !Blind.Board.CanPlace(block.Kind, rot, row, col)) return ClearResolution.Illegal;
+
+            ClearResult lines = Blind.Board.FullLinesAfter(block.Kind, rot, row, col, out ulong occupiedAfter);
+            int[] rows = lines.Rows.ToArray(), cols = lines.Cols.ToArray();
+            if (rows.Length + cols.Length == 0) return new ClearResolution(true, null, rows, cols, null, null);
+
+            int[] cells = ClearRules.OrderCells(rows, cols);
+            var owners = new int[cells.Length];
+            ulong cleared = 0UL;
+            for (int i = 0; i < cells.Length; i++)
+            {
+                // 满线上只有占用格;落子前是空的那几格就是这块自己的
+                int owner = Blind.Board.OwnerAt(cells[i]);
+                owners[i] = owner == 0 ? instanceId : owner;
+                cleared |= BoardCells.BoardMaskBit(cells[i]);
+            }
+            bool allClear = (occupiedAfter & ~cleared) == 0UL;
+            ClearType type = ClearRules.Classify(rows, cols, IsSameShape(owners), allClear);
+            return new ClearResolution(true, type, rows, cols, cells, owners);
+        }
+
+        /// <summary>同形态:被消各格所属块的 Kind 全相同(06 号票 §5)。万态「参与任意形态」以后只改这一处。</summary>
+        private bool IsSameShape(int[] owners)
+        {
+            TetrominoKind kind = FindInstance(owners[0]).Kind;
+            for (int i = 1; i < owners.Length; i++)
+            {
+                if (FindInstance(owners[i]).Kind != kind) return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 进行中的盲注此刻该不该判负(规则 §2.4,07 号票 §9):抽牌堆和待放置区都空 → 预算耗尽;
+        /// 否则待放置区非空、剩下的块怎么转都放不下、弃置用完 → 放不下。两种互斥。段 #16 与 <see cref="Validate"/> 的稳定态约束共用它。
+        /// </summary>
+        internal FailReason PendingFailure()
+        {
+            if (Blind.IsTrayEmpty) return Blind.DrawList.Count == 0 ? FailReason.BudgetExhausted : FailReason.None;
+            if (Blind.DiscardsLeft > 0) return FailReason.None;
+            foreach (TraySlot slot in Blind.TraySlots)
+            {
+                if (!slot.IsEmpty && CanPlaceAnyRotation(slot.Id)) return FailReason.None;
+            }
+            return FailReason.CannotPlace;
         }
 
         /// <summary>
@@ -166,7 +238,7 @@ namespace GameRules
         /// <summary>
         /// 状态约束,返回第一条不成立的(带出处),全部成立返回 null。单测每步之后断言与读档校验(09 号票 §5)共用这一个函数,不另写。
         /// 查:实例 id 有效且唯一、盘面两条不变式(06 §2)、区守恒——方块库与临时块里每个 id 恰好在抽牌堆、待放置区、盘上、弃置堆、消尽堆之一,
-        /// 不在库里的 id 不许出现(06 §3)。
+        /// 不在库里的 id 不许出现(06 §3);进行中的盲注处在稳定态(09 §5 的两条)。
         /// </summary>
         public string Validate()
         {
@@ -222,6 +294,14 @@ namespace GameRules
             foreach (BlockInstance b in Blind.TempList)
             {
                 if (zoneOf[b.Id] == null) return Invariant($"blind.tempBlocks: 实例 {b.Id} 不在任何区");
+            }
+
+            // 稳定态(09 号票 §5):进行中的盲注不会停在「本该发组」或「本该判负」的地方
+            if (Blind.Outcome == BlindOutcome.InProgress)
+            {
+                if (Blind.IsTrayEmpty && Blind.DrawList.Count > 0) return "blind: 进行中,待放置区全空而抽牌堆非空(本该已发组)";
+                FailReason pending = PendingFailure();
+                if (pending != FailReason.None) return Invariant($"blind: 进行中,却已满足判负条件 {pending}");
             }
             return null;
         }

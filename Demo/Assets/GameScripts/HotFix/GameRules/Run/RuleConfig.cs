@@ -3,16 +3,20 @@ using System.Collections.Generic;
 
 namespace GameRules
 {
-    /// <summary>默认方块库清单的一项。</summary>
+    /// <summary>默认方块库清单的一项。强化、版本默认是「无」。</summary>
     public readonly struct LibraryEntry
     {
         public readonly TetrominoKind Kind;
         public readonly int Points;
+        public readonly Enhancement Enhancement;
+        public readonly Edition Edition;
 
-        public LibraryEntry(TetrominoKind kind, int points)
+        public LibraryEntry(TetrominoKind kind, int points, Enhancement enhancement = Enhancement.None, Edition edition = Edition.None)
         {
             Kind = kind;
             Points = points;
+            Enhancement = enhancement;
+            Edition = edition;
         }
     }
 
@@ -26,10 +30,19 @@ namespace GameRules
         /// </summary>
         public IReadOnlyList<LibraryEntry> DefaultLibrary { get; }
 
-        public RuleConfig(IEnumerable<LibraryEntry> defaultLibrary)
+        /// <summary>消除类型表,按(类型,等级)查。</summary>
+        public ClearTypeTable ClearTypes { get; }
+
+        /// <summary>强化、版本、基因的效果;交进来时封住。</summary>
+        public EffectRegistry Effects { get; }
+
+        public RuleConfig(IEnumerable<LibraryEntry> defaultLibrary, ClearTypeTable clearTypes, EffectRegistry effects)
         {
             if (defaultLibrary == null) throw new ArgumentNullException(nameof(defaultLibrary));
             DefaultLibrary = new List<LibraryEntry>(defaultLibrary).AsReadOnly();
+            ClearTypes = clearTypes ?? throw new ArgumentNullException(nameof(clearTypes));
+            Effects = effects ?? throw new ArgumentNullException(nameof(effects));
+            effects.Seal();
         }
     }
 }

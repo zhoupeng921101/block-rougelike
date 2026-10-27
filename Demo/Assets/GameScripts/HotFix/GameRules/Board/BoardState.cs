@@ -75,9 +75,22 @@ namespace GameRules
         /// 当前的满行、满列,都按升序(Core 按列号降序收满列,这里已排好)。只问占用:死格所在的线凑不满(规则 §3.3)。
         /// 只读。清格一律走 <see cref="ClearCell"/>:Core 的 <c>CanClearRowCols(doClear: true)</c> 只清占用、不清格层,规则核心里不许用。
         /// </summary>
-        public ClearResult FullLines()
+        public ClearResult FullLines() => SortedFullLines(_occupied);
+
+        /// <summary>
+        /// 试放:这块按 rot 落在 (row, col) 之后的满行、满列(升序),以及那时的占用掩码。不写盘;调用方先问过 <see cref="CanPlace"/>。
+        /// </summary>
+        internal ClearResult FullLinesAfter(TetrominoKind kind, int rot, int row, int col, out ulong occupiedAfter)
         {
-            ClearResult result = _occupied.CanClearRowCols(false);
+            BinaryBoard probe = _occupied.Clone();
+            probe.PutBlock(Tetromino.BaseShapeId(kind), rot, new Vec2Int(col, row));
+            occupiedAfter = probe.Cells;
+            return SortedFullLines(probe);
+        }
+
+        private static ClearResult SortedFullLines(BinaryBoard board)
+        {
+            ClearResult result = board.CanClearRowCols(false);
             result.Cols.Sort();
             return result;
         }
