@@ -43,6 +43,26 @@ namespace GameRules.Tests
 
         public static int InTray(RunState run, TetrominoKind kind) => InTray(run, b => b.Kind == kind);
 
+        /// <summary>最简策略:待放置区从左到右、rot 0..3、从左上往右下,第一个放得下的落点;都放不下返回 null。</summary>
+        public static (int, int, int, int)? FirstLegalPlacement(RunState run)
+        {
+            foreach (TraySlot slot in run.Blind.Tray)
+            {
+                if (slot.IsEmpty) continue;
+                for (int rot = 0; rot < 4; rot++)
+                {
+                    for (int row = 0; row < 8; row++)
+                    {
+                        for (int col = 0; col < 8; col++)
+                        {
+                            if (run.CanPlace(slot.Id, rot, row, col)) return (slot.Id, rot, row, col);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
         public static StepResult Place(RunState run, int id, int rot, int row, int col) => Accepted(run, run.Place(id, rot, row, col));
 
         public static StepResult Place(RunState run, TetrominoKind kind, int rot, int row, int col) => Place(run, InTray(run, kind), rot, row, col);

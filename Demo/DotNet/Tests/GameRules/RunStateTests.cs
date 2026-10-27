@@ -211,7 +211,7 @@ namespace GameRules.Tests
 
             string error = run.Validate();
             StringAssert.Contains(Inv($"实例 {id} 已在 blind.draw"), error);
-            StringAssert.StartsWith("blind.board[", error);
+            StringAssert.StartsWith("blind.owner[", error);
         }
 
         [Test]

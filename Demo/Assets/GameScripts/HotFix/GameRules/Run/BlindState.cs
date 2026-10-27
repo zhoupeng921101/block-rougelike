@@ -77,6 +77,21 @@ namespace GameRules
             TempBlocks = temp.AsReadOnly();
         }
 
+        /// <summary>读档的还原口(<see cref="RunSnapshot"/>):各区原样接上,不查约束,读档随后调 <see cref="RunState.Validate"/>。</summary>
+        internal static BlindState Restore(BlindSpec spec, BlindOutcome outcome, FailReason failReason, int step, int group, long score,
+            int combo, int discardsLeft, List<int> draw, TraySlot[] tray, BoardState board, List<int> discarded, List<int> departed,
+            List<BlockInstance> temp) =>
+            new BlindState(spec, draw, tray, board, discarded, departed, temp)
+            {
+                Outcome = outcome,
+                FailReason = failReason,
+                Step = step,
+                Group = group,
+                Score = score,
+                Combo = combo,
+                DiscardsLeft = discardsLeft,
+            };
+
         internal BlindState Clone()
         {
             var temp = new List<BlockInstance>(TempList.Count);

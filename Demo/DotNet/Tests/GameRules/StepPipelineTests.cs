@@ -483,7 +483,7 @@ namespace GameRules.Tests
             {
                 Assert.Less(steps, limit, "规则核心没能结束这一局");
                 StepResult step;
-                (int id, int rot, int row, int col)? move = FirstLegalPlacement(run);
+                (int id, int rot, int row, int col)? move = TestRules.FirstLegalPlacement(run);
                 if (move.HasValue)
                 {
                     (int id, int rot, int row, int col) = move.Value;
@@ -531,7 +531,7 @@ namespace GameRules.Tests
             run.StartBlind(PlaceholderTuning.FirstBlind);
             string before = TestRules.Dump(run);
             RunState copy = run.Clone();
-            (int id, int rot, int row, int col) = FirstLegalPlacement(copy).Value;
+            (int id, int rot, int row, int col) = TestRules.FirstLegalPlacement(copy).Value;
             TestRules.Place(copy, id, rot, row, col);
             Assert.AreEqual(before, TestRules.Dump(run));
             Assert.AreEqual(1, copy.Blind.Step);
@@ -558,25 +558,6 @@ namespace GameRules.Tests
         }
 
         // ---- 助手 ----
-
-        private static (int, int, int, int)? FirstLegalPlacement(RunState run)
-        {
-            foreach (TraySlot slot in run.Blind.Tray)
-            {
-                if (slot.IsEmpty) continue;
-                for (int rot = 0; rot < 4; rot++)
-                {
-                    for (int row = 0; row < 8; row++)
-                    {
-                        for (int col = 0; col < 8; col++)
-                        {
-                            if (run.CanPlace(slot.Id, rot, row, col)) return (slot.Id, rot, row, col);
-                        }
-                    }
-                }
-            }
-            return null;
-        }
 
         private static void KeepOnlyTopLeftSquare(RunState run)
         {

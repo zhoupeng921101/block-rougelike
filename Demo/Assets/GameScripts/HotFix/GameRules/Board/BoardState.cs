@@ -35,6 +35,22 @@ namespace GameRules
 
         public BoardState Clone() => new BoardState(this);
 
+        /// <summary>
+        /// 读档的还原口(<see cref="RunSnapshot"/>):格层与死格掩码原样接上,占用从格层推,不另存(06 号票 §2)。
+        /// 不查不变式:读档随后调 <see cref="RunState.Validate"/>。
+        /// </summary>
+        internal static BoardState Restore(int[] owner, ulong dead)
+        {
+            var board = new BoardState();
+            for (int cell = 0; cell < BoardCells.Count; cell++)
+            {
+                board._owner[cell] = owner[cell];
+                if (owner[cell] != 0) board._occupied.OrRow(BoardCells.RowOf(cell), BoardCells.RowMaskBit(BoardCells.ColOf(cell)));
+            }
+            board._dead = dead;
+            return board;
+        }
+
         public int OwnerAt(int cell) => _owner[CheckCell(cell)];
 
         public bool IsOccupied(int cell) => (_occupied.Cells & BoardCells.BoardMaskBit(CheckCell(cell))) != 0UL;

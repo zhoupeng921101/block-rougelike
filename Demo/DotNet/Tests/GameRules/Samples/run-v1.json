@@ -1,0 +1,82 @@
+{
+  "format": "3b.run",
+  "schema": 1,
+  "seed": "TESTSEED",
+  "rng": {
+    "scheme": 1,
+    "streams": [
+      { "key": "shuffle@1.1", "s0": "a831c3786be15e8a", "s1": "f01b5299ba8be8cb" }
+    ]
+  },
+  "nextInstanceId": 29,
+  "library": [
+    { "id": 1, "kind": "I", "points": 1, "enhancement": "None", "edition": "None" },
+    { "id": 2, "kind": "I", "points": 2, "enhancement": "None", "edition": "None" },
+    { "id": 3, "kind": "I", "points": 3, "enhancement": "None", "edition": "None" },
+    { "id": 4, "kind": "I", "points": 4, "enhancement": "None", "edition": "None" },
+    { "id": 5, "kind": "O", "points": 1, "enhancement": "None", "edition": "None" },
+    { "id": 6, "kind": "O", "points": 2, "enhancement": "None", "edition": "None" },
+    { "id": 7, "kind": "O", "points": 3, "enhancement": "None", "edition": "None" },
+    { "id": 8, "kind": "O", "points": 4, "enhancement": "None", "edition": "None" },
+    { "id": 9, "kind": "T", "points": 1, "enhancement": "None", "edition": "None" },
+    { "id": 10, "kind": "T", "points": 2, "enhancement": "None", "edition": "None" },
+    { "id": 11, "kind": "T", "points": 3, "enhancement": "None", "edition": "None" },
+    { "id": 12, "kind": "T", "points": 4, "enhancement": "None", "edition": "None" },
+    { "id": 13, "kind": "S", "points": 1, "enhancement": "None", "edition": "None" },
+    { "id": 14, "kind": "S", "points": 2, "enhancement": "None", "edition": "None" },
+    { "id": 15, "kind": "S", "points": 3, "enhancement": "None", "edition": "None" },
+    { "id": 16, "kind": "S", "points": 4, "enhancement": "None", "edition": "None" },
+    { "id": 17, "kind": "Z", "points": 1, "enhancement": "None", "edition": "None" },
+    { "id": 18, "kind": "Z", "points": 2, "enhancement": "None", "edition": "None" },
+    { "id": 19, "kind": "Z", "points": 3, "enhancement": "None", "edition": "None" },
+    { "id": 20, "kind": "Z", "points": 4, "enhancement": "None", "edition": "None" },
+    { "id": 21, "kind": "J", "points": 1, "enhancement": "None", "edition": "None" },
+    { "id": 22, "kind": "J", "points": 2, "enhancement": "None", "edition": "None" },
+    { "id": 23, "kind": "J", "points": 3, "enhancement": "None", "edition": "None" },
+    { "id": 24, "kind": "J", "points": 4, "enhancement": "None", "edition": "None" },
+    { "id": 25, "kind": "L", "points": 1, "enhancement": "None", "edition": "None" },
+    { "id": 26, "kind": "L", "points": 2, "enhancement": "None", "edition": "None" },
+    { "id": 27, "kind": "L", "points": 3, "enhancement": "None", "edition": "None" },
+    { "id": 28, "kind": "L", "points": 4, "enhancement": "None", "edition": "None" }
+  ],
+  "typeLevels": {
+    "AllClear": 1,
+    "FiveLine": 1,
+    "SameShapeCross": 1,
+    "MultiLine": 1,
+    "SameShape": 1,
+    "TripleLine": 1,
+    "Corner": 1,
+    "Cross": 1,
+    "Parallel": 1,
+    "DoubleLine": 1,
+    "SingleLine": 1
+  },
+  "genes": [],
+  "blind": {
+    "spec": { "segment": 1, "layer": 1, "target": "350", "discards": 3, "groupSize": 3 },
+    "outcome": "InProgress",
+    "failReason": "None",
+    "step": 6,
+    "group": 3,
+    "score": "30",
+    "combo": 0,
+    "discardsLeft": 1,
+    "draw": [7, 21, 27, 14, 26, 22, 4, 2, 23, 5, 28, 16, 15, 3, 10, 13, 1, 20, 19],
+    "tray": [{ "id": 17, "rot": 1 }, { "id": 24, "rot": 0 }, { "id": 18, "rot": 0 }],
+    "owner": [
+      [0, 9, 25, 0, 11, 0, 8, 8],
+      [9, 9, 9, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0]
+    ],
+    "dead": [63],
+    "discarded": [12, 6],
+    "departed": [],
+    "tempBlocks": []
+  }
+}

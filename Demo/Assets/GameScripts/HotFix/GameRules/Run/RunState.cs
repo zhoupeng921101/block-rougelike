@@ -68,6 +68,11 @@ namespace GameRules
             return run;
         }
 
+        /// <summary>读档的还原口(<see cref="RunSnapshot"/>):各字段原样接上,不查约束,读档随后调 <see cref="Validate"/>。</summary>
+        internal static RunState Restore(RuleConfig config, RngStreams rng, int nextInstanceId, List<BlockInstance> library,
+            int[] typeLevels, List<GeneSlot> genes, BlindState blind) =>
+            new RunState(config, rng, nextInstanceId, library, typeLevels, genes, blind);
+
         /// <summary>
         /// 唯一的取号口。方块库的块、首领预置块、将来「生成一块」的效果都从这里取,所以不能假设 id 都在方块库里。
         /// 只增不复用:碎裂、湮灭掉的 id 不回收。
@@ -236,9 +241,14 @@ namespace GameRules
         }
 
         /// <summary>
-        /// 状态约束,返回第一条不成立的(带出处),全部成立返回 null。单测每步之后断言与读档校验(09 号票 §5)共用这一个函数,不另写。
-        /// 查:实例 id 有效且唯一、盘面两条不变式(06 §2)、区守恒——方块库与临时块里每个 id 恰好在抽牌堆、待放置区、盘上、弃置堆、消尽堆之一,
+        /// 状态约束,返回第一条不成立的,形如「路径: 说明」,路径用存档快照的成员名(<see cref="RunSnapshot"/>);全部成立返回 null。
+        /// 单测每步之后断言与读档校验(09 号票 §5)共用这一个函数,不另写。查:
+        /// 实例 id 有效且唯一、枚举都有定义、类型等级在 1..类型表上限、基因都在效果注册表里登记过;
+        /// 盲注的计数非负、弃置次数不超过规格、待放置区长度等于每组块数且朝向在 0..3、结局与失败原因相配;
+        /// 盘面两条不变式(06 §2)、区守恒——方块库与临时块里每个 id 恰好在抽牌堆、待放置区、盘上、弃置堆、消尽堆之一,
         /// 不在库里的 id 不许出现(06 §3);进行中的盲注处在稳定态(09 §5 的两条)。
+        /// 09 §5 的随机流四条(种子规范、键合法、键升序不重、状态不全零)由 <see cref="RngStreams"/> 的构造保证、走不出坏值,
+        /// 坏档在构造之前由 <see cref="RunSnapshot.Read"/> 拦下,这里不重查。
         /// </summary>
         public string Validate()
         {
@@ -247,40 +257,57 @@ namespace GameRules
             int prev = 0;
             for (int i = 0; i < _library.Count; i++)
             {
-                int id = _library[i].Id;
-                if (id <= prev) return Invariant($"library[{i}]: id {id} 不大于前一块的 {prev}(id 须 > 0 且严格升序)");
-                if (id >= NextInstanceId) return Invariant($"library[{i}]: id {id} 不小于 nextInstanceId {NextInstanceId}");
-                zoneOf.Add(id, null);
-                prev = id;
+                BlockInstance b = _library[i];
+                if (b.Id <= prev) return Invariant($"library[{i}].id: {b.Id} 不大于前一块的 {prev}(id 须 > 0 且严格升序)");
+                if (b.Id >= NextInstanceId) return Invariant($"library[{i}].id: {b.Id} 不小于 nextInstanceId {NextInstanceId}");
+                string enumError = CheckEnums(b, Invariant($"library[{i}]"));
+                if (enumError != null) return enumError;
+                zoneOf.Add(b.Id, null);
+                prev = b.Id;
+            }
+            for (int t = 0; t < ClearTypes.Count; t++)
+            {
+                int max = Config.ClearTypes.MaxLevel((ClearType)t);
+                if (_typeLevels[t] < 1 || _typeLevels[t] > max) return Invariant($"typeLevels.{(ClearType)t}: 等级 {_typeLevels[t]} 不在 1..{max}");
+            }
+            for (int i = 0; i < _genes.Count; i++)
+            {
+                // 09 §5 写的是「genes 为空」;本图注册表为空,两者等价,而单测经 AddGene 加登记过的替身基因(20 号票补的约束)
+                int gene = _genes[i].GeneId;
+                if (Config.Effects.Find(EffectSource.Gene, gene) == null) return Invariant($"genes[{i}].id: 基因 {gene} 没在效果注册表里登记");
             }
             if (Blind == null) return null;
 
+            string err = CheckBlindValues(Blind);
+            if (err != null) return err;
             for (int i = 0; i < Blind.TempList.Count; i++)
             {
-                int id = Blind.TempList[i].Id;
-                if (zoneOf.ContainsKey(id)) return Invariant($"blind.tempBlocks[{i}]: id {id} 重复");
-                if (id >= NextInstanceId) return Invariant($"blind.tempBlocks[{i}]: id {id} 不小于 nextInstanceId {NextInstanceId}");
-                zoneOf.Add(id, null);
+                BlockInstance b = Blind.TempList[i];
+                if (zoneOf.ContainsKey(b.Id)) return Invariant($"blind.tempBlocks[{i}].id: {b.Id} 重复");
+                if (b.Id >= NextInstanceId) return Invariant($"blind.tempBlocks[{i}].id: {b.Id} 不小于 nextInstanceId {NextInstanceId}");
+                err = CheckEnums(b, Invariant($"blind.tempBlocks[{i}]"));
+                if (err != null) return err;
+                zoneOf.Add(b.Id, null);
             }
 
             string boardError = Blind.Board.Validate();
-            if (boardError != null) return "blind.board: " + boardError;
+            if (boardError != null) return "blind.owner: " + boardError;
 
-            string err = ClaimAll(zoneOf, Blind.DrawList, "blind.draw");
+            err = ClaimAll(zoneOf, Blind.DrawList, "blind.draw");
             if (err != null) return err;
             for (int i = 0; i < Blind.TraySlots.Length; i++)
             {
                 if (Blind.TraySlots[i].IsEmpty) continue;
-                err = Claim(zoneOf, Blind.TraySlots[i].Id, "blind.tray", Invariant($"blind.tray[{i}]"));
+                err = Claim(zoneOf, Blind.TraySlots[i].Id, "blind.tray", Invariant($"blind.tray[{i}].id"));
                 if (err != null) return err;
             }
             for (int cell = 0; cell < BoardCells.Count; cell++)
             {
                 int id = Blind.Board.OwnerAt(cell);
-                if (id == 0 || (zoneOf.TryGetValue(id, out string zone) && zone == "blind.board")) continue;
-                err = Claim(zoneOf, id, "blind.board", Invariant($"blind.board[{cell}]"));
+                if (id == 0 || (zoneOf.TryGetValue(id, out string zone) && zone == "blind.owner")) continue;
+                err = Claim(zoneOf, id, "blind.owner", Invariant($"blind.owner[{BoardCells.RowOf(cell)}][{BoardCells.ColOf(cell)}]"));
                 if (err != null) return err;
-                if (Blind.Board.CellsOf(id) > Tetromino.CellCount) return Invariant($"blind.board: 实例 {id} 占了 {Blind.Board.CellsOf(id)} 格");
+                if (Blind.Board.CellsOf(id) > Tetromino.CellCount) return Invariant($"blind.owner: 实例 {id} 占了 {Blind.Board.CellsOf(id)} 格");
             }
             err = ClaimAll(zoneOf, Blind.DiscardedList, "blind.discarded");
             if (err != null) return err;
@@ -302,6 +329,42 @@ namespace GameRules
                 if (Blind.IsTrayEmpty && Blind.DrawList.Count > 0) return "blind: 进行中,待放置区全空而抽牌堆非空(本该已发组)";
                 FailReason pending = PendingFailure();
                 if (pending != FailReason.None) return Invariant($"blind: 进行中,却已满足判负条件 {pending}");
+            }
+            return null;
+        }
+
+        private static string CheckEnums(BlockInstance b, string path)
+        {
+            if (!Enum.IsDefined(typeof(TetrominoKind), b.Kind)) return Invariant($"{path}.kind: 未定义的值 {(int)b.Kind}");
+            if (!Enum.IsDefined(typeof(Enhancement), b.Enhancement)) return Invariant($"{path}.enhancement: 未定义的值 {(int)b.Enhancement}");
+            if (!Enum.IsDefined(typeof(Edition), b.Edition)) return Invariant($"{path}.edition: 未定义的值 {(int)b.Edition}");
+            return null;
+        }
+
+        private static string CheckBlindValues(BlindState b)
+        {
+            if (!Enum.IsDefined(typeof(BlindOutcome), b.Outcome)) return Invariant($"blind.outcome: 未定义的值 {(int)b.Outcome}");
+            if (!Enum.IsDefined(typeof(FailReason), b.FailReason)) return Invariant($"blind.failReason: 未定义的值 {(int)b.FailReason}");
+            if ((b.Outcome == BlindOutcome.Lost) != (b.FailReason != FailReason.None))
+            {
+                return Invariant($"blind.failReason: 结局 {b.Outcome} 配不上失败原因 {b.FailReason}(只有输了才有原因)");
+            }
+            if (b.Step < 0) return Invariant($"blind.step: {b.Step} 为负");
+            if (b.Group < 0) return Invariant($"blind.group: {b.Group} 为负");
+            if (b.Score < 0) return Invariant($"blind.score: {b.Score} 为负");
+            if (b.Combo < 0) return Invariant($"blind.combo: {b.Combo} 为负");
+            if (b.DiscardsLeft < 0 || b.DiscardsLeft > b.Spec.Discards)
+            {
+                return Invariant($"blind.discardsLeft: {b.DiscardsLeft} 不在 0..{b.Spec.Discards}");
+            }
+            if (b.TraySlots.Length != b.Spec.GroupSize)
+            {
+                return Invariant($"blind.tray: 有 {b.TraySlots.Length} 槽,每组块数是 {b.Spec.GroupSize}");
+            }
+            for (int i = 0; i < b.TraySlots.Length; i++)
+            {
+                TraySlot slot = b.TraySlots[i];
+                if (!slot.IsEmpty && !Tetromino.IsValidRot(slot.Rot)) return Invariant($"blind.tray[{i}].rot: {slot.Rot} 不在 0..3");
             }
             return null;
         }
