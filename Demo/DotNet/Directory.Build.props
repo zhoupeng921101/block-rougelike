@@ -1,0 +1,10 @@
+<Project>
+  <!-- 只作用于 DotNet/ 下:放 Demo 根或仓根会被 Unity 生成的 csproj 连带导入。
+       整个 DotNet/ 统一 C# 9,对齐 Unity 6000.3 的 -langversion:9.0。 -->
+  <PropertyGroup>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+</Project>

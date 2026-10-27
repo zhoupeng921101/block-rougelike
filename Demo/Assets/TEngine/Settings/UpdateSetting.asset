@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   projectName: 3b
   HotUpdateAssemblies:
+  - GameRules.dll
   - GameLogic.dll
   AOTMetaAssemblies:
   - mscorlib.dll

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 规则核心的镜像库:不放源码,通配链接 Assets 下的正本。
+       目标框架锁 netstandard2.1(对齐 apiCompatibilityLevel 6),Unity 编不过的写法(init、record、.NET 6 以上的 API)在这里当场报错;
+       只锁 LangVersion 拦不住后两类。测试与跑局工程经 ProjectReference 引它,不直接编正本。 -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>GameRules</AssemblyName>
+    <RootNamespace>GameRules</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\Assets\GameScripts\HotFix\GameRules\**\*.cs" Link="Src\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
