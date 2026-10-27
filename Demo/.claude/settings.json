@@ -1,0 +1,182 @@
+{
+  "env": {
+    "PYTHONIOENCODING": "utf-8"
+  },
+  "permissions": {
+    "allow": [
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "PowerShell(git push:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|bash|PowerShell|pwsh)$",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(*git*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\提交检查.ps1\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "if": "Bash(*Git*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\提交检查.ps1\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "if": "Bash(*GIT*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\提交检查.ps1\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "if": "Bash(*run_tests*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\提交检查.ps1\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "if": "PowerShell(*git*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\提交检查.ps1\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "if": "PowerShell(*run_tests*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\提交检查.ps1\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "if": "Bash(*ower*hell*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(*OWER*HELL*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(*wsh*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(*WSH*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(*.bat*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(*.Bat*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(*.BAT*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(*.cmd*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(*.Cmd*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Bash(*.CMD*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "PowerShell(*.bat*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "PowerShell(*.cmd*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "PowerShell(*交付.ps1*)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "^(bash|pwsh)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\提交检查.ps1\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(Write|Edit)$",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Edit(*.ps1)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\写入补BOM.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Edit(*.psd1)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\写入补BOM.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Write(*.ps1)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\写入补BOM.ps1\"",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "if": "Write(*.psd1)",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\写入补BOM.ps1\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

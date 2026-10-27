@@ -19,3 +19,8 @@ __pycache__/
 /SolarSmash/
 
 # Demo/ 的 Unity 与 TEngine 生成物规则在 Demo/.gitignore
+
+# devflow 检查凭据(客户端自检签发、提交与交付验票时读;运行态,每个槽位与主仓各一份)
+/.gate/
+# playtest 跑测中间产物(表头 dump / 日志 / 探针输出)
+/playtest/

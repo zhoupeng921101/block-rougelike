@@ -81,6 +81,11 @@ yoo/
 # 测试输出
 TestResults/
 
+# devflow 临时测试目录:不入库,槽位交付在客户端自检 PASS 后删除。目录 meta 一并忽略,
+# 否则测试目录删掉后 meta 成孤儿,以「库里有、工作树没有」的删除卡住合并预检。
+/[Aa]ssets/[Ee]ditor/[Tt]ests/
+/[Aa]ssets/[Ee]ditor/[Tt]ests.meta
+
 # 截图(UnityMCP 截图默认落点与验收截图)
 /Captures/
 /[Aa]ssets/Screenshots/

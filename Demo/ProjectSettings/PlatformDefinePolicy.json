@@ -1,4 +1,6 @@
 ﻿{
-  "coveredPlatforms": [],
+  "coveredPlatforms": [
+    "Standalone"
+  ],
   "rules": []
 }
