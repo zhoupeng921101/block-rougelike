@@ -50,7 +50,7 @@ MonoBehaviour:
         PackRuleName: PackCollector
         FilterRuleName: CollectByExtensions
         AssetTags: 
-        UserData: '*.bytes'
+        UserData: '*.bytes|*.json'
     - GroupName: Effects
       GroupDesc: 
       AssetTags: 
@@ -153,8 +153,8 @@ MonoBehaviour:
         AddressRuleName: AddressByFileName
         PackRuleName: PackSeparately
         FilterRuleName: CollectShader
-        AssetTags:
-        UserData:
+        AssetTags: 
+        UserData: 
   - PackageName: OtherPackage
     PackageDesc: 
     EnableAddressable: 1

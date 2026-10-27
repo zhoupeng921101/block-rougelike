@@ -1,7 +1,8 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 /// <summary>
-/// 主界面。阶段 1 只验证启动链路走得到这里,界面元素按规则 §8.1 在局外循环阶段补齐。
+/// 主界面。规则 §8.1 的「开始游戏」「继续」「语言」三个按钮排在「按钮列」里;界面元素按局外循环阶段补齐。
 /// </summary>
 [Window(UILayer.Bottom, fullScreen: true)]
 public partial class UIMainMenuPanel : UIPanelMono
@@ -9,5 +10,11 @@ public partial class UIMainMenuPanel : UIPanelMono
     protected override void OnCreate()
     {
         m_text_Version.text = "v" + Application.version;
+    }
+
+    private partial void OnClick_LanguageBtn()
+    {
+        TextTable table = TextTable.Instance;
+        table.SetLanguageAsync(table.NextLanguage()).Forget();
     }
 }

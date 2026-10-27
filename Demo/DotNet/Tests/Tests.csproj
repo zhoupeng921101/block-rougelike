@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- DotNet 侧唯一的测试工程,客户端自检 dotnet单测 那一道只跑它。按目录分:GameRules/ 规则核心单测。
+  <!-- DotNet 侧唯一的测试工程,客户端自检 dotnet单测 那一道只跑它。按目录分:GameRules/ 规则核心单测,L10n/ 文本表校验。
        包版本钉死在本机 NuGet 缓存已有的版本上,首次 restore 不联网。 -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -14,5 +14,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GameRules\GameRules.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- GameLogic 里枚举到文本 key 的映射。它不得引用 UnityEngine,引了这里就编不过。 -->
+    <Compile Include="..\..\Assets\GameScripts\HotFix\GameLogic\Module\L10n\TextKeys.cs" Link="L10n\TextKeys.cs" />
   </ItemGroup>
 </Project>
