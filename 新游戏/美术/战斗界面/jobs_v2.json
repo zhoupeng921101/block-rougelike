@@ -1,0 +1,35 @@
+[
+ {
+  "prompt_file": "定稿词/战斗界面_v2A.txt",
+  "final": true,
+  "family": "v2A",
+  "refs": [
+   "线框/3B战斗界面_v2_线框.png",
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/3B/认可_战斗界面_v1.png",
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/pixel/认可_太空_地球_v3.png"
+  ],
+  "out": "出图/战斗界面_v2A.png"
+ },
+ {
+  "prompt_file": "定稿词/战斗界面_v2B.txt",
+  "final": true,
+  "family": "v2B",
+  "refs": [
+   "线框/3B战斗界面_v2_线框.png",
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/3B/认可_战斗界面_v1.png",
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/pixel/认可_太空_地球_v3.png"
+  ],
+  "out": "出图/战斗界面_v2B.png"
+ },
+ {
+  "prompt_file": "定稿词/战斗界面_v2C.txt",
+  "final": true,
+  "family": "v2C",
+  "refs": [
+   "线框/3B战斗界面_v2_线框.png",
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/3B/认可_战斗界面_v1.png",
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/pixel/认可_太空_地球_v3.png"
+  ],
+  "out": "出图/战斗界面_v2C.png"
+ }
+]
