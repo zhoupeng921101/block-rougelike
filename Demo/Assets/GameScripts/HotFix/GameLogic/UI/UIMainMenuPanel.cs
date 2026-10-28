@@ -12,6 +12,12 @@ public partial class UIMainMenuPanel : UIPanelMono
         m_text_Version.text = "v" + Application.version;
     }
 
+    /// <summary>开新局(11 号票的默认参数 + 新种子),进战斗窗。</summary>
+    private partial void OnClick_StartBtn()
+    {
+        GameModule.UI.ShowUIAsync<UIBattlePanel>(RunLauncher.NewRun());
+    }
+
     private partial void OnClick_LanguageBtn()
     {
         TextTable table = TextTable.Instance;

@@ -16,11 +16,14 @@ public partial class UIMainMenuPanel : UIPanelMono
 
 	#pragma warning disable CS0414 // 绑定字段按 prefab 节点结构生成,是否被业务消费由业务定;生成物不为此报警
 	[SerializeField] private Text m_text_Version = null!;
+	[SerializeField] private Button m_btn_Start = null!;
 	[SerializeField] private Button m_btn_Language = null!;
 	#pragma warning restore CS0414
 
 	protected override void ScriptGenerator()
 	{
+		m_btn_Start.onClick.RemoveAllListeners();
+		m_btn_Start.onClick.AddListener(OnClick_StartBtn);
 		m_btn_Language.onClick.RemoveAllListeners();
 		m_btn_Language.onClick.AddListener(OnClick_LanguageBtn);
 	}
@@ -28,6 +31,8 @@ public partial class UIMainMenuPanel : UIPanelMono
 	#endregion
 
 	#region 事件
+
+	private partial void OnClick_StartBtn();
 
 	private partial void OnClick_LanguageBtn();
 

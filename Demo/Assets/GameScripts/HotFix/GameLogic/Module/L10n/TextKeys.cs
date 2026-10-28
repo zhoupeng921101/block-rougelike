@@ -1,3 +1,6 @@
+using System;
+using GameRules;
+
 /// <summary>
 /// 代码里用到的文本 key 都从这里取;规则核心的枚举到 key 的映射也写在这里,每个要显示的枚举一个 <c>Of(…)</c>。
 /// </summary>
@@ -13,5 +16,40 @@ public static class TextKeys
         public const string Start = "ui.main_menu.start";
         public const string Continue = "ui.main_menu.continue";
         public const string Language = "ui.main_menu.language";
+    }
+
+    /// <summary>战斗界面里由代码画的文案;静态标签走预制体上的 LocalizedText,不在这里。</summary>
+    public static class Battle
+    {
+        public const string BlindNormal = "ui.battle.blind_normal";
+        public const string Discard = "ui.battle.discard";
+        public const string DiscardLeft = "ui.battle.discard_left";
+        public const string DiscardNone = "ui.battle.discard_none";
+        public const string DiscardNoneHint = "ui.battle.discard_none_hint";
+        public const string LibraryTotal = "ui.battle.library_total";
+        public const string Level = "ui.battle.level";
+        public const string Mult = "ui.battle.mult";
+        public const string Points = "ui.battle.points";
+        public const string ScoreOf = "ui.battle.score_of";
+    }
+
+    /// <summary>消除类型名。</summary>
+    public static string Of(ClearType type)
+    {
+        switch (type)
+        {
+            case ClearType.AllClear: return "clear_type.all_clear.name";
+            case ClearType.FiveLine: return "clear_type.five_line.name";
+            case ClearType.SameShapeCross: return "clear_type.same_shape_cross.name";
+            case ClearType.MultiLine: return "clear_type.multi_line.name";
+            case ClearType.SameShape: return "clear_type.same_shape.name";
+            case ClearType.TripleLine: return "clear_type.triple_line.name";
+            case ClearType.Corner: return "clear_type.corner.name";
+            case ClearType.Cross: return "clear_type.cross.name";
+            case ClearType.Parallel: return "clear_type.parallel.name";
+            case ClearType.DoubleLine: return "clear_type.double_line.name";
+            case ClearType.SingleLine: return "clear_type.single_line.name";
+            default: throw new ArgumentOutOfRangeException(nameof(type), type, "不是消除类型");
+        }
     }
 }
