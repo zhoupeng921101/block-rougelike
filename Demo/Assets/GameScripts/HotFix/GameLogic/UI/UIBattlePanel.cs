@@ -6,7 +6,8 @@ using UnityEngine;
 /// <summary>
 /// 战斗界面(规则 §8.5,布局照 13 号票线框 A)。画面全从规则核心的只读状态画:<see cref="Refresh"/> 是唯一的全量刷新入口,
 /// 开新局与续玩(23 号票)走同一条路。打开时传入这一局的 <see cref="RunState"/>(UserData)。
-/// 拖拽、旋转、弃置与预览在 <see cref="PieceGestureFlow"/>;一步的结算演出在 <see cref="StepShowPlayer"/>,结局弹 <see cref="UIBattleResultPanel"/>;存档归 23。
+/// 拖拽、旋转、弃置与预览在 <see cref="PieceGestureFlow"/>;一步的结算演出在 <see cref="StepShowPlayer"/>,结局弹 <see cref="UIBattleResultPanel"/>;
+/// 存档时机在 <see cref="RunSaveService"/>。
 /// </summary>
 [Window(UILayer.UI, fullScreen: true)]
 public partial class UIBattlePanel : UIPanelMono
@@ -27,7 +28,8 @@ public partial class UIBattlePanel : UIPanelMono
     {
         m_part_BoardArea.InitPools();
         // 窗根当拖拽层:拿起的块挂到最上层,盖在弃置区之上
-        _gesture = new PieceGestureFlow(m_part_BoardArea, m_part_TrayArea, m_part_Discard, m_part_TypeTable, m_part_Badge, rectTransform, OnStepAccepted);
+        _gesture = new PieceGestureFlow(m_part_BoardArea, m_part_TrayArea, m_part_Discard, m_part_TypeTable, m_part_Badge, rectTransform, OnStepAccepted,
+            () => RunSaveService.Instance.MarkRotated(_run));
         _show = new StepShowPlayer(gameObject, rectTransform, m_part_BoardArea, m_part_TrayArea, m_part_Discard, m_part_TypeTable, m_part_Badge,
             m_tmp_Score, m_slider_Score, m_tmp_LibraryLeft, _scorePopPrefab, _gesture, ShowResult);
     }
@@ -65,11 +67,12 @@ public partial class UIBattlePanel : UIPanelMono
     }
 
     /// <summary>
-    /// 落子或弃置被规则核心接受之后:演这一步(上锁、照时间表演到解锁时刻再解锁;结局步演完弹结果浮层)。
-    /// 存档点(23 号票)插在这里的开头、开演之前。
+    /// 落子或弃置被规则核心接受之后:先存档,再演这一步(上锁、照时间表演到解锁时刻再解锁;结局步演完弹结果浮层)。
+    /// 存档在开演之前写完(09 号票第 2 节):演到一半关窗,读回来就是这一步之后的局面。
     /// </summary>
     private void OnStepAccepted(StepResult result, PieceGestureFlow.PieceRelease release)
     {
+        RunSaveService.Instance.CommitStep(_run, result);
         _show.Play(result, release, _run);
         IBlindView blind = _run.Blind;
         if (blind.Outcome != BlindOutcome.InProgress)
@@ -113,9 +116,13 @@ public partial class UIBattlePanel : UIPanelMono
 
     private static string Num(long n) => n.ToString(CultureInfo.InvariantCulture);
 
-    /// <summary>回主界面:演出中途也直接走,杀掉全部补间(21 号票第 5 节);结果浮层开着就一起关。按钮、Esc、浮层上的按钮都经这里。</summary>
+    /// <summary>
+    /// 回主界面:先写掉转朝向的脏标记,主界面露出来时重新探测「继续」;演出中途也直接走,杀掉全部补间(21 号票第 5 节);结果浮层开着就一起关。
+    /// 按钮、Esc、浮层上的按钮都经这里。
+    /// </summary>
     private void BackToMenu()
     {
+        RunSaveService.Instance.Leave();
         _show?.Kill();
         GameModule.UI.CloseUI<UIBattleResultPanel>();
         GameModule.UI.CloseUI<UIBattlePanel>();

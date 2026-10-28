@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- DotNet 侧唯一的测试工程,客户端自检 dotnet单测 那一道只跑它。按目录分:GameRules/ 规则核心单测,L10n/ 文本表校验。
+  <!-- DotNet 侧唯一的测试工程,客户端自检 dotnet单测 那一道只跑它。按目录分:GameRules/ 规则核心单测,L10n/ 文本表校验,
+       Presentation/ 演出排期,Run/ 跑局测试,Save/ 存档文件层。
        包版本钉死在本机 NuGet 缓存已有的版本上,首次 restore 不联网。 -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -23,5 +24,7 @@
     <!-- 战斗演出的排期与它读的时长表(30 号票),同样不得引用 UnityEngine。 -->
     <Compile Include="..\..\Assets\GameScripts\HotFix\GameLogic\UI\Battle\ClearPacing.cs" Link="Presentation\ClearPacing.cs" />
     <Compile Include="..\..\Assets\GameScripts\HotFix\GameLogic\UI\Battle\ClearTimeline.cs" Link="Presentation\ClearTimeline.cs" />
+    <!-- 局内存档的文件层(23 号票),同样不得引用 UnityEngine。 -->
+    <Compile Include="..\..\Assets\GameScripts\HotFix\GameLogic\Module\Save\RunSaveFile.cs" Link="Save\RunSaveFile.cs" />
   </ItemGroup>
 </Project>

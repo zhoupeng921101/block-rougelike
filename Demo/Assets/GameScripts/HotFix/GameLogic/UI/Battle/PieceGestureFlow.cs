@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 /// 骨架是 block-client <c>BoardGestureFlow</c> 的几段(02 号票 §3.3):拾起 / 拖动 / 抬手、转向、虚影与消除预览、收预览、落点解析;
 /// 3B 补的是按键过滤(在 <see cref="BlockPieceDragger"/>)、键位表(<see cref="PieceKeymap"/>)、悬停、拖拽中旋转、弃置区落点、预览徽章与类型表高亮、
 /// 结算锁、Esc 与失焦取消。改状态只经规则核心的命令(<see cref="RunState.Place"/> / <see cref="RunState.Discard"/> / <see cref="RunState.SetRotation"/>);
-/// 命令被接受后交给宿主(<c>stepAccepted</c>),宿主在那里开演这一步(<see cref="StepShowPlayer"/>)。
+/// 命令被接受后交给宿主(<c>stepAccepted</c>),宿主在那里存档、开演这一步(<see cref="StepShowPlayer"/>);转朝向成功后告诉宿主(<c>rotated</c>),宿主置存档脏标记。
 /// </summary>
 public sealed class PieceGestureFlow
 {
@@ -38,6 +38,7 @@ public sealed class PieceGestureFlow
     private readonly PreviewBadgePart _badge;
     private readonly RectTransform _dragLayer;
     private readonly Action<StepResult, PieceRelease> _stepAccepted;
+    private readonly Action _rotated;
 
     private RunState _run;
     private Canvas _rootCanvas;
@@ -82,7 +83,7 @@ public sealed class PieceGestureFlow
     private bool _trayStale;
 
     public PieceGestureFlow(BoardAreaPart board, TrayAreaPart tray, DiscardAreaPart discard, ClearTypeTablePart typeTable,
-        PreviewBadgePart badge, RectTransform dragLayer, Action<StepResult, PieceRelease> stepAccepted)
+        PreviewBadgePart badge, RectTransform dragLayer, Action<StepResult, PieceRelease> stepAccepted, Action rotated)
     {
         _board = board;
         _tray = tray;
@@ -91,6 +92,7 @@ public sealed class PieceGestureFlow
         _badge = badge;
         _dragLayer = dragLayer;
         _stepAccepted = stepAccepted;
+        _rotated = rotated;
         _badge.Hide();
     }
 
@@ -418,6 +420,7 @@ public sealed class PieceGestureFlow
         TrayAreaPart.SlotView v = _tray.GetSlot(slot);
         if (v == null || v.InstanceId == 0) return;
         if (!_run.SetRotation(v.InstanceId, BlockShapeMap.NormalizeRot(SlotRot(slot) + steps))) return;
+        _rotated();
         bool clockwise = steps > 0;
         for (int i = 0; i < Math.Abs(steps); i++)
         {
@@ -435,6 +438,7 @@ public sealed class PieceGestureFlow
     private void RotateHeld(int steps)
     {
         if (!_run.SetRotation(_dragId, BlockShapeMap.NormalizeRot(SlotRot(_dragSlot) + steps))) return;
+        _rotated();
         var fx = _dragPiece.gameObject.GetOrAddComponent<RotateFx>();
         bool clockwise = steps > 0;
         for (int i = 0; i < Math.Abs(steps); i++) fx.PlayStep(null, null, clockwise);

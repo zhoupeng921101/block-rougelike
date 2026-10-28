@@ -9,6 +9,7 @@ using UnityEngine;
 /// 战斗窗的调试入口,只在编辑器和开发包里有(28 号票第 7 条):拖拽(29 号票)接上之前,用按键让规则核心随机走一步、再全量刷新,验画面。
 /// F5:在托盘里所有块的合法落点(任一朝向)里随机挑一个落下,一块都放不下时随机弃一块;F6:随机弃一块;F7:托盘里的块各随机转一个朝向。
 /// 随机用 <see cref="Random"/>(引擎的),不碰规则核心的随机流(08 号票)。每一步之后把画面和规则核心逐项比一遍,一致记 Info、不一致记 Error。
+/// 走步与转朝向照真输入一样存档(<see cref="RunSaveService"/>),不演出。
 /// </summary>
 public partial class UIBattlePanel
 {
@@ -68,6 +69,7 @@ public partial class UIBattlePanel
             Log.Error($"[BattleDebug] {what} 被拒:{result.Reject}");
             return null;
         }
+        RunSaveService.Instance.CommitStep(_run, result);
         return RefreshAndVerify($"第 {result.Step} 步 {what}");
     }
 
@@ -83,6 +85,7 @@ public partial class UIBattlePanel
             _run.SetRotation(slot.Id, rot);
             sb.Append($" #{slot.Id}→{rot}");
         }
+        RunSaveService.Instance.MarkRotated(_run);
         return RefreshAndVerify(sb.ToString());
     }
 

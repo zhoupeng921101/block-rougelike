@@ -3,15 +3,16 @@ using GameRules;
 
 /// <summary>
 /// 开新局:11 号票的默认参数(<see cref="PlaceholderTuning"/>)加一个新种子,开第一个盲注。主界面「开始游戏」走这里;
-/// 23 号票的存档点(开新局先删档、再写第一份)也插在这里。
+/// 开好之后先删旧局的档、再写第一份(<see cref="RunSaveService.StartNew"/>)。
 /// </summary>
 public static class RunLauncher
 {
     public static RunState NewRun()
     {
         var run = RunState.NewRun(SeedText.FromEntropy(NewEntropy()), PlaceholderTuning.Config);
-        // 开盲注的事件(发第一组)交给演出层(30 号票);本票画面直接按状态全量刷新
+        // 开盲注的事件(发第一组)不演:战斗窗打开时按状态全量刷新
         run.StartBlind(PlaceholderTuning.FirstBlind);
+        RunSaveService.Instance.StartNew(run);
         return run;
     }
 

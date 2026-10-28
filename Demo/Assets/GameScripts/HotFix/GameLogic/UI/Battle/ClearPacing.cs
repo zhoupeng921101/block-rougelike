@@ -1,6 +1,6 @@
 /// <summary>
 /// 战斗演出的时长表(秒)。占位,出自 21 号票第 10 节,调手感时整体替换。不进 Luban、不进规则核心,事件里也不带。
-/// 用到时一律除以 <see cref="Speed"/>;从 block-client 移植的件原来「÷ FxPace.Speed」的时长都改从这里取。
+/// 演出时长用到时一律除以 <see cref="Speed"/>;从 block-client 移植的件原来「÷ FxPace.Speed」的时长都改从这里取。
 /// </summary>
 public static class ClearPacing
 {
@@ -51,6 +51,9 @@ public static class ClearPacing
 
     /// <summary>最后一拍演完到结果浮层。</summary>
     public const float ResultDelay = 0.40f;
+
+    /// <summary>转朝向后多久没再转就写档(23 号票,09 号票第 2 节的防抖)。不是演出时长,不除以 <see cref="Speed"/>。</summary>
+    public const float RotationSaveDelay = 0.50f;
 
     /// <summary>全局倍率,所有时长除以它。是静态字段不是 const:阶段 5 的速度档写这一个值。不用 DOTween.timeScale,那会连开关窗动画一起变。</summary>
     public static float Speed = 1f;
