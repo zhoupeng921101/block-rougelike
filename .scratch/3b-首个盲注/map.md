@@ -113,6 +113,9 @@ Label: wayfinder:map
   每局平均 24.3 步，种子数没减，`dotnet单测` 热跑 3.5–4.1 秒。自检 PASS，单测 241 个（新加 33 个）。`.claude` 里三处说明跑局测试的措辞没跟着改。
 - [用真规则核心回测占位数值](issues/18-用真规则核心回测占位数值.md) —— **回测全部达标，占位数值不改**。在独立 worktree 做，提交 3bafb222，经用户同意合进 main（fde435d1）。
   目标 350、28 块、弃 3：一步贪心 71.2%、整组规划 93.3%（束宽 8）、`random` 7.4%，都在门槛内。`Sim` 新增 `--batch` 批量模式（卡死率、分位数、胜率、类型频率），阶段 6 批量跑局的雏形。合并后 main 上 `dotnet test` 252 个全过。
+- [Unity 侧的确定性复核](issues/24-Unity侧的确定性复核.md) —— **做了一次，Mono 与 CoreCLR 逐字节一致，不建常驻对拍**。在包外宿主里跑：64 位进程加载包里的 Mono 运行时，规则核心、类库、文件层都用 `3B_Data/Managed` 里那几份（md5 逐个对上）；`Sim` 的源码原样用 csc 编进去，不搬进 Unity。
+  A 2000 局、前瞻策略 120 局、Mono 下的夸大 tr-TR、每步存读续打 9474 次全文相同；存档双向互读，逐字节相同、续打相同，共 9890 + 405 份。不选 EditMode（不是发出去的那份），也不选包内入口（包是非开发包，没有 F5–F7）。
+  不进客户端自检。只在打开 HybridCLR / IL2CPP，或规则核心第一次引入浮点、可能平手的比较器排序、事件或快照里的非整数成员时重做。没有新票。
 
 ## Not yet specified
 
@@ -129,6 +132,7 @@ Label: wayfinder:map
 - 启动器文案的双语。`LoadText.cs` 在热更程序集之前就跑，用不上 key 表，首发前要单独处理（见 [文本 key 表的接法](issues/14-文本key表的接法.md)）。
 - 分发时把第三方许可放进包目录。思源黑体的 OFL 全文现在只被 Fonts 组打成一个 YooAsset 包随包带走，玩家看不到；本图的目的地是能玩，不是分发（见 [文本表与字体的基础件](issues/15-文本表与字体的基础件.md)）。
 - 强化 4 种与版本 3 种的效果，包括万态「可填入任意空格」怎么落子。本图只在块实例上留槽、在逐格段留触发点（见切片边界票）。
+- 常驻的 Mono 对拍（进客户端自检）。本图的 Unity 侧复核已经做过一次：所需的基础设施（Unity 安装里的 Mono、对着 Unity 类库编译）会给 `dotnet单测` 加一个新依赖，现有的 BCL 面也都已测过。等规则核心第一次引入浮点、可能平手的比较器排序或非整数成员时再定（见 [Unity 侧的确定性复核](issues/24-Unity侧的确定性复核.md) 第 6 节）。
 - 阶段 2 的收尾：devflow 回归矩阵转绿、置备槽位、用小任务走通领取 → 交付。本图走主工程通道、不用槽位，属工程计划阶段 2 的验收（见 [阶段 2 的落地状态](issues/01-阶段2的落地状态.md)）。
 
 ## 已知的坑
@@ -163,4 +167,6 @@ Label: wayfinder:map
   MCP 的 `execute_code` 返回的中文会乱码（GBK），要先转成 `\uXXXX` 再返回。`EditorApplication.ExitPlaymode` 被 MCP 的安全检查拦，退出 Play 改用 `isPlaying = false`。
 - **Outline 不能挂在透明底的 Image 上**（28 号票）：它是把底图错位重画四份，底一透明，四份就把整框涂满。框线要用 Outline 的，底色一律不透明。
 - **Windows 包的画面截得到**（23 号票）：PowerShell 起 `3B.exe`，按 `MainWindowHandle` 取客户区（`GetClientRect` + `ClientToScreen`，先 `SetProcessDPIAware`），`Graphics.CopyFromScreen` 只截那一块（窗口 1280×720）。别截全屏，会把用户的桌面一起截进来。
+  **`Demo/Build/Windows` 是非开发包**（`UnityPlayer.dll` 与 `win64_player_nondevelopment_mono` 那份相同，24 号票查到）：F5–F7 不在包里，包里的手测只能真打。
+  编辑器自带的 `MonoBleedingEdge/bin/mono.exe` 是 32 位的，加载不了包里的 64 位运行时。在播放器外面跑包里的 dll，做法见 24 号票第 1 节。
   **编辑器和包共用一个存档目录** `%USERPROFILE%\AppData\LocalLow\block-rougelike\3B\save\`：编辑器里 Play 会写包读的那份档，手测前后都看一眼目录。`Player.log` 每次启动重写，上一次的在 `Player-prev.log`，写档耗时就记在里面。
