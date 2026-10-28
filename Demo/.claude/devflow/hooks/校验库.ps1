@@ -47,6 +47,8 @@ $script:ClientGateScanSurface = [ordered]@{
   "工程链接核对.ps1"     = '^Demo/.*\.(cs|csproj)$'
   "进程编码核对.ps1"     = '^Demo/Assets/(Editor|TEngine/Editor)/.*\.cs$'
   "启动器字体核对.ps1"   = '^Demo/Assets/Launcher/(.*\.cs|Resources/Fonts/LauncherFont\.otf)$'
+  # 占位目录下的全部文件与登记表本身(含 .meta:删一件常连 .meta 一起动);登记表「占位目录」节加新根时同步这里
+  "占位素材核对.ps1"     = '^Demo/Assets/AssetRaw/Effects/ZooPlaceholder/'
   # 规则核心正本(镜像库通配链接它)+ DotNet 下的镜像库、测试工程与其 props;
   # 文本表校验(Tests/L10n)另读表、链接编译的 TextKeys.cs、取 LocalizedText 脚本 guid 的 meta、UI 预制体、主字体资产与其 meta;
   # 演出排期(Tests/Presentation)链接编译 GameLogic 的 ClearTimeline.cs 与它读的 ClearPacing.cs;

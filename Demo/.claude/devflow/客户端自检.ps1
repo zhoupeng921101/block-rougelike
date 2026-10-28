@@ -1,10 +1,10 @@
-﻿# 客户端自检.ps1 - devflow 客户端交付检查:十四道(十二道静态扫描 + 规则核心单测 + Editor 程序集真编译)(命名空间规约 +
+﻿# 客户端自检.ps1 - devflow 客户端交付检查:十五道(十三道静态扫描 + 规则核心单测 + Editor 程序集真编译)(命名空间规约 +
 # 程序集归属 / 平台宏策略 / UGUI 文本截断 / UI 绑定完整性 / UI 安全区节点结构 / 图集子图须挂绑图集的 ExImage /
 # 仓内 bat 纯 ASCII / 热更程序集清单 / 入仓文件的机器绝对路径 / 工具 csproj 链接目标存在 / 编辑器工具起子进程走共用原语 /
-# 启动器源码用字被子集字体覆盖 / 规则核心的 dotnet 单测 / Editor 程序集与各出包平台 define 下的运行时程序集能否编过),
+# 启动器源码用字被子集字体覆盖 / 占位素材目录与登记表一致 / 规则核心的 dotnet 单测 / Editor 程序集与各出包平台 define 下的运行时程序集能否编过),
 # 直跑槽位工作树的 Demo。
 # 不启动 Unity、不需要活编辑器、不经 UnityMCP,因而无 BLOCKED 出口:任何布局正确的槽位上都能立即出结论。
-# **前十二道是静态扫描,后两道真跑 dotnet**:dotnet单测 编规则核心的镜像库并跑 DotNet\Tests;Editor程序集编译 真编
+# **前十三道是静态扫描,后两道真跑 dotnet**:dotnet单测 编规则核心的镜像库并跑 DotNet\Tests;Editor程序集编译 真编
 # Editor 程序集(编辑器一遍 + 出包平台与工具宏并行一遍)。故本检查需要 dotnet SDK。
 # **耗时的道并行跑**(扫描数组里带 Async 的:单测道、编译道,与各要两秒以上的几道静态扫描,多为逐 prefab 解析):开跑即各起一个
 # 子进程,其余各道在本进程照数组顺序跑;轮到并行道时等它退出、把它的输出原样回放在该位置。输出次序与结论优先级
@@ -14,9 +14,9 @@
 # 给一道加 Async 的判据:单道稳定在两秒以上(起子进程本身约一秒),且不依赖本进程里别的道留下的状态。
 # 编译产物落 Temp\ 与 obj\(均在 .gitignore 内),实测不动工作树哈希,不会把凭据判成 STALE。
 #
-# 检查内容以十四道各自的规约表为准(命名空间扫描.ps1 / 平台宏核对.ps1 / 文本截断核对.ps1 / UI绑定核对.ps1 /
+# 检查内容以十五道各自的规约表为准(命名空间扫描.ps1 / 平台宏核对.ps1 / 文本截断核对.ps1 / UI绑定核对.ps1 /
 # 安全区结构核对.ps1 / 图集子图组件核对.ps1 / bat编码核对.ps1 / 热更程序集核对.ps1 / 机器路径核对.ps1 /
-# 工程链接核对.ps1 / 进程编码核对.ps1 / 启动器字体核对.ps1 / dotnet单测.ps1 / Editor程序集编译.ps1),十四道均为必跑。
+# 工程链接核对.ps1 / 进程编码核对.ps1 / 启动器字体核对.ps1 / 占位素材核对.ps1 / dotnet单测.ps1 / Editor程序集编译.ps1),十五道均为必跑。
 # 与 block-client 的同名脚本相比少了 Luban 四道(配置预载 / 配置表前缀 / 表间引用 / 导表指纹)与 shader 取用、
 # 功能开关、登记表、引导锚点、投放可达性、跨端配置六道:前者等本作接入 Luban 时随表一起搬回,后者核的是本作没有的
 # 底座件与服务端。
@@ -45,7 +45,7 @@
 # 内含 Demo、配对的 Fantasy worktree 与回主检出的 Tools\Luban junction。布局正本 =
 # devflow 卡 references/slot-protocol.md。
 #
-# 出口码: 0 PASS(十四道均无违规,已签发凭据)
+# 出口码: 0 PASS(十五道均无违规,已签发凭据)
 #         1 FAIL(扫描判违规)
 #         2 INFRA(ProjectDir 不是 Unity 工程 / 扫描数组与读取面登记不符 / 扫描脚本缺失或自身跑不起来:
 #                 子道抛未捕获异常、或返回 0/1/2 以外的退出码,都归此档:后续在本进程跑的道不再跑,已起的并行道等它们跑完再退出)
@@ -73,7 +73,7 @@ $slotName = Split-Path (Split-Path $ProjectDir -Parent) -Leaf
 . (Join-Path $PSScriptRoot "hooks\校验库.ps1")
 $repoRoot  = Split-Path $ProjectDir -Parent
 $treeStart = Get-WorkTreeHash $repoRoot
-$mode = "static+build"   # 十二道静态 + 两道真跑 dotnet(无编辑器形态);保留为遥测字段
+$mode = "static+build"   # 十三道静态 + 两道真跑 dotnet(无编辑器形态);保留为遥测字段
 
 # 编排的运行上下文(出口、遥测与扫描循环的实现在 hook函数库「自检编排的共用出口」节,服务端自检同用):
 # gate-run 遥测的固定字段在此给一次,各出口只给 verdict / ticket。遥测在 verdict / secs 之外另记各道毫秒
@@ -95,6 +95,7 @@ $scans = @(
     @{ File = "工程链接核对.ps1"; Tag = "csprojlinkscan"; Fail = "tool csproj linked-file existence scan"; Infra = "csproj link scan could not run (repo root not a git checkout or csproj unparsable)" },
     @{ File = "进程编码核对.ps1"; Tag = "procencscan"; Fail = "child-process capture via shared primitive"; Infra = "process encoding scan could not run (Assets\Editor dir missing or the shared primitive is gone)" },
     @{ File = "启动器字体核对.ps1"; Tag = "launcherfontscan"; Fail = "launcher source chars vs subset font coverage scan"; Infra = "launcher font scan could not run (Assets\Launcher or LauncherFont.otf missing, or font cmap unparsable)" },
+    @{ File = "占位素材核对.ps1"; Tag = "placeholderscan"; Fail = "placeholder asset dirs vs register scan"; Infra = "placeholder scan could not run (register missing or its sections unparsable)" },
     @{ File = "dotnet单测.ps1"; Tag = "dotnettest"; Fail = "GameRules dotnet unit tests (netstandard2.1 mirror build + NUnit)"; Infra = "dotnet unit tests could not run (dotnet missing, test project missing, or restore failed)"; Async = $true },
     # 编 Editor 程序集的一道排最后,结论优先级也最后(单测道只编规则核心镜像库与测试工程)。
     @{ File = "Editor程序集编译.ps1"; Tag = "editorasmbuild"; Fail = "Assembly-CSharp-Editor / per-platform player-define compile"; Infra = "editor assembly build could not run (dotnet missing, csproj missing or stale, or platform define policy unusable)"; Async = $true })
