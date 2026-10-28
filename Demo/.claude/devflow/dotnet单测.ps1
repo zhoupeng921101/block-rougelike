@@ -1,7 +1,7 @@
 ﻿# dotnet单测.ps1 - 规则核心(纯 C# 程序集 GameRules)的 dotnet 单测:restore 后 dotnet test DotNet\Tests\Tests.csproj。
 # 准入: Since=2026-10-27 | Basis=用户裁定 | Origin=2026-10-26 工程计划阶段 2「客户端自检加一道规则核心的 dotnet 单测」 | Retire=规则核心与文本表的校验改由别的机判承接时
 #
-# 拦五类:
+# 拦六类:
 #   ①Unity 编不过的写法(init、record、C# 10 以上语法、.NET 6 以上 API、using UnityEngine):镜像库
 #     DotNet\GameRules 锁 netstandard2.1 + C# 9,通配链接 Assets 下的正本,编不过即 FAIL——这算代码违规;
 #   ②规则核心单测失败(含随机流测试向量,常量出自另一个进程,本身即一项跨进程比对);
@@ -10,6 +10,8 @@
 #     预制体的 TMP 挂主字体、主字体资产没带进编辑器填的动态数据。TextKeys.cs 链接编进测试工程,引了 UnityEngine 即编不过。
 #   ⑤战斗演出排期(DotNet\Tests\Presentation):GameLogic 的 ClearTimeline.cs、ClearPacing.cs 链接编进测试工程,
 #     解锁、演完、压缩、倍率各时刻照 21 号票;同样引了 UnityEngine 即编不过。
+#   ⑥局内存档文件层(DotNet\Tests\Save):GameLogic 的 RunSaveFile.cs 链接编进测试工程,在临时目录里验原子写、
+#     .bak 回退、坏档挪成 .bad、终局删档、读任何内容不抛(09、23 号票);同样引了 UnityEngine 即编不过。
 # 编译口径对齐 Unity 的依据与布局见 DotNet\GameRules\GameRules.csproj 头注;约束正本 = tengine-conventions.md「规则核心」。
 #
 # 包版本钉在本机 NuGet 缓存已有的版本上,首次 restore 不联网;换机器首跑要联网,离线即 INFRA。
