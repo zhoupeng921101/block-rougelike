@@ -162,3 +162,5 @@ Label: wayfinder:map
 - **主工程编辑器的 Game 视图是竖屏 1080×1920**（28 号票实测），直接截 GameView 拿不到横屏画面。截战斗窗的做法：把 UICamera 的 `targetTexture` 换成目标尺寸的 RT，等一帧让 CanvasScaler 重算，再 `Render` 读回。
   MCP 的 `execute_code` 返回的中文会乱码（GBK），要先转成 `\uXXXX` 再返回。`EditorApplication.ExitPlaymode` 被 MCP 的安全检查拦，退出 Play 改用 `isPlaying = false`。
 - **Outline 不能挂在透明底的 Image 上**（28 号票）：它是把底图错位重画四份，底一透明，四份就把整框涂满。框线要用 Outline 的，底色一律不透明。
+- **Windows 包的画面截得到**（23 号票）：PowerShell 起 `3B.exe`，按 `MainWindowHandle` 取客户区（`GetClientRect` + `ClientToScreen`，先 `SetProcessDPIAware`），`Graphics.CopyFromScreen` 只截那一块（窗口 1280×720）。别截全屏，会把用户的桌面一起截进来。
+  **编辑器和包共用一个存档目录** `%USERPROFILE%\AppData\LocalLow\block-rougelike\3B\save\`：编辑器里 Play 会写包读的那份档，手测前后都看一眼目录。`Player.log` 每次启动重写，上一次的在 `Player-prev.log`，写档耗时就记在里面。
