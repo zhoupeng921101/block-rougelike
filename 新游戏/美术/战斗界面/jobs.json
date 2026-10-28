@@ -1,0 +1,7 @@
+[
+ {"prompt_file": "定稿词/战斗界面_v1.txt", "final": true,
+  "refs": ["线框/3B战斗界面_线框.png",
+           "图库:appstore-davethediver-8@240,30,790,1200",
+           "图库:huaban-7213081637@pixel_space_nightsky"],
+  "out": "出图/战斗界面_v1.png"}
+]
