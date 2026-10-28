@@ -2,13 +2,15 @@ using System.Globalization;
 using GameRules;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// 左栏消除类型表的一行(AssetRaw/UI/Prefabs/Parts/ClearTypeRow.prefab 的根,由 <see cref="ClearTypeTablePart"/> 按类型数建):
-/// 类型名、Lv、本级底注、×倍率。拖动时高亮命中行归 29 号票。
+/// 类型名、Lv、本级底注、×倍率。拖动时命中的那一行亮起(<see cref="SetHighlight"/>)。预览徽章里也是这一行。
 /// </summary>
 public sealed class ClearTypeRowPart : MonoBehaviour
 {
+    [SerializeField] private Image m_img_Highlight = null!;
     [SerializeField] private TMP_Text m_tmp_Name = null!;
     [SerializeField] private TMP_Text m_tmp_Level = null!;
     [SerializeField] private TMP_Text m_tmp_Chips = null!;
@@ -26,6 +28,10 @@ public sealed class ClearTypeRowPart : MonoBehaviour
         m_tmp_Chips.text = values.Chips.ToString(CultureInfo.InvariantCulture);
         m_tmp_Mult.text = table.Format(TextKeys.Battle.Mult, values.Mult);
     }
+
+    public void SetHighlight(bool on) => m_img_Highlight.gameObject.SetActive(on);
+
+    public bool IsHighlighted => m_img_Highlight.gameObject.activeSelf;
 
     /// <summary>四格的字,依次是类型名、Lv、底注、倍率。只给战斗窗的调试核对读。</summary>
     public string[] Texts => new[] { m_tmp_Name.text, m_tmp_Level.text, m_tmp_Chips.text, m_tmp_Mult.text };

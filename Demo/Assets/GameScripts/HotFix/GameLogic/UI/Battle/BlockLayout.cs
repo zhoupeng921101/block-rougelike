@@ -30,6 +30,23 @@ public static class BlockLayout
     /// <summary>落点虚影的不透明度。</summary>
     public const float GhostAlpha = 0.42f;
 
+    // ── 拖拽(12 号票):块心贴着指针,无拇指偏移、位移倍率 1.0,故这两项不设常量 ──
+
+    /// <summary>起拖阈值(设计像素):按下后移动越过它才拾起,没越过算原地单击(转朝向)。触屏是 20,鼠标抖动小,取 10。调手感时改它。</summary>
+    public const float SlotTapMaxMove = 10f;
+
+    /// <summary>落点吸附半径(格):精确格放不下时,在周围这么多格内找最近的可放格(block-client 原样)。</summary>
+    public const int SnapRadius = 1;
+
+    /// <summary>向上吸附不吸进最底这几行:托盘在盘下方,从下往上拖时不该被吸到底边上(block-client 原样)。</summary>
+    public const int SnapNoUpBottomRows = 2;
+
+    /// <summary>托盘槽悬停时上浮的距离(13 号票)。</summary>
+    public const float SlotHoverLift = 6f;
+
+    /// <summary>预览徽章底边离手上那块顶边的距离(13 号票)。</summary>
+    public const float BadgeGap = 10f;
+
     /// <summary>消除预览:将被消的行列上盖一层半透明填充,外加一条呼吸的光带。</summary>
     public static readonly Color ClearPreviewFillColor = new Color32(0x5e, 0xe7, 0xff, 0x2e);
 

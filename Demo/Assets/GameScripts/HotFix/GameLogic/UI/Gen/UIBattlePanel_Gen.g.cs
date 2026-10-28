@@ -27,6 +27,7 @@ public partial class UIBattlePanel : UIPanelMono
 	[SerializeField] private Button m_btn_Back = null!;
 	[SerializeField] private TrayAreaPart m_part_TrayArea = null!;
 	[SerializeField] private DiscardAreaPart m_part_Discard = null!;
+	[SerializeField] private PreviewBadgePart m_part_Badge = null!;
 	#pragma warning restore CS0414
 
 	protected override void ScriptGenerator()

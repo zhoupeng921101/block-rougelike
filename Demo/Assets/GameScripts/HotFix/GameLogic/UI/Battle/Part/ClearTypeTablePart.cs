@@ -38,6 +38,13 @@ public sealed class ClearTypeTablePart : MonoBehaviour
         {
             ClearType type = order[i];
             _rows[i].Set(type, run.LevelOf(type), run.BaseOf(type));
+            _rows[i].SetHighlight(false);
         }
+    }
+
+    /// <summary>只亮 <paramref name="type"/> 那一行;null 全灭。拖动预览成线时调(13 号票)。</summary>
+    public void Highlight(ClearType? type)
+    {
+        foreach (ClearTypeRowPart row in _rows) row.SetHighlight(type.HasValue && row.Type == type.Value);
     }
 }

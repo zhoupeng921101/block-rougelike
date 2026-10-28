@@ -23,6 +23,7 @@ public static class TextKeys
     {
         public const string BlindNormal = "ui.battle.blind_normal";
         public const string Discard = "ui.battle.discard";
+        public const string DiscardDrop = "ui.battle.discard_drop";
         public const string DiscardLeft = "ui.battle.discard_left";
         public const string DiscardNone = "ui.battle.discard_none";
         public const string DiscardNoneHint = "ui.battle.discard_none_hint";

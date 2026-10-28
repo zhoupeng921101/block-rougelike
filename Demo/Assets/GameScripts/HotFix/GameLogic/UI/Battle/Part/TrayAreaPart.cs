@@ -7,7 +7,7 @@ using UnityEngine;
 /// <summary>
 /// 待放置区 Part(挂在战斗窗的 m_part_TrayArea 节点上,由宿主序列化持有;节点按 5 槽留位,宽 830)。
 /// 按局面画出 3–5 个槽(槽数 = 盲注的每组块数):块的格子(朝向取槽上存的 rot)、右下角的点数、置灰态、空槽。
-/// 纯视图:数据由宿主推入(<see cref="Refresh"/>);拖拽、悬停归 29 号票,接在这里暴露的槽容器上。
+/// 纯视图:数据由宿主推入(<see cref="Refresh"/>);拖拽与悬停由 <see cref="PieceGestureFlow"/> 接在这里暴露的槽上,托盘只经它重建。
 /// </summary>
 public sealed class TrayAreaPart : MonoBehaviour
 {
@@ -59,6 +59,22 @@ public sealed class TrayAreaPart : MonoBehaviour
 
         IReadOnlyList<TraySlot> tray = run.Blind.Tray;
         for (int i = 0; i < tray.Count; i++) _slots.Add(BuildSlot(i, tray.Count, tray[i], run));
+    }
+
+    /// <summary>悬停态(13 号票):描边变亮、上浮。置灰的块也照样亮。</summary>
+    public void SetHover(int slot, bool on)
+    {
+        var view = GetSlot(slot);
+        if (view?.Slot != null) view.Slot.SetHover(on);
+    }
+
+    /// <summary>块在手上:槽画成空槽、藏起点数;块的视觉根由拖拽流挪走。重建托盘时整个槽一起丢掉,不必复原。</summary>
+    public void SetHeld(int slot)
+    {
+        var view = GetSlot(slot);
+        if (view?.Slot == null) return;
+        view.Slot.SetHeld();
+        if (view.Points != null) view.Points.gameObject.SetActive(false);
     }
 
     /// <summary>第 <paramref name="slot"/> 个槽在本层里的中心 x:各槽以本层中心为轴排开,槽距 = 槽宽 + 槽间。</summary>
@@ -145,12 +161,12 @@ public sealed class TrayAreaPart : MonoBehaviour
     /// <paramref name="onDone"/> 只在自然转到位时触发——调用方在那里重建托盘,故它不会在被打断时误触发。
     /// 槽为空或已被重建掉时直接回调,不让调用方悬着。
     /// </summary>
-    public void PlayRotate(int slot, Action onDone)
+    public void PlayRotate(int slot, bool clockwise, Action onDone)
     {
         var view = GetSlot(slot);
         if (view?.Slot == null || view.InstanceId == 0) { onDone?.Invoke(); return; }
         var fx = view.Slot.PieceRoot.gameObject.GetOrAddComponent<RotateFx>();
-        fx.PlayStep(null, onDone);
+        fx.PlayStep(null, onDone, clockwise);
     }
 
     /// <summary>

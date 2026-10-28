@@ -40,8 +40,9 @@ public sealed class RotateFx : MonoBehaviour
     /// <summary>
     /// 再转一档。播放中调用则叠加目标角、从当前角继续转。
     /// <paramref name="onDone"/> 只在自然转到位时触发一次（每次调用都会覆盖为最新的那个）。
+    /// <paramref name="clockwise"/> 为 false 时逆时针一档，与逻辑侧 rot−1 同向。
     /// </summary>
-    public void PlayStep(RectTransform[] uprightTargets, Action onDone)
+    public void PlayStep(RectTransform[] uprightTargets, Action onDone, bool clockwise = true)
     {
         if (_rt == null) _rt = (RectTransform)transform;
         _uprightTargets = uprightTargets;
@@ -49,7 +50,7 @@ public sealed class RotateFx : MonoBehaviour
 
         // 起点取「当前实际角」而非上一段的目标角:中途插入时才不会跳回去重转。
         _fromAngle = _playing ? Mathf.LerpUnclamped(_fromAngle, _toAngle, Ease(_t / _dur)) : NormalizedZ();
-        _toAngle = (_playing ? _toAngle : NormalizedZ()) + StepAngle;
+        _toAngle = (_playing ? _toAngle : NormalizedZ()) + (clockwise ? StepAngle : -StepAngle);
         // 时长按剩余角度等比:每 90° 恒为 StepDur,连点时角速度不变。
         float span = Mathf.Abs(_toAngle - _fromAngle);
         _dur = Mathf.Max(0.0001f, StepDur * span / Mathf.Abs(StepAngle));
