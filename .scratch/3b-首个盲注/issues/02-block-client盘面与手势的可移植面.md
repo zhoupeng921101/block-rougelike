@@ -42,3 +42,5 @@ Status: resolved
 - **资源**：搬 `BlockPart`、`TraySlot`、`ClearFill`、`ClearGlow` 四个 prefab，`UI_GlowCell` 和 `UI_Brighten` 两个 shader，粒子 `ClearBurstFx` 可选。DragonBones、序列帧和 Spine 特效**一律不搬**：block-client 自己记的是「复刻自参考源码」，属于竞品素材，3B 又是商业产品。
 
 详细记录见 [02-可移植面](../research/02-可移植面.md)。
+
+> **后续（2026-10-28，[31](31-动物乐园的表现特效与音效.md)）**：「DragonBones、序列帧和 Spine 特效一律不搬」被推翻。用户声明团队对 Block 1.3.28 与 Cocos 参考工程两处的美术有使用权、持有 Spine Editor 许可，外来骨骼与 Spine 当占位搬，落子轮廓序列帧仍不带。两个 shader 已查清是团队自写。
