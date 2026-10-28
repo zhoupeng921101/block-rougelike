@@ -77,6 +77,34 @@ public sealed class BlockPart : MonoBehaviour
         transform.localScale = Vector3.one;
     }
 
+    /// <summary>落子放大的峰值与升段占比,同 <see cref="ScalePunch"/>(峰 1.28,升 0.12、回 0.18)。</summary>
+    private const float PunchPeak = 1.28f;
+    private const float PunchRiseShare = 0.4f;
+
+    /// <summary>
+    /// 落子放大(30 号票,时长取 <see cref="ClearPacing.PlacePunch"/>):放大的是格皮、不是格根,所以和退场(缩格根)叠在一起时两者相乘、不互相覆盖。
+    /// 只返回补间,不播、不挂 Link:由结算演出排进它的时间表,跳到终态时随时间表一起到位。
+    /// </summary>
+    public Sequence PunchTween(float duration)
+    {
+        Transform skin = m_eximg_Skin.transform;
+        return DOTween.Sequence()
+            .Append(skin.DOScale(PunchPeak, duration * PunchRiseShare).SetEase(Ease.OutCubic))
+            .Append(skin.DOScale(1f, duration * (1f - PunchRiseShare)).SetEase(Ease.OutCubic));
+    }
+
+    /// <summary>
+    /// 逐格退场(30 号票):格根缩到 <paramref name="endScale"/>、格皮淡出。只返回补间,由结算演出排到这一格那一拍;节点由演出在播完时销毁。
+    /// 调用方须先把本格从格表里摘掉(<see cref="BoardCellRenderer.TakeForExit"/>)。
+    /// </summary>
+    public Sequence ExitTween(float duration, float endScale)
+    {
+        StopEnter();
+        return DOTween.Sequence()
+            .Join(transform.DOScale(endScale, duration).SetEase(Ease.InQuad))
+            .Join(m_eximg_Skin.DOFade(0f, duration).SetEase(Ease.InQuad));
+    }
+
     /// <summary>
     /// 退场:等 <paramref name="delay"/> 秒后缩到 <paramref name="endScale"/> 并淡出,播完(或被杀)销毁自身节点。
     /// 调用方须先把本格从格表里摘掉,退场中的节点不再参与任何格同步。

@@ -29,6 +29,19 @@ public sealed class ClearTypeRowPart : MonoBehaviour
         m_tmp_Mult.text = table.Format(TextKeys.Battle.Mult, values.Mult);
     }
 
+    /// <summary>结算演出的计数框里跳数字:底分与倍率(21 号票第 6 节)。数字按 InvariantCulture。</summary>
+    public void SetChipsMult(long chips, long mult)
+    {
+        m_tmp_Chips.text = chips.ToString(CultureInfo.InvariantCulture);
+        m_tmp_Mult.text = TextTable.Instance.Format(TextKeys.Battle.Mult, mult);
+    }
+
+    /// <summary>底分那一格:计数框在它上面弹一下、合成时它变成「= 得分」。</summary>
+    public TMP_Text ChipsText => m_tmp_Chips;
+
+    /// <summary>倍率那一格:合成时淡出。</summary>
+    public TMP_Text MultText => m_tmp_Mult;
+
     public void SetHighlight(bool on) => m_img_Highlight.gameObject.SetActive(on);
 
     public bool IsHighlighted => m_img_Highlight.gameObject.activeSelf;

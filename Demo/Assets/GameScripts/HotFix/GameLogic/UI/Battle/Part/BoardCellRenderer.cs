@@ -107,9 +107,6 @@ public sealed class BoardCellRenderer
                 _blockParts[r, c]?.PlayEnter((r + c) * EntranceDiagonalStep);
     }
 
-    /// <summary>格缩没时的终止缩放。时长是 <see cref="ClearPacing.CellExit"/>。</summary>
-    private const float CellExitEndScale = 0.5f;
-
     // 单格的增删改:空格让已有实例退场,有块的格复用已有实例、缺则新建并摆位,最后无条件上色。
     // 退场中的节点已不在格表里,不挡新落进同格的方块。
     private void SyncBlockCell(IBoardView board, Func<int, BlockInstance> instanceOf, int r, int c)
@@ -124,27 +121,60 @@ public sealed class BoardCellRenderer
             {
                 _blockParts[r, c] = null;
                 if (_highlighted.Remove(existing)) existing.SetHighlight(null, 1f);
-                existing.PlayExit(ClearPacing.CellExit / ClearPacing.Speed, CellExitEndScale, _exitDelay[r, c]);
+                existing.PlayExit(ClearPacing.CellExit / ClearPacing.Speed, BlockLayout.CellExitEndScale, _exitDelay[r, c]);
             }
             return;
         }
 
-        var block = existing;
-        if (block == null)
-        {
-            block = UIPartFactory.Create<BlockPart>(_blockPrefab, _cellLayer, nameof(BoardCellRenderer));
-            if (block == null) return; // 失败原因已由 UIPartFactory 记录
-            // 格尺寸与位置按盘面层 rect 现算;单格视觉边长 = 格距 - BoardCellGap,与格底同口径。
-            float visual = _geo.BoardCellVisual();
-            var rt = block.rectTransform;
-            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-            rt.pivot = new Vector2(0.5f, 0.5f);
-            rt.localScale = Vector3.one;
-            rt.sizeDelta = new Vector2(visual, visual);
-            rt.anchoredPosition = _geo.CellLocalPos(c, r);
-            _blockParts[r, c] = block;
-        }
+        var block = existing ?? CreateCell(r, c);
+        if (block == null) return; // 失败原因已由 UIPartFactory 记录
         block.SetColor(dead ? BlockLayout.DeadCellColor : ColorOfOwner(instanceOf, owner));
+    }
+
+    /// <summary>在 (r, c) 新建一格并登记进格表。格尺寸与位置按盘面层 rect 现算;单格视觉边长 = 格距 - BoardCellGap,与格底同口径。</summary>
+    private BlockPart CreateCell(int r, int c)
+    {
+        var block = UIPartFactory.Create<BlockPart>(_blockPrefab, _cellLayer, nameof(BoardCellRenderer));
+        if (block == null) return null;
+        float visual = _geo.BoardCellVisual();
+        var rt = block.rectTransform;
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.localScale = Vector3.one;
+        rt.sizeDelta = new Vector2(visual, visual);
+        rt.anchoredPosition = _geo.CellLocalPos(c, r);
+        _blockParts[r, c] = block;
+        return block;
+    }
+
+    // ── 结算演出(30 号票):演出不回读规则核心的盘面(那时已是这一步的终态),按事件逐格摆、逐格摘 ──
+
+    /// <summary>
+    /// 把刚落下那块的格画上(<paramref name="cells"/> 是 row*8 + col),返回各格。被消的格在规则核心的终态里已经空了,
+    /// 全量刷新画不出来,演出要先按 <see cref="GameRules.PiecePlaced"/> 把它们摆上,再逐拍摘走。
+    /// </summary>
+    public List<BlockPart> ShowPlaced(IReadOnlyList<int> cells, Color color)
+    {
+        var parts = new List<BlockPart>(cells.Count);
+        foreach (int cell in cells)
+        {
+            int r = BoardCells.RowOf(cell), c = BoardCells.ColOf(cell);
+            var block = _blockParts[r, c] ?? CreateCell(r, c);
+            if (block == null) continue;
+            block.SetColor(color);
+            parts.Add(block);
+        }
+        return parts;
+    }
+
+    /// <summary>把 (r, c) 那一格从格表里摘下来交给演出退场(复原上浮);没有则 null。摘下之后它不再参与任何刷新。</summary>
+    public BlockPart TakeForExit(int r, int c)
+    {
+        var part = _blockParts[r, c];
+        if (part == null) return null;
+        _blockParts[r, c] = null;
+        _highlighted.Remove(part);
+        return part;
     }
 
     private static Color ColorOfOwner(Func<int, BlockInstance> instanceOf, int owner)

@@ -46,6 +46,19 @@ public sealed class DiscardAreaPart : MonoBehaviour
     /// <summary>次数这一格的字。只给战斗窗的调试核对读。</summary>
     public string CountText => m_tmp_Count.text;
 
+    /// <summary>次数那一格。结算演出在弃置那一拍让它弹一下。</summary>
+    public RectTransform CountRect => m_tmp_Count.rectTransform;
+
+    /// <summary>区中心的世界坐标。弃置演出把块缩进这里。</summary>
+    public Vector3 CenterWorld
+    {
+        get
+        {
+            var rt = (RectTransform)transform;
+            return rt.TransformPoint(rt.rect.center);
+        }
+    }
+
     /// <summary>区在屏幕上的矩形含不含这个屏幕点。手势流拿块心来问。</summary>
     public bool Contains(Vector2 screen, Camera eventCamera) =>
         RectTransformUtility.RectangleContainsScreenPoint((RectTransform)transform, screen, eventCamera);

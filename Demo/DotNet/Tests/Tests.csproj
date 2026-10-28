@@ -20,5 +20,8 @@
   <ItemGroup>
     <!-- GameLogic 里枚举到文本 key 的映射。它不得引用 UnityEngine,引了这里就编不过。 -->
     <Compile Include="..\..\Assets\GameScripts\HotFix\GameLogic\Module\L10n\TextKeys.cs" Link="L10n\TextKeys.cs" />
+    <!-- 战斗演出的排期与它读的时长表(30 号票),同样不得引用 UnityEngine。 -->
+    <Compile Include="..\..\Assets\GameScripts\HotFix\GameLogic\UI\Battle\ClearPacing.cs" Link="Presentation\ClearPacing.cs" />
+    <Compile Include="..\..\Assets\GameScripts\HotFix\GameLogic\UI\Battle\ClearTimeline.cs" Link="Presentation\ClearTimeline.cs" />
   </ItemGroup>
 </Project>

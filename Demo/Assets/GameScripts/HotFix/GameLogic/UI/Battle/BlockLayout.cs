@@ -47,6 +47,23 @@ public static class BlockLayout
     /// <summary>预览徽章底边离手上那块顶边的距离(13 号票)。</summary>
     public const float BadgeGap = 10f;
 
+    // ── 结算演出(30 号票;时长在 ClearPacing,这里只放尺寸)──
+
+    /// <summary>「+k」跳字的字号,按点数 1–4 分四档(21 号票第 2 节:4 点的格一眼能看出来);超过 4 点按第四档。</summary>
+    public static readonly float[] CellGainFontSizes = { 30f, 36f, 44f, 54f };
+
+    /// <summary>「+k」在格心周围的随机抖动半径(设计像素),随机用 UnityEngine.Random,不碰规则核心的流(08 号票)。</summary>
+    public const float CellGainJitter = 6f;
+
+    /// <summary>格退场的终止缩放(21 号票第 10 节 CellExit:缩到一半并淡出)。</summary>
+    public const float CellExitEndScale = 0.5f;
+
+    /// <summary>计数框数字弹一下、弃置余数弹一下的峰值缩放。</summary>
+    public const float TallyBumpScale = 1.25f;
+
+    /// <summary>块缩进弃置区时的终止缩放。</summary>
+    public const float DiscardShrinkEndScale = 0.15f;
+
     /// <summary>消除预览:将被消的行列上盖一层半透明填充,外加一条呼吸的光带。</summary>
     public static readonly Color ClearPreviewFillColor = new Color32(0x5e, 0xe7, 0xff, 0x2e);
 

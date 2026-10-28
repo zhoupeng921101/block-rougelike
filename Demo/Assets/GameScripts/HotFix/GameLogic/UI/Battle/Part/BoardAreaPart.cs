@@ -83,6 +83,31 @@ public sealed class BoardAreaPart : MonoBehaviour
     /// <inheritdoc cref="BoardCellRenderer.PartAt"/>
     public BlockPart PartAt(int row, int col) => _cells.PartAt(row, col);
 
+    /// <inheritdoc cref="BoardCellRenderer.ShowPlaced"/>
+    public List<BlockPart> ShowPlaced(IReadOnlyList<int> cells, Color color) => _cells.ShowPlaced(cells, color);
+
+    /// <inheritdoc cref="BoardCellRenderer.TakeForExit"/>
+    public BlockPart TakeForExit(int row, int col) => _cells.TakeForExit(row, col);
+
+    /// <summary>
+    /// 在 <paramref name="parent"/> 下建一格不进格表的方块(尺寸同盘上的格),弃置演出拿它拼出手上那块。
+    /// </summary>
+    public BlockPart CreateLooseCell(RectTransform parent)
+    {
+        var part = UIPartFactory.Create<BlockPart>(_blockPrefab, parent, nameof(BoardAreaPart));
+        if (part == null) return null;
+        var rt = part.rectTransform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.localScale = Vector3.one;
+        float visual = _geo.BoardCellVisual();
+        rt.sizeDelta = new Vector2(visual, visual);
+        foreach (var g in part.GetComponentsInChildren<Graphic>(true)) g.raycastTarget = false;
+        return part;
+    }
+
+    /// <summary>预览层:在盘面格之上、与盘面同坐标系。结算演出的「+k」跳字挂在这里。</summary>
+    public RectTransform PreviewLayer => m_rect_PreviewLayer;
+
     // ─── 虚影与消除预览(正本 = BoardPreviewLayer)───────────────
 
     /// <inheritdoc cref="BoardPreviewLayer.InitPools"/>
@@ -97,6 +122,9 @@ public sealed class BoardAreaPart : MonoBehaviour
         _preview.ShowClearPreview(rows, cols);
         _cells.HighlightLines(rows, cols);
     }
+
+    /// <inheritdoc cref="BoardPreviewLayer.TryGetBand"/>
+    public bool TryGetBand(int line, out Image fill, out Image glow, out GlowPulse pulse) => _preview.TryGetBand(line, out fill, out glow, out pulse);
 
     /// <summary>收起虚影与消除预览,并复原上浮的块。</summary>
     public void ClearGhostAndPreview()

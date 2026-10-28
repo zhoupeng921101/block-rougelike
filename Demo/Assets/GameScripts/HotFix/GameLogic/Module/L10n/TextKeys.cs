@@ -22,16 +22,38 @@ public static class TextKeys
     public static class Battle
     {
         public const string BlindNormal = "ui.battle.blind_normal";
+        public const string CellGain = "ui.battle.cell_gain";
         public const string Discard = "ui.battle.discard";
         public const string DiscardDrop = "ui.battle.discard_drop";
         public const string DiscardLeft = "ui.battle.discard_left";
         public const string DiscardNone = "ui.battle.discard_none";
         public const string DiscardNoneHint = "ui.battle.discard_none_hint";
+        public const string FailBudget = "ui.battle.fail_budget";
+        public const string FailStuck = "ui.battle.fail_stuck";
+        public const string Gain = "ui.battle.gain";
         public const string LibraryTotal = "ui.battle.library_total";
         public const string Level = "ui.battle.level";
         public const string Mult = "ui.battle.mult";
         public const string Points = "ui.battle.points";
+        public const string ResultLost = "ui.battle.result_lost";
+        public const string ResultScore = "ui.battle.result_score";
+        public const string ResultWon = "ui.battle.result_won";
         public const string ScoreOf = "ui.battle.score_of";
+    }
+
+    /// <summary>
+    /// 盲注失败的原因(结果浮层);<see cref="FailReason.None"/> 没有文案,返回 null。
+    /// 不叫 Of:Of 约定枚举的每个取值都有 key(TextTableTests 按此反射核),None 在这里是合法的「没有」。两条文案的 key 由上面的常量受核。
+    /// </summary>
+    public static string FailReasonKey(FailReason reason)
+    {
+        switch (reason)
+        {
+            case FailReason.None: return null;
+            case FailReason.BudgetExhausted: return Battle.FailBudget;
+            case FailReason.CannotPlace: return Battle.FailStuck;
+            default: throw new ArgumentOutOfRangeException(nameof(reason), reason, "不是失败原因");
+        }
     }
 
     /// <summary>消除类型名。</summary>

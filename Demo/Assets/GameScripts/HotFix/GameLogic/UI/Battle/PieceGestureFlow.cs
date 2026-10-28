@@ -12,10 +12,23 @@ using Object = UnityEngine.Object;
 /// 骨架是 block-client <c>BoardGestureFlow</c> 的几段(02 号票 §3.3):拾起 / 拖动 / 抬手、转向、虚影与消除预览、收预览、落点解析;
 /// 3B 补的是按键过滤(在 <see cref="BlockPieceDragger"/>)、键位表(<see cref="PieceKeymap"/>)、悬停、拖拽中旋转、弃置区落点、预览徽章与类型表高亮、
 /// 结算锁、Esc 与失焦取消。改状态只经规则核心的命令(<see cref="RunState.Place"/> / <see cref="RunState.Discard"/> / <see cref="RunState.SetRotation"/>);
-/// 命令被接受后交给宿主(<c>stepAccepted</c>),本票是全量刷新、盘面直接跳到终态,30 号票在那里接上演出。
+/// 命令被接受后交给宿主(<c>stepAccepted</c>),宿主在那里开演这一步(<see cref="StepShowPlayer"/>)。
 /// </summary>
 public sealed class PieceGestureFlow
 {
+    /// <summary>松手那一刻手上那块的样子:块心(世界坐标)与朝向。弃置演出从这里把块缩进弃置区;弃置之后槽上的朝向就没了,事件里也不带。</summary>
+    public readonly struct PieceRelease
+    {
+        public readonly Vector3 Center;
+        public readonly int Rot;
+
+        public PieceRelease(Vector3 center, int rot)
+        {
+            Center = center;
+            Rot = rot;
+        }
+    }
+
     private const int N = BlockLayout.BoardSize;
 
     private readonly BoardAreaPart _board;
@@ -24,7 +37,7 @@ public sealed class PieceGestureFlow
     private readonly ClearTypeTablePart _typeTable;
     private readonly PreviewBadgePart _badge;
     private readonly RectTransform _dragLayer;
-    private readonly Action<StepResult> _stepAccepted;
+    private readonly Action<StepResult, PieceRelease> _stepAccepted;
 
     private RunState _run;
     private Canvas _rootCanvas;
@@ -69,7 +82,7 @@ public sealed class PieceGestureFlow
     private bool _trayStale;
 
     public PieceGestureFlow(BoardAreaPart board, TrayAreaPart tray, DiscardAreaPart discard, ClearTypeTablePart typeTable,
-        PreviewBadgePart badge, RectTransform dragLayer, Action<StepResult> stepAccepted)
+        PreviewBadgePart badge, RectTransform dragLayer, Action<StepResult, PieceRelease> stepAccepted)
     {
         _board = board;
         _tray = tray;
@@ -95,7 +108,7 @@ public sealed class PieceGestureFlow
     // ─── 结算锁(21 号票第 5 节:松手落子起锁,最后一个被消格退场时解锁;结局步不解锁)────
 
     /// <summary>
-    /// 上锁:托盘不接受拾起和旋转。Esc 与「返回主界面」不受影响。本票自己不调,30 号票的演出在松手后调。
+    /// 上锁:托盘不接受拾起和旋转。Esc 与「返回主界面」不受影响。本类自己不调,结算演出(<see cref="StepShowPlayer"/>)在松手后调。
     /// 万一锁的时候块还在手上,按取消处理。
     /// </summary>
     public void Lock()
@@ -194,6 +207,8 @@ public sealed class PieceGestureFlow
 
         // 转到一半被拾起:角度立刻推到目标,块以新朝向的外观跟手。不能走重建——重建会销毁正在处理这次拖拽事件的节点
         _tray.SnapRotate(slot);
+        // 新组弹到一半被拾起:弹出直接跳到终态(21 号票第 5 节)
+        _tray.FinishPopIn();
         _hoverSlot = -1;
         ApplyHover();
 
@@ -238,6 +253,7 @@ public sealed class PieceGestureFlow
         // 与虚影同一个方法解析落点(含吸附),否则会落在与虚影不同的格上
         var (col, row) = ResolveDrop(_dragPiece.position, shape, id, rot);
         bool overDiscard = _overDiscard;
+        var release = new PieceRelease(_dragPiece.position, rot);
         AbortGesture();
 
         StepResult result = null;
@@ -252,7 +268,7 @@ public sealed class PieceGestureFlow
 
         if (result != null && result.Accepted)
         {
-            _stepAccepted(result);
+            _stepAccepted(result, release);
             return;
         }
         if (result != null) Log.Warning($"[PieceGestureFlow] 块 #{id} 的命令被规则核心拒绝:{result.Reject},弹回");

@@ -7314,6 +7314,7 @@ MonoBehaviour:
   m_part_TrayArea: {fileID: 537671325450301301}
   m_part_Discard: {fileID: 600164367687511040}
   m_part_Badge: {fileID: 8517213414150091807}
+  _scorePopPrefab: {fileID: 4618216119531345761, guid: 9c30a208850dcb54bbeb43a8a414af00, type: 3}
 --- !u!1 &6466927157938336534
 GameObject:
   m_ObjectHideFlags: 0

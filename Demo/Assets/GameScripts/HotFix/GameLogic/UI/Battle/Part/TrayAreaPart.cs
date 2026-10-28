@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using GameRules;
 using TEngine;
 using UnityEngine;
+
+// TEngine 也有个 Ease 枚举,同时 using 两个命名空间时裸写 Ease 报 CS0104。
+using Ease = DG.Tweening.Ease;
 
 /// <summary>
 /// 待放置区 Part(挂在战斗窗的 m_part_TrayArea 节点上,由宿主序列化持有;节点按 5 槽留位,宽 830)。
@@ -50,6 +54,7 @@ public sealed class TrayAreaPart : MonoBehaviour
     /// </summary>
     public void Refresh(IRunView run)
     {
+        _popIns.Clear();   // 在途的弹出随槽销毁(SetLink)
         foreach (SlotView v in _slots)
         {
             // 补间由各自 SetLink 随节点销毁而 Kill
@@ -152,6 +157,38 @@ public sealed class TrayAreaPart : MonoBehaviour
                 sink.Add(part);
             }
         }
+    }
+
+    // ── 新组弹出(21 号票第 5、7 节:不占锁,弹的过程中就能拿;一拿起就跳到终态)──
+
+    private readonly List<Tween> _popIns = new List<Tween>(BlindSpec.MaxGroupSize);
+
+    /// <summary>新组先藏着(各槽缩成 0),等结算演出到了弹出那一刻再 <see cref="PlayPopIn"/>。只在刚 <see cref="Refresh"/> 完、这一步发了新组时调。</summary>
+    public void HideForPopIn()
+    {
+        foreach (SlotView v in _slots)
+            if (v.Slot != null) v.Slot.transform.localScale = Vector3.zero;
+    }
+
+    /// <summary>各槽从 0 弹到原大(整槽一起缩放:命中区、块、点数跟着长出来)。补间挂在各槽上,托盘重建即随槽销毁。</summary>
+    public void PlayPopIn(float duration)
+    {
+        FinishPopIn();
+        foreach (SlotView v in _slots)
+        {
+            if (v.Slot == null) continue;
+            Transform t = v.Slot.transform;
+            t.localScale = Vector3.zero;
+            _popIns.Add(t.DOScale(1f, duration).SetEase(Ease.OutBack).SetUpdate(true).SetLink(v.Slot.gameObject));
+        }
+    }
+
+    /// <summary>在途的弹出直接跳到终态(拾起时调;托盘重建前也调,免得留下停在半途的缩放)。</summary>
+    public void FinishPopIn()
+    {
+        foreach (Tween t in _popIns)
+            if (t.IsActive()) t.Complete();
+        _popIns.Clear();
     }
 
     // ── 旋转动画 ────────────────────────────────────────────────

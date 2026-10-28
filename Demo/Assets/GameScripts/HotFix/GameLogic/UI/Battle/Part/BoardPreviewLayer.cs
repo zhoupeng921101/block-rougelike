@@ -155,6 +155,7 @@ public sealed class BoardPreviewLayer
         img.transform.SetAsLastSibling();
         pulse.BaseColor = BlockLayout.ClearPreviewGlowColor;
         pulse.SetRainbow(false);
+        pulse.enabled = true;   // 结算演出淡出光带时停过它(见 TryGetBand)
         pulse.Restart(_glowUsed * 0.06f);   // 几条错开相位,不齐刷刷地呼吸
         img.gameObject.SetActive(true);
     }
@@ -169,6 +170,18 @@ public sealed class BoardPreviewLayer
         img.color = BlockLayout.ClearPreviewFillColor;
         img.transform.SetAsLastSibling();
         img.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// 这次消除预览的第 <paramref name="line"/> 条线(先行后列,与 <see cref="ShowClearPreview"/> 的入参同序)的填充与光带。
+    /// 结算演出在这条线的最后一格退场时把它们淡出(21 号票第 2 节);淡出前要先停掉光带的呼吸,否则呼吸每帧改回 alpha。
+    /// </summary>
+    public bool TryGetBand(int line, out Image fill, out Image glow, out GlowPulse pulse)
+    {
+        fill = line >= 0 && line < _fillUsed ? _fillPool[line] : null;
+        glow = line >= 0 && line < _glowUsed ? _glowPool[line] : null;
+        pulse = glow != null ? _glowPulses[line] : null;
+        return fill != null && glow != null;
     }
 
     /// <summary>收起全部虚影、填充与光带(拖动换格、落子、取消时调)。</summary>

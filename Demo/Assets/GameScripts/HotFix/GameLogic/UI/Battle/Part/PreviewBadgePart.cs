@@ -22,8 +22,13 @@ public sealed class PreviewBadgePart : MonoBehaviour
     /// <summary>这次显示的类型;没显示时为 null。</summary>
     public ClearType? Type => IsShown && _row != null ? _row.Type : (ClearType?)null;
 
+    /// <summary>徽章里的那一行;还没显示过时为 null。结算演出拿它跳数字。</summary>
+    public ClearTypeRowPart Row => _row;
+
     public void Show(ClearType type, int level, ClearTypeBase values)
     {
+        // 结算演出的计数框是拷出来的一份徽章:行已经在子节点里,字段没跟着拷
+        if (_row == null) _row = GetComponentInChildren<ClearTypeRowPart>(true);
         if (_row == null)
         {
             _row = UIPartFactory.Create<ClearTypeRowPart>(_rowPrefab, rectTransform, nameof(PreviewBadgePart));
