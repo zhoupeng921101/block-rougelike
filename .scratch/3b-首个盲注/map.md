@@ -105,6 +105,9 @@ Label: wayfinder:map
 - [文本表与字体的基础件](issues/15-文本表与字体的基础件.md) —— **已落地 5c5e41bb / 97e0765f**：`texts.json` 先放主界面三个 key；`TextTable` 在主界面打开前异步读表，切语言重读、发 `LanguageChanged`；`LocalizedText`（字段 `_textKey`）、`TextKeys` 都已建；主字体是思源黑体 SC Bold 动态多图集 TMP 资产，入库的是清空态。
   主界面加了「按钮列」和语言按钮，编辑器里中英热切、删偏好后按系统语言取默认值都验过；Windows 包中文正常，主字体只在 YooAsset 的一个包里（15 MB）。
   `DotNet/Tests/L10n` 做了 14 第 8 条的五项，另加一项「主字体资产不带动态数据」：编辑器存盘会把图集写进资产（7.7 KB → 2 MB 多），这项拦。四种故意出错都红。自检 PASS，单测 208 个（新加 18 个）。
+- [表现层：战斗窗的静态呈现](issues/28-表现层-战斗窗的静态呈现.md) —— **已落地 a449d5a7**：`UIBattlePanel` 照线框 A 搭好；辅助件连 `.meta` 拷，Part 按 02 裁；全量刷新入口是 `Refresh(IRunView)`。`ClearPacing` 已建，21 号票的常量全填了；「开始游戏」走 `RunLauncher.NewRun()`，「返回主界面」和 Esc 回主界面。
+  F5 / F6 / F7 是调试键（只在编辑器与开发包里有）。走了 20 步，每步把画面与规则核心逐项比，全部一致；两种分辨率、中英两种语言都截了图。真键盘没按过。两个预览 shader 没搬（来源待确认），交 29。
+  **更正 13**：UIRoot 的 CanvasScaler 是 Expand，16:10 下画布是 1920×1200，不是 1728×1080。自检 PASS，单测 208 个。
 
 ## Not yet specified
 
@@ -151,3 +154,6 @@ Label: wayfinder:map
   清法：在 Inspector 里对它右键 Clear Dynamic Data 再保存，或者 git checkout。出包时 TMP 自己会清回同样的状态，不产生 diff。
 - **经 MCP 触发出包**，用 `EditorApplication.update` 挂一次性回调来调 `WindowsBuild.Build()`。用 `delayCall` 编辑器在后台时迟迟不触发，过后会再出一次包（15 号票因此出了两次，`PackageVersion.json` 多加了一次）。
 - **新建的 TMP 组件默认挂 LiberationSans**（无中文），要改挂主字体资产 `AssetRaw/Fonts/SourceHanSansSC-Bold SDF.asset`；自检按 guid 拦。
+- **主工程编辑器的 Game 视图是竖屏 1080×1920**（28 号票实测），直接截 GameView 拿不到横屏画面。截战斗窗的做法：把 UICamera 的 `targetTexture` 换成目标尺寸的 RT，等一帧让 CanvasScaler 重算，再 `Render` 读回。
+  MCP 的 `execute_code` 返回的中文会乱码（GBK），要先转成 `\uXXXX` 再返回。`EditorApplication.ExitPlaymode` 被 MCP 的安全检查拦，退出 Play 改用 `isPlaying = false`。
+- **Outline 不能挂在透明底的 Image 上**（28 号票）：它是把底图错位重画四份，底一透明，四份就把整框涂满。框线要用 Outline 的，底色一律不透明。
