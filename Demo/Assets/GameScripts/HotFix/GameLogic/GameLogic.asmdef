@@ -7,7 +7,9 @@
         "GUID:e34a5702dd353724aa315fb8011f08c3",
         "GUID:6055be8ebefd69e48b49212b09b47b2f",
         "GUID:6b02c02bf8ce442394b41ee4972794bd",
-        "DOTween.Modules"
+        "DOTween.Modules",
+        "GUID:04c9dc35d564186438f5296cb16b38af",
+        "GUID:68765d262e2128e4ab49c983f3411946"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
