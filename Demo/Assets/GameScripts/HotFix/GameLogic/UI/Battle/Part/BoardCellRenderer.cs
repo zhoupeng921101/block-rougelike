@@ -16,12 +16,15 @@ public sealed class BoardCellRenderer
     private readonly BoardGeometry _geo;
     private readonly RectTransform _cellLayer;
     private readonly GameObject _blockPrefab;
+    private readonly Material _brightenTemplate;
 
-    public BoardCellRenderer(BoardGeometry geo, RectTransform cellLayer, GameObject blockPrefab)
+    /// <param name="brightenTemplate">UI_Brighten 的模板材质(盘面区序列化持有,shader 随它进包);首次提亮时克隆一份。</param>
+    public BoardCellRenderer(BoardGeometry geo, RectTransform cellLayer, GameObject blockPrefab, Material brightenTemplate)
     {
         _geo = geo;
         _cellLayer = cellLayer;
         _blockPrefab = blockPrefab;
+        _brightenTemplate = brightenTemplate;
     }
 
     private readonly BlockPart[,] _blockParts = new BlockPart[N, N];
@@ -60,22 +63,32 @@ public sealed class BoardCellRenderer
         _exitDelay[r, c] = Mathf.Max(_exitDelay[r, c], delay);
     }
 
-    // ── 消行预览:将被消行列里已有的块上浮 ──
+    // ── 消行预览:将被消行列里已有的块提亮上浮(提亮材质 UI_Brighten,32 号票从动物乐园搬来,团队自写)──
 
-    /// <summary>上浮时的放大倍数。block-client 另用 UI_Brighten 材质提亮,那个 shader 还没搬(要先确认来源),本图只上浮。</summary>
+    /// <summary>上浮时的放大倍数(动物乐园原值)。</summary>
     private const float HighlightScale = 1.06f;
+
+    /// <summary>提亮量:rgb 朝白色推的比例(动物乐园原值,见 UI_Brighten shader 的 _Amount)。</summary>
+    private const float HighlightBrighten = 0.35f;
 
     private readonly HashSet<BlockPart> _highlighted = new HashSet<BlockPart>();
 
-    /// <summary>把 <paramref name="rows"/> / <paramref name="cols"/> 上已有的块放大;先复原上一次的。</summary>
+    private Material _brighten;
+
+    /// <summary>把 <paramref name="rows"/> / <paramref name="cols"/> 上已有的块提亮并放大;先复原上一次的。</summary>
     public void HighlightLines(IReadOnlyList<int> rows, IReadOnlyList<int> cols)
     {
         ClearHighlight();
+        if (_brighten == null)
+        {
+            _brighten = new Material(_brightenTemplate);
+            _brighten.SetFloat("_Amount", HighlightBrighten);
+        }
         void Mark(int r, int c)
         {
             var part = _blockParts[r, c];
             if (part == null || !_highlighted.Add(part)) return;
-            part.SetHighlight(null, HighlightScale);
+            part.SetHighlight(_brighten, HighlightScale);
         }
         for (int i = 0; rows != null && i < rows.Count; i++)
             for (int c = 0; c < N; c++) Mark(rows[i], c);
@@ -83,12 +96,18 @@ public sealed class BoardCellRenderer
             for (int r = 0; r < N; r++) Mark(r, cols[i]);
     }
 
-    /// <summary>复原全部上浮的块。可重复调用。</summary>
+    /// <summary>复原全部提亮上浮的块。可重复调用。</summary>
     public void ClearHighlight()
     {
         foreach (var part in _highlighted)
             if (part != null) part.SetHighlight(null, 1f);
         _highlighted.Clear();
+    }
+
+    /// <summary>运行时克隆的提亮材质随盘面区销毁。</summary>
+    public void DestroyMaterials()
+    {
+        if (_brighten != null) UnityEngine.Object.Destroy(_brighten);
     }
 
     // ── 整盘入场:按对角线逐格弹入 ──
@@ -167,7 +186,7 @@ public sealed class BoardCellRenderer
         return parts;
     }
 
-    /// <summary>把 (r, c) 那一格从格表里摘下来交给演出退场(复原上浮);没有则 null。摘下之后它不再参与任何刷新。</summary>
+    /// <summary>把 (r, c) 那一格从格表里摘下来交给演出退场;没有则 null。摘下之后它不再参与任何刷新。提亮留着,格带着亮色退场。</summary>
     public BlockPart TakeForExit(int r, int c)
     {
         var part = _blockParts[r, c];

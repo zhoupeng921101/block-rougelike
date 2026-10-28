@@ -1,0 +1,1014 @@
+fileFormatVersion: 2
+guid: 7a372b5f9e3ca2749a803b65c902e296
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6558389581073761208
+    second: db_clearRainbow_tex_0
+  - first:
+      213: -8000342713446056738
+    second: db_clearRainbow_tex_1
+  - first:
+      213: 7958597278551886173
+    second: db_clearRainbow_tex_2
+  - first:
+      213: 342442470745588720
+    second: db_clearRainbow_tex_3
+  - first:
+      213: 6468456085216874996
+    second: db_clearRainbow_tex_4
+  - first:
+      213: -4181537654356842304
+    second: db_clearRainbow_tex_5
+  - first:
+      213: -5895644762497943543
+    second: db_clearRainbow_tex_6
+  - first:
+      213: -7245258180585626190
+    second: db_clearRainbow_tex_7
+  - first:
+      213: 6906037700646958472
+    second: db_clearRainbow_tex_8
+  - first:
+      213: 7455897509905188165
+    second: db_clearRainbow_tex_9
+  - first:
+      213: -474247071823592631
+    second: db_clearRainbow_tex_10
+  - first:
+      213: 5368071087727921766
+    second: db_clearRainbow_tex_11
+  - first:
+      213: 8961045091097772649
+    second: db_clearRainbow_tex_12
+  - first:
+      213: 530268595709994906
+    second: db_clearRainbow_tex_13
+  - first:
+      213: -305895123330034100
+    second: db_clearRainbow_tex_14
+  - first:
+      213: 3725127727826598733
+    second: db_clearRainbow_tex_15
+  - first:
+      213: -3569250918708336816
+    second: db_clearRainbow_tex_16
+  - first:
+      213: -1917354577075083319
+    second: db_clearRainbow_tex_17
+  - first:
+      213: 8013769746332267697
+    second: db_clearRainbow_tex_18
+  - first:
+      213: 4544940934546030717
+    second: db_clearRainbow_tex_19
+  - first:
+      213: 420592253359591046
+    second: db_clearRainbow_tex_20
+  - first:
+      213: 4041451806449375797
+    second: db_clearRainbow_tex_21
+  - first:
+      213: -1293485652556133582
+    second: db_clearRainbow_tex_22
+  - first:
+      213: -7407533328267807418
+    second: db_clearRainbow_tex_23
+  - first:
+      213: 7957865770321618511
+    second: db_clearRainbow_tex_24
+  - first:
+      213: -454451277427134336
+    second: db_clearRainbow_tex_25
+  - first:
+      213: 2851920890874059174
+    second: db_clearRainbow_tex_26
+  - first:
+      213: 7024596052991040811
+    second: db_clearRainbow_tex_27
+  - first:
+      213: 2471141006404964830
+    second: db_clearRainbow_tex_28
+  - first:
+      213: 7749674453184974746
+    second: db_clearRainbow_tex_29
+  - first:
+      213: 8605825819225925465
+    second: db_clearRainbow_tex_30
+  - first:
+      213: -7370736271749102897
+    second: db_clearRainbow_tex_31
+  - first:
+      213: -8471748002183290014
+    second: db_clearRainbow_tex_32
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: 50
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: 50
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: 49
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 486
+        width: 362
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b3468e7394140b50800000000000000
+      internalID: 6558389581073761208
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_1
+      rect:
+        serializedVersion: 2
+        x: 362
+        y: 569
+        width: 134
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: edcb9a390b219f090800000000000000
+      internalID: -8000342713446056738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_2
+      rect:
+        serializedVersion: 2
+        x: 362
+        y: 486
+        width: 83
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d59c972fe0e927e60800000000000000
+      internalID: 7958597278551886173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_3
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 512
+        width: 57
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f34cc0ec9990c400800000000000000
+      internalID: 342442470745588720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_4
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 377
+        width: 362
+        height: 109
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f1d094c98294c950800000000000000
+      internalID: 6468456085216874996
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_5
+      rect:
+        serializedVersion: 2
+        x: 362
+        y: 403
+        width: 83
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c8e32978a138f5c0800000000000000
+      internalID: -4181537654356842304
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_6
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 455
+        width: 57
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 908fa6133567e2ea0800000000000000
+      internalID: -5895644762497943543
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_7
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 398
+        width: 57
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b56330621ca37b90800000000000000
+      internalID: -7245258180585626190
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_8
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 307
+        width: 357
+        height: 70
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8857480f2bc27df50800000000000000
+      internalID: 6906037700646958472
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_9
+      rect:
+        serializedVersion: 2
+        x: 362
+        y: 320
+        width: 83
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5454e9f384ba87760800000000000000
+      internalID: 7455897509905188165
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_10
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 341
+        width: 57
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9438f240dc22b69f0800000000000000
+      internalID: -474247071823592631
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_11
+      rect:
+        serializedVersion: 2
+        x: 445
+        y: 284
+        width: 57
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66a411986383f7a40800000000000000
+      internalID: 5368071087727921766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_12
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 237
+        width: 362
+        height: 70
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 962042f58070c5c70800000000000000
+      internalID: 8961045091097772649
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_13
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 187
+        width: 324
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a97e6d27a74eb5700800000000000000
+      internalID: 530268595709994906
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_14
+      rect:
+        serializedVersion: 2
+        x: 324
+        y: 183
+        width: 134
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c46936b810e31cbf0800000000000000
+      internalID: -305895123330034100
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_15
+      rect:
+        serializedVersion: 2
+        x: 361
+        y: 237
+        width: 84
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4bff009eef42b330800000000000000
+      internalID: 3725127727826598733
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_16
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 207
+        width: 40
+        height: 77
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 057272c3339777ec0800000000000000
+      internalID: -3569250918708336816
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_17
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 138
+        width: 324
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c768f4bb203465e0800000000000000
+      internalID: -1917354577075083319
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_18
+      rect:
+        serializedVersion: 2
+        x: 458
+        y: 185
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b438e12021a63f60800000000000000
+      internalID: 8013769746332267697
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_19
+      rect:
+        serializedVersion: 2
+        x: 480
+        y: 185
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d708fb823bfd21f30800000000000000
+      internalID: 4544940934546030717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_20
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 56
+        width: 83
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68e87c01d6e36d500800000000000000
+      internalID: 420592253359591046
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_21
+      rect:
+        serializedVersion: 2
+        x: 83
+        y: 56
+        width: 83
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 53a9644610f161830800000000000000
+      internalID: 4041451806449375797
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_22
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 117
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23bc355f6ad9c0ee0800000000000000
+      internalID: -1293485652556133582
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_23
+      rect:
+        serializedVersion: 2
+        x: 188
+        y: 117
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 645faba4fa7233990800000000000000
+      internalID: -7407533328267807418
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_24
+      rect:
+        serializedVersion: 2
+        x: 210
+        y: 116
+        width: 22
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f46a24a61c4007e60800000000000000
+      internalID: 7957865770321618511
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_25
+      rect:
+        serializedVersion: 2
+        x: 232
+        y: 117
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 080bb3198f671b9f0800000000000000
+      internalID: -454451277427134336
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_26
+      rect:
+        serializedVersion: 2
+        x: 254
+        y: 117
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a9501ca0fe049720800000000000000
+      internalID: 2851920890874059174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_27
+      rect:
+        serializedVersion: 2
+        x: 276
+        y: 117
+        width: 22
+        height: 22
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b2d542d64e06c7160800000000000000
+      internalID: 7024596052991040811
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_28
+      rect:
+        serializedVersion: 2
+        x: 324
+        y: 100
+        width: 83
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ed15ba417a14b4220800000000000000
+      internalID: 2471141006404964830
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_29
+      rect:
+        serializedVersion: 2
+        x: 407
+        y: 100
+        width: 83
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9f820b0bdf5c8b60800000000000000
+      internalID: 7749674453184974746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_30
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 79
+        width: 317
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 957a8d9acf80e6770800000000000000
+      internalID: 8605825819225925465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_31
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 58
+        width: 317
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc2ce45a962e5b990800000000000000
+      internalID: -7370736271749102897
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: db_clearRainbow_tex_32
+      rect:
+        serializedVersion: 2
+        x: 166
+        y: 1
+        width: 57
+        height: 57
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2636d37c31e4e6a80800000000000000
+      internalID: -8471748002183290014
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      db_clearRainbow_tex_0: 6558389581073761208
+      db_clearRainbow_tex_1: -8000342713446056738
+      db_clearRainbow_tex_10: -474247071823592631
+      db_clearRainbow_tex_11: 5368071087727921766
+      db_clearRainbow_tex_12: 8961045091097772649
+      db_clearRainbow_tex_13: 530268595709994906
+      db_clearRainbow_tex_14: -305895123330034100
+      db_clearRainbow_tex_15: 3725127727826598733
+      db_clearRainbow_tex_16: -3569250918708336816
+      db_clearRainbow_tex_17: -1917354577075083319
+      db_clearRainbow_tex_18: 8013769746332267697
+      db_clearRainbow_tex_19: 4544940934546030717
+      db_clearRainbow_tex_2: 7958597278551886173
+      db_clearRainbow_tex_20: 420592253359591046
+      db_clearRainbow_tex_21: 4041451806449375797
+      db_clearRainbow_tex_22: -1293485652556133582
+      db_clearRainbow_tex_23: -7407533328267807418
+      db_clearRainbow_tex_24: 7957865770321618511
+      db_clearRainbow_tex_25: -454451277427134336
+      db_clearRainbow_tex_26: 2851920890874059174
+      db_clearRainbow_tex_27: 7024596052991040811
+      db_clearRainbow_tex_28: 2471141006404964830
+      db_clearRainbow_tex_29: 7749674453184974746
+      db_clearRainbow_tex_3: 342442470745588720
+      db_clearRainbow_tex_30: 8605825819225925465
+      db_clearRainbow_tex_31: -7370736271749102897
+      db_clearRainbow_tex_32: -8471748002183290014
+      db_clearRainbow_tex_4: 6468456085216874996
+      db_clearRainbow_tex_5: -4181537654356842304
+      db_clearRainbow_tex_6: -5895644762497943543
+      db_clearRainbow_tex_7: -7245258180585626190
+      db_clearRainbow_tex_8: 6906037700646958472
+      db_clearRainbow_tex_9: 7455897509905188165
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

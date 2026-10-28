@@ -5,8 +5,8 @@ using UnityEngine;
 
 /// <summary>
 /// 战斗界面(规则 §8.5,布局照 13 号票线框 A)。画面全从规则核心的只读状态画:<see cref="Refresh"/> 是唯一的全量刷新入口,
-/// 开新局与续玩(23 号票)走同一条路。打开时传入这一局的 <see cref="RunState"/>(UserData)。
-/// 拖拽、旋转、弃置与预览在 <see cref="PieceGestureFlow"/>;一步的结算演出在 <see cref="StepShowPlayer"/>,结局弹 <see cref="UIBattleResultPanel"/>;
+/// 开新局与续玩(23 号票)走同一条路。打开时传入 <see cref="Entry"/>(UserData)。
+/// 拖拽、旋转、弃置与预览在 <see cref="PieceGestureFlow"/>;一步的结算演出在 <see cref="StepShowPlayer"/>,特效在 <see cref="BattleFxDirector"/>,结局弹 <see cref="UIBattleResultPanel"/>;
 /// 存档时机在 <see cref="RunSaveService"/>。
 /// </summary>
 [Window(UILayer.UI, fullScreen: true)]
@@ -21,8 +21,24 @@ public partial class UIBattlePanel : UIPanelMono
     /// <summary>一步的结算演出(30 号票)。</summary>
     private StepShowPlayer _show;
 
-    [Tooltip("「+k」跳字与飞分的数字模板（AssetRaw/UI/Prefabs/Parts/ScorePop.prefab）")]
-    [SerializeField] private GameObject _scorePopPrefab;
+    /// <summary>特效(32 号票):挂在结算演出的时间表上,另管开局点亮与扫描线。</summary>
+    private BattleFxDirector _fx;
+
+    [Tooltip("特效素材(现在全是动物乐园的占位,见 Effects/ZooPlaceholder/占位登记表.md)")]
+    [SerializeField] private BattleFxAssets _fxAssets = new BattleFxAssets();
+
+    /// <summary>打开战斗窗时的 UserData:这一局,以及它是不是从主界面「继续」进来的(开局特效不同,31 号票第 20 项)。</summary>
+    public sealed class Entry
+    {
+        public readonly RunState Run;
+        public readonly bool Resumed;
+
+        public Entry(RunState run, bool resumed)
+        {
+            Run = run;
+            Resumed = resumed;
+        }
+    }
 
     protected override void OnCreate()
     {
@@ -30,15 +46,17 @@ public partial class UIBattlePanel : UIPanelMono
         // 窗根当拖拽层:拿起的块挂到最上层,盖在弃置区之上
         _gesture = new PieceGestureFlow(m_part_BoardArea, m_part_TrayArea, m_part_Discard, m_part_TypeTable, m_part_Badge, rectTransform, OnStepAccepted,
             () => RunSaveService.Instance.MarkRotated(_run));
+        _fx = new BattleFxDirector(_fxAssets, m_part_BoardArea, rectTransform, gameObject);
         _show = new StepShowPlayer(gameObject, rectTransform, m_part_BoardArea, m_part_TrayArea, m_part_Discard, m_part_TypeTable, m_part_Badge,
-            m_tmp_Score, m_slider_Score, m_tmp_LibraryLeft, _scorePopPrefab, _gesture, ShowResult);
+            m_tmp_Score, m_slider_Score, m_tmp_LibraryLeft, _fxAssets, _fx, _gesture, ShowResult);
     }
 
     protected override void OnDestroyWindow() => _show?.Kill();
 
     protected override void OnRefresh()
     {
-        _run = UserData as RunState;
+        var entry = UserData as Entry;
+        _run = entry?.Run;
         if (_run == null || _run.Blind == null)
         {
             // 没有局面可画:不留一张盖住主界面的空窗
@@ -48,6 +66,7 @@ public partial class UIBattlePanel : UIPanelMono
         }
         _gesture.Bind(_run);
         Refresh(_run);
+        _fx.PlayOpening(entry.Resumed);
     }
 
     protected override void OnUpdate()

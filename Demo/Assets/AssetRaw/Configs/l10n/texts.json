@@ -12,7 +12,6 @@
   {"key": "clear_type.triple_line.name", "zh": "三线", "en": "Three Lines"},
   {"key": "ui.battle.back", "zh": "返回主界面", "en": "Main Menu"},
   {"key": "ui.battle.blind_normal", "zh": "第 {0} 段 · 第 {1} 层 · 普通盲注", "en": "Segment {0} · Layer {1} · Normal Blind"},
-  {"key": "ui.battle.cell_gain", "zh": "+{0}", "en": "+{0}"},
   {"key": "ui.battle.discard", "zh": "弃置区", "en": "Discard"},
   {"key": "ui.battle.discard_drop", "zh": "松手弃置 · 剩余 {0} → {1}", "en": "Release to discard · {0} → {1} left"},
   {"key": "ui.battle.discard_left", "zh": "剩余弃置次数", "en": "Discards left"},

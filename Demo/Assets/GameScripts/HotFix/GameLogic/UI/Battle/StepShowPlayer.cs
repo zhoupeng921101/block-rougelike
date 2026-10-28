@@ -15,6 +15,7 @@ using Object = UnityEngine.Object;
 ///
 /// 结算锁:松手即锁,到 <see cref="ClearTimeline.UnlockAt"/> 解锁,结局步不解锁。下一步开演之前,上一步没播完的尾巴先跳到终态(<see cref="Finish"/>)。
 /// 演出中途离开(Esc、返回主界面)调 <see cref="Kill"/>:停掉一切、清掉临时节点,不再到位。
+/// 特效(32 号票)由 <see cref="BattleFxDirector"/> 照同一张时间表起播,另走它自己的待播序列:跳到终态时没到点的特效作废、不补播。
 /// </summary>
 public sealed class StepShowPlayer
 {
@@ -28,7 +29,8 @@ public sealed class StepShowPlayer
     private readonly TMP_Text _score;
     private readonly Slider _scoreBar;
     private readonly TMP_Text _libraryLeft;
-    private readonly GameObject _popPrefab;
+    private readonly BattleFxAssets _fxAssets;
+    private readonly BattleFxDirector _fx;
     private readonly PieceGestureFlow _gesture;
     private readonly Action<BlindEnded, long> _showResult;
 
@@ -37,7 +39,7 @@ public sealed class StepShowPlayer
     /// <summary>在回调里才建的补间(起点要等到那一刻才知道):跳到终态时和主序列一起到位。</summary>
     private readonly List<Tween> _loose = new List<Tween>();
 
-    /// <summary>演出用的临时节点:计数框、跳字、飞分、弃置的块、退场中的格。跳到终态或离开时一并销毁。</summary>
+    /// <summary>演出用的临时节点:计数框、跳字、飞分、弃置的块、退场中的格。跳到终态或离开时一并销毁(特效节点归 <see cref="BattleFxDirector"/>)。</summary>
     private readonly List<GameObject> _temps = new List<GameObject>();
 
     /// <summary>这一步演完时界面该停在哪:跳到终态时照它补齐读数。</summary>
@@ -47,7 +49,7 @@ public sealed class StepShowPlayer
 
     public StepShowPlayer(GameObject link, RectTransform root, BoardAreaPart board, TrayAreaPart tray, DiscardAreaPart discard,
         ClearTypeTablePart typeTable, PreviewBadgePart badge, TMP_Text score, Slider scoreBar, TMP_Text libraryLeft,
-        GameObject popPrefab, PieceGestureFlow gesture, Action<BlindEnded, long> showResult)
+        BattleFxAssets fxAssets, BattleFxDirector fx, PieceGestureFlow gesture, Action<BlindEnded, long> showResult)
     {
         _link = link;
         _root = root;
@@ -59,7 +61,8 @@ public sealed class StepShowPlayer
         _score = score;
         _scoreBar = scoreBar;
         _libraryLeft = libraryLeft;
-        _popPrefab = popPrefab;
+        _fxAssets = fxAssets;
+        _fx = fx;
         _gesture = gesture;
         _showResult = showResult;
     }
@@ -99,6 +102,7 @@ public sealed class StepShowPlayer
         }
 
         _seq = DOTween.Sequence().SetUpdate(true).SetLink(_link);
+        _fx.BeginStep();
 
         // 结算锁(21 号票第 5 节):松手即锁,被消格全部退场时解锁;不成线、弃置、发组不锁;结局步一直锁
         if (t.UnlockAt > 0f)
@@ -144,6 +148,7 @@ public sealed class StepShowPlayer
         _seq = null;
         if (seq.IsActive()) seq.Complete(true);
         seq.Kill();
+        _fx.SkipPending();
         // 回调里建的补间可能又是在上面那次 Complete 里才建出来的,所以放在后面
         for (int i = 0; i < _loose.Count; i++)
             if (_loose[i].IsActive()) _loose[i].Complete(true);
@@ -165,6 +170,7 @@ public sealed class StepShowPlayer
         foreach (Tween tw in _loose) tw.Kill();
         _loose.Clear();
         DestroyTemps();
+        _fx.Kill();
     }
 
     // ─── 落子 ────────────────────────────────────────────────────
@@ -177,6 +183,7 @@ public sealed class StepShowPlayer
         _board.ClearGhostAndPreview();
         List<BlockPart> parts = _board.ShowPlaced(placed.Cells, BlockLayout.ColorOf(placed.Kind));
         foreach (BlockPart part in parts) _seq.Insert(0f, part.PunchTween(ClearPacing.PlacePunch * k));
+        _fx.Place(placed.Cells);
         if (clear == null) return;
         // 拖动时画的光带和填充松手不收(手势流松手时收掉了,这里同一帧画回来,看不出断),被消线上已有的块照旧上浮
         _board.ShowClearPreview(clear.Rows, clear.Cols);
@@ -212,11 +219,15 @@ public sealed class StepShowPlayer
             BlockPart part = _board.TakeForExit(r, c);
             if (part == null) continue;
             _temps.Add(part.gameObject);
+            _fx.CellBurst(beat.Time, r, c, part.Color);
             float exit = ClearPacing.CellExit * k;
             _seq.Insert(beat.Time, part.ExitTween(exit, BlockLayout.CellExitEndScale));
             // 刚落下的格可能在头几拍就退场,这时它的放大还没播完:等放大播完再销毁(退场后它已看不见),免得补间写到销毁了的节点上
             _seq.InsertCallback(Math.Max(beat.Time + exit, t.PunchEndAt), () => { if (part != null) Object.Destroy(part.gameObject); });
         }
+
+        // 整线光束、震盘、评价字、清屏(光束在每条线的最后一格退场时起,与下面光带淡出同一刻)
+        _fx.Clear(t, clear, placed.Kind, placed.Cells);
 
         // 每条线的最后一格退场时,这条线的光带与填充跟着淡出
         for (int i = 0; i < t.Lines.Count; i++)
@@ -244,20 +255,19 @@ public sealed class StepShowPlayer
         _seq.Insert(t.MergeAt, Bump(row.ChipsText.transform, ClearPacing.Merge * k));
 
         // 飞分:得分沿直线飞到累计分的数字上。起点是那一刻框里数字的位置,补间在回调里建
-        TMP_Text fly = NewPop(_root, text.Format(TextKeys.Battle.CellGain, gain), BlockLayout.CellGainFontSizes[BlockLayout.CellGainFontSizes.Length - 1]);
-        if (fly != null)
+        RectTransform fly = NewDigits(_root, "+" + Num(gain), BlockLayout.CellGainFontSizes[BlockLayout.CellGainFontSizes.Length - 1]);
+        fly.gameObject.SetActive(false);
+        _seq.InsertCallback(t.FlyAt, () =>
         {
-            fly.gameObject.SetActive(false);
-            _seq.InsertCallback(t.FlyAt, () =>
-            {
-                fly.transform.position = row.ChipsText.transform.position;
-                fly.transform.SetAsLastSibling();
-                fly.gameObject.SetActive(true);
-                row.ChipsText.alpha = 0f;
-                // 挂在飞分自己身上:落地那一刻主序列就销毁它,补间的最后一帧可能还没走
-                _loose.Add(fly.transform.DOMove(_score.transform.position, ClearPacing.FlyToTotal * k).SetEase(Ease.InCubic).SetUpdate(true).SetLink(fly.gameObject));
-            });
-        }
+            fly.transform.position = row.ChipsText.transform.position;
+            fly.transform.SetAsLastSibling();
+            fly.gameObject.SetActive(true);
+            row.ChipsText.alpha = 0f;
+            // 挂在飞分自己身上:落地那一刻主序列就销毁它,补间的最后一帧可能还没走
+            _loose.Add(fly.transform.DOMove(_score.transform.position, ClearPacing.FlyToTotal * k).SetEase(Ease.InCubic).SetUpdate(true).SetLink(fly.gameObject));
+        });
+        // 飞分落地那一刻,累计分上放一发星环
+        _fx.LandRing(t.RollAt, _score);
 
         // 落地:框删掉,累计分从旧值滚到新值,进度条同步走
         long from = booked.Total - booked.Gain, to = booked.Total;
@@ -300,15 +310,14 @@ public sealed class StepShowPlayer
     private void PopCellGain(int r, int c, int points, float at, float k)
     {
         int tier = Mathf.Clamp(points, 1, BlockLayout.CellGainFontSizes.Length) - 1;
-        TMP_Text pop = NewPop(_board.PreviewLayer, TextTable.Instance.Format(TextKeys.Battle.CellGain, points), BlockLayout.CellGainFontSizes[tier]);
-        if (pop == null) return;
-        var rt = pop.rectTransform;
+        RectTransform rt = NewDigits(_board.PreviewLayer, "+" + Num(points), BlockLayout.CellGainFontSizes[tier]);
         rt.anchoredPosition = _board.CellLocalPos(c, r) + UnityEngine.Random.insideUnitCircle * BlockLayout.CellGainJitter;
+        Vector3 size = rt.localScale;
         rt.localScale = Vector3.zero;
         float popIn = ClearPacing.CellPop * k, hold = ClearPacing.CellHold * k, fade = ClearPacing.CellExit * k;
-        _seq.Insert(at, rt.DOScale(1f, popIn).SetEase(Ease.OutBack));
-        _seq.Insert(at + popIn + hold, pop.DOFade(0f, fade));
-        _seq.InsertCallback(at + popIn + hold + fade, () => { if (pop != null) Object.Destroy(pop.gameObject); });
+        _seq.Insert(at, rt.DOScale(size, popIn).SetEase(Ease.OutBack));
+        _seq.Insert(at + popIn + hold, rt.GetComponent<CanvasGroup>().DOFade(0f, fade));
+        _seq.InsertCallback(at + popIn + hold + fade, () => { if (rt != null) Object.Destroy(rt.gameObject); });
     }
 
     // ─── 弃置 ────────────────────────────────────────────────────
@@ -353,17 +362,12 @@ public sealed class StepShowPlayer
 
     // ─── 小件 ────────────────────────────────────────────────────
 
-    private TMP_Text NewPop(RectTransform parent, string content, float fontSize)
+    /// <summary>一行得分字图(<see cref="ScoreDigits"/>),字号按 30 号票的四档折成墨迹高;记进临时节点。</summary>
+    private RectTransform NewDigits(RectTransform parent, string content, float fontSize)
     {
-        var pop = UIPartFactory.Create<TMP_Text>(_popPrefab, parent, nameof(StepShowPlayer));
-        if (pop == null) return null;   // 失败原因已由 UIPartFactory 记录
-        _temps.Add(pop.gameObject);
-        var rt = pop.rectTransform;
-        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
-        pop.text = content;
-        pop.fontSize = fontSize;
-        pop.raycastTarget = false;
-        return pop;
+        RectTransform rt = ScoreDigits.Create(parent, _fxAssets.Digits, content, fontSize * BlockLayout.CellGainInkPerFontSize);
+        _temps.Add(rt.gameObject);
+        return rt;
     }
 
     /// <summary>

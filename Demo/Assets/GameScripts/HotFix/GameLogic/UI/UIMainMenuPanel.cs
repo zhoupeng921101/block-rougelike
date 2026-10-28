@@ -33,7 +33,7 @@ public partial class UIMainMenuPanel : UIPanelMono
     private partial void OnClick_StartBtn()
     {
         _saved = null;
-        GameModule.UI.ShowUIAsync<UIBattlePanel>(RunLauncher.NewRun());
+        GameModule.UI.ShowUIAsync<UIBattlePanel>(new UIBattlePanel.Entry(RunLauncher.NewRun(), false));
     }
 
     /// <summary>接着打存档里那一局:战斗窗按状态全量刷新,不重放事件。</summary>
@@ -43,7 +43,7 @@ public partial class UIMainMenuPanel : UIPanelMono
         if (run == null) return;
         _saved = null;
         RunSaveService.Instance.Resume(run);
-        GameModule.UI.ShowUIAsync<UIBattlePanel>(run);
+        GameModule.UI.ShowUIAsync<UIBattlePanel>(new UIBattlePanel.Entry(run, true));
     }
 
     private partial void OnClick_LanguageBtn()

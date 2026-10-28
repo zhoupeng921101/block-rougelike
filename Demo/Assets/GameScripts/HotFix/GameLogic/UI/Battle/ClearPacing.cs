@@ -52,6 +52,27 @@ public static class ClearPacing
     /// <summary>最后一拍演完到结果浮层。</summary>
     public const float ResultDelay = 0.40f;
 
+    // ── 特效(32 号票):各件自身的动画曲线留在件里(动物乐园原值),这里只放它们挂在时间表上的时刻与震盘时长 ──
+
+    /// <summary>开盲注点亮 / 续玩扫描线:战斗窗打开到起播(等盘面布局就绪;动物乐园原值)。不锁托盘。</summary>
+    public const float OpenFx = 0.50f;
+
+    /// <summary>震盘时长,按档(Great / Excellent / Unbelievable),在这一步最后一条线的光束起播时震。待定标。</summary>
+    public const float ShakeGreat = 0.12f;
+
+    public const float ShakeExcellent = 0.20f;
+
+    public const float ShakeUnbelievable = 0.32f;
+
+    /// <summary>清屏庆祝波:以落子处为圆心按曼哈顿距离一圈圈迸碎块,相邻两圈的错峰(动物乐园原值)。被消格全部退场时起第一圈。</summary>
+    public const float AllClearWaveStep = 0.03f;
+
+    /// <summary>清屏方块雨:被消格全部退场到第一颗起落(动物乐园是庆祝波后 0.05 秒)。</summary>
+    public const float AllClearRain = 0.05f;
+
+    /// <summary>清屏整盘特效(db_CC / db_FHQP 轮播):被消格全部退场到起播(动物乐园是逐格扫完后约 0.3 秒)。</summary>
+    public const float AllClearBoardFx = 0.30f;
+
     /// <summary>转朝向后多久没再转就写档(23 号票,09 号票第 2 节的防抖)。不是演出时长,不除以 <see cref="Speed"/>。</summary>
     public const float RotationSaveDelay = 0.50f;
 

@@ -31,6 +31,12 @@ public sealed class BoardAreaPart : MonoBehaviour
     [Tooltip("消除预览的呼吸光带 prefab（AssetRaw/UI/Prefabs/Parts/ClearGlow.prefab）")]
     [SerializeField] private GameObject _clearGlowPrefab;
 
+    [Header("预览材质模板(代码克隆后改参数;占位,见 Effects/ZooPlaceholder/占位登记表.md)")]
+    [Tooltip("光带的描边辉光（Effects/ZooPlaceholder/Shaders/UI_GlowCell.mat）")]
+    [SerializeField] private Material _glowCellMat;
+    [Tooltip("被消块的提亮（Effects/ZooPlaceholder/Shaders/UI_Brighten.mat）")]
+    [SerializeField] private Material _brightenMat;
+
     private BoardGeometry _geo;
     private BoardCellRenderer _cells;
     private BoardPreviewLayer _preview;
@@ -42,8 +48,14 @@ public sealed class BoardAreaPart : MonoBehaviour
     private void Awake()
     {
         _geo = new BoardGeometry(rectTransform, m_grid_CellBg);
-        _cells = new BoardCellRenderer(_geo, m_rect_CellLayer, _blockPrefab);
-        _preview = new BoardPreviewLayer(_geo, m_rect_PreviewLayer, _blockPrefab, _clearFillPrefab, _clearGlowPrefab);
+        _cells = new BoardCellRenderer(_geo, m_rect_CellLayer, _blockPrefab, _brightenMat);
+        _preview = new BoardPreviewLayer(_geo, m_rect_PreviewLayer, _blockPrefab, _clearFillPrefab, _clearGlowPrefab, _glowCellMat);
+    }
+
+    private void OnDestroy()
+    {
+        _cells.DestroyMaterials();
+        _preview.DestroyMaterials();
     }
 
     /// <summary>按局面全量重画盘面。</summary>
@@ -105,8 +117,11 @@ public sealed class BoardAreaPart : MonoBehaviour
         return part;
     }
 
-    /// <summary>预览层:在盘面格之上、与盘面同坐标系。结算演出的「+k」跳字挂在这里。</summary>
+    /// <summary>预览层:在盘面格之上、与盘面同坐标系。结算演出的「+k」跳字挂在这里;特效层插在它下面(<see cref="BattleFxDirector"/>)。</summary>
     public RectTransform PreviewLayer => m_rect_PreviewLayer;
+
+    /// <summary>一格方块的模板。清屏方块雨拿它当雨滴(<see cref="AllClearRainFx"/>)。</summary>
+    public GameObject BlockPrefab => _blockPrefab;
 
     // ─── 虚影与消除预览(正本 = BoardPreviewLayer)───────────────
 

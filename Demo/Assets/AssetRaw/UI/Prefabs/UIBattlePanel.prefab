@@ -7314,7 +7314,47 @@ MonoBehaviour:
   m_part_TrayArea: {fileID: 537671325450301301}
   m_part_Discard: {fileID: 600164367687511040}
   m_part_Badge: {fileID: 8517213414150091807}
-  _scorePopPrefab: {fileID: 4618216119531345761, guid: 9c30a208850dcb54bbeb43a8a414af00, type: 3}
+  _fxAssets:
+    ClearLine: {fileID: 8838293735434653763, guid: da9cfdcd77d9e4b409a282caf4c1b36e, type: 3}
+    ClearLineRainbow: {fileID: 1248346137657967480, guid: 7efbb13a3ca6d91448d7ad631102270b, type: 3}
+    BoardClearA: {fileID: 3490472105201019977, guid: f72b273146b1444489d1417fb7ff48db, type: 3}
+    BoardClearB: {fileID: 3477674498991530191, guid: 1bc401c95f28c0243817a94a8d8ac95f, type: 3}
+    BoardOpen: {fileID: 7519413460619071365, guid: 70ab7922b095c11428e8d029aa921402, type: 3}
+    BoardSweep: {fileID: 2208152152185987193, guid: c87939f92cc9ad446baf5726c85e0cb5, type: 3}
+    LandRing: {fileID: 3728435555976712368, guid: f5118841bad1ecd45b240f6340937580, type: 3}
+    ClearBurst: {fileID: 4519818963187576972, guid: 612ef4aed360f8b438afcfcf8b757a70, type: 3}
+    PlaceBurst: {fileID: 4519818963187576972, guid: 3df9cec81cb70b04d8fbb2d75e9aae1f, type: 3}
+    GlowSoft: {fileID: 21300000, guid: 006da3a5034d82146acd0b8b9252275b, type: 3}
+    TierStar: {fileID: 21300000, guid: 499e47dd56b777a4baa6e88cb91e0c46, type: 3}
+    TierWords:
+    - {fileID: 21300000, guid: af0de006a3eef0f4791ff660f1287c7a, type: 3}
+    - {fileID: 21300000, guid: 11398a93828e0054caf28b2136921b13, type: 3}
+    - {fileID: 21300000, guid: cef341032df822944b354721c08773bf, type: 3}
+    - {fileID: 21300000, guid: ad8c05c8489118a4cb3b4148c79dfa64, type: 3}
+    - {fileID: 21300000, guid: 3214a39b457111b43a26a9db2d0e2d15, type: 3}
+    - {fileID: 21300000, guid: 1a5ba500785bc0a43bb1e2039da8553b, type: 3}
+    - {fileID: 21300000, guid: 44eb9578a21df1049a322ca9eb8cfd2a, type: 3}
+    - {fileID: 21300000, guid: e457d6105841fca41b8f1cc3167de9f3, type: 3}
+    - {fileID: 21300000, guid: c093f3333bb194444acf4b0f8fe047db, type: 3}
+    - {fileID: 21300000, guid: 0d37ab029bded6b4496946cb18e7045c, type: 3}
+    - {fileID: 21300000, guid: aaf2483100805de4f9f5dbded1e9afc6, type: 3}
+    - {fileID: 21300000, guid: adb2be7351ea2ca4c86dee6a71fff28b, type: 3}
+    - {fileID: 21300000, guid: 68ba82358e7429c4d8ee295dc94b82db, type: 3}
+    - {fileID: 21300000, guid: 3b90e1973e48bda4c8f3652926575f63, type: 3}
+    - {fileID: 21300000, guid: a5a82f6b18807fc4c8c80dc5bcbdbb5f, type: 3}
+    - {fileID: 21300000, guid: 2cdfadcb8be11d74a8918488c77c3a3d, type: 3}
+    Digits:
+    - {fileID: 21300000, guid: d141072876314ed4bb9939fe95ec7cb3, type: 3}
+    - {fileID: 21300000, guid: 20adc3f7bee2aad409eb75dd7afa6211, type: 3}
+    - {fileID: 21300000, guid: 855abc8f1f095de4ebcab9a4b11827ba, type: 3}
+    - {fileID: 21300000, guid: 9dbc1a1afe7c10f4098b3ad568e58848, type: 3}
+    - {fileID: 21300000, guid: ef8b0d868682aa64991073573795d34d, type: 3}
+    - {fileID: 21300000, guid: a1895a6e862c67f429a1601e29707865, type: 3}
+    - {fileID: 21300000, guid: e000efefe872d2d4e9ca35d8e445d551, type: 3}
+    - {fileID: 21300000, guid: f1ab23080e1d0f24980189bd2f05c032, type: 3}
+    - {fileID: 21300000, guid: 1f460f531aa577741a74ec65519b3c8b, type: 3}
+    - {fileID: 21300000, guid: cee97921764ed72489b2277148adc512, type: 3}
+    - {fileID: 21300000, guid: 659fb260a7c6deb45ba709ff5c043610, type: 3}
 --- !u!1 &6466927157938336534
 GameObject:
   m_ObjectHideFlags: 0
@@ -8790,6 +8830,8 @@ MonoBehaviour:
   _blockPrefab: {fileID: 1641785010473405477, guid: 206d107f0c61aa04885b91105139e52e, type: 3}
   _clearFillPrefab: {fileID: 3584861027283312272, guid: 9703d5a68833f62448881bef920f2a6a, type: 3}
   _clearGlowPrefab: {fileID: 4332681187652180305, guid: 3ab8c950ab334684c8ee6fa5c6fcd859, type: 3}
+  _glowCellMat: {fileID: 2100000, guid: 22f3537b5eff459187b6da3d38101f6d, type: 2}
+  _brightenMat: {fileID: 2100000, guid: 7f435a9f9b2148e99960aa8b2de6123e, type: 2}
 --- !u!1 &7720741344880914949
 GameObject:
   m_ObjectHideFlags: 0

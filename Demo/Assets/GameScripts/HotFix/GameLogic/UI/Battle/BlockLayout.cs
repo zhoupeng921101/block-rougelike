@@ -52,6 +52,11 @@ public static class BlockLayout
     /// <summary>「+k」跳字的字号,按点数 1–4 分四档(21 号票第 2 节:4 点的格一眼能看出来);超过 4 点按第四档。</summary>
     public static readonly float[] CellGainFontSizes = { 30f, 36f, 44f, 54f };
 
+    /// <summary>
+    /// 「+k」与飞分是得分字图(<see cref="ScoreDigits"/>,32 号票),字号沿用上面四档:墨迹高 = 字号 × 本值(TMP 字号是 em 高,数字约占七成)。
+    /// </summary>
+    public const float CellGainInkPerFontSize = 0.72f;
+
     /// <summary>「+k」在格心周围的随机抖动半径(设计像素),随机用 UnityEngine.Random,不碰规则核心的流(08 号票)。</summary>
     public const float CellGainJitter = 6f;
 
@@ -64,10 +69,29 @@ public static class BlockLayout
     /// <summary>块缩进弃置区时的终止缩放。</summary>
     public const float DiscardShrinkEndScale = 0.15f;
 
+    // ── 特效尺寸(32 号票;时刻在 ClearPacing)──
+
+    /// <summary>震盘幅度(设计像素),按档 Great / Excellent / Unbelievable。待定标:动物乐园连击震 14、爆炸震 10。</summary>
+    public const float ShakeGreat = 8f;
+
+    public const float ShakeExcellent = 12f;
+
+    public const float ShakeUnbelievable = 16f;
+
+    /// <summary>震盘抖动密度(DOTween 按 时长 × 本值 取关键点;动物乐园连击震的值)。</summary>
+    public const int ShakeVibrato = 30;
+
+    /// <summary>评价字的大写墨迹高(格;动物乐园原值,最长的 Unbelievable! 约占盘宽 0.78)。</summary>
+    public const float TierWordInkCells = 0.67f;
+
+    /// <summary>飞分落点星环的外径(设计像素):动物乐园按一格视觉边长的两倍铺,这里取 2 × 76。</summary>
+    public const float LandRingWidth = 152f;
+
     /// <summary>消除预览:将被消的行列上盖一层半透明填充,外加一条呼吸的光带。</summary>
     public static readonly Color ClearPreviewFillColor = new Color32(0x5e, 0xe7, 0xff, 0x2e);
 
-    public static readonly Color ClearPreviewGlowColor = new Color32(0x5e, 0xe7, 0xff, 0x80);
+    /// <summary>光带基色。UI_GlowCell 按到行边的距离再乘一道衰减,alpha 取动物乐园同一档(≈0.88),纯色条时代的 0x80 换上辉光后太淡。</summary>
+    public static readonly Color ClearPreviewGlowColor = new Color32(0x5e, 0xe7, 0xff, 0xE0);
 
     /// <summary>七种骨牌的占位色,下标 = (int)<see cref="TetrominoKind"/>。取自 13 号票线框。</summary>
     private static readonly Color[] KindColors =
@@ -83,6 +107,9 @@ public static class BlockLayout
 
     /// <summary>死格的颜色。本图没有死格的来源,规则核心留着钩子(05 号票)。</summary>
     public static readonly Color DeadCellColor = new Color32(0x05, 0x07, 0x0d, 0xFF);
+
+    /// <summary>骨牌种类数(占位色的个数)。</summary>
+    public static int KindCount => KindColors.Length;
 
     public static Color ColorOf(TetrominoKind kind)
     {

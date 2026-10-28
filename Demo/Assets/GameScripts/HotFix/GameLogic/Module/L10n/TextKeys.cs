@@ -22,7 +22,6 @@ public static class TextKeys
     public static class Battle
     {
         public const string BlindNormal = "ui.battle.blind_normal";
-        public const string CellGain = "ui.battle.cell_gain";
         public const string Discard = "ui.battle.discard";
         public const string DiscardDrop = "ui.battle.discard_drop";
         public const string DiscardLeft = "ui.battle.discard_left";

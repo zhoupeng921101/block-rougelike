@@ -8,7 +8,7 @@ using UnityEngine.UI;
 ///
 /// 三个池都挂在预览层(与盘面层同尺寸同坐标系),用格心坐标定位,故「虚影格 = 盘上格的视觉位置」。
 /// 层内次序(填充 &lt; 光带)靠创建先后 + 各自置顶维持;跨层次序(方块格 &lt; 预览)由 prefab 的层节点次序固定。
-/// 光带在 block-client 用 UI_GlowCell 材质画描边辉光,那个 shader 还没搬(要先确认来源),本图是默认材质的纯色条加呼吸。
+/// 光带用 UI_GlowCell 材质画描边辉光(32 号票从动物乐园搬来,团队自写):横带、竖带各克隆一份模板材质,只差 _Vertical。
 /// </summary>
 public sealed class BoardPreviewLayer
 {
@@ -19,16 +19,22 @@ public sealed class BoardPreviewLayer
     private readonly GameObject _blockPrefab;
     private readonly GameObject _fillPrefab;
     private readonly GameObject _glowPrefab;
+    private readonly Material _glowTemplate;
 
+    /// <param name="glowTemplate">UI_GlowCell 的模板材质(盘面区序列化持有,shader 随它进包);横带、竖带各克隆一份。</param>
     public BoardPreviewLayer(BoardGeometry geo, RectTransform previewLayer, GameObject blockPrefab,
-        GameObject fillPrefab, GameObject glowPrefab)
+        GameObject fillPrefab, GameObject glowPrefab, Material glowTemplate)
     {
         _geo = geo;
         _previewLayer = previewLayer;
         _blockPrefab = blockPrefab;
         _fillPrefab = fillPrefab;
         _glowPrefab = glowPrefab;
+        _glowTemplate = glowTemplate;
     }
+
+    private Material _glowMatRow;
+    private Material _glowMatCol;
 
     // 一块四格骨牌的虚影最多 4 格。
     private readonly BlockPart[] _ghostPool = new BlockPart[Tetromino.CellCount];
@@ -54,6 +60,13 @@ public sealed class BoardPreviewLayer
     /// <summary>建池。宿主开窗时调一次。</summary>
     public void InitPools()
     {
+        // 光带比真实行/列宽(BandScale 倍),shader 按 _CoreFrac 找真实行的两条边,从边上往两侧晕开
+        _glowMatRow = new Material(_glowTemplate);
+        _glowMatRow.SetFloat("_Vertical", 0f);
+        _glowMatRow.SetFloat("_CoreFrac", 1f / BandScale);
+        _glowMatCol = new Material(_glowMatRow);
+        _glowMatCol.SetFloat("_Vertical", 1f);
+
         for (int i = 0; i < _ghostPool.Length; i++)
         {
             // 用盘面方块同一个模板:虚影就是「落下后那块」的半透明版
@@ -138,18 +151,19 @@ public sealed class BoardPreviewLayer
 
         if (rows != null)
             for (int i = 0; i < rows.Count; i++)
-                ShowBand(new Vector2(boardSpan, bandThick), new Vector2(boardCenterX, _geo.CellLocalPos(0, rows[i]).y));
+                ShowBand(_glowMatRow, new Vector2(boardSpan, bandThick), new Vector2(boardCenterX, _geo.CellLocalPos(0, rows[i]).y));
         if (cols != null)
             for (int i = 0; i < cols.Count; i++)
-                ShowBand(new Vector2(bandThick, boardSpan), new Vector2(_geo.CellLocalPos(cols[i], 0).x, boardCenterY));
+                ShowBand(_glowMatCol, new Vector2(bandThick, boardSpan), new Vector2(_geo.CellLocalPos(cols[i], 0).x, boardCenterY));
     }
 
-    private void ShowBand(Vector2 size, Vector2 pos)
+    private void ShowBand(Material mat, Vector2 size, Vector2 pos)
     {
         if (_glowUsed >= _glowPool.Length) return;
         var img = _glowPool[_glowUsed];
         var pulse = _glowPulses[_glowUsed];
         _glowUsed++;
+        img.material = mat;
         img.rectTransform.sizeDelta = size;
         img.rectTransform.anchoredPosition = pos;
         img.transform.SetAsLastSibling();
@@ -182,6 +196,13 @@ public sealed class BoardPreviewLayer
         glow = line >= 0 && line < _glowUsed ? _glowPool[line] : null;
         pulse = glow != null ? _glowPulses[line] : null;
         return fill != null && glow != null;
+    }
+
+    /// <summary>运行时克隆的光带材质随盘面区销毁。</summary>
+    public void DestroyMaterials()
+    {
+        if (_glowMatRow != null) Object.Destroy(_glowMatRow);
+        if (_glowMatCol != null) Object.Destroy(_glowMatCol);
     }
 
     /// <summary>收起全部虚影、填充与光带(拖动换格、落子、取消时调)。</summary>

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a1982af561edc1419967f65cca847f6, type: 3}
+  m_Name: db_FHQPD_Data
+  m_EditorClassIdentifier: DragonBones::DragonBones.UnityDragonBonesData
+  dataName: db_FHQPD
+  dragonBonesJSON: {fileID: 4900000, guid: a74f52ed94fd3d847a716bb2f7962753, type: 3}
+  textureAtlas:
+  - textureAtlasJSON: {fileID: 4900000, guid: 6e2ce4740c779684cae382d9867a34a8, type: 3}
+    texture: {fileID: 2800000, guid: 8ed82628c7652a54e9b3880b025521a3, type: 3}
+    material: {fileID: 0}
+    uiMaterial: {fileID: 2100000, guid: bd073a2f169100d48988e0f4f32d2595, type: 2}
