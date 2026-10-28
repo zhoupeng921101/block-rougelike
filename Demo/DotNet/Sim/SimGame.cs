@@ -30,7 +30,7 @@ namespace GameRules.Sim
         }
 
         /// <summary>
-        /// 走一步并写进轨迹。步数到了上限还没结束,或者策略给的动作被拒,都抛:前者是规则核心没能结束这一局,后者是策略写错了。
+        /// 走一步并写进轨迹(trace 为 null 时不写,批量模式用)。步数到了上限还没结束,或者策略给的动作被拒,都抛:前者是规则核心没能结束这一局,后者是策略写错了。
         /// </summary>
         public static StepResult PlayStep(RunState run, ISimPolicy policy, TraceWriter trace)
         {
@@ -47,7 +47,7 @@ namespace GameRules.Sim
             {
                 throw new InvalidOperationException(Invariant($"种子 {run.Seed}、策略 {policy.Name}:第 {run.Blind.Step + 1} 步 {move.Kind} inst={move.InstanceId} 被拒({result.Reject})"));
             }
-            trace.Step(move, result);
+            trace?.Step(move, result);
             return result;
         }
 
