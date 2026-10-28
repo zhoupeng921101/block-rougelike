@@ -1,0 +1,5 @@
+[
+ {"prompt_file": "定稿词/背景_v1.txt", "final": true, "family": "bg",
+  "refs": ["成品/战斗界面_v3A.png"],
+  "out": "出图/背景_v1.png"}
+]
