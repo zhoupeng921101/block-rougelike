@@ -1,8 +1,11 @@
 # 24 · Unity 侧的确定性复核
 
 Type: wayfinder:grilling
-Status: open
+Status: claimed
+Claimed by: unity-determinism
 Blocked by: 17, 23
+
+> **提前开工**（2026-10-28 用户裁定）：23 的代码已在 main（de292bac、b9a1d3c5），Windows 包能写出存档，只差真输入手测、票仍 claimed。用户决定不等手测先派本票。
 
 ## Question
 
