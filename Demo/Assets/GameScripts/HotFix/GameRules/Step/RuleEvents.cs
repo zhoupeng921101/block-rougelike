@@ -93,14 +93,15 @@ namespace GameRules
         public ClearType Type { get; }
         public int Level { get; }
         public long Chips { get; }
-        public long Mult { get; }
+        /// <summary>倍率千分值,1000 = 1。</summary>
+        public long MultPermille { get; }
 
-        internal BaseApplied(ClearType type, int level, long chips, long mult)
+        internal BaseApplied(ClearType type, int level, long chips, long multPermille)
         {
             Type = type;
             Level = level;
             Chips = chips;
-            Mult = mult;
+            MultPermille = multPermille;
         }
     }
 
@@ -159,12 +160,12 @@ namespace GameRules
         public long AddMult { get; }
         public long XMultPermille { get; }
 
-        /// <summary>结算到这里时三区的累计值,表现层拿来跳数字。</summary>
+        /// <summary>结算到这里时两个累加器的值,表现层拿来跳数字。</summary>
         public long Chips { get; }
-        public long Mult { get; }
-        public long XMultTotal { get; }
+        /// <summary>倍率千分值,1000 = 1。</summary>
+        public long MultPermille { get; }
 
-        internal EffectApplied(EffectSource source, int sourceIndex, int cell, EffectDelta delta, long chips, long mult, long xMultTotal)
+        internal EffectApplied(EffectSource source, int sourceIndex, int cell, EffectDelta delta, long chips, long multPermille)
         {
             Source = source;
             SourceIndex = sourceIndex;
@@ -173,28 +174,26 @@ namespace GameRules
             AddMult = delta.AddMult;
             XMultPermille = delta.XMultPermille;
             Chips = chips;
-            Mult = mult;
-            XMultTotal = xMultTotal;
+            MultPermille = multPermille;
         }
     }
 
     public sealed class ScoreBooked : RuleEvent
     {
         public long Chips { get; }
-        public long Mult { get; }
-        public long XMultPermille { get; }
+        /// <summary>倍率千分值,1000 = 1。</summary>
+        public long MultPermille { get; }
 
-        /// <summary>这次的得分 = ⌊max(Chips,0) × max(Mult,0) × XMultPermille / 1000⌋。</summary>
+        /// <summary>这次的得分 = ⌊max(Chips,0) × max(MultPermille,0) / 1000⌋。</summary>
         public long Gain { get; }
 
         /// <summary>入账后的累计分。</summary>
         public long Total { get; }
 
-        internal ScoreBooked(long chips, long mult, long xMultPermille, long gain, long total)
+        internal ScoreBooked(long chips, long multPermille, long gain, long total)
         {
             Chips = chips;
-            Mult = mult;
-            XMultPermille = xMultPermille;
+            MultPermille = multPermille;
             Gain = gain;
             Total = total;
         }

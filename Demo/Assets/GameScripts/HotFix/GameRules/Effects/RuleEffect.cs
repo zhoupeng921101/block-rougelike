@@ -16,8 +16,8 @@ namespace GameRules
     }
 
     /// <summary>
-    /// 钩子返回的一项效果:+底分、+倍率、×独立倍率(千分值)。管线按这个字段序结算:先加底分、再加倍率、最后乘独立倍率(07 号票 §5)。
-    /// 独立倍率存的是相对 ×1 的偏移,所以 <c>default</c> 就是「无效果」,不会误乘 ×0。
+    /// 钩子返回的一项效果:+底分、+倍率、×倍率(千分值)。管线按这个字段序结算:先加底分、再加倍率、最后当场乘入倍率(规则 §3.1)。
+    /// 乘项存的是相对 ×1 的偏移,所以 <c>default</c> 就是「无效果」,不会误乘 ×0。
     /// </summary>
     public readonly struct EffectDelta
     {
@@ -34,7 +34,7 @@ namespace GameRules
 
         public EffectDelta(long addChips, long addMult, long xMultPermille)
         {
-            if (xMultPermille < 0) throw new ArgumentOutOfRangeException(nameof(xMultPermille), xMultPermille, "独立倍率的乘项须 ≥ 0");
+            if (xMultPermille < 0) throw new ArgumentOutOfRangeException(nameof(xMultPermille), xMultPermille, "倍率的乘项须 ≥ 0");
             AddChips = addChips;
             AddMult = addMult;
             _xMultOffset = xMultPermille - ScoreMath.PermilleOne;

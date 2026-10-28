@@ -32,7 +32,7 @@ namespace GameRules
         /// <summary>这一步是落子还是弃置。</summary>
         public StepKind Step { get; }
 
-        /// <summary>这一步有没有消除。没有时 Type、各列表、三区都没有意义,只会走到步收尾。</summary>
+        /// <summary>这一步有没有消除。没有时 Type、各列表、两个累加器都没有意义,只会走到步收尾。</summary>
         public bool HasClear { get; internal set; }
 
         public ClearType Type { get; internal set; }
@@ -63,12 +63,12 @@ namespace GameRules
         /// <summary>当前格第几遍:0 是本遍,1 起是重触发。</summary>
         public int Repetition { get; internal set; }
 
-        /// <summary>三区到这里为止的累计值。结算后是入账时的值。</summary>
+        /// <summary>两个累加器到这里为止的累计值。结算后是入账时的值。</summary>
         public long Chips { get; internal set; }
 
-        public long Mult { get; internal set; }
+        /// <summary>倍率千分值,1000 = 1。</summary>
+        public long MultPermille { get; internal set; }
 
-        public long XMultPermille { get; internal set; }
 
         /// <summary>这次的得分,结算后才有。</summary>
         public long Gain { get; internal set; }

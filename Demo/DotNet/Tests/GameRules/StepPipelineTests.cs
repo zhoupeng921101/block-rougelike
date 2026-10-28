@@ -117,7 +117,7 @@ namespace GameRules.Tests
             }
 
             ScoreBooked booked = step.Single<ScoreBooked>();
-            Assert.AreEqual(4 + steelCells.Count, booked.Mult);
+            Assert.AreEqual((4 + steelCells.Count) * 1000, booked.MultPermille);
             Assert.AreEqual(50 + scored.Sum(s => (long)s.Points), booked.Chips);
         }
 
@@ -155,7 +155,7 @@ namespace GameRules.Tests
 
             ScoreBooked booked = step.Single<ScoreBooked>();
             Assert.AreEqual(60 + 4 * 2 * 2 + 4 * 3, booked.Chips);
-            Assert.AreEqual(4 + 8, booked.Mult);
+            Assert.AreEqual(12000, booked.MultPermille);
             Assert.AreEqual(88 * 12, booked.Gain);
         }
 
@@ -172,8 +172,8 @@ namespace GameRules.Tests
             StepResult step = ClearRowSevenWithTwoI(run, run.Blind.Tray[0].Id);
             List<EffectApplied> genes = step.Of<EffectApplied>();
             Assert.AreEqual(2, genes.Count);
-            Assert.AreEqual((EffectSource.Gene, 0, -1, 2L, 6L, 1000L), (genes[0].Source, genes[0].SourceIndex, genes[0].Cell, genes[0].AddMult, genes[0].Mult, genes[0].XMultTotal));
-            Assert.AreEqual((EffectSource.Gene, 1, -1, 1500L, 1500L), (genes[1].Source, genes[1].SourceIndex, genes[1].Cell, genes[1].XMultPermille, genes[1].XMultTotal));
+            Assert.AreEqual((EffectSource.Gene, 0, -1, 2L, 6000L), (genes[0].Source, genes[0].SourceIndex, genes[0].Cell, genes[0].AddMult, genes[0].MultPermille));
+            Assert.AreEqual((EffectSource.Gene, 1, -1, 1500L, 9000L), (genes[1].Source, genes[1].SourceIndex, genes[1].Cell, genes[1].XMultPermille, genes[1].MultPermille));
             Assert.Greater(IndexOf(step, genes[0]), IndexOf(step, step.Of<CellScored>().Last()));
             Assert.Less(IndexOf(step, genes[1]), IndexOf(step, step.Single<ScoreBooked>()));
             Assert.AreEqual(68 * 6 * 3 / 2, step.Single<ScoreBooked>().Gain);
@@ -231,21 +231,21 @@ namespace GameRules.Tests
             var chain = new List<long>();
             for (int i = 0; i < 3; i++) chain.Add(c = ScoreMath.MulPermille(c, 1333));
             CollectionAssert.AreEqual(new[] { 1333L, 1776L, 2367L }, chain, "每乘一项向下取整到千分位");
-            Assert.AreEqual(931, ScoreMath.Gain(69, 4, 3375), "⌊69 × 4 × 3.375⌋ = ⌊931.5⌋");
+            Assert.AreEqual(931, ScoreMath.Gain(69, 13500), "⌊69 × 4 × 3.375⌋ = ⌊931.5⌋");
         }
 
         [Test]
         public void ScoreMath_ClampsNegativesAndSaturates()
         {
-            Assert.AreEqual(0, ScoreMath.Gain(-5, 3, 1000));
-            Assert.AreEqual(0, ScoreMath.Gain(5, -3, 1000));
-            Assert.AreEqual(0, ScoreMath.Gain(-5, -3, 1000), "负负不得正:A、B 各自按 0 截");
-            Assert.AreEqual(long.MaxValue, ScoreMath.Gain(long.MaxValue / 2, 3, 1000));
-            Assert.AreEqual(long.MaxValue, ScoreMath.Gain(long.MaxValue, long.MaxValue, ScoreMath.XMultCap));
+            Assert.AreEqual(0, ScoreMath.Gain(-5, 3000));
+            Assert.AreEqual(0, ScoreMath.Gain(5, -3000));
+            Assert.AreEqual(0, ScoreMath.Gain(-5, -3000), "负负不得正:A、B 各自按 0 截");
+            Assert.AreEqual(long.MaxValue, ScoreMath.Gain(long.MaxValue / 2, 3000));
+            Assert.AreEqual(long.MaxValue, ScoreMath.Gain(long.MaxValue, long.MaxValue));
             Assert.AreEqual(long.MaxValue, ScoreMath.Add(long.MaxValue, 1));
             Assert.AreEqual(long.MinValue, ScoreMath.Add(long.MinValue, -1));
-            Assert.AreEqual(ScoreMath.XMultCap, ScoreMath.MulPermille(ScoreMath.XMultCap, 2000));
-            Assert.AreEqual(ScoreMath.XMultCap, ScoreMath.MulPermille(1000, long.MaxValue));
+            Assert.AreEqual(long.MaxValue, ScoreMath.MulPermille(long.MaxValue, 2000));
+            Assert.AreEqual(long.MaxValue, ScoreMath.MulPermille(1000, long.MaxValue));
             Assert.Throws<ArgumentOutOfRangeException>(() => ScoreMath.MulPermille(1000, -1));
             Assert.Throws<ArgumentOutOfRangeException>(() => new EffectDelta(0, 0, -1));
             Assert.IsTrue(default(EffectDelta).IsEmpty);
@@ -262,7 +262,7 @@ namespace GameRules.Tests
             foreach (int gene in new[] { 1, 9, 9, 9 }) run.AddGene(gene);
 
             ScoreBooked booked = ClearRowSevenWithTwoI(run, run.Blind.Tray[0].Id).Single<ScoreBooked>();
-            Assert.AreEqual((69L, 4L, 3375L, 931L, 931L), (booked.Chips, booked.Mult, booked.XMultPermille, booked.Gain, booked.Total));
+            Assert.AreEqual((69L, 13500L, 931L, 931L), (booked.Chips, booked.MultPermille, booked.Gain, booked.Total));
         }
 
         [TestCase(-1000, 0)]
@@ -274,7 +274,7 @@ namespace GameRules.Tests
             run.AddGene(1);
 
             ScoreBooked booked = ClearRowSevenWithTwoI(run, run.Blind.Tray[0].Id).Single<ScoreBooked>();
-            Assert.That(booked.Chips < 0 || booked.Mult < 0);
+            Assert.That(booked.Chips < 0 || booked.MultPermille < 0);
             Assert.AreEqual(0, booked.Gain);
             Assert.AreEqual(0, booked.Total);
             Assert.AreEqual(0, run.Blind.Score);
@@ -291,6 +291,52 @@ namespace GameRules.Tests
             ScoreBooked booked = step.Single<ScoreBooked>();
             Assert.AreEqual((long.MaxValue, long.MaxValue, long.MaxValue), (booked.Chips, booked.Gain, booked.Total));
             Assert.AreEqual(BlindOutcome.Won, step.Single<BlindEnded>().Outcome);
+        }
+
+        [TestCase(false, 28000, 1904)]
+        [TestCase(true, 18000, 1224)]
+        public void GeneOrder_ChangesWhichAdditionsAreMultiplied(bool multiplyFirst, long mult, long gain)
+        {
+            var effects = new EffectRegistry()
+                .Register(EffectSource.Gene, 1, new GeneDelta(EffectDelta.Mult(10)))
+                .Register(EffectSource.Gene, 2, new GeneDelta(EffectDelta.XMult(2000)));
+            RunState run = TestRules.Started(TestRules.Config(effects, TestRules.Repeat(2, TetrominoKind.I)), TestRules.Spec(Unreachable));
+            run.AddGene(multiplyFirst ? 2 : 1);
+            run.AddGene(multiplyFirst ? 1 : 2);
+            ScoreBooked booked = ClearRowSevenWithTwoI(run, run.Blind.Tray[0].Id).Single<ScoreBooked>();
+            Assert.AreEqual(mult, booked.MultPermille);
+            Assert.AreEqual(gain, booked.Gain);
+        }
+
+        [Test]
+        public void CombinedDelta_AddsBeforeMultiplying_AndNegativeMultClampsAtMultiply()
+        {
+            var effects = new EffectRegistry()
+                .Register(EffectSource.Gene, 1, new GeneDelta(new EffectDelta(0, -10, 1000)))
+                .Register(EffectSource.Gene, 2, new GeneDelta(EffectDelta.XMult(2000)))
+                .Register(EffectSource.Gene, 3, new GeneDelta(new EffectDelta(1, 3, 1500)));
+            RunState run = TestRules.Started(TestRules.Config(effects, TestRules.Repeat(2, TetrominoKind.I)), TestRules.Spec(Unreachable));
+            foreach (int gene in new[] { 1, 2, 3 }) run.AddGene(gene);
+            StepResult step = ClearRowSevenWithTwoI(run, run.Blind.Tray[0].Id);
+            CollectionAssert.AreEqual(new long[] { -6000, 0, 4500 }, step.Of<EffectApplied>().Select(e => e.MultPermille));
+            Assert.AreEqual(310, step.Single<ScoreBooked>().Gain);
+        }
+
+        [Test]
+        public void PermilleArithmetic_MatchesUnboundedIntegerReference()
+        {
+            long[] values = { 0, 1, 999, 1000, 1333, 999999, long.MaxValue / 1000, long.MaxValue / 2, long.MaxValue };
+            foreach (long a in values)
+            foreach (long b in values)
+            {
+                System.Numerics.BigInteger exact = (System.Numerics.BigInteger)a * b / 1000;
+                long expected = exact > long.MaxValue ? long.MaxValue : (long)exact;
+                Assert.AreEqual(expected, ScoreMath.Gain(a, b), $"{a} * {b} / 1000");
+                Assert.AreEqual(expected, ScoreMath.MulPermille(a, b));
+            }
+            Assert.AreEqual(long.MaxValue, ScoreMath.ToPermille(long.MaxValue));
+            Assert.AreEqual(long.MinValue, ScoreMath.ToPermille(long.MinValue));
+            Assert.AreEqual(-3000, ScoreMath.ToPermille(-3));
         }
 
         // ---- 胜负 ----

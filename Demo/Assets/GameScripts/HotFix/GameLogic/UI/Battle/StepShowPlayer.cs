@@ -204,7 +204,7 @@ public sealed class StepShowPlayer
         box.transform.SetAsLastSibling();
         ClearTypeRowPart row = box.Row;
         row.SetHighlight(false);
-        row.SetChipsMult(baseApplied.Chips, baseApplied.Mult);
+        row.SetChipsMult(baseApplied.Chips, baseApplied.MultPermille);
         PlaceTallyBox(box, placed.Cells);
 
         // 逐格段:每拍弹「+k」、计数框底分跳一下,格在它自己的最后一拍退场
@@ -212,7 +212,7 @@ public sealed class StepShowPlayer
         {
             int r = BoardCells.RowOf(beat.Cell), c = BoardCells.ColOf(beat.Cell);
             if (beat.Kind == ClearBeatKind.Cell) PopCellGain(r, c, beat.Points, beat.Time, k);
-            long chips = beat.Chips, mult = beat.Mult;
+            long chips = beat.Chips, mult = beat.MultPermille;
             _seq.InsertCallback(beat.Time, () => row.SetChipsMult(chips, mult));
             _seq.Insert(beat.Time, Bump(row.ChipsText.transform, ClearPacing.TallyBump * k));
             if (!beat.Exits) continue;

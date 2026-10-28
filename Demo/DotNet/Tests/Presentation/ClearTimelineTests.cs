@@ -44,7 +44,7 @@ namespace GameRules.Tests
             CollectionAssert.AreEqual(scored.Select(s => s.Cell), t.Beats.Select(x => x.Cell));
             CollectionAssert.AreEqual(scored.Select(s => s.Chips), t.Beats.Select(x => x.Chips));
             CollectionAssert.AreEqual(scored.Select(s => s.Points), t.Beats.Select(x => x.Points));
-            Assert.That(t.Beats, Has.All.Matches<ClearBeat>(x => x.Mult == b.Mult), "本图倍率在逐格段里不变");
+            Assert.That(t.Beats, Has.All.Matches<ClearBeat>(x => x.MultPermille == b.MultPermille), "本图倍率在逐格段里不变");
             for (int i = 1; i < t.Beats.Count; i++) Assert.AreEqual(0.06f, t.Beats[i].Time - t.Beats[i - 1].Time, Eps);
         }
 

@@ -89,9 +89,8 @@ namespace GameRules
             // #7 读底注
             ClearTypeBase b = run.BaseOf(type);
             ctx.Chips = b.Chips;
-            ctx.Mult = b.Mult;
-            ctx.XMultPermille = ScoreMath.PermilleOne;
-            events.Add(new BaseApplied(type, run.LevelOf(type), b.Chips, b.Mult));
+            ctx.MultPermille = ScoreMath.ToPermille(b.Mult);
+            events.Add(new BaseApplied(type, run.LevelOf(type), b.Chips, ctx.MultPermille));
 
             // #8 逐格段:每格先问齐重触发次数,再把这一格的整段连走 1 + n 遍,走完才到下一格(07 §2)
             var sources = new List<(EffectSource Source, int Index, RuleEffect Effect)>();
@@ -135,10 +134,10 @@ namespace GameRules
             VisitGenes(run, ctx, (e, c) => Apply(c, e.OnGene(c), events));
 
             // #10 入账
-            long gain = ScoreMath.Gain(ctx.Chips, ctx.Mult, ctx.XMultPermille);
+            long gain = ScoreMath.Gain(ctx.Chips, ctx.MultPermille);
             blind.Score = ScoreMath.Add(blind.Score, gain);
             ctx.Gain = gain;
-            events.Add(new ScoreBooked(ctx.Chips, ctx.Mult, ctx.XMultPermille, gain, blind.Score));
+            events.Add(new ScoreBooked(ctx.Chips, ctx.MultPermille, gain, blind.Score));
 
             // #11 清格、离场:最后一格被消的块按 id 升序进消尽堆
             foreach (int cell in clear.Cells) blind.Board.ClearCell(cell);
@@ -197,9 +196,10 @@ namespace GameRules
         {
             if (delta.IsEmpty) return;
             ctx.Chips = ScoreMath.Add(ctx.Chips, delta.AddChips);
-            ctx.Mult = ScoreMath.Add(ctx.Mult, delta.AddMult);
-            ctx.XMultPermille = ScoreMath.MulPermille(ctx.XMultPermille, delta.XMultPermille);
-            events.Add(new EffectApplied(ctx.Source, ctx.SourceIndex, ctx.Cell, delta, ctx.Chips, ctx.Mult, ctx.XMultPermille));
+            ctx.MultPermille = ScoreMath.Add(ctx.MultPermille, ScoreMath.ToPermille(delta.AddMult));
+            if (delta.XMultPermille != ScoreMath.PermilleOne)
+                ctx.MultPermille = ScoreMath.MulPermille(ctx.MultPermille, delta.XMultPermille);
+            events.Add(new EffectApplied(ctx.Source, ctx.SourceIndex, ctx.Cell, delta, ctx.Chips, ctx.MultPermille));
         }
 
         // 一格的来源:所属块的强化 → 它的版本 → 基因从左到右

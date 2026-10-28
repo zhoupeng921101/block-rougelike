@@ -32,12 +32,13 @@ public readonly struct ClearBeat
     /// <summary>这一拍之后计数框上的底分与倍率(取自事件,不回读规则核心)。</summary>
     public readonly long Chips;
 
-    public readonly long Mult;
+    /// <summary>倍率千分值,1000 = 1。</summary>
+    public readonly long MultPermille;
 
     /// <summary>这是这一格的最后一拍:格从这一拍起退场。</summary>
     public readonly bool Exits;
 
-    public ClearBeat(float time, ClearBeatKind kind, int cell, int line, int points, long chips, long mult, bool exits)
+    public ClearBeat(float time, ClearBeatKind kind, int cell, int line, int points, long chips, long multPermille, bool exits)
     {
         Time = time;
         Kind = kind;
@@ -45,7 +46,7 @@ public readonly struct ClearBeat
         Line = line;
         Points = points;
         Chips = chips;
-        Mult = mult;
+        MultPermille = multPermille;
         Exits = exits;
     }
 }
@@ -241,7 +242,7 @@ public sealed class ClearTimeline
         var exitAt = new Dictionary<int, float>();
         float time = ClearPacing.ClearLead;
         // 逐格段从本级底注 × 基础倍率起跳;本图倍率在逐格段里不变,有效果拍时跟着它带的累计值走
-        long chips = baseApplied?.Chips ?? 0, mult = baseApplied?.Mult ?? 0;
+        long chips = baseApplied?.Chips ?? 0, mult = baseApplied?.MultPermille ?? 0;
         for (int i = 0; i < raw.Count; i++)
         {
             if (i > 0) time += step + (lineOf[i] != lineOf[i - 1] ? gap : 0f);
@@ -258,7 +259,7 @@ public sealed class ClearTimeline
                 case EffectApplied fx:
                     kind = ClearBeatKind.Effect;
                     chips = fx.Chips;
-                    mult = fx.Mult;
+                    mult = fx.MultPermille;
                     break;
                 default:
                     kind = ClearBeatKind.Repetition;

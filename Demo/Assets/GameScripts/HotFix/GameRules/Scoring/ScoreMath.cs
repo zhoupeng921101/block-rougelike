@@ -3,16 +3,15 @@ using System;
 namespace GameRules
 {
     /// <summary>
-    /// 计分的整数算术(07 号票 §6):底分、倍率是 long,独立倍率是千分值的 long(1000 = ×1)。溢出一律饱和、不回绕;没有浮点。
+    /// 计分的整数算术:底分是整数,倍率是千分值(1000 = 1)。溢出饱和、不回绕;见效果系统 §9。
     /// </summary>
     public static class ScoreMath
     {
         public const long PermilleOne = 1000;
 
-        /// <summary>
-        /// 独立倍率与单个乘项的上限。⌊x·y/1000⌋ 拆成 (x/1000)·y + ⌊(x%1000)·y/1000⌋ 时,后一项的积不超过 999·y,y 不超过它就不会溢出。
-        /// </summary>
-        public const long XMultCap = long.MaxValue / PermilleOne;
+        /// <summary>整数倍率转千分值;正负溢出分别饱和。</summary>
+        public static long ToPermille(long mult) => mult > long.MaxValue / PermilleOne ? long.MaxValue
+            : mult < long.MinValue / PermilleOne ? long.MinValue : mult * PermilleOne;
 
         public static long Add(long a, long b)
         {
@@ -31,25 +30,23 @@ namespace GameRules
             return a > long.MaxValue / b ? long.MaxValue : a * b;
         }
 
-        /// <summary>独立倍率乘一项:⌊c × 项 / 1000⌋,两者都按 <see cref="XMultCap"/> 截。项必须 ≥ 0。</summary>
-        public static long MulPermille(long xMult, long termPermille)
+        /// <summary>倍率当场乘一项:⌊max(multPermille,0) × termPermille / 1000⌋。乘项必须 ≥ 0。</summary>
+        public static long MulPermille(long multPermille, long termPermille)
         {
             CheckNonNegative(termPermille, nameof(termPermille));
-            return Math.Min(MulDivPermille(Math.Min(xMult, XMultCap), Math.Min(termPermille, XMultCap)), XMultCap);
+            return MulDivPermille(Math.Max(multPermille, 0), termPermille);
         }
 
-        /// <summary>一次的得分 = ⌊max(A,0) × max(B,0) × C / 1000⌋:A、B 只在这里按 0 截,所以加算的先后不影响结果,得分不为负。</summary>
-        public static long Gain(long chips, long mult, long xMultPermille)
-        {
-            long product = Mul(Math.Max(chips, 0), Math.Max(mult, 0));
-            return MulDivPermille(product, Math.Min(Math.Max(xMultPermille, 0), XMultCap));
-        }
+        /// <summary>得分 = ⌊max(chips,0) × max(multPermille,0) / 1000⌋。</summary>
+        public static long Gain(long chips, long multPermille) =>
+            MulDivPermille(Math.Max(chips, 0), Math.Max(multPermille, 0));
 
-        // ⌊x·y/1000⌋,x ≥ 0,0 ≤ y ≤ XMultCap
+        // 先拆两边的商与余数,避免除以 1000 之前的中间积溢出。
         private static long MulDivPermille(long x, long y)
         {
             long high = Mul(x / PermilleOne, y);
-            long low = x % PermilleOne * y / PermilleOne;
+            long low = Add(Mul(x % PermilleOne, y / PermilleOne),
+                x % PermilleOne * (y % PermilleOne) / PermilleOne);
             return Add(high, low);
         }
 
