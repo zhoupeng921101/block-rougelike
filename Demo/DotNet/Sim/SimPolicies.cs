@@ -47,10 +47,23 @@ namespace GameRules.Sim
         public const string Greedy = "greedy";
         public const string Random = "random";
 
+        /// <summary>一步贪心(18 号票)。</summary>
+        public const string OneStep = "onestep";
+
+        /// <summary>整组规划,束宽 8(18 号票)。</summary>
+        public const string Plan = "plan";
+
+        /// <summary>整组规划,束宽 6:11 号票的模拟给的是束宽 6–8 的区间,两头各跑一个。</summary>
+        public const string Plan6 = "plan6";
+
         /// <summary>随机策略自己的流:种子文本与对局相同,不进对局状态(08 号票)。</summary>
         public const string PolicyKey = "sim.policy";
 
+        /// <summary>同种子跑局测试(17 号票)跑的策略。两种前瞻策略一局要几十到几百毫秒,不进那四路。</summary>
         public static readonly IReadOnlyList<string> Names = Array.AsReadOnly(new[] { Greedy, Random });
+
+        /// <summary>全部策略,批量模式不给 <c>--policy</c> 时按这个次序跑。</summary>
+        public static readonly IReadOnlyList<string> All = Array.AsReadOnly(new[] { Greedy, Random, OneStep, Plan, Plan6 });
 
         /// <summary>按名字建一个全新的策略对象;随机策略的流从种子重新派生。不认的名字返回 null。</summary>
         public static ISimPolicy Create(string name, string seed)
@@ -59,11 +72,25 @@ namespace GameRules.Sim
             {
                 case Greedy: return new GreedyPolicy();
                 case Random: return new RandomPolicy(seed);
+                case OneStep: return new OneStepPolicy();
+                case Plan: return new PlanPolicy(Plan, 8);
+                case Plan6: return new PlanPolicy(Plan6, 6);
                 default: return null;
             }
         }
 
-        /// <summary>全部合法落子,按(槽位、朝向 0–3、行、列)的字典序。两种策略共用这一个枚举序。</summary>
+        /// <summary>没有合法落子时的弃置:弃掉槽位最靠前的一块。贪心、一步贪心、整组规划共用。</summary>
+        public static SimMove DiscardFirst(RunState run)
+        {
+            if (run.Blind.DiscardsLeft == 0) throw new InvalidOperationException("没有合法落子、弃置也用完了,规则核心本该已判负");
+            foreach (TraySlot slot in run.Blind.Tray)
+            {
+                if (!slot.IsEmpty) return SimMove.Discard(slot.Id);
+            }
+            throw new InvalidOperationException("进行中的盲注待放置区全空,规则核心本该已发组");
+        }
+
+        /// <summary>全部合法落子,按(槽位、朝向 0–3、行、列)的字典序。各策略共用这一个枚举序,平手都取它的第一个。</summary>
         public static List<SimMove> LegalPlacements(RunState run)
         {
             var moves = new List<SimMove>();
@@ -122,13 +149,7 @@ namespace GameRules.Sim
                     bestCells = cells;
                 }
             }
-            if (found) return best;
-            if (run.Blind.DiscardsLeft == 0) throw new InvalidOperationException("没有合法落子、弃置也用完了,规则核心本该已判负");
-            foreach (TraySlot slot in run.Blind.Tray)
-            {
-                if (!slot.IsEmpty) return SimMove.Discard(slot.Id);
-            }
-            throw new InvalidOperationException("进行中的盲注待放置区全空,规则核心本该已发组");
+            return found ? best : SimPolicies.DiscardFirst(run);
         }
     }
 
