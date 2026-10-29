@@ -664,9 +664,10 @@ namespace GameRules
             if (progressError != null) return "map: " + progressError;
             if (Shop != null)
             {
-                if (Shop.Count < ShopState.GoodsCount || Shop.Count > ShopState.MaxGoodsCount)
+                int baseGoods = Config.Tuning.GoodsCount;
+                if (Shop.Count < baseGoods || Shop.Count > baseGoods + 2)
                 {
-                    return Invariant($"shop.goods: 应有 {ShopState.GoodsCount}..{ShopState.MaxGoodsCount} 格,实有 {Shop.Count}");
+                    return Invariant($"shop.goods: 应有 {baseGoods}..{baseGoods + 2} 格,实有 {Shop.Count}");
                 }
                 if (Shop.Rerolls < 0) return Invariant($"shop.rerolls: {Shop.Rerolls} 为负");
                 if (!Progress.CurrentResolved) return "shop: 当前节点还没结算就开着商店";

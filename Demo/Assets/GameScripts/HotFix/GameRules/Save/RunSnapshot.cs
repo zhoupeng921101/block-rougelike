@@ -375,10 +375,10 @@ namespace GameRules
             }
             List<JsonNode> items = p.ReadArray(s[5], "shop.goods");
             if (items == null) return false;
-            if (items.Count < ShopState.GoodsCount || items.Count > ShopState.MaxGoodsCount)
+            if (items.Count < tuning.GoodsCount || items.Count > tuning.GoodsCount + 2)
             {
                 p.Fail(SnapshotError.Shape, "shop.goods",
-                    Invariant($"应有 {ShopState.GoodsCount}..{ShopState.MaxGoodsCount} 格"));
+                    Invariant($"应有 {tuning.GoodsCount}..{tuning.GoodsCount + 2} 格"));
                 return false;
             }
             var goods = new ShopOffer[items.Count];
