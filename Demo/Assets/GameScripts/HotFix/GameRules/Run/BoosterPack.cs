@@ -4,9 +4,10 @@ using System.Collections.Generic;
 namespace GameRules
 {
     /// <summary>
-    /// 一个已经买下、正在开的补给包(设计稿 §7.3):包里是几件候选,选够次数就关。
+    /// 一个已经买下、正在开的补给包(设计稿 §7.3):包里是几件候选,选够次数就关,也可以跳过。
     /// 号写死:1 基因包(3 选 1)、2 科技包(2 选 1)、3 改造包(3 选 1)、4 方块包(4 选 2)、5 混合包(5 选 1)。
-    /// 选项的价格为 0:钱在买包时已经付过。
+    /// 选项的价格为 0:钱在买包时已经付过。科技遵守软锁;基因包的每个候选有小概率换成传说(规则 §2.5)。
+    /// 包里选的科技当场用掉,同 Balatro 1.0.1o 的天体包。
     /// </summary>
     public sealed class BoosterPack
     {
@@ -24,7 +25,8 @@ namespace GameRules
 
         public int PicksLeft { get; private set; }
 
-        public bool IsClosed => PicksLeft <= 0;
+        /// <summary>选够了,或者候选已经选空。</summary>
+        public bool IsClosed => PicksLeft <= 0 || _options.Count == 0;
 
         private BoosterPack(int boosterId, List<ShopOffer> options, int picksLeft)
         {
@@ -33,23 +35,24 @@ namespace GameRules
             PicksLeft = picksLeft;
         }
 
-        /// <summary>按包号摇出候选。选项的 id 在同类池子里不重复。</summary>
-        public static BoosterPack Open(IRandomSource rng, ContentCatalog catalog, int boosterId)
+        /// <summary>按包号摇出候选。选项的 id 在同类池子里不重复;传说与版本走 <see cref="RunState.EditionRng"/>。</summary>
+        public static BoosterPack Open(IRandomSource rng, RunState run, int boosterId)
         {
             if (rng == null) throw new ArgumentNullException(nameof(rng));
-            if (catalog == null) throw new ArgumentNullException(nameof(catalog));
+            if (run == null) throw new ArgumentNullException(nameof(run));
+            ContentCatalog catalog = run.Config.Catalog;
             switch (boosterId)
             {
                 case GenePack:
-                    return new BoosterPack(boosterId, Distinct(rng, catalog.Genes, 3), 1);
+                    return new BoosterPack(boosterId, GeneOptions(rng, run, 3), 1);
                 case TechPack:
-                    return new BoosterPack(boosterId, Distinct(rng, catalog.Techs, 2), 1);
+                    return new BoosterPack(boosterId, Distinct(rng, UnlockedTechEntries(run), 2), 1);
                 case ModPack:
                     return new BoosterPack(boosterId, Distinct(rng, catalog.Mods, 3), 1);
                 case BlockPack:
                     return new BoosterPack(boosterId, DistinctBlocks(rng, catalog.Blocks, 4), 2);
                 case MixedPack:
-                    return new BoosterPack(boosterId, Mixed(rng, catalog, 5), 1);
+                    return new BoosterPack(boosterId, Mixed(rng, run, 5), 1);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(boosterId), boosterId, "没有这种补给包");
             }
@@ -62,33 +65,9 @@ namespace GameRules
             if (IsClosed) return ShopBuyResult.SoldOut;
             if (index < 0 || index >= _options.Count) return ShopBuyResult.UnknownOffer;
             ShopOffer offer = _options[index];
-
-            switch (offer.Kind)
-            {
-                case ItemKind.Gene:
-                    if (run.Genes.Count >= run.GeneSlots || run.Config.Effects.Find(EffectSource.Gene, offer.Id) == null)
-                    {
-                        return ShopBuyResult.SlotFull;
-                    }
-                    run.TryAddGene(offer.Id);
-                    break;
-                case ItemKind.Tech:
-                    ClearType type = run.Config.Catalog.TechTypeOf(offer.Id);
-                    if (run.LevelOf(type) >= run.Config.ClearTypes.MaxLevel(type)) return ShopBuyResult.SlotFull;
-                    run.UpgradeType(type);
-                    break;
-                case ItemKind.Mod:
-                    if (run.Consumables.Count >= run.ConsumableSlots) return ShopBuyResult.SlotFull;
-                    run.TryAddConsumable(offer.Id);
-                    break;
-                case ItemKind.Block:
-                    BlockEntry block = FindBlock(run.Config.Catalog, offer.Id);
-                    run.AddBlock(block.Kind, block.Points);
-                    break;
-                default:
-                    return ShopBuyResult.UnknownOffer;
-            }
-
+            ShopBuyResult fits = ShopState.CanTake(offer, run, fromPack: true);
+            if (fits != ShopBuyResult.Ok) return fits;
+            ShopState.Take(offer, run, fromPack: true);
             _options.RemoveAt(index);
             PicksLeft--;
             return ShopBuyResult.Ok;
@@ -96,6 +75,42 @@ namespace GameRules
 
         internal static BoosterPack Restore(int boosterId, int picksLeft, List<ShopOffer> options) =>
             new BoosterPack(boosterId, options, picksLeft);
+
+        /// <summary>
+        /// 基因包:先从非传说里不重复地抽,再逐个按 <see cref="ShopState.LegendaryPermille"/> 换成一张还没出现的传说;
+        /// 每个候选另掷版本。
+        /// </summary>
+        private static List<ShopOffer> GeneOptions(IRandomSource rng, RunState run, int count)
+        {
+            var normal = new List<CatalogEntry>();
+            var legendary = new List<CatalogEntry>();
+            foreach (CatalogEntry e in run.Config.Catalog.Genes)
+            {
+                if (e.Rarity == Rarity.Legendary) legendary.Add(e);
+                else normal.Add(e);
+            }
+            List<ShopOffer> options = Distinct(rng, normal, count);
+            IRandomSource looks = run.EditionRng();
+            for (int i = 0; i < options.Count; i++)
+            {
+                int id = options[i].Id;
+                if (legendary.Count > 0 && looks.Index(1000) < ShopState.LegendaryPermille)
+                {
+                    int pick = looks.Index(legendary.Count);
+                    id = legendary[pick].Id;
+                    legendary.RemoveAt(pick);
+                }
+                options[i] = new ShopOffer(ItemKind.Gene, id, 0, false, Enhancement.None, ShopState.RollGeneEdition(looks));
+            }
+            return options;
+        }
+
+        private static List<CatalogEntry> UnlockedTechEntries(RunState run)
+        {
+            var list = new List<CatalogEntry>();
+            foreach (int id in run.UnlockedTechs()) list.Add(run.Config.Catalog.Find(ItemKind.Tech, id).Value);
+            return list;
+        }
 
         private static List<ShopOffer> Distinct(IRandomSource rng, IReadOnlyList<CatalogEntry> pool, int count)
         {
@@ -127,25 +142,21 @@ namespace GameRules
             return options;
         }
 
-        private static List<ShopOffer> Mixed(IRandomSource rng, ContentCatalog catalog, int count)
+        /// <summary>混合包:非传说基因、已解锁的科技、改造混在一起洗,取前几件。</summary>
+        private static List<ShopOffer> Mixed(IRandomSource rng, RunState run, int count)
         {
+            ContentCatalog catalog = run.Config.Catalog;
             var pool = new List<ShopOffer>();
-            foreach (CatalogEntry e in catalog.Genes) pool.Add(new ShopOffer(e.Kind, e.Id, 0));
-            foreach (CatalogEntry e in catalog.Techs) pool.Add(new ShopOffer(e.Kind, e.Id, 0));
+            foreach (CatalogEntry e in catalog.Genes)
+            {
+                if (e.Rarity != Rarity.Legendary) pool.Add(new ShopOffer(e.Kind, e.Id, 0));
+            }
+            foreach (CatalogEntry e in UnlockedTechEntries(run)) pool.Add(new ShopOffer(e.Kind, e.Id, 0));
             foreach (CatalogEntry e in catalog.Mods) pool.Add(new ShopOffer(e.Kind, e.Id, 0));
             rng.Shuffle(pool);
             int take = Math.Min(count, pool.Count);
             pool.RemoveRange(take, pool.Count - take);
             return pool;
-        }
-
-        private static BlockEntry FindBlock(ContentCatalog catalog, int blockId)
-        {
-            foreach (BlockEntry b in catalog.Blocks)
-            {
-                if (b.Id == blockId) return b;
-            }
-            throw new InvalidOperationException("目录里没有这块方块: " + blockId);
         }
     }
 }

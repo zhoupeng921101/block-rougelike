@@ -14,7 +14,16 @@ namespace GameRules
         Voucher = 5,
     }
 
-    /// <summary>目录里的一件商品:种类、号、基础价、稀有度(普通/罕见/稀有,0/1/2)。</summary>
+    /// <summary>基因的稀有度(规则 §4.1):四档。传说不进商店,只在基因补给包里以极低概率出现(规则 §2.5)。</summary>
+    public static class Rarity
+    {
+        public const int Common = 0;
+        public const int Uncommon = 1;
+        public const int Rare = 2;
+        public const int Legendary = 3;
+    }
+
+    /// <summary>目录里的一件商品:种类、号、基础价、稀有度(<see cref="GameRules.Rarity"/>,只有基因用)。</summary>
     public readonly struct CatalogEntry
     {
         public readonly ItemKind Kind;
@@ -84,6 +93,28 @@ namespace GameRules
                 throw new ArgumentOutOfRangeException(nameof(techId), techId, "目录里没有这张科技");
             }
             return type;
+        }
+
+        public bool HasTech(int techId) => _techTypes.ContainsKey(techId);
+
+        /// <summary>按种类与号查目录里的一件(卖价按它的基础价算);方块与查不到的返回 null。</summary>
+        public CatalogEntry? Find(ItemKind kind, int id)
+        {
+            IReadOnlyList<CatalogEntry> pool;
+            switch (kind)
+            {
+                case ItemKind.Gene: pool = Genes; break;
+                case ItemKind.Tech: pool = Techs; break;
+                case ItemKind.Mod: pool = Mods; break;
+                case ItemKind.Booster: pool = Boosters; break;
+                case ItemKind.Voucher: pool = Vouchers; break;
+                default: return null;
+            }
+            foreach (CatalogEntry e in pool)
+            {
+                if (e.Id == id) return e;
+            }
+            return null;
         }
 
         public static ContentCatalog Empty { get; } = new ContentCatalog(

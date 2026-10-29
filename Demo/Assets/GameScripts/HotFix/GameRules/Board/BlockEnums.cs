@@ -14,7 +14,7 @@ namespace GameRules
         L = 6,
     }
 
-    /// <summary>块的强化(规则 §4.4)。本图恒为 None,效果在阶段 5 经效果注册表接入。</summary>
+    /// <summary>块的强化(规则 §4.4)。效果在 <see cref="CoreEffects"/>:琉璃 ×倍率且可能碎、铁芯 +倍率、金箔给钱、万态参与任意形态的同形态。</summary>
     public enum Enhancement
     {
         None = 0,
@@ -24,12 +24,13 @@ namespace GameRules
         Wild = 4,
     }
 
-    /// <summary>块的版本。本图恒为 None。</summary>
+    /// <summary>版本(规则 §4.1、§4.4):块与基因都能带;闪箔 +底分、镭射 +倍率、多彩 ×倍率(效果系统 §10 的起草口径)。负片只给基因,带负片的基因不占槽。</summary>
     public enum Edition
     {
         None = 0,
         Foil = 1,
         Holo = 2,
         Polychrome = 3,
+        Negative = 4,
     }
 }

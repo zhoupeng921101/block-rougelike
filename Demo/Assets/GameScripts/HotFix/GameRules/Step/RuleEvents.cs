@@ -238,6 +238,61 @@ namespace GameRules
         }
     }
 
+    /// <summary>效果给钱(金箔方块、经济类基因;效果系统 §3.4 的 D 类)。</summary>
+    public sealed class MoneyGained : RuleEvent
+    {
+        public EffectSource Source { get; }
+        public int SourceIndex { get; }
+        public int Amount { get; }
+
+        /// <summary>入账之后的持有额。</summary>
+        public int Total { get; }
+
+        internal MoneyGained(EffectSource source, int sourceIndex, int amount, int total)
+        {
+            Source = source;
+            SourceIndex = sourceIndex;
+            Amount = amount;
+            Total = total;
+        }
+    }
+
+    /// <summary>
+    /// 一块被湮灭:琉璃碎裂,或改造删块(规则 §5.3 的牌库瘦身)。它离开方块库与本盲注的所有区,盘上剩下的格一并清掉。
+    /// </summary>
+    public sealed class BlockDestroyed : RuleEvent
+    {
+        public int InstanceId { get; }
+
+        /// <summary>这块在盘上被一并清掉的格,升序;不在盘上时为空。</summary>
+        public IReadOnlyList<int> Cells { get; }
+
+        internal BlockDestroyed(int instanceId, IEnumerable<int> cells)
+        {
+            InstanceId = instanceId;
+            Cells = Snapshot(cells);
+        }
+    }
+
+    /// <summary>用掉一件消耗品(科技或改造)。目标:改块的是实例 id,改基因的是槽位,不用指定时为 0。</summary>
+    public sealed class ConsumableUsed : RuleEvent
+    {
+        public ItemKind Kind { get; }
+        public int Id { get; }
+        public int Target { get; }
+
+        /// <summary>有概率的改造(镀金)这次成没成;没有概率的恒为 true。</summary>
+        public bool Succeeded { get; }
+
+        internal ConsumableUsed(ItemKind kind, int id, int target, bool succeeded)
+        {
+            Kind = kind;
+            Id = id;
+            Target = target;
+            Succeeded = succeeded;
+        }
+    }
+
     /// <summary>每步最后一个事件,带这一步之后界面要刷的数。</summary>
     public sealed class StepEnded : RuleEvent
     {

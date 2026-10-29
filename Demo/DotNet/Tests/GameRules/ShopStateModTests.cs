@@ -30,7 +30,7 @@ namespace GameRules.Tests
             int before = run.Money;
             Assert.AreEqual(ShopBuyResult.Ok, shop.TryBuy(index, run));
             Assert.AreEqual(before - offer.Price, run.Money);
-            CollectionAssert.Contains(run.Consumables, offer.Id);
+            CollectionAssert.Contains(run.Consumables, ConsumableItem.Mod(offer.Id));
             Assert.IsTrue(shop.Goods[index].Sold);
             Assert.IsNull(run.Validate());
         }
@@ -40,8 +40,8 @@ namespace GameRules.Tests
         {
             (RunState run, ShopState shop, int index) = FindModShop();
             run.AddMoney(50);
-            Assert.IsTrue(run.TryAddConsumable(1));
-            Assert.IsTrue(run.TryAddConsumable(2));
+            Assert.IsTrue(run.TryAddConsumable(ConsumableItem.Mod(1)));
+            Assert.IsTrue(run.TryAddConsumable(ConsumableItem.Mod(2)));
             int before = run.Money;
             Assert.AreEqual(ShopBuyResult.SlotFull, shop.TryBuy(index, run));
             Assert.AreEqual(before, run.Money, "放不下就不扣钱");

@@ -24,6 +24,18 @@ namespace GameRules
         /// <summary>首领效果里的随机(预置块的形状与落点、死格位置、增殖补块)。按段层分:一场首领的随机只与本场有关。</summary>
         public static string Boss(int segment, int layer) => At("boss", segment, layer);
 
+        /// <summary>盲注里效果的概率(琉璃碎裂等)。按段层分:一场里的碎裂只与这一场的操作有关。</summary>
+        public static string Effect(int segment, int layer) => At("effect", segment, layer);
+
+        /// <summary>
+        /// 商店货与补给包候选的版本、强化,以及基因包里的传说(规则 §2.5)。按层分,且与 <see cref="Shop"/> 分开:
+        /// 掷版本不挪动出货那条流,货架上出什么不因版本规则变动而变。
+        /// </summary>
+        public static string Edition(int segment, int layer) => At("edition", segment, layer);
+
+        /// <summary>使用改造时的随机(镀金成没成、御铸给哪张科技)。不带段层:只由使用的先后决定。</summary>
+        public const string Mod = "mod";
+
         private static string At(string purpose, int segment, int layer)
         {
             if (segment < 1) throw new ArgumentOutOfRangeException(nameof(segment), segment, "段从 1 数");

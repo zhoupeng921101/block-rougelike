@@ -108,16 +108,54 @@ namespace GameRules.Tests
             Assert.AreEqual(entry.Points, added.Points);
         }
 
-        [Test]
-        public void BuyTech_UpgradesItsType()
+        /// <summary>打完开局那一场(库里只有两块 I,消掉第 7 行就清屏):湮域科技解锁,其余仍锁着。结算后离场,同 RunFlow.SettleWon。</summary>
+        internal static RunState UnlockedAllClear(string seed)
         {
-            (RunState run, ShopState shop, int index) = FindShop(ItemKind.Tech);
-            run.AddMoney(50);
-            ShopOffer offer = shop.Goods[index];
-            ClearType type = run.Config.Catalog.TechTypeOf(offer.Id);
-            Assert.AreEqual(1, run.LevelOf(type));
-            Assert.AreEqual(ShopBuyResult.Ok, shop.TryBuy(index, run));
-            Assert.AreEqual(2, run.LevelOf(type));
+            var config = new RuleConfig(new[] { new LibraryEntry(TetrominoKind.I, 1), new LibraryEntry(TetrominoKind.I, 1) },
+                MinimalContent.ClearTypes, MinimalContent.Effects, catalog: MinimalContent.Catalog);
+            RunState run = RunState.NewRun(seed, config);
+            Assert.IsTrue(run.EnterNode(run.Map.Start.Id));
+            run.StartBlind(new BlindSpec(1, 1, 1, 3, 3));
+            TestRules.Place(run, run.Blind.Tray[0].Id, 0, 7, 0);
+            TestRules.Place(run, TetrominoKind.I, 0, 7, 4);
+            run.SettleBlind();
+            run.LeaveBlind();
+            return run;
+        }
+
+        [Test]
+        public void TechSoftLock_NoTechBeforeItsTypeWasPlayed()
+        {
+            for (int i = 0; i < 60; i++)
+            {
+                RunState run = RunState.NewRun(SeedText.FromEntropy((ulong)i), MinimalContent.Config);
+                Assert.AreEqual(-1, IndexOf(Open(run), ItemKind.Tech), "一种类型都没打出过,科技一张都不进池");
+            }
+        }
+
+        [Test]
+        public void BuyTech_GoesToTheItemBar_ThenUsingItUpgradesItsType()
+        {
+            for (int i = 0; i < 400; i++)
+            {
+                RunState run = UnlockedAllClear(SeedText.FromEntropy((ulong)i * 2654435761UL + 17UL));
+                ShopState shop = run.OpenShop();
+                int index = IndexOf(shop, ItemKind.Tech);
+                if (index < 0) continue;
+                run.AddMoney(50);
+                ShopOffer offer = shop.Goods[index];
+                ClearType type = run.Config.Catalog.TechTypeOf(offer.Id);
+                Assert.AreEqual(ClearType.AllClear, type, "软锁:只有打出过的清屏有科技");
+                Assert.AreEqual(ShopBuyResult.Ok, shop.TryBuy(index, run));
+                Assert.AreEqual(1, run.LevelOf(type), "买下只进道具栏");
+                CollectionAssert.AreEqual(new[] { ConsumableItem.Tech(offer.Id) }, run.Consumables);
+                Assert.IsTrue(run.UseConsumable(0).Accepted);
+                Assert.AreEqual(2, run.LevelOf(type));
+                Assert.AreEqual(0, run.Consumables.Count);
+                Assert.IsNull(run.Validate());
+                return;
+            }
+            Assert.Fail("400 个种子里没找到带科技的商店");
         }
 
         [Test]

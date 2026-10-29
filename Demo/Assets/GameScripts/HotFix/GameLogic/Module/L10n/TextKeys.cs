@@ -87,11 +87,104 @@ public static class TextKeys
         }
     }
 
-    /// <summary>基因的显示名(最小内容集 1..8 号)。</summary>
+    /// <summary>主界面的选项、收藏、难度选择三个子页(规则 §8.1、§8.2)。</summary>
+    public static class Menu
+    {
+        public const string Options = "ui.main_menu.options";
+        public const string Collection = "ui.main_menu.collection";
+        public const string Back = "ui.common.back";
+        public const string OptionsTitle = "ui.options.title";
+        public const string CollectionTitle = "ui.collection.title";
+        public const string CollectionLooks = "ui.collection.looks";
+        public const string DifficultyTitle = "ui.difficulty.title";
+        public const string DifficultyStart = "ui.difficulty.start";
+    }
+
+    /// <summary>背包栏(基因、道具、券、方块库),战斗、选关、商店三屏共用。</summary>
+    public static class Inventory
+    {
+        public const string Genes = "ui.inventory.genes";
+        public const string Items = "ui.inventory.items";
+        public const string Vouchers = "ui.inventory.vouchers";
+        public const string Library = "ui.inventory.library";
+        public const string Sell = "ui.inventory.sell";
+        public const string Use = "ui.inventory.use";
+        public const string DragHint = "ui.inventory.drag_hint";
+        public const string PickBlock = "ui.inventory.pick_block";
+        public const string PickGene = "ui.inventory.pick_gene";
+        public const string Cancel = "ui.inventory.cancel";
+        public const string Block = "ui.inventory.block";
+        public const string MoveLeft = "ui.inventory.move_left";
+        public const string MoveRight = "ui.inventory.move_right";
+        public const string Rejected = "ui.inventory.rejected";
+        public const string RejectTarget = "ui.inventory.reject_target";
+        public const string RejectUsable = "ui.inventory.reject_usable";
+        public const string TechDesc = "ui.inventory.tech_desc";
+        public const string MapTypes = "ui.map.types";
+        public const string MapTypeRow = "ui.map.type_row";
+        public const string SkipPack = "ui.shop.skip_pack";
+    }
+
+    /// <summary>基因的显示名(最小内容集 1..13 号)。</summary>
     public static string Gene(int geneId) => "gene." + geneId + ".name";
 
-    /// <summary>道具栏里一件改造的显示名(带号,调用方 Format 掉 {0})。</summary>
-    public const string ItemLabel = "ui.battle.item_label";
+    /// <summary>基因的补充说明(只有带代价的那几张有);表里没有就不显示。</summary>
+    public static string GeneDesc(int geneId) => "gene." + geneId + ".desc";
+
+    /// <summary>科技名:每种消除类型一张(最小内容集的科技号 = 类型 + 1)。</summary>
+    public static string Tech(ClearType type) => Of(type).Replace("clear_type.", "tech.");
+
+    public static string Mod(int modId) => "mod." + modId + ".name";
+
+    public static string ModDesc(int modId) => "mod." + modId + ".desc";
+
+    public static string Voucher(int voucherId) => "voucher." + voucherId + ".name";
+
+    public static string VoucherDesc(int voucherId) => "voucher." + voucherId + ".desc";
+
+    public static string Booster(int boosterId) => "booster." + boosterId + ".name";
+
+    /// <summary>基因的稀有度名(<see cref="Rarity"/> 的四档)。</summary>
+    public static string Rarity(int rarity)
+    {
+        switch (rarity)
+        {
+            case GameRules.Rarity.Common: return "rarity.common.name";
+            case GameRules.Rarity.Uncommon: return "rarity.uncommon.name";
+            case GameRules.Rarity.Rare: return "rarity.rare.name";
+            case GameRules.Rarity.Legendary: return "rarity.legendary.name";
+            default: throw new ArgumentOutOfRangeException(nameof(rarity), rarity, "不是稀有度");
+        }
+    }
+
+    /// <summary>难度档的一句说明(难度选择页)。</summary>
+    public static string Desc(RunDifficulty difficulty) => Of(difficulty).Replace(".name", ".desc");
+
+    public static string Of(Enhancement enhancement)
+    {
+        switch (enhancement)
+        {
+            case Enhancement.None: return "enhancement.none.name";
+            case Enhancement.Glass: return "enhancement.glass.name";
+            case Enhancement.Steel: return "enhancement.steel.name";
+            case Enhancement.Gold: return "enhancement.gold.name";
+            case Enhancement.Wild: return "enhancement.wild.name";
+            default: throw new ArgumentOutOfRangeException(nameof(enhancement), enhancement, "不是强化");
+        }
+    }
+
+    public static string Of(Edition edition)
+    {
+        switch (edition)
+        {
+            case Edition.None: return "edition.none.name";
+            case Edition.Foil: return "edition.foil.name";
+            case Edition.Holo: return "edition.holo.name";
+            case Edition.Polychrome: return "edition.polychrome.name";
+            case Edition.Negative: return "edition.negative.name";
+            default: throw new ArgumentOutOfRangeException(nameof(edition), edition, "不是版本");
+        }
+    }
 
     /// <summary>三个难度档的显示名。</summary>
     public static string Of(RunDifficulty difficulty)

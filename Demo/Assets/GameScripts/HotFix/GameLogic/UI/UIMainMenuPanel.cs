@@ -1,11 +1,13 @@
 using Cysharp.Threading.Tasks;
 using GameRules;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
-/// 主界面。规则 §8.1 的「继续」「开始游戏」「语言」「难度」排在「按钮列」里。
+/// 主界面(规则 §8.1):按钮列是「继续」「开始游戏」「收藏」「选项」「语言」。
 /// 「继续」只在探测到进行中的局时显示:打开时探测一次,从局内回来(本窗重新露出)再探测一次。
-/// 难度是主界面的一个切档按钮(占位做法,设计稿 §5 的三档),开局时带进 <see cref="RunState.Difficulty"/>。
+/// 「开始游戏」先进难度选择页(规则 §8.2),选好再开局;声音开关在「选项」页里。三个子页见 <see cref="MainMenuPages"/>。
+/// 预制体里原有的难度切档、声音两个按钮藏起来,「收藏」「选项」照它们的样子运行时克隆进按钮列。
 /// </summary>
 [Window(UILayer.Bottom, fullScreen: true)]
 public partial class UIMainMenuPanel : UIPanelMono
@@ -13,9 +15,19 @@ public partial class UIMainMenuPanel : UIPanelMono
     /// <summary>探测到的进行中的局;点「继续」直接用它继续,不再读第二次档(09 号票第 6 节)。</summary>
     private RunState _saved;
 
+    private MainMenuPages _pages;
+
+    private Text _collectionLabel;
+    private Text _optionsLabel;
+
     protected override void OnCreate()
     {
         m_text_Version.text = "v" + Application.version;
+        _pages = new MainMenuPages(rectTransform, m_text_Version.font);
+        _collectionLabel = CloneMenuButton("收藏", () => _pages.OpenCollection());
+        _optionsLabel = CloneMenuButton("选项", () => _pages.OpenOptions());
+        m_btn_Difficulty.gameObject.SetActive(false);
+        m_btn_Sound.gameObject.SetActive(false);
         AddServiceEvent(
             () => TextTable.Instance.LanguageChanged += RefreshLabels,
             () => { if (TextTable.IsValid) TextTable.Instance.LanguageChanged -= RefreshLabels; });
@@ -29,6 +41,7 @@ public partial class UIMainMenuPanel : UIPanelMono
     {
         if (visible)
         {
+            _pages.Close();
             RefreshLabels();
             ProbeSave();
             AudioConfigMgr.SwitchMusic(AudioIds.MusicMain);
@@ -41,20 +54,32 @@ public partial class UIMainMenuPanel : UIPanelMono
         m_btn_Continue.gameObject.SetActive(_saved != null);
     }
 
-    /// <summary>难度、声音两个按钮上的文字(都随语言切换重画)。</summary>
+    /// <summary>代码画的几处按钮文字(都随语言切换重画),开着的子页一起重画。</summary>
     private void RefreshLabels()
     {
         TextTable table = TextTable.Instance;
         m_text_Difficulty.text = table.Format(TextKeys.MainMenu.Difficulty, table.Get(TextKeys.Of(RunFlow.Difficulty)));
         m_text_Sound.text = table.Get(SoundSettings.IsOn ? TextKeys.MainMenu.SoundOn : TextKeys.MainMenu.SoundOff);
+        _collectionLabel.text = table.Get(TextKeys.Menu.Collection);
+        _optionsLabel.text = table.Get(TextKeys.Menu.Options);
+        _pages?.Redraw();
     }
 
-    /// <summary>开新局(选中的难度 + 新种子),下一步是选关。旧局的档在开局时删掉(规则 §8.1:开始新游戏会放弃旧局)。</summary>
-    private partial void OnClick_StartBtn()
+    /// <summary>照难度按钮的样子克隆一个按钮进按钮列(排在「语言」前面),返回它的文字节点。</summary>
+    private Text CloneMenuButton(string name, System.Action onClick)
     {
-        _saved = null;
-        RunFlow.StartNew(RunFlow.Difficulty);
+        GameObject go = Instantiate(m_btn_Difficulty.gameObject, m_btn_Difficulty.transform.parent);
+        go.name = name;
+        go.SetActive(true);
+        go.transform.SetSiblingIndex(m_btn_Language.transform.GetSiblingIndex());
+        UnityEngine.UI.Button button = go.GetComponent<UnityEngine.UI.Button>();
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() => onClick());
+        return go.GetComponentInChildren<Text>(true);
     }
+
+    /// <summary>开新局要先选难度(规则 §8.2);旧局的档在开局时删掉(规则 §8.1:开始新游戏会放弃旧局)。</summary>
+    private partial void OnClick_StartBtn() => _pages.OpenDifficulty();
 
     /// <summary>接着打存档里那一局:战斗里的局回战斗窗,选关之间的局回地图,都按状态全量刷新。</summary>
     private partial void OnClick_ContinueBtn()

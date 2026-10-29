@@ -108,7 +108,7 @@ public sealed class TrayAreaPart : MonoBehaviour
             return view;
         }
         view.Greyed = !run.CanPlaceAnyRotation(traySlot.Id);
-        Color color = BlockLayout.ColorOf(block.Kind);
+        Color color = BlockLayout.ColorOf(block);
         if (view.Greyed) color = BlockLayout.Greyed(color);
 
         int baseId = Tetromino.BaseShapeId(block.Kind);
@@ -124,7 +124,7 @@ public sealed class TrayAreaPart : MonoBehaviour
             var prt = points.rectTransform;
             prt.anchorMin = prt.anchorMax = prt.pivot = new Vector2(1f, 0f);
             prt.anchoredPosition = new Vector2(-_pointsInset.x, _pointsInset.y);
-            points.SetPoints(block.Points, view.Greyed);
+            points.SetPoints(block.Points, view.Greyed, BlockLayout.EditionMark(block.Edition));
             view.Points = points;
         }
         return view;

@@ -21,7 +21,7 @@ namespace GameRules
         private static readonly string[] RootMembers =
         {
             "format", "schema", "seed", "rng", "difficulty", "money", "map", "shop",
-            "nextInstanceId", "library", "typeLevels", "consumables", "vouchers", "genes", "blind",
+            "nextInstanceId", "library", "typeLevels", "typeCounts", "consumables", "vouchers", "genes", "blind",
             "pending", "bossIntel", "interestBonus", "interestBonusSegment",
         };
         private static readonly string[] RngMembers = { "scheme", "streams" };
@@ -30,10 +30,11 @@ namespace GameRules
         private static readonly string[] MapNodeMembers = { "id", "segment", "layer", "strength", "tag", "boss" };
         private static readonly string[] ProgressMembers = { "current", "resolved", "skipped", "visited" };
         private static readonly string[] ShopMembers = { "rerolls", "guaranteeGene", "voucher", "booster", "pack", "goods" };
-        private static readonly string[] ShopOfferMembers = { "kind", "id", "price", "sold" };
+        private static readonly string[] ShopOfferMembers = { "kind", "id", "price", "sold", "enhancement", "edition" };
+        private static readonly string[] ConsumableMembers = { "kind", "id" };
         private static readonly string[] PackMembers = { "boosterId", "picksLeft", "options" };
         private static readonly string[] BlockMembers = { "id", "kind", "points", "enhancement", "edition" };
-        private static readonly string[] GeneMembers = { "id" };
+        private static readonly string[] GeneMembers = { "id", "edition", "counter", "costPending" };
         private static readonly string[] BlindMembers =
         {
             "spec", "outcome", "failReason", "step", "group", "score", "combo", "discardsLeft",
@@ -82,12 +83,27 @@ namespace GameRules
             w.Name("typeLevels").BeginObject(JsonLayout.Lines);
             for (int t = 0; t < ClearTypes.Count; t++) w.Name(TypeLevelMembers[t]).Int(run.TypeLevels[t]);
             w.End();
-            w.Name("consumables");
-            WriteIds(w, run.Consumables);
+            w.Name("typeCounts").BeginObject(JsonLayout.Lines);
+            for (int t = 0; t < ClearTypes.Count; t++) w.Name(TypeLevelMembers[t]).Int(run.TypeCounts[t]);
+            w.End();
+            w.Name("consumables").BeginArray(JsonLayout.Lines);
+            foreach (ConsumableItem c in run.Consumables)
+            {
+                w.BeginObject(JsonLayout.Inline).Name("kind").String(NameOf(c.Kind)).Name("id").Int(c.Id).End();
+            }
+            w.End();
             w.Name("vouchers");
             WriteIds(w, run.Vouchers);
             w.Name("genes").BeginArray(JsonLayout.Lines);
-            foreach (GeneSlot g in run.Genes) w.BeginObject(JsonLayout.Inline).Name("id").Int(g.GeneId).End();
+            foreach (GeneSlot g in run.Genes)
+            {
+                w.BeginObject(JsonLayout.Inline)
+                    .Name("id").Int(g.GeneId)
+                    .Name("edition").String(NameOf(g.Edition))
+                    .Name("counter").Int(g.Counter)
+                    .Name("costPending").Bool(g.CostPending)
+                    .End();
+            }
             w.End();
 
             if (blind == null) w.Name("blind").Null();
@@ -239,6 +255,8 @@ namespace GameRules
                 .Name("id").Int(offer.Id)
                 .Name("price").Int(offer.Price)
                 .Name("sold").Bool(offer.Sold)
+                .Name("enhancement").String(NameOf(offer.Enhancement))
+                .Name("edition").String(NameOf(offer.Edition))
                 .End();
         }
 
@@ -304,8 +322,12 @@ namespace GameRules
             if (lv == null) return null;
             var levels = new int[ClearTypes.Count];
             for (int t = 0; t < levels.Length; t++) levels[t] = p.ReadInt(lv[t], "typeLevels." + TypeLevelMembers[t]);
+            JsonNode[] cv = p.ReadObject(v[11], "typeCounts", TypeLevelMembers);
+            if (cv == null) return null;
+            var counts = new int[ClearTypes.Count];
+            for (int t = 0; t < counts.Length; t++) counts[t] = p.ReadInt(cv[t], "typeCounts." + TypeLevelMembers[t]);
 
-            List<JsonNode> geneItems = p.ReadArray(v[13], "genes");
+            List<JsonNode> geneItems = p.ReadArray(v[14], "genes");
             if (geneItems == null) return null;
             var genes = new List<GeneSlot>(geneItems.Count);
             for (int i = 0; i < geneItems.Count; i++)
@@ -313,20 +335,37 @@ namespace GameRules
                 string path = Invariant($"genes[{i}]");
                 JsonNode[] g = p.ReadObject(geneItems[i], path, GeneMembers);
                 if (g == null) return null;
-                genes.Add(new GeneSlot(p.ReadInt(g[0], path + ".id")));
+                int geneId = p.ReadInt(g[0], path + ".id");
+                Edition edition = p.ReadEnum<Edition>(g[1], path + ".edition");
+                int counter = p.ReadInt(g[2], path + ".counter");
+                bool costPending = p.ReadBool(g[3], path + ".costPending");
+                if (p.Failed) return null;
+                genes.Add(new GeneSlot(geneId, edition, counter, costPending));
             }
-            List<int> consumables = p.ReadIntList(v[11], "consumables");
-            List<int> vouchers = p.ReadIntList(v[12], "vouchers");
+            List<JsonNode> consumableItems = p.ReadArray(v[12], "consumables");
+            if (consumableItems == null) return null;
+            var consumables = new List<ConsumableItem>(consumableItems.Count);
+            for (int i = 0; i < consumableItems.Count; i++)
+            {
+                string path = Invariant($"consumables[{i}]");
+                JsonNode[] c = p.ReadObject(consumableItems[i], path, ConsumableMembers);
+                if (c == null) return null;
+                ItemKind kind = p.ReadEnum<ItemKind>(c[0], path + ".kind");
+                int id = p.ReadInt(c[1], path + ".id");
+                if (p.Failed) return null;
+                consumables.Add(new ConsumableItem(kind, id));
+            }
+            List<int> vouchers = p.ReadIntList(v[13], "vouchers");
             if (p.Failed) return null;
 
             BlindState blind = null;
-            if (v[14].Kind != JsonKind.Null)
+            if (v[15].Kind != JsonKind.Null)
             {
-                blind = ReadBlind(p, v[14]);
+                blind = ReadBlind(p, v[15]);
                 if (blind == null) return null;
             }
 
-            JsonNode[] pd = p.ReadObject(v[15], "pending", PendingMembers);
+            JsonNode[] pd = p.ReadObject(v[16], "pending", PendingMembers);
             if (pd == null) return null;
             var pending = new RunPending
             {
@@ -337,13 +376,13 @@ namespace GameRules
                 BlindTargetPermille = p.ReadInt(pd[4], "pending.blindTarget"),
                 BlindDiscards = p.ReadInt(pd[5], "pending.blindDiscards"),
             };
-            bool bossIntel = p.ReadBool(v[16], "bossIntel");
-            int interestBonus = p.ReadInt(v[17], "interestBonus");
-            int interestBonusSegment = p.ReadInt(v[18], "interestBonusSegment");
+            bool bossIntel = p.ReadBool(v[17], "bossIntel");
+            int interestBonus = p.ReadInt(v[18], "interestBonus");
+            int interestBonusSegment = p.ReadInt(v[19], "interestBonusSegment");
             if (p.Failed) return null;
 
             return RunState.Restore(config, RngStreams.Restore(seed, streams), difficulty, money, map, progress, shop, nextInstanceId,
-                library, levels, genes, consumables, vouchers, blind, pending, bossIntel, interestBonus, interestBonusSegment);
+                library, levels, counts, genes, consumables, vouchers, blind, pending, bossIntel, interestBonus, interestBonusSegment);
         }
 
         /// <summary>货架。null 是合法的(不在商店)。</summary>
@@ -419,9 +458,11 @@ namespace GameRules
             int id = p.ReadInt(o[1], path + ".id");
             int price = p.ReadInt(o[2], path + ".price");
             bool sold = p.ReadBool(o[3], path + ".sold");
+            Enhancement enhancement = p.ReadEnum<Enhancement>(o[4], path + ".enhancement");
+            Edition edition = p.ReadEnum<Edition>(o[5], path + ".edition");
             if (p.Failed) return default;
             if (price < 0) p.Fail(SnapshotError.BadValue, path + ".price", "价格不能为负");
-            return new ShopOffer(kind, id, price, sold);
+            return new ShopOffer(kind, id, price, sold, enhancement, edition);
         }
 
         /// <summary>地图布局与进度。布局的形状约束由 <see cref="RunMap.Validate"/> 在整局校验里查,这里只判读得下来。</summary>

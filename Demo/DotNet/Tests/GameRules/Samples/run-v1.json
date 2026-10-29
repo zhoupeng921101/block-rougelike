@@ -101,6 +101,19 @@
     "DoubleLine": 1,
     "SingleLine": 1
   },
+  "typeCounts": {
+    "AllClear": 0,
+    "FiveLine": 0,
+    "SameShapeCross": 0,
+    "MultiLine": 0,
+    "SameShape": 0,
+    "TripleLine": 0,
+    "Corner": 0,
+    "Cross": 0,
+    "Parallel": 0,
+    "DoubleLine": 0,
+    "SingleLine": 1
+  },
   "consumables": [],
   "vouchers": [],
   "genes": [],

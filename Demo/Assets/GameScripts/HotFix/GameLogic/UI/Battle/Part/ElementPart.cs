@@ -17,15 +17,15 @@ public sealed class ElementPart : MonoBehaviour
 
     private bool _baseColorKnown;
 
-    /// <summary>写点数;<paramref name="greyed"/> = 这块怎么转都放不下,点数变淡。</summary>
-    public void SetPoints(int points, bool greyed)
+    /// <summary>写点数与版本角标;<paramref name="greyed"/> = 这块怎么转都放不下,点数变淡。</summary>
+    public void SetPoints(int points, bool greyed, string editionMark = "")
     {
         if (!_baseColorKnown)
         {
             _baseColor = m_tmp_Points.color;
             _baseColorKnown = true;
         }
-        m_tmp_Points.text = TextTable.Instance.Format(TextKeys.Battle.Points, points);
+        m_tmp_Points.text = editionMark + TextTable.Instance.Format(TextKeys.Battle.Points, points);
         var c = _baseColor;
         if (greyed) c.a *= BlockLayout.GreyPointsAlpha;
         m_tmp_Points.color = c;

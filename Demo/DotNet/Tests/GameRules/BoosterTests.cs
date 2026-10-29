@@ -28,14 +28,16 @@ namespace GameRules.Tests
         [Test]
         public void Open_GivesTheRightOptionCountAndPicks()
         {
+            RunState run = WonAtStartNode();
             var rng = new RngStreams(TestRules.Seed).Get(RngKeys.Shop(1, 1));
-            Assert.AreEqual(3, BoosterPack.Open(rng, Config.Catalog, BoosterPack.GenePack).Options.Count);
-            Assert.AreEqual(2, BoosterPack.Open(rng, Config.Catalog, BoosterPack.TechPack).Options.Count);
-            Assert.AreEqual(3, BoosterPack.Open(rng, Config.Catalog, BoosterPack.ModPack).Options.Count);
-            Assert.AreEqual(4, BoosterPack.Open(rng, Config.Catalog, BoosterPack.BlockPack).Options.Count);
-            Assert.AreEqual(2, BoosterPack.Open(rng, Config.Catalog, BoosterPack.BlockPack).PicksLeft);
-            Assert.AreEqual(5, BoosterPack.Open(rng, Config.Catalog, BoosterPack.MixedPack).Options.Count);
-            Assert.AreEqual(1, BoosterPack.Open(rng, Config.Catalog, BoosterPack.GenePack).PicksLeft);
+            Assert.AreEqual(3, BoosterPack.Open(rng, run, BoosterPack.GenePack).Options.Count);
+            // 科技包遵守软锁:这一局只打出过清屏(库里两块 I 消掉就空),只有湮域一张候选
+            Assert.AreEqual(1, BoosterPack.Open(rng, run, BoosterPack.TechPack).Options.Count);
+            Assert.AreEqual(3, BoosterPack.Open(rng, run, BoosterPack.ModPack).Options.Count);
+            Assert.AreEqual(4, BoosterPack.Open(rng, run, BoosterPack.BlockPack).Options.Count);
+            Assert.AreEqual(2, BoosterPack.Open(rng, run, BoosterPack.BlockPack).PicksLeft);
+            Assert.AreEqual(5, BoosterPack.Open(rng, run, BoosterPack.MixedPack).Options.Count);
+            Assert.AreEqual(1, BoosterPack.Open(rng, run, BoosterPack.GenePack).PicksLeft);
         }
 
         [Test]
@@ -64,7 +66,7 @@ namespace GameRules.Tests
         {
             RunState run = WonAtStartNode();
             var rng = new RngStreams(TestRules.Seed).Get(RngKeys.Shop(1, 1));
-            BoosterPack pack = BoosterPack.Open(rng, run.Config.Catalog, BoosterPack.BlockPack);
+            BoosterPack pack = BoosterPack.Open(rng, run, BoosterPack.BlockPack);
             Assert.AreEqual(4, pack.Options.Count);
             Assert.AreEqual(2, pack.PicksLeft);
             Assert.AreEqual(ShopBuyResult.Ok, pack.Choose(0, run));

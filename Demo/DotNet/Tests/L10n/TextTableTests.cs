@@ -118,6 +118,34 @@ namespace GameRules.Tests
             Assert.That(problems, Is.Empty, string.Join("\n", problems));
         }
 
+        /// <summary>最小内容集里每件东西都有显示名:基因、科技、改造(含说明)、优惠券(含说明)、补给包、稀有度、难度说明。</summary>
+        [Test]
+        public void ContentNames_AreInTable()
+        {
+            HashSet<string> keys = TableKeys();
+            var wanted = new List<string>();
+            foreach (CatalogEntry e in MinimalContent.Catalog.Genes)
+            {
+                wanted.Add(TextKeys.Gene(e.Id));
+                wanted.Add(TextKeys.Rarity(e.Rarity));
+            }
+            foreach (CatalogEntry e in MinimalContent.Catalog.Techs) wanted.Add(TextKeys.Tech(MinimalContent.Catalog.TechTypeOf(e.Id)));
+            foreach (CatalogEntry e in MinimalContent.Catalog.Mods)
+            {
+                wanted.Add(TextKeys.Mod(e.Id));
+                wanted.Add(TextKeys.ModDesc(e.Id));
+            }
+            foreach (CatalogEntry e in MinimalContent.Catalog.Vouchers)
+            {
+                wanted.Add(TextKeys.Voucher(e.Id));
+                wanted.Add(TextKeys.VoucherDesc(e.Id));
+            }
+            foreach (CatalogEntry e in MinimalContent.Catalog.Boosters) wanted.Add(TextKeys.Booster(e.Id));
+            foreach (RunDifficulty d in Enum.GetValues(typeof(RunDifficulty))) wanted.Add(TextKeys.Desc(d));
+            List<string> missing = wanted.Where(k => !keys.Contains(k)).Distinct().ToList();
+            Assert.That(missing, Is.Empty, "不在 " + TablePath + " 里:\n" + string.Join("\n", missing));
+        }
+
         [Test]
         public void Prefabs_LocalizedTextKeysAreInTable()
         {

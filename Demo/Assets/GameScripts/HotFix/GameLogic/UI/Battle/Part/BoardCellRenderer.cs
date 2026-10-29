@@ -199,6 +199,6 @@ public sealed class BoardCellRenderer
     private static Color ColorOfOwner(Func<int, BlockInstance> instanceOf, int owner)
     {
         BlockInstance b = instanceOf(owner);
-        return b != null ? BlockLayout.ColorOf(b.Kind) : Color.white;
+        return b != null ? BlockLayout.ColorOf(b) : Color.white;
     }
 }

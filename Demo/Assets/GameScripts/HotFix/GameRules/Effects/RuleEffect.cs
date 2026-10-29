@@ -57,6 +57,12 @@ namespace GameRules
     /// </summary>
     public abstract class RuleEffect
     {
+        /// <summary>
+        /// 基因的代价「本盲注目标分 +X%」(规则 §4.1),千分值:200 = +20%。只作用于拿到之后的第一个盲注,
+        /// 拿到时记在 <see cref="GeneSlot.CostPending"/> 上(效果系统 §6)。不是基因、或没有这种代价的为 0。
+        /// </summary>
+        public virtual int CostTargetPermille => 0;
+
         /// <summary>结算前(段 #6):定类型后、读底注前。</summary>
         public virtual void BeforeScoring(EffectContext ctx)
         {

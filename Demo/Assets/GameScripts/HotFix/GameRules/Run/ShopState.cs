@@ -3,23 +3,31 @@ using System.Collections.Generic;
 
 namespace GameRules
 {
-    /// <summary>商店货格的一件货。卖出后 <see cref="Sold"/> 为真,格子留着但不能再买。</summary>
+    /// <summary>
+    /// 商店货格的一件货。卖出后 <see cref="Sold"/> 为真,格子留着但不能再买。
+    /// 基因可以带版本,方块可以带强化与版本(规则 §4.1、§4.4);其余种类两者恒为 None。
+    /// </summary>
     public readonly struct ShopOffer
     {
         public readonly ItemKind Kind;
         public readonly int Id;
         public readonly int Price;
         public readonly bool Sold;
+        public readonly Enhancement Enhancement;
+        public readonly Edition Edition;
 
-        public ShopOffer(ItemKind kind, int id, int price, bool sold = false)
+        public ShopOffer(ItemKind kind, int id, int price, bool sold = false, Enhancement enhancement = Enhancement.None,
+            Edition edition = Edition.None)
         {
             Kind = kind;
             Id = id;
             Price = price;
             Sold = sold;
+            Enhancement = enhancement;
+            Edition = edition;
         }
 
-        public ShopOffer AsSold() => new ShopOffer(Kind, Id, Price, true);
+        public ShopOffer AsSold() => new ShopOffer(Kind, Id, Price, true, Enhancement, Edition);
     }
 
     /// <summary>买一件货的结果。失败时不改状态、不扣钱。</summary>
@@ -35,7 +43,9 @@ namespace GameRules
     /// <summary>
     /// 一个商店的货架(局外循环设计稿 §4):4 个货格,权重 基因 60 / 方块 16 / 科技 12 / 改造 12;另挂一张优惠券(每段第一场)。
     /// 刷新只换货格,第一次 $5、之后每次 +$1,议价券再减;买货先查放不放得下,再扣钱,失败不改状态。
-    /// 另挂一个补给包,买了当场开、选够次数关。
+    /// 另挂一个补给包,买了当场开、选够次数或跳过就关。
+    /// 科技软锁(规则 §4.2):对应类型这一局没打出过的科技不进货格与补给包。传说基因不进货格(规则 §2.5)。
+    /// 版本与强化另走 <see cref="RngKeys.Edition"/> 那条流,出货那条流的消费次数不因它变。
     /// </summary>
     public sealed class ShopState
     {
@@ -44,6 +54,18 @@ namespace GameRules
 
         /// <summary>货格数的上限:扩货标签 +1、柜台券 +1。</summary>
         public const int MaxGoodsCount = GoodsCount + 2;
+
+        // 版本、强化出现率(千分比,照 Balatro 1.0.1o 的量级折候选,待定标):基因 闪箔 20 / 镭射 14 / 多彩 3 / 负片 3;
+        // 方块 闪箔 20 / 镭射 14 / 多彩 6,强化 200(四种均分)。
+        private const int FoilPermille = 20;
+        private const int HoloPermille = 14;
+        private const int GenePolyPermille = 3;
+        private const int NegativePermille = 3;
+        private const int BlockPolyPermille = 6;
+        private const int BlockEnhancementPermille = 200;
+
+        /// <summary>基因包里每个候选换成传说的概率(千分比,待定标);池里没有传说时不掷。</summary>
+        public const int LegendaryPermille = 30;
 
         private readonly ShopOffer[] _goods;
         private readonly ContentCatalog _catalog;
@@ -132,12 +154,12 @@ namespace GameRules
             RunTuning tuning = run.Config.Tuning;
             int count = Math.Min(tuning.GoodsCount + 2, tuning.GoodsCount + extraGoods + run.Modifiers.ShopSlotBonus);
             int pricePermille = run.Modifiers.PricePermille * Math.Max(1, discountPermille) / 1000;
-            ShopOffer[] goods = Roll(rng, catalog, run.Difficulty, guaranteeGene, pricePermille, count, run.Modifiers.ShiftRarity, tuning);
+            ShopOffer[] goods = Roll(rng, run, guaranteeGene, pricePermille, count);
             ShopOffer? voucher = offerVoucher && catalog.Vouchers.Count > 0
-                ? (ShopOffer?)RollVoucher(rng, catalog, run.Difficulty, pricePermille, tuning)
+                ? (ShopOffer?)RollVoucher(rng, run, pricePermille)
                 : null;
             ShopOffer? booster = catalog.Boosters.Count > 0
-                ? (ShopOffer?)RollBooster(rng, catalog, run.Difficulty, freeBooster ? 0 : pricePermille, tuning)
+                ? RollBooster(rng, run, freeBooster ? 0 : pricePermille)
                 : null;
             return new ShopState(goods, catalog, run.Difficulty, guaranteeGene, 0, voucher, booster, null, tuning, freeReroll);
         }
@@ -149,8 +171,7 @@ namespace GameRules
             if (run == null) throw new ArgumentNullException(nameof(run));
             int cost = RerollCostFor(run);
             if (!run.TrySpend(cost)) return false;
-            ShopOffer[] fresh = Roll(rng, _catalog, _difficulty, _guaranteeGene, run.Modifiers.PricePermille, _goods.Length,
-                run.Modifiers.ShiftRarity, _tuning);
+            ShopOffer[] fresh = Roll(rng, run, _guaranteeGene, run.Modifiers.PricePermille, _goods.Length);
             for (int i = 0; i < _goods.Length; i++) _goods[i] = fresh[i];
             if (!_freeReroll) Rerolls++;
             return true;
@@ -164,45 +185,60 @@ namespace GameRules
             ShopOffer offer = _goods[index];
             if (offer.Sold) return ShopBuyResult.SoldOut;
             if (offer.Price > run.Money) return ShopBuyResult.NotEnoughMoney;
+            ShopBuyResult fits = CanTake(offer, run);
+            if (fits != ShopBuyResult.Ok) return fits;
+            if (!run.TrySpend(offer.Price)) return ShopBuyResult.NotEnoughMoney;
+            Take(offer, run);
+            _goods[index] = offer.AsSold();
+            return ShopBuyResult.Ok;
+        }
 
+        /// <summary>
+        /// 这件东西现在放得下吗:基因看槽(负片不占槽),科技与改造看道具栏(规则 §2.5:消耗品都进道具栏),方块直接进库。
+        /// 补给包里选的科技当场用掉(同 Balatro 的天体包),不进道具栏,所以只看等级到没到顶。
+        /// </summary>
+        internal static ShopBuyResult CanTake(ShopOffer offer, RunState run, bool fromPack = false)
+        {
             switch (offer.Kind)
             {
                 case ItemKind.Gene:
-                    if (!CanTakeGene(run, offer.Id)) return ShopBuyResult.SlotFull;
-                    break;
+                    return run.CanTakeGene(offer.Id, offer.Edition) ? ShopBuyResult.Ok : ShopBuyResult.SlotFull;
                 case ItemKind.Tech:
-                    ClearType type = _catalog.TechTypeOf(offer.Id);
-                    if (run.LevelOf(type) >= run.Config.ClearTypes.MaxLevel(type)) return ShopBuyResult.SlotFull;
-                    break;
+                    if (fromPack)
+                    {
+                        ClearType type = run.Config.Catalog.TechTypeOf(offer.Id);
+                        return run.LevelOf(type) < run.Config.ClearTypes.MaxLevel(type) ? ShopBuyResult.Ok : ShopBuyResult.SlotFull;
+                    }
+                    return run.Consumables.Count < run.ConsumableSlots ? ShopBuyResult.Ok : ShopBuyResult.SlotFull;
                 case ItemKind.Mod:
-                    if (run.Consumables.Count >= run.ConsumableSlots) return ShopBuyResult.SlotFull;
-                    break;
+                    return run.Consumables.Count < run.ConsumableSlots ? ShopBuyResult.Ok : ShopBuyResult.SlotFull;
                 case ItemKind.Block:
-                    break;
+                    return ShopBuyResult.Ok;
                 default:
                     return ShopBuyResult.UnknownOffer;
             }
+        }
 
-            if (!run.TrySpend(offer.Price)) return ShopBuyResult.NotEnoughMoney;
-
+        /// <summary>把一件东西交给这一局;调用方已经查过 <see cref="CanTake"/>。</summary>
+        internal static void Take(ShopOffer offer, RunState run, bool fromPack = false)
+        {
             switch (offer.Kind)
             {
                 case ItemKind.Gene:
-                    run.TryAddGene(offer.Id);
+                    run.TryAddGene(offer.Id, offer.Edition);
                     break;
                 case ItemKind.Tech:
-                    run.UpgradeType(_catalog.TechTypeOf(offer.Id));
+                    if (fromPack) run.UpgradeType(run.Config.Catalog.TechTypeOf(offer.Id));
+                    else run.TryAddConsumable(ConsumableItem.Tech(offer.Id));
                     break;
                 case ItemKind.Mod:
-                    run.TryAddConsumable(offer.Id);
+                    run.TryAddConsumable(ConsumableItem.Mod(offer.Id));
                     break;
                 case ItemKind.Block:
-                    BlockEntry block = FindBlock(offer.Id);
-                    run.AddBlock(block.Kind, block.Points);
+                    BlockEntry block = FindBlock(run.Config.Catalog, offer.Id);
+                    run.AddBlock(block.Kind, block.Points, offer.Enhancement, offer.Edition);
                     break;
             }
-            _goods[index] = offer.AsSold();
-            return ShopBuyResult.Ok;
         }
 
         /// <summary>买本店挂着的优惠券。没有券、已经持有、钱不够都返回对应的失败码。</summary>
@@ -229,12 +265,13 @@ namespace GameRules
             ShopOffer offer = _booster.Value;
             if (offer.Price > run.Money) return ShopBuyResult.NotEnoughMoney;
             if (!run.TrySpend(offer.Price)) return ShopBuyResult.NotEnoughMoney;
-            _pack = BoosterPack.Open(rng, _catalog, offer.Id);
+            _pack = BoosterPack.Open(rng, run, offer.Id);
             _booster = null;
+            if (_pack.IsClosed) _pack = null;
             return ShopBuyResult.Ok;
         }
 
-        /// <summary>从正在开的包里选第 <paramref name="index"/> 件;选够次数包就关。</summary>
+        /// <summary>从正在开的包里选第 <paramref name="index"/> 件;选够次数或候选选空,包就关。</summary>
         public ShopBuyResult ChooseBooster(int index, RunState run)
         {
             if (_pack == null) return ShopBuyResult.SoldOut;
@@ -243,65 +280,114 @@ namespace GameRules
             return result;
         }
 
-        private static bool CanTakeGene(RunState run, int geneId) =>
-            run.Genes.Count < run.GeneSlots && run.Config.Effects.Find(EffectSource.Gene, geneId) != null;
-
-        private BlockEntry FindBlock(int blockId)
+        /// <summary>跳过正在开的包:剩下的候选作废,包关掉。没有在开的包返回 false。</summary>
+        public bool SkipBooster()
         {
-            foreach (BlockEntry b in _catalog.Blocks)
+            if (_pack == null) return false;
+            _pack = null;
+            return true;
+        }
+
+        /// <summary>版本的附加费(照 Balatro 1.0.1o 的 +2 / +3 / +5 / +5,待定标);卖价也把它算进去。</summary>
+        public static int EditionSurcharge(Edition edition)
+        {
+            switch (edition)
+            {
+                case Edition.Foil: return 2;
+                case Edition.Holo: return 3;
+                case Edition.Polychrome: return 5;
+                case Edition.Negative: return 5;
+                default: return 0;
+            }
+        }
+
+        /// <summary>强化的附加费(待定标)。</summary>
+        public static int EnhancementSurcharge(Enhancement enhancement) => enhancement == Enhancement.None ? 0 : 1;
+
+        /// <summary>按难度与折扣折算的实付价,向下取整。</summary>
+        internal static int PriceFor(int basePrice, RunDifficulty difficulty, int pricePermille, RunTuning tuning) =>
+            (int)((long)basePrice * tuning.DifficultyOf(difficulty).PricePermille * pricePermille / 1000000);
+
+        internal static BlockEntry FindBlock(ContentCatalog catalog, int blockId)
+        {
+            foreach (BlockEntry b in catalog.Blocks)
             {
                 if (b.Id == blockId) return b;
             }
             throw new InvalidOperationException("目录里没有这块方块: " + blockId);
         }
 
-        private static ShopOffer[] Roll(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, bool guaranteeGene,
-            int pricePermille, int count, bool shiftRarity, RunTuning tuning)
+        /// <summary>基因货的版本:闪箔、镭射、多彩、负片,大多数为 None。</summary>
+        internal static Edition RollGeneEdition(IRandomSource rng)
         {
+            int roll = rng.Index(1000);
+            if (roll < NegativePermille) return Edition.Negative;
+            if (roll < NegativePermille + GenePolyPermille) return Edition.Polychrome;
+            if (roll < NegativePermille + GenePolyPermille + HoloPermille) return Edition.Holo;
+            if (roll < NegativePermille + GenePolyPermille + HoloPermille + FoilPermille) return Edition.Foil;
+            return Edition.None;
+        }
+
+        private static ShopOffer[] Roll(IRandomSource rng, RunState run, bool guaranteeGene, int pricePermille, int count)
+        {
+            ContentCatalog catalog = run.Config.Catalog;
+            IRandomSource looks = run.EditionRng();
             var goods = new ShopOffer[count];
             bool hasGene = false;
             for (int i = 0; i < goods.Length; i++)
             {
-                goods[i] = RollOne(rng, catalog, difficulty, pricePermille, shiftRarity, tuning);
+                goods[i] = RollOne(rng, looks, run, pricePermille);
                 if (goods[i].Kind == ItemKind.Gene) hasGene = true;
             }
-            if (guaranteeGene && !hasGene && catalog.Genes.Count > 0)
+            if (guaranteeGene && !hasGene && HasShopGenes(catalog))
             {
-                goods[0] = GeneOffer(rng, catalog, difficulty, pricePermille, shiftRarity, tuning);
+                goods[0] = GeneOffer(rng, looks, run, pricePermille);
             }
             return goods;
         }
 
-        private static ShopOffer RollOne(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille,
-            bool shiftRarity, RunTuning tuning)
+        private static ShopOffer RollOne(IRandomSource rng, IRandomSource looks, RunState run, int pricePermille)
         {
+            ContentCatalog catalog = run.Config.Catalog;
+            RunTuning tuning = run.Config.Tuning;
             // 权重按设计稿 §4.1:基因 60 / 方块 16 / 科技 12 / 改造 12(数值在 RunTuning)
             int gene = tuning.WeightGene, block = tuning.WeightBlock, tech = tuning.WeightTech;
+            bool hasGenes = HasShopGenes(catalog);
+            bool hasTechs = run.UnlockedTechs().Count > 0;
             int roll = rng.Index(100);
-            if (roll < gene && catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty, pricePermille, shiftRarity, tuning);
-            if (roll < gene + block && catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty, pricePermille, tuning);
-            if (roll < gene + block + tech && catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty, pricePermille, tuning);
-            if (catalog.Mods.Count > 0) return ModOffer(rng, catalog, difficulty, pricePermille, tuning);
-            if (catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty, pricePermille, shiftRarity, tuning);
-            if (catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty, pricePermille, tuning);
-            if (catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty, pricePermille, tuning);
+            if (roll < gene && hasGenes) return GeneOffer(rng, looks, run, pricePermille);
+            if (roll < gene + block && catalog.Blocks.Count > 0) return BlockOffer(rng, looks, run, pricePermille);
+            if (roll < gene + block + tech && hasTechs) return TechOffer(rng, run, pricePermille);
+            if (catalog.Mods.Count > 0) return ModOffer(rng, run, pricePermille);
+            if (hasGenes) return GeneOffer(rng, looks, run, pricePermille);
+            if (catalog.Blocks.Count > 0) return BlockOffer(rng, looks, run, pricePermille);
+            if (hasTechs) return TechOffer(rng, run, pricePermille);
             throw new InvalidOperationException("目录里没有任何可卖的东西");
         }
 
-        /// <summary>
-        /// 基因按稀有度抽:普通 70 / 罕见 25 / 稀有 5(千分比);稀券把它推到 60/30/10。
-        /// 池子里没有某一档时把那一档的权重并回去,不至于抽空。
-        /// </summary>
-        private static ShopOffer GeneOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille,
-            bool shiftRarity, RunTuning tuning)
+        private static bool HasShopGenes(ContentCatalog catalog)
         {
-            tuning.GeneWeights(shiftRarity, out int common, out int uncommon, out int rare);
+            foreach (CatalogEntry e in catalog.Genes)
+            {
+                if (e.Rarity != Rarity.Legendary) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 基因按稀有度抽:普通 70 / 罕见 25 / 稀有 5(千分比);稀券把它推到 60/30/10。传说不进商店。
+        /// 池子里没有某一档时退回全部非传说基因,不至于抽空。
+        /// </summary>
+        private static ShopOffer GeneOffer(IRandomSource rng, IRandomSource looks, RunState run, int pricePermille)
+        {
+            ContentCatalog catalog = run.Config.Catalog;
+            run.Config.Tuning.GeneWeights(run.Modifiers.ShiftRarity, out int common, out int uncommon, out int rare);
             int roll = rng.Index(1000);
-            int tier = roll < common ? 0 : roll < common + uncommon ? 1 : 2;
-            CatalogEntry? pick = PickByRarity(rng, catalog, tier);
-            if (!pick.HasValue) pick = catalog.Genes[rng.Index(catalog.Genes.Count)];
-            CatalogEntry e = pick.Value;
-            return new ShopOffer(ItemKind.Gene, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
+            int tier = roll < common ? Rarity.Common : roll < common + uncommon ? Rarity.Uncommon : Rarity.Rare;
+            CatalogEntry e = PickByRarity(rng, catalog, tier) ?? PickNonLegendary(rng, catalog);
+            Edition edition = RollGeneEdition(looks);
+            int price = PriceFor(e.Price + EditionSurcharge(edition), run.Difficulty, pricePermille, run.Config.Tuning);
+            return new ShopOffer(ItemKind.Gene, e.Id, price, false, Enhancement.None, edition);
         }
 
         /// <summary>在某个稀有度档里随机挑一个;这一档为空返回 null(调用方退回全池)。</summary>
@@ -322,37 +408,69 @@ namespace GameRules
             return null;
         }
 
-        private static ShopOffer TechOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille, RunTuning tuning)
+        private static CatalogEntry PickNonLegendary(IRandomSource rng, ContentCatalog catalog)
         {
-            CatalogEntry e = catalog.Techs[rng.Index(catalog.Techs.Count)];
-            return new ShopOffer(ItemKind.Tech, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
+            var pool = new List<CatalogEntry>();
+            foreach (CatalogEntry e in catalog.Genes)
+            {
+                if (e.Rarity != Rarity.Legendary) pool.Add(e);
+            }
+            return pool[rng.Index(pool.Count)];
         }
 
-        private static ShopOffer ModOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille, RunTuning tuning)
+        private static ShopOffer TechOffer(IRandomSource rng, RunState run, int pricePermille)
         {
-            CatalogEntry e = catalog.Mods[rng.Index(catalog.Mods.Count)];
-            return new ShopOffer(ItemKind.Mod, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
+            List<int> unlocked = run.UnlockedTechs();
+            int id = unlocked[rng.Index(unlocked.Count)];
+            CatalogEntry e = run.Config.Catalog.Find(ItemKind.Tech, id).Value;
+            return new ShopOffer(ItemKind.Tech, e.Id, PriceFor(e.Price, run.Difficulty, pricePermille, run.Config.Tuning));
         }
 
-        private static ShopOffer BlockOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille, RunTuning tuning)
+        private static ShopOffer ModOffer(IRandomSource rng, RunState run, int pricePermille)
         {
-            BlockEntry e = catalog.Blocks[rng.Index(catalog.Blocks.Count)];
-            return new ShopOffer(ItemKind.Block, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
+            IReadOnlyList<CatalogEntry> mods = run.Config.Catalog.Mods;
+            CatalogEntry e = mods[rng.Index(mods.Count)];
+            return new ShopOffer(ItemKind.Mod, e.Id, PriceFor(e.Price, run.Difficulty, pricePermille, run.Config.Tuning));
         }
 
-        private static ShopOffer RollVoucher(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille, RunTuning tuning)
+        private static ShopOffer BlockOffer(IRandomSource rng, IRandomSource looks, RunState run, int pricePermille)
         {
-            CatalogEntry e = catalog.Vouchers[rng.Index(catalog.Vouchers.Count)];
-            return new ShopOffer(ItemKind.Voucher, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
+            IReadOnlyList<BlockEntry> blocks = run.Config.Catalog.Blocks;
+            BlockEntry e = blocks[rng.Index(blocks.Count)];
+            Enhancement enhancement = looks.Index(1000) < BlockEnhancementPermille ? (Enhancement)(1 + looks.Index(4)) : Enhancement.None;
+            int roll = looks.Index(1000);
+            Edition edition = roll < BlockPolyPermille ? Edition.Polychrome
+                : roll < BlockPolyPermille + HoloPermille ? Edition.Holo
+                : roll < BlockPolyPermille + HoloPermille + FoilPermille ? Edition.Foil
+                : Edition.None;
+            int price = PriceFor(e.Price + EnhancementSurcharge(enhancement) + EditionSurcharge(edition), run.Difficulty, pricePermille,
+                run.Config.Tuning);
+            return new ShopOffer(ItemKind.Block, e.Id, price, false, enhancement, edition);
         }
 
-        private static ShopOffer RollBooster(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille, RunTuning tuning)
+        private static ShopOffer RollVoucher(IRandomSource rng, RunState run, int pricePermille)
         {
-            CatalogEntry e = catalog.Boosters[rng.Index(catalog.Boosters.Count)];
-            return new ShopOffer(ItemKind.Booster, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
+            IReadOnlyList<CatalogEntry> vouchers = run.Config.Catalog.Vouchers;
+            CatalogEntry e = vouchers[rng.Index(vouchers.Count)];
+            return new ShopOffer(ItemKind.Voucher, e.Id, PriceFor(e.Price, run.Difficulty, pricePermille, run.Config.Tuning));
         }
 
-        private static int Price(int basePrice, RunDifficulty difficulty, int pricePermille, RunTuning tuning) =>
-            (int)((long)basePrice * tuning.DifficultyOf(difficulty).PricePermille * pricePermille / 1000000);
+        /// <summary>挂哪个补给包。科技包在没有已解锁科技时打开是空的,这时不挂它、改挂别的;一个都挂不了返回 null。</summary>
+        private static ShopOffer? RollBooster(IRandomSource rng, RunState run, int pricePermille)
+        {
+            IReadOnlyList<CatalogEntry> boosters = run.Config.Catalog.Boosters;
+            CatalogEntry e = boosters[rng.Index(boosters.Count)];
+            if (e.Id == BoosterPack.TechPack && run.UnlockedTechs().Count == 0)
+            {
+                CatalogEntry? other = null;
+                foreach (CatalogEntry b in boosters)
+                {
+                    if (b.Id != BoosterPack.TechPack) { other = b; break; }
+                }
+                if (other == null) return null;
+                e = other.Value;
+            }
+            return new ShopOffer(ItemKind.Booster, e.Id, PriceFor(e.Price, run.Difficulty, pricePermille, run.Config.Tuning));
+        }
     }
 }

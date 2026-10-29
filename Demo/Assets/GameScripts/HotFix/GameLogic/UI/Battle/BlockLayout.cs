@@ -117,6 +117,45 @@ public static class BlockLayout
         return k >= 0 && k < KindColors.Length ? KindColors[k] : Color.white;
     }
 
+    // 强化的占位染色(规则 §4.4):骨牌底色朝强化色推一截,一眼分得出;正式美术来了换成贴图。
+    private static readonly Color GlassTint = new Color(0.85f, 0.95f, 1f, 1f);
+    private static readonly Color SteelTint = new Color(0.62f, 0.66f, 0.72f, 1f);
+    private static readonly Color GoldTint = new Color(1f, 0.82f, 0.25f, 1f);
+    private static readonly Color WildTint = new Color(1f, 1f, 1f, 1f);
+    private const float EnhancementTintShare = 0.55f;
+    private const float GlassAlpha = 0.72f;
+
+    /// <summary>
+    /// 一块的格色:骨牌底色,带强化时朝强化色推(琉璃另带半透明)。版本不染色,标在托盘点数旁(<see cref="EditionMark"/>)。
+    /// </summary>
+    public static Color ColorOf(BlockInstance block)
+    {
+        Color c = ColorOf(block.Kind);
+        switch (block.Enhancement)
+        {
+            case Enhancement.Glass:
+                c = Color.Lerp(c, GlassTint, EnhancementTintShare);
+                c.a = GlassAlpha;
+                return c;
+            case Enhancement.Steel: return Color.Lerp(c, SteelTint, EnhancementTintShare);
+            case Enhancement.Gold: return Color.Lerp(c, GoldTint, EnhancementTintShare);
+            case Enhancement.Wild: return Color.Lerp(c, WildTint, EnhancementTintShare);
+            default: return c;
+        }
+    }
+
+    /// <summary>托盘点数旁的版本角标(闪箔 ◇、镭射 ◆、多彩 ★,都是思源黑体里有的字形);没有版本返回空串。</summary>
+    public static string EditionMark(Edition edition)
+    {
+        switch (edition)
+        {
+            case Edition.Foil: return "◇";
+            case Edition.Holo: return "◆";
+            case Edition.Polychrome: return "★";
+            default: return string.Empty;
+        }
+    }
+
     // 置灰(这块怎么转都放不下):去色、压暗、半透明,点数变淡。不加文字(13 号票)。
     private const float GreyBrightness = 0.6f;
     private const float GreyAlpha = 0.55f;

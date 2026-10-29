@@ -14,10 +14,12 @@ namespace GameRules
 
         IReadOnlyList<int> TypeLevels { get; }
 
+        IReadOnlyList<int> TypeCounts { get; }
+
         IReadOnlyList<GeneSlot> Genes { get; }
 
-        /// <summary>道具栏里的改造(号);战斗界面按它画道具栏。</summary>
-        IReadOnlyList<int> Consumables { get; }
+        /// <summary>道具栏里的科技与改造;战斗界面按它画道具栏。</summary>
+        IReadOnlyList<ConsumableItem> Consumables { get; }
 
         IBlindView Blind { get; }
 

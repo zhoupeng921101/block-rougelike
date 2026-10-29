@@ -39,7 +39,7 @@ namespace GameRules
             blind.TraySlots[slot] = default;
             var events = new List<RuleEvent> { new PiecePlaced(instanceId, block.Kind, rot, row, col, cells) };
 
-            var ctx = new EffectContext(run, StepKind.Place);
+            var ctx = new EffectContext(run, StepKind.Place, events);
             if (!clear.HasClear)
             {
                 blind.Combo = 0;
@@ -65,7 +65,7 @@ namespace GameRules
             blind.DiscardedList.Add(instanceId);
             blind.DiscardsLeft--;
             var events = new List<RuleEvent> { new PieceDiscarded(instanceId, blind.DiscardsLeft) };
-            return Finish(run, new EffectContext(run, StepKind.Discard), events);
+            return Finish(run, new EffectContext(run, StepKind.Discard, events), events);
         }
 
         // #5–#12
@@ -76,6 +76,7 @@ namespace GameRules
 
             // #5 定类型
             events.Add(new ClearResolved(clear.Rows, clear.Cols, clear.Cells, type));
+            run.RecordClear(type);
             ctx.HasClear = true;
             ctx.Type = type;
             ctx.Rows = clear.Rows;
@@ -84,6 +85,7 @@ namespace GameRules
             ctx.Owners = clear.Owners;
 
             // #6 结算前:可以改等级,所以 #7 在它之后读
+            ctx.Hook = EffectHook.Before;
             VisitClearedBlocksThenGenes(run, ctx, (e, c) => e.BeforeScoring(c));
 
             // #7 读底注
@@ -103,6 +105,7 @@ namespace GameRules
                 ctx.Repetition = 0;
                 CollectCellSources(run, owner, sources);
 
+                ctx.Hook = EffectHook.Repetition;
                 int extra = 0;
                 foreach ((EffectSource source, int index, RuleEffect effect) in sources)
                 {
@@ -114,6 +117,7 @@ namespace GameRules
                     events.Add(new RepetitionGranted(source, index, cell, n));
                 }
 
+                ctx.Hook = EffectHook.Cell;
                 for (int pass = 0; pass <= extra; pass++)
                 {
                     ctx.Repetition = pass;
@@ -130,8 +134,9 @@ namespace GameRules
             ctx.Block = null;
             ctx.Repetition = 0;
 
-            // #9 基因段
-            VisitGenes(run, ctx, (e, c) => Apply(c, e.OnGene(c), events));
+            // #9 基因段:带版本的基因,加算的版本在本体之前,×倍率的版本在本体之后(规则 §3.1)
+            ctx.Hook = EffectHook.Gene;
+            ScoreGenes(run, ctx, events);
 
             // #10 入账
             long gain = ScoreMath.Gain(ctx.Chips, ctx.MultPermille);
@@ -147,8 +152,44 @@ namespace GameRules
             blind.DepartedList.AddRange(departed);
             events.Add(new CellsCleared(clear.Cells, departed));
 
-            // #12 结算后
+            // #12 结算后:碎块等这一段问完再湮灭,问的途中被问的那批块不变
+            ctx.Hook = EffectHook.After;
             VisitClearedBlocksThenGenes(run, ctx, (e, c) => e.AfterScoring(c));
+            foreach (int id in ctx.Shattered) Destroy(run, id, events);
+            ctx.Shattered.Clear();
+        }
+
+        /// <summary>湮灭一块并吐事件(琉璃碎裂、删块改造)。不在方块库与临时块里的 id 什么也不做。</summary>
+        internal static void Destroy(RunState run, int instanceId, List<RuleEvent> events)
+        {
+            int[] cells = run.DestroyInstance(instanceId);
+            if (cells != null) events.Add(new BlockDestroyed(instanceId, cells));
+        }
+
+        /// <summary>
+        /// 盲注里用了改造之后:待放置区可能被删空,补发一组、再判一次负,回到稳定态(09 §5)。不算一步,不走步收尾。
+        /// </summary>
+        internal static void AfterConsumable(RunState run, List<RuleEvent> events)
+        {
+            BlindState blind = run.Blind;
+            if (blind == null || blind.Outcome != BlindOutcome.InProgress) return;
+            DealAndJudge(run, events);
+        }
+
+        private static void ScoreGenes(RunState run, EffectContext ctx, List<RuleEvent> events)
+        {
+            EffectRegistry registry = run.Config.Effects;
+            for (int slot = 0; slot < run.Genes.Count; slot++)
+            {
+                GeneSlot gene = run.Genes[slot];
+                RuleEffect body = registry.Find(EffectSource.Gene, gene.GeneId);
+                RuleEffect edition = gene.Edition == Edition.None ? null : registry.Find(EffectSource.Edition, (int)gene.Edition);
+                SetSource(ctx, EffectSource.Gene, slot);
+                bool after = CoreEffects.AppliesAfterGene(gene.Edition);
+                if (edition != null && !after) Apply(ctx, edition.OnGene(ctx), events);
+                if (body != null) Apply(ctx, body.OnGene(ctx), events);
+                if (edition != null && after) Apply(ctx, edition.OnGene(ctx), events);
+            }
         }
 
         // #13–#17
@@ -157,6 +198,7 @@ namespace GameRules
             BlindState blind = run.Blind;
 
             // #13 步收尾
+            ctx.Hook = EffectHook.StepEnd;
             VisitGenes(run, ctx, (e, c) => e.OnStepEnd(c));
 
             // #14 判胜在发组前:达标就不发下一组,同一步也不再判负(规则 §2.4)

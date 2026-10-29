@@ -6,8 +6,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 选关屏(局外循环设计稿 §2):6 段 × 3 层,可选的节点亮着,点一下进节点开打。
+/// 选关屏(局外循环设计稿 §2,规则 §8.3):6 段 × 3 层,可选的节点亮着,点一下进节点开打。
 /// 节点按钮是运行时按布局摆的(窗里只留空容器 <c>m_rect_Map</c>);首领场标出这一场的负面效果。
+/// 左栏是消除类型表(本级底注 × 倍率、本局打出过几次),右栏是背包栏(<see cref="RunInventoryView"/>)。
 /// </summary>
 [Window(UILayer.UI, fullScreen: true)]
 public partial class UIMapPanel : UIPanelMono
@@ -22,8 +23,18 @@ public partial class UIMapPanel : UIPanelMono
 
     private readonly List<GameObject> _buttons = new List<GameObject>();
 
+    /// <summary>节点区左右各让出的宽度(m_rect_Map 坐标):左边是类型表,右边是背包栏。</summary>
+    private const float LeftReserve = 260f;
+    private const float RightReserve = 340f;
+
+    private RectTransform _typeTable;
+    private RunInventoryView _inventory;
+
     protected override void OnCreate()
     {
+        _typeTable = RuntimeUI.Node("类型表", rectTransform, new Vector2(24f, -220f), new Vector2(320f, 520f), typeof(Image));
+        _typeTable.GetComponent<Image>().color = RuntimeUI.PanelColor;
+        _inventory = new RunInventoryView(RunInventoryView.CreateDock(rectTransform, 400f, 120f, 820f), m_text_Title.font, Rebuild);
         AddServiceEvent(
             () => TextTable.Instance.LanguageChanged += Rebuild,
             () => { if (TextTable.IsValid) TextTable.Instance.LanguageChanged -= Rebuild; });
@@ -55,6 +66,27 @@ public partial class UIMapPanel : UIPanelMono
             _run.Money.ToString(CultureInfo.InvariantCulture));
         SetBackLabel(table.Get(TextKeys.Map.Back));
         LayoutNodes(table);
+        BuildTypeTable(table);
+        if (_inventory.IsBoundTo(_run)) _inventory.Rebuild();
+        else _inventory.Bind(_run);
+    }
+
+    /// <summary>11 种消除类型按判定优先级排:名字、等级、本级底注 × 倍率、本局打出过几次。</summary>
+    private void BuildTypeTable(TextTable table)
+    {
+        RuntimeUI.Clear(_typeTable);
+        float y = -8f;
+        RuntimeUI.Label(_typeTable, m_text_Title.font, table.Get(TextKeys.Inventory.MapTypes), new Vector2(10f, y), new Vector2(300f, 36f), 24,
+            TextAnchor.MiddleLeft, RuntimeUI.Gold);
+        y -= 42f;
+        foreach (ClearType type in ClearRules.Priority)
+        {
+            ClearTypeBase b = _run.BaseOf(type);
+            string row = table.Format(TextKeys.Inventory.MapTypeRow, table.Get(TextKeys.Of(type)), _run.LevelOf(type), b.Chips, b.Mult,
+                _run.TypeCounts[(int)type]);
+            RuntimeUI.Label(_typeTable, m_text_Title.font, row, new Vector2(10f, y), new Vector2(300f, 38f), 19);
+            y -= 40f;
+        }
     }
 
     private void ClearButtons()
@@ -68,7 +100,7 @@ public partial class UIMapPanel : UIPanelMono
     {
         ClearButtons();
         Rect rect = m_rect_Map.rect;
-        float width = rect.width > 0f ? rect.width : 1600f;
+        float width = (rect.width > 0f ? rect.width : 1600f) - LeftReserve - RightReserve;
         float height = rect.height > 0f ? rect.height : 800f;
         int segments = _run.Map.SegmentCount;
         float rowHeight = height / segments;
@@ -84,7 +116,7 @@ public partial class UIMapPanel : UIPanelMono
             for (int layer = 1; layer <= RunMap.LayersPerSegment; layer++)
             {
                 IReadOnlyList<MapNode> nodes = _run.Map.NodesAt(segment, layer);
-                float cellCenterX = cellWidth * (layer - 0.5f) + 80f;
+                float cellCenterX = LeftReserve + cellWidth * (layer - 0.5f);
                 float centerY = -rowHeight * (segment - 0.5f) - 20f;
                 float buttonWidth = Mathf.Min(cellWidth * 0.9f / nodes.Count, 280f);
                 for (int i = 0; i < nodes.Count; i++)

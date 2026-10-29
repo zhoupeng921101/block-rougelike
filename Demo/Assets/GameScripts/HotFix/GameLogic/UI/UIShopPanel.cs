@@ -7,7 +7,8 @@ using UnityEngine.UI;
 
 /// <summary>
 /// 商店屏(局外循环设计稿 §4):4 个货格 + 一张券 + 一个补给包,刷新与离店两个按钮。
-/// 货格按钮按状态运行时生成(窗里只留空容器 <c>m_rect_Goods</c>);买了补给包就在同一个容器里换成包里的候选。
+/// 货格按钮按状态运行时生成(窗里只留空容器 <c>m_rect_Goods</c>);买了补给包就在同一个容器里换成包里的候选,可以跳过。
+/// 右侧停靠背包栏(<see cref="RunInventoryView"/>):在商店里也能换位、卖基因与道具、用道具。
 /// </summary>
 [Window(UILayer.UI, fullScreen: true)]
 public partial class UIShopPanel : UIPanelMono
@@ -16,8 +17,11 @@ public partial class UIShopPanel : UIPanelMono
 
     private readonly List<GameObject> _entries = new List<GameObject>();
 
+    private RunInventoryView _inventory;
+
     protected override void OnCreate()
     {
+        _inventory = new RunInventoryView(RunInventoryView.CreateDock(rectTransform, 400f, 120f, 860f), m_text_Title.font, Rebuild);
         AddServiceEvent(
             () => TextTable.Instance.LanguageChanged += Rebuild,
             () => { if (TextTable.IsValid) TextTable.Instance.LanguageChanged -= Rebuild; });
@@ -49,6 +53,8 @@ public partial class UIShopPanel : UIPanelMono
         SetButtonLabel(m_btn_Reroll, table.Format(TextKeys.Shop.Reroll, shop.RerollCostFor(_run)));
         SetButtonLabel(m_btn_Leave, table.Get(TextKeys.Shop.Leave));
         ClearEntries();
+        if (_inventory.IsBoundTo(_run)) _inventory.Rebuild();
+        else _inventory.Bind(_run);
 
         BoosterPack pack = shop.Pack;
         if (pack != null)
@@ -60,6 +66,7 @@ public partial class UIShopPanel : UIPanelMono
                 ShopOffer option = pack.Options[i];
                 AddEntry(Describe(table, option), true, () => ChooseBooster(index));
             }
+            AddEntry(table.Get(TextKeys.Inventory.SkipPack), true, SkipBooster);
             return;
         }
 
@@ -72,22 +79,20 @@ public partial class UIShopPanel : UIPanelMono
         if (shop.Voucher.HasValue)
         {
             ShopOffer offer = shop.Voucher.Value;
-            AddEntry(table.Format(TextKeys.Shop.Voucher, table.Get(TextKeys.Of(offer.Kind)), offer.Price), true, BuyVoucher);
+            AddEntry(table.Format(TextKeys.Shop.Voucher, ItemNames.Offer(_run.Config.Catalog, offer), offer.Price), true, BuyVoucher);
         }
         if (shop.Booster.HasValue)
         {
             ShopOffer offer = shop.Booster.Value;
-            AddEntry(table.Format(TextKeys.Shop.Booster, "#" + offer.Id.ToString(CultureInfo.InvariantCulture), offer.Price), true, BuyBooster);
+            AddEntry(table.Format(TextKeys.Shop.Booster, ItemNames.Offer(_run.Config.Catalog, offer), offer.Price), true, BuyBooster);
         }
     }
 
-    private static string Describe(TextTable table, ShopOffer offer)
+    /// <summary>一件货:「种类 · 名字 · $价」;基因带版本、方块带点数与强化(<see cref="ItemNames.Offer"/>)。</summary>
+    private string Describe(TextTable table, ShopOffer offer)
     {
         if (offer.Sold) return table.Get(TextKeys.Shop.Sold);
-        // 基因有名字(如「点 +30」)就显示名字,其余按「种类 #号」显示
-        string name = table.Has(TextKeys.Gene(offer.Id))
-            ? table.Get(TextKeys.Gene(offer.Id))
-            : table.Get(TextKeys.Of(offer.Kind)) + " #" + offer.Id.ToString(CultureInfo.InvariantCulture);
+        string name = table.Get(TextKeys.Of(offer.Kind)) + " · " + ItemNames.Offer(_run.Config.Catalog, offer);
         return table.Format(TextKeys.Shop.Goods, name, offer.Price.ToString(CultureInfo.InvariantCulture));
     }
 
@@ -98,6 +103,12 @@ public partial class UIShopPanel : UIPanelMono
     private void BuyBooster() => AfterBuy(_run.Shop.TryBuyBooster(_run.ShopRng(), _run), "买补给包");
 
     private void ChooseBooster(int index) => AfterBuy(_run.Shop.ChooseBooster(index, _run), "开包");
+
+    private void SkipBooster()
+    {
+        if (_run.Shop.SkipBooster()) RunSaveService.Instance.CommitRun(_run, "跳过补给包");
+        Rebuild();
+    }
 
     private void AfterBuy(ShopBuyResult result, string what)
     {

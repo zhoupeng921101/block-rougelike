@@ -221,7 +221,7 @@ public sealed class PieceGestureFlow
         _dragSlot = slot;
         _dragId = v.InstanceId;
         BattleAudio.Pickup();
-        _dragColor = BlockLayout.ColorOf(_run.FindInstance(_dragId).Kind);
+        _dragColor = BlockLayout.ColorOf(_run.FindInstance(_dragId));
         _dragPiece = v.Slot.PieceRoot;
         _tray.SetHeld(slot);
 
