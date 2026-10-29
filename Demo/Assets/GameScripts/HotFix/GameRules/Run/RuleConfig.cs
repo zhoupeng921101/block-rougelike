@@ -61,10 +61,16 @@ namespace GameRules
         /// <summary>利息封顶的持有额(标准档);难度档会改它。</summary>
         public int InterestCap { get; }
 
+        /// <summary>商店与补给包能出现的东西(局外循环设计稿 §4);空目录 = 不卖东西。</summary>
+        public ContentCatalog Catalog { get; }
+
+        /// <summary>基因槽的默认数量(规则 §4.1:默认 4、最多 6;扩槽走优惠券与负片)。</summary>
+        public int GeneSlots { get; }
+
         public RuleConfig(IEnumerable<LibraryEntry> defaultLibrary, ClearTypeTable clearTypes, EffectRegistry effects,
             int startingMoney = 4, int mapSegments = RunMap.DefaultSegments, int firstTarget = 350,
             int segmentTargetPermille = 2300, int baseDiscards = 3, int defaultGroupSize = 3,
-            int interestPer = 10, int interestCap = 50)
+            int interestPer = 10, int interestCap = 50, ContentCatalog catalog = null, int geneSlots = 4)
         {
             if (defaultLibrary == null) throw new ArgumentNullException(nameof(defaultLibrary));
             if (startingMoney < 0) throw new ArgumentOutOfRangeException(nameof(startingMoney), startingMoney, "起始金钱不能为负");
@@ -89,6 +95,9 @@ namespace GameRules
             DefaultGroupSize = defaultGroupSize;
             InterestPer = interestPer;
             InterestCap = interestCap;
+            Catalog = catalog ?? ContentCatalog.Empty;
+            if (geneSlots < 1) throw new ArgumentOutOfRangeException(nameof(geneSlots), geneSlots, "基因槽至少 1");
+            GeneSlots = geneSlots;
             effects.Seal();
         }
     }

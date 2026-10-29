@@ -15,6 +15,9 @@ namespace GameRules
         /// <summary>开局生成地图布局。不带段层、整局只消费一次:地图在开新局那一刻就定死,之后的选路不重掷。</summary>
         public const string Map = "map";
 
+        /// <summary>商店出货与刷新。按层分:同一段里换节点不出别的货,刷新次数也记在这条流上。</summary>
+        public static string Shop(int segment, int layer) => At("shop", segment, layer);
+
         private static string At(string purpose, int segment, int layer)
         {
             if (segment < 1) throw new ArgumentOutOfRangeException(nameof(segment), segment, "段从 1 数");

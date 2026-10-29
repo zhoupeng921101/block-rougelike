@@ -141,6 +141,34 @@ namespace GameRules
         /// </summary>
         public void AddGene(int geneId) => _genes.Add(new GeneSlot(geneId));
 
+        /// <summary>商店买基因用:槽满、或注册表里没有这张基因时返回 false 且不改状态。</summary>
+        public bool TryAddGene(int geneId)
+        {
+            if (_genes.Count >= Config.GeneSlots) return false;
+            if (Config.Effects.Find(EffectSource.Gene, geneId) == null) return false;
+            AddGene(geneId);
+            return true;
+        }
+
+        /// <summary>科技升级一种消除类型。已经到表里最高级时返回 false。</summary>
+        public bool UpgradeType(ClearType type)
+        {
+            int t = (int)type;
+            if (t < 0 || t >= ClearTypes.Count) throw new ArgumentOutOfRangeException(nameof(type), type, "不是消除类型");
+            if (_typeLevels[t] >= Config.ClearTypes.MaxLevel(type)) return false;
+            _typeLevels[t]++;
+            return true;
+        }
+
+        /// <summary>商店买方块:直接进方块库(加块 = 加预算)。返回新实例。</summary>
+        public BlockInstance AddBlock(TetrominoKind kind, int points)
+        {
+            if (points < 0) throw new ArgumentOutOfRangeException(nameof(points), points, "点数不能为负");
+            var block = new BlockInstance(IssueId(), kind, points, Enhancement.None, Edition.None);
+            _library.Add(block);
+            return block;
+        }
+
         /// <summary>按 id 找方块库或本盲注临时块里的实例,找不到返回 null。</summary>
         public BlockInstance FindInstance(int instanceId)
         {
