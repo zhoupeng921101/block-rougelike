@@ -53,6 +53,9 @@ namespace GameRules
 
         public int RerollCost => 5 + Rerolls;
 
+        /// <summary>开局前几场的保底基因;进存档,读档后刷新照样保底。</summary>
+        public bool GuaranteeGene => _guaranteeGene;
+
         private ShopState(ShopOffer[] goods, ContentCatalog catalog, RunDifficulty difficulty, bool guaranteeGene, int rerolls)
         {
             _goods = goods;
@@ -60,6 +63,18 @@ namespace GameRules
             _difficulty = difficulty;
             _guaranteeGene = guaranteeGene;
             Rerolls = rerolls;
+        }
+
+        /// <summary>读档的还原口(<see cref="RunSnapshot"/>):货架、刷新次数与保底标记原样接上;目录与难度取自当局配置。</summary>
+        internal static ShopState Restore(ShopOffer[] goods, int rerolls, bool guaranteeGene, ContentCatalog catalog, RunDifficulty difficulty) =>
+            new ShopState(goods, catalog, difficulty, guaranteeGene, rerolls);
+
+        /// <summary>深拷贝货架(卖掉的标记也要拷),给 <see cref="RunState.Clone"/> 的试走用。</summary>
+        internal ShopState Clone()
+        {
+            var goods = new ShopOffer[_goods.Length];
+            for (int i = 0; i < goods.Length; i++) goods[i] = _goods[i];
+            return new ShopState(goods, _catalog, _difficulty, _guaranteeGene, Rerolls);
         }
 
         /// <summary>开一个新商店。<paramref name="guaranteeGene"/> 用于开局前几场:至少给一个基因格。</summary>

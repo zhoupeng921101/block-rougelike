@@ -20,7 +20,7 @@ namespace GameRules
         // 读入端按这些次序对形状;写出端的调用次序与它们一致,往返单测逐字节比对兜住两边
         private static readonly string[] RootMembers =
         {
-            "format", "schema", "seed", "rng", "difficulty", "money", "map",
+            "format", "schema", "seed", "rng", "difficulty", "money", "map", "shop",
             "nextInstanceId", "library", "typeLevels", "genes", "blind",
         };
         private static readonly string[] RngMembers = { "scheme", "streams" };
@@ -28,6 +28,8 @@ namespace GameRules
         private static readonly string[] MapMembers = { "segmentCount", "nodes", "progress" };
         private static readonly string[] MapNodeMembers = { "id", "segment", "layer", "strength", "tag" };
         private static readonly string[] ProgressMembers = { "current", "resolved", "visited" };
+        private static readonly string[] ShopMembers = { "rerolls", "guaranteeGene", "goods" };
+        private static readonly string[] ShopOfferMembers = { "kind", "id", "price", "sold" };
         private static readonly string[] BlockMembers = { "id", "kind", "points", "enhancement", "edition" };
         private static readonly string[] GeneMembers = { "id" };
         private static readonly string[] BlindMembers =
@@ -65,6 +67,8 @@ namespace GameRules
             w.Name("difficulty").String(NameOf(run.Difficulty));
             w.Name("money").Int(run.Money);
             WriteMap(w, run.Map, run.Progress);
+            if (run.Shop == null) w.Name("shop").Null();
+            else WriteShop(w, run.Shop);
 
             w.Name("nextInstanceId").Int(run.NextInstanceId);
             w.Name("library");
@@ -161,6 +165,26 @@ namespace GameRules
             w.End();
         }
 
+        /// <summary>货架。目录与难度不进档:它们是开局配置,读档时由调用方传进来。</summary>
+        private static void WriteShop(CanonicalJsonWriter w, ShopState shop)
+        {
+            w.Name("shop").BeginObject(JsonLayout.Lines);
+            w.Name("rerolls").Int(shop.Rerolls);
+            w.Name("guaranteeGene").Bool(shop.GuaranteeGene);
+            w.Name("goods").BeginArray(JsonLayout.Lines);
+            foreach (ShopOffer offer in shop.Goods)
+            {
+                w.BeginObject(JsonLayout.Inline)
+                    .Name("kind").String(NameOf(offer.Kind))
+                    .Name("id").Int(offer.Id)
+                    .Name("price").Int(offer.Price)
+                    .Name("sold").Bool(offer.Sold)
+                    .End();
+            }
+            w.End();
+            w.End();
+        }
+
         /// <summary>
         /// 规范文本 → 状态。任何文本都不抛异常:形状严格(多、少成员或次序不对都算坏档),枚举按名字精确匹配,
         /// 还原后再过 <see cref="RunState.Validate"/>;返回状态,或错误码加第一处出错的成员路径。
@@ -213,17 +237,18 @@ namespace GameRules
             if (p.Failed) return null;
             if (money < 0) return p.Fail(SnapshotError.BadValue, "money", "金钱不能为负");
             if (!ReadMap(p, v[6], out RunMap map, out MapProgress progress)) return null;
-            int nextInstanceId = p.ReadInt(v[7], "nextInstanceId");
+            if (!ReadShop(p, v[7], config.Catalog, difficulty, out ShopState shop)) return null;
+            int nextInstanceId = p.ReadInt(v[8], "nextInstanceId");
             if (p.Failed) return null;
-            List<BlockInstance> library = ReadBlocks(p, v[8], "library");
+            List<BlockInstance> library = ReadBlocks(p, v[9], "library");
             if (library == null) return null;
 
-            JsonNode[] lv = p.ReadObject(v[9], "typeLevels", TypeLevelMembers);
+            JsonNode[] lv = p.ReadObject(v[10], "typeLevels", TypeLevelMembers);
             if (lv == null) return null;
             var levels = new int[ClearTypes.Count];
             for (int t = 0; t < levels.Length; t++) levels[t] = p.ReadInt(lv[t], "typeLevels." + TypeLevelMembers[t]);
 
-            List<JsonNode> geneItems = p.ReadArray(v[10], "genes");
+            List<JsonNode> geneItems = p.ReadArray(v[11], "genes");
             if (geneItems == null) return null;
             var genes = new List<GeneSlot>(geneItems.Count);
             for (int i = 0; i < geneItems.Count; i++)
@@ -236,13 +261,51 @@ namespace GameRules
             if (p.Failed) return null;
 
             BlindState blind = null;
-            if (v[11].Kind != JsonKind.Null)
+            if (v[12].Kind != JsonKind.Null)
             {
-                blind = ReadBlind(p, v[11]);
+                blind = ReadBlind(p, v[12]);
                 if (blind == null) return null;
             }
-            return RunState.Restore(config, RngStreams.Restore(seed, streams), difficulty, money, map, progress, nextInstanceId,
+            return RunState.Restore(config, RngStreams.Restore(seed, streams), difficulty, money, map, progress, shop, nextInstanceId,
                 library, levels, genes, blind);
+        }
+
+        /// <summary>货架。null 是合法的(不在商店)。</summary>
+        private static bool ReadShop(Parser p, JsonNode node, ContentCatalog catalog, RunDifficulty difficulty, out ShopState shop)
+        {
+            shop = null;
+            if (node.Kind == JsonKind.Null) return true;
+            JsonNode[] s = p.ReadObject(node, "shop", ShopMembers);
+            if (s == null) return false;
+            int rerolls = p.ReadInt(s[0], "shop.rerolls");
+            bool guaranteeGene = p.ReadBool(s[1], "shop.guaranteeGene");
+            List<JsonNode> items = p.ReadArray(s[2], "shop.goods");
+            if (items == null) return false;
+            if (items.Count != ShopState.GoodsCount)
+            {
+                p.Fail(SnapshotError.Shape, "shop.goods", Invariant($"应有 {ShopState.GoodsCount} 格"));
+                return false;
+            }
+            var goods = new ShopOffer[items.Count];
+            for (int i = 0; i < goods.Length; i++)
+            {
+                string path = Invariant($"shop.goods[{i}]");
+                JsonNode[] o = p.ReadObject(items[i], path, ShopOfferMembers);
+                if (o == null) return false;
+                ItemKind kind = p.ReadEnum<ItemKind>(o[0], path + ".kind");
+                int id = p.ReadInt(o[1], path + ".id");
+                int price = p.ReadInt(o[2], path + ".price");
+                bool sold = p.ReadBool(o[3], path + ".sold");
+                if (p.Failed) return false;
+                if (price < 0)
+                {
+                    p.Fail(SnapshotError.BadValue, path + ".price", "价格不能为负");
+                    return false;
+                }
+                goods[i] = new ShopOffer(kind, id, price, sold);
+            }
+            shop = ShopState.Restore(goods, rerolls, guaranteeGene, catalog, difficulty);
+            return true;
         }
 
         /// <summary>地图布局与进度。布局的形状约束由 <see cref="RunMap.Validate"/> 在整局校验里查,这里只判读得下来。</summary>

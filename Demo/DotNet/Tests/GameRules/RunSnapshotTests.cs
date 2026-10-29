@@ -89,6 +89,50 @@ namespace GameRules.Tests
         }
 
         [Test]
+        public void RoundTrip_WithOpenShop_KeepsGoodsSalesAndRerolls()
+        {
+            RuleConfig config = new RuleConfig(
+                new[] { new LibraryEntry(TetrominoKind.I, 1), new LibraryEntry(TetrominoKind.I, 1) },
+                MinimalContent.ClearTypes, MinimalContent.Effects, catalog: MinimalContent.Catalog);
+            RunState run = RunState.NewRun("TESTSEED", config);
+            Assert.IsTrue(run.EnterNode(run.Map.Start.Id));
+            run.StartBlind(new BlindSpec(1, 1, 272, 3, 3));
+            TestRules.Place(run, run.Blind.Tray[0].Id, 0, 7, 0);
+            TestRules.Place(run, TetrominoKind.I, 0, 7, 4);
+            run.SettleBlind();
+            ShopState shop = run.OpenShop();
+            run.AddMoney(30);
+            Assert.IsTrue(shop.TryReroll(run.Rng.Get(RngKeys.Shop(1, 1)), run));
+
+            int bought = -1;
+            for (int i = 0; i < shop.Goods.Count; i++)
+            {
+                if (shop.Goods[i].Sold || shop.Goods[i].Price > run.Money) continue;
+                if (shop.TryBuy(i, run) != ShopBuyResult.Ok) continue;
+                bought = i;
+                break;
+            }
+            Assert.GreaterOrEqual(bought, 0, "至少买得起一件");
+
+            string text = RunSnapshot.Write(run);
+            SnapshotReadResult read = RunSnapshot.Read(text, config);
+            Assert.IsTrue(read.Ok, Describe(read));
+            ShopState restored = read.State.Shop;
+            Assert.IsNotNull(restored, "商店开着就进档");
+            Assert.AreEqual(shop.Rerolls, restored.Rerolls);
+            for (int i = 0; i < shop.Goods.Count; i++)
+            {
+                Assert.AreEqual(shop.Goods[i].Kind, restored.Goods[i].Kind);
+                Assert.AreEqual(shop.Goods[i].Id, restored.Goods[i].Id);
+                Assert.AreEqual(shop.Goods[i].Price, restored.Goods[i].Price);
+                Assert.AreEqual(shop.Goods[i].Sold, restored.Goods[i].Sold, $"第 {i} 格的卖出标记");
+            }
+            Assert.AreEqual(run.Money, read.State.Money);
+            Assert.AreEqual(run.Genes.Count, read.State.Genes.Count);
+            Assert.AreEqual(text, RunSnapshot.Write(read.State));
+        }
+
+        [Test]
         public void Write_WithoutABlind_RoundTripsBetweenBlinds()
         {
             RunState run = RunState.NewRun("TESTSEED", PlaceholderTuning.Config);

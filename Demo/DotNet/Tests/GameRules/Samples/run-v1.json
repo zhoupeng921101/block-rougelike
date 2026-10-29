@@ -57,6 +57,7 @@
       "visited": []
     }
   },
+  "shop": null,
   "nextInstanceId": 29,
   "library": [
     { "id": 1, "kind": "I", "points": 1, "enhancement": "None", "edition": "None" },

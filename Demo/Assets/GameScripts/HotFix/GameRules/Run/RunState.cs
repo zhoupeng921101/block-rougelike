@@ -29,6 +29,9 @@ namespace GameRules
         /// <summary>走到地图哪里(当前节点、是否已结算、走过的节点)。</summary>
         public MapProgress Progress { get; }
 
+        /// <summary>当前还开着的商店;进下一个节点即关。没开店时为 null。</summary>
+        public ShopState Shop { get; private set; }
+
         /// <summary>本局的全部随机流。表现层的随机(演出、粒子)用引擎自己的,绝不取这里,否则改一个动画就改了这一局(08 号票)。</summary>
         public RngStreams Rng { get; }
 
@@ -54,7 +57,7 @@ namespace GameRules
         IBlindView IRunView.Blind => Blind;
 
         private RunState(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map, MapProgress progress,
-            int nextInstanceId, List<BlockInstance> library, int[] typeLevels, List<GeneSlot> genes, BlindState blind)
+            ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels, List<GeneSlot> genes, BlindState blind)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             Rng = rng;
@@ -62,6 +65,7 @@ namespace GameRules
             _money = money;
             Map = map ?? throw new ArgumentNullException(nameof(map));
             Progress = progress ?? throw new ArgumentNullException(nameof(progress));
+            Shop = shop;
             NextInstanceId = nextInstanceId;
             _library = library;
             _typeLevels = typeLevels;
@@ -83,7 +87,7 @@ namespace GameRules
             for (int i = 0; i < levels.Length; i++) levels[i] = 1;
             var rng = new RngStreams(seed);
             RunMap map = RunMap.Generate(rng.Get(RngKeys.Map), config.MapSegments);
-            var run = new RunState(config, rng, difficulty, config.StartingMoney, map, new MapProgress(),
+            var run = new RunState(config, rng, difficulty, config.StartingMoney, map, new MapProgress(), null,
                 1, new List<BlockInstance>(), levels, new List<GeneSlot>(), null);
             foreach (LibraryEntry e in config.DefaultLibrary)
             {
@@ -94,9 +98,9 @@ namespace GameRules
 
         /// <summary>读档的还原口(<see cref="RunSnapshot"/>):各字段原样接上,不查约束,读档随后调 <see cref="Validate"/>。</summary>
         internal static RunState Restore(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map,
-            MapProgress progress, int nextInstanceId, List<BlockInstance> library, int[] typeLevels, List<GeneSlot> genes,
-            BlindState blind) =>
-            new RunState(config, rng, difficulty, money, map, progress, nextInstanceId, library, typeLevels, genes, blind);
+            MapProgress progress, ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels,
+            List<GeneSlot> genes, BlindState blind) =>
+            new RunState(config, rng, difficulty, money, map, progress, shop, nextInstanceId, library, typeLevels, genes, blind);
 
         /// <summary>
         /// 唯一的取号口。方块库的块、首领预置块、将来「生成一块」的效果都从这里取,所以不能假设 id 都在方块库里。
@@ -196,6 +200,7 @@ namespace GameRules
         public StepResult StartBlind(BlindSpec spec)
         {
             if (spec == null) throw new ArgumentNullException(nameof(spec));
+            if (Shop != null) throw new InvalidOperationException("商店还开着,先离开商店");
             if (Blind != null && Blind.Outcome == BlindOutcome.InProgress) throw new InvalidOperationException("上一个盲注还没结束");
             var blind = new BlindState(spec);
             foreach (BlockInstance b in _library) blind.DrawList.Add(b.Id);
@@ -207,9 +212,14 @@ namespace GameRules
 
         /// <summary>
         /// 进地图节点(局外循环设计稿 §2):只能进当前可选范围内的节点;进完要打完或跳过才算结算。
-        /// 战斗与地图的接线由表现层按「进节点 → 开盲注」两步走。
+        /// 进节点即离开商店(货架作废);战斗与地图的接线由表现层按「进节点 → 开盲注」两步走。
         /// </summary>
-        public bool EnterNode(int nodeId) => Progress.Enter(Map, nodeId);
+        public bool EnterNode(int nodeId)
+        {
+            bool entered = Progress.Enter(Map, nodeId);
+            if (entered) Shop = null;
+            return entered;
+        }
 
         /// <summary>当前节点该打的那一场:目标分按节点的层×强度与难度算,弃置按难度加减,每组块数取配置默认。</summary>
         public BlindSpec SpecForCurrentNode()
@@ -223,6 +233,21 @@ namespace GameRules
 
         /// <summary>开当前节点的盲注。上一个盲注还在进行时由 <see cref="StartBlind"/> 拦下。</summary>
         public StepResult StartBlindForCurrentNode() => StartBlind(SpecForCurrentNode());
+
+        /// <summary>
+        /// 结算之后开店;已经开着就返回同一个(界面来回切不再重掷)。前 3 场保底一个基因格。
+        /// 节点没结算、整局已结束、或配置里没有目录时抛异常。
+        /// </summary>
+        public ShopState OpenShop()
+        {
+            if (Shop != null) return Shop;
+            if (Progress.CurrentNodeId == 0 || !Progress.CurrentResolved) throw new InvalidOperationException("当前节点还没结算,不能开店");
+            if (Progress.IsComplete(Map)) throw new InvalidOperationException("整局已结束,没有商店");
+            MapNode node = Map.Get(Progress.CurrentNodeId);
+            bool guaranteeGene = Progress.Visited.Count <= 3;
+            Shop = ShopState.Open(Rng.Get(RngKeys.Shop(node.Segment, node.Layer)), Config.Catalog, Difficulty, guaranteeGene);
+            return Shop;
+        }
 
         /// <summary>
         /// 结算一场打赢的盲注:按当前节点算通关奖励与利息,入账,并把地图进度推到「已结算」。
@@ -346,8 +371,8 @@ namespace GameRules
             foreach (BlockInstance b in _library) library.Add(b.Clone());
             var genes = new List<GeneSlot>(_genes.Count);
             foreach (GeneSlot g in _genes) genes.Add(g.Clone());
-            return new RunState(Config, Rng.Clone(), Difficulty, _money, Map, Progress.Clone(), NextInstanceId, library,
-                (int[])_typeLevels.Clone(), genes, Blind?.Clone());
+            return new RunState(Config, Rng.Clone(), Difficulty, _money, Map, Progress.Clone(), Shop?.Clone(), NextInstanceId,
+                library, (int[])_typeLevels.Clone(), genes, Blind?.Clone());
         }
 
         /// <summary>
@@ -368,6 +393,17 @@ namespace GameRules
             if (mapError != null) return mapError;
             string progressError = Progress.Validate(Map);
             if (progressError != null) return "map: " + progressError;
+            if (Shop != null)
+            {
+                if (Shop.Goods.Count != ShopState.GoodsCount) return Invariant($"shop.goods: 应有 {ShopState.GoodsCount} 格,实有 {Shop.Goods.Count}");
+                if (Shop.Rerolls < 0) return Invariant($"shop.rerolls: {Shop.Rerolls} 为负");
+                if (!Progress.CurrentResolved) return "shop: 当前节点还没结算就开着商店";
+                foreach (ShopOffer offer in Shop.Goods)
+                {
+                    if (offer.Price < 0) return Invariant($"shop.goods: 价格 {offer.Price} 为负");
+                    if (!Enum.IsDefined(typeof(ItemKind), offer.Kind)) return Invariant($"shop.goods: 未定义的种类 {(int)offer.Kind}");
+                }
+            }
 
             // id → 所在区;null = 还没在任何区里见到。只按 id 查,不遍历,结果次序全由下面的有序列表定
             var zoneOf = new Dictionary<int, string>();
@@ -409,6 +445,10 @@ namespace GameRules
 
             string boardError = Blind.Board.Validate();
             if (boardError != null) return "blind.owner: " + boardError;
+
+            // 区守恒只管进行中的盲注:打完之后方块库还能加块(商店买方块),那些新块不在这一场的任何区里。
+            // 打过的盲注冻结在结算那一刻,不再参与守恒,读档照原样接上。
+            if (Blind.Outcome != BlindOutcome.InProgress) return null;
 
             err = ClaimAll(zoneOf, Blind.DrawList, "blind.draw");
             if (err != null) return err;
