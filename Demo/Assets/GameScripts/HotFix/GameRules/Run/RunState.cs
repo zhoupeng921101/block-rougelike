@@ -13,6 +13,7 @@ namespace GameRules
         private readonly List<BlockInstance> _library;
         private readonly int[] _typeLevels;
         private readonly List<GeneSlot> _genes;
+        private readonly List<int> _consumables;
         private int _money;
 
         public RuleConfig Config { get; }
@@ -51,13 +52,17 @@ namespace GameRules
         /// <summary>基因栏,从左到右。本图恒为空。</summary>
         public IReadOnlyList<GeneSlot> Genes { get; }
 
+        /// <summary>道具栏里的改造(号);本图只买不用,使用归战斗表现。</summary>
+        public IReadOnlyList<int> Consumables { get; }
+
         /// <summary>当前盲注;开局后、开第一个盲注前为 null。</summary>
         public BlindState Blind { get; private set; }
 
         IBlindView IRunView.Blind => Blind;
 
         private RunState(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map, MapProgress progress,
-            ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels, List<GeneSlot> genes, BlindState blind)
+            ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels, List<GeneSlot> genes,
+            List<int> consumables, BlindState blind)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             Rng = rng;
@@ -70,10 +75,12 @@ namespace GameRules
             _library = library;
             _typeLevels = typeLevels;
             _genes = genes;
+            _consumables = consumables;
             Blind = blind;
             Library = library.AsReadOnly();
             TypeLevels = Array.AsReadOnly(typeLevels);
             Genes = genes.AsReadOnly();
+            Consumables = consumables.AsReadOnly();
         }
 
         /// <summary>
@@ -88,7 +95,7 @@ namespace GameRules
             var rng = new RngStreams(seed);
             RunMap map = RunMap.Generate(rng.Get(RngKeys.Map), config.MapSegments);
             var run = new RunState(config, rng, difficulty, config.StartingMoney, map, new MapProgress(), null,
-                1, new List<BlockInstance>(), levels, new List<GeneSlot>(), null);
+                1, new List<BlockInstance>(), levels, new List<GeneSlot>(), new List<int>(), null);
             foreach (LibraryEntry e in config.DefaultLibrary)
             {
                 run._library.Add(new BlockInstance(run.IssueId(), e.Kind, e.Points, e.Enhancement, e.Edition));
@@ -99,8 +106,9 @@ namespace GameRules
         /// <summary>读档的还原口(<see cref="RunSnapshot"/>):各字段原样接上,不查约束,读档随后调 <see cref="Validate"/>。</summary>
         internal static RunState Restore(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map,
             MapProgress progress, ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels,
-            List<GeneSlot> genes, BlindState blind) =>
-            new RunState(config, rng, difficulty, money, map, progress, shop, nextInstanceId, library, typeLevels, genes, blind);
+            List<GeneSlot> genes, List<int> consumables, BlindState blind) =>
+            new RunState(config, rng, difficulty, money, map, progress, shop, nextInstanceId, library, typeLevels, genes,
+                consumables, blind);
 
         /// <summary>
         /// 唯一的取号口。方块库的块、首领预置块、将来「生成一块」的效果都从这里取,所以不能假设 id 都在方块库里。
@@ -153,6 +161,18 @@ namespace GameRules
             AddGene(geneId);
             return true;
         }
+
+        /// <summary>道具栏放一件改造。栏满返回 false。</summary>
+        public bool TryAddConsumable(int itemId)
+        {
+            if (itemId < 1) throw new ArgumentOutOfRangeException(nameof(itemId), itemId, "改造号从 1 起");
+            if (_consumables.Count >= Config.ConsumableSlots) return false;
+            _consumables.Add(itemId);
+            return true;
+        }
+
+        /// <summary>用掉或卖掉一件改造。没有这件时返回 false。</summary>
+        public bool RemoveConsumable(int itemId) => _consumables.Remove(itemId);
 
         /// <summary>科技升级一种消除类型。已经到表里最高级时返回 false。</summary>
         public bool UpgradeType(ClearType type)
@@ -372,7 +392,7 @@ namespace GameRules
             var genes = new List<GeneSlot>(_genes.Count);
             foreach (GeneSlot g in _genes) genes.Add(g.Clone());
             return new RunState(Config, Rng.Clone(), Difficulty, _money, Map, Progress.Clone(), Shop?.Clone(), NextInstanceId,
-                library, (int[])_typeLevels.Clone(), genes, Blind?.Clone());
+                library, (int[])_typeLevels.Clone(), genes, new List<int>(_consumables), Blind?.Clone());
         }
 
         /// <summary>
@@ -428,6 +448,14 @@ namespace GameRules
                 // 09 §5 写的是「genes 为空」;本图注册表为空,两者等价,而单测经 AddGene 加登记过的替身基因(20 号票补的约束)
                 int gene = _genes[i].GeneId;
                 if (Config.Effects.Find(EffectSource.Gene, gene) == null) return Invariant($"genes[{i}].id: 基因 {gene} 没在效果注册表里登记");
+            }
+            if (_consumables.Count > Config.ConsumableSlots)
+            {
+                return Invariant($"consumables: 有 {_consumables.Count} 件,道具栏只有 {Config.ConsumableSlots} 格");
+            }
+            for (int i = 0; i < _consumables.Count; i++)
+            {
+                if (_consumables[i] < 1) return Invariant($"consumables[{i}]: {_consumables[i]} 不是有效的改造号");
             }
             if (Blind == null) return null;
 

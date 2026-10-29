@@ -21,7 +21,7 @@ namespace GameRules
         private static readonly string[] RootMembers =
         {
             "format", "schema", "seed", "rng", "difficulty", "money", "map", "shop",
-            "nextInstanceId", "library", "typeLevels", "genes", "blind",
+            "nextInstanceId", "library", "typeLevels", "consumables", "genes", "blind",
         };
         private static readonly string[] RngMembers = { "scheme", "streams" };
         private static readonly string[] StreamMembers = { "key", "s0", "s1" };
@@ -76,6 +76,8 @@ namespace GameRules
             w.Name("typeLevels").BeginObject(JsonLayout.Lines);
             for (int t = 0; t < ClearTypes.Count; t++) w.Name(TypeLevelMembers[t]).Int(run.TypeLevels[t]);
             w.End();
+            w.Name("consumables");
+            WriteIds(w, run.Consumables);
             w.Name("genes").BeginArray(JsonLayout.Lines);
             foreach (GeneSlot g in run.Genes) w.BeginObject(JsonLayout.Inline).Name("id").Int(g.GeneId).End();
             w.End();
@@ -248,7 +250,7 @@ namespace GameRules
             var levels = new int[ClearTypes.Count];
             for (int t = 0; t < levels.Length; t++) levels[t] = p.ReadInt(lv[t], "typeLevels." + TypeLevelMembers[t]);
 
-            List<JsonNode> geneItems = p.ReadArray(v[11], "genes");
+            List<JsonNode> geneItems = p.ReadArray(v[12], "genes");
             if (geneItems == null) return null;
             var genes = new List<GeneSlot>(geneItems.Count);
             for (int i = 0; i < geneItems.Count; i++)
@@ -258,16 +260,17 @@ namespace GameRules
                 if (g == null) return null;
                 genes.Add(new GeneSlot(p.ReadInt(g[0], path + ".id")));
             }
+            List<int> consumables = p.ReadIntList(v[11], "consumables");
             if (p.Failed) return null;
 
             BlindState blind = null;
-            if (v[12].Kind != JsonKind.Null)
+            if (v[13].Kind != JsonKind.Null)
             {
-                blind = ReadBlind(p, v[12]);
+                blind = ReadBlind(p, v[13]);
                 if (blind == null) return null;
             }
             return RunState.Restore(config, RngStreams.Restore(seed, streams), difficulty, money, map, progress, shop, nextInstanceId,
-                library, levels, genes, blind);
+                library, levels, genes, consumables, blind);
         }
 
         /// <summary>货架。null 是合法的(不在商店)。</summary>

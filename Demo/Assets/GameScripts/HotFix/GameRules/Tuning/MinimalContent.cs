@@ -63,6 +63,15 @@ namespace GameRules
                 { 3, ClearType.TripleLine },
                 { 4, ClearType.AllClear },
             };
+            var mods = new List<CatalogEntry>
+            {
+                new CatalogEntry(ItemKind.Mod, 1, 3),
+                new CatalogEntry(ItemKind.Mod, 2, 3),
+                new CatalogEntry(ItemKind.Mod, 3, 3),
+                new CatalogEntry(ItemKind.Mod, 4, 4),
+                new CatalogEntry(ItemKind.Mod, 5, 4),
+                new CatalogEntry(ItemKind.Mod, 6, 5),
+            };
             var blocks = new List<BlockEntry>(Tetromino.KindCount * 4);
             int id = 1;
             for (int kind = 0; kind < Tetromino.KindCount; kind++)
@@ -72,7 +81,7 @@ namespace GameRules
                     blocks.Add(new BlockEntry(id++, (TetrominoKind)kind, points, 3 + points));
                 }
             }
-            return new ContentCatalog(genes, techs, new List<CatalogEntry>(), new List<CatalogEntry>(),
+            return new ContentCatalog(genes, techs, mods, new List<CatalogEntry>(),
                 new List<CatalogEntry>(), blocks, techTypes);
         }
 

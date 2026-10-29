@@ -102,6 +102,7 @@
     "DoubleLine": 1,
     "SingleLine": 1
   },
+  "consumables": [],
   "genes": [],
   "blind": {
     "spec": { "segment": 1, "layer": 1, "target": "350", "discards": 3, "groupSize": 3 },

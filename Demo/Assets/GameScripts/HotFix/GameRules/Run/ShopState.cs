@@ -33,7 +33,7 @@ namespace GameRules
     }
 
     /// <summary>
-    /// 一个商店的货架(局外循环设计稿 §4):4 个货格,权重 基因 70 / 方块 20 / 科技 10(改造未接,权重先并进基因)。
+    /// 一个商店的货架(局外循环设计稿 §4):4 个货格,权重 基因 60 / 方块 16 / 科技 12 / 改造 12。
     /// 刷新只换货格,第一次 $5、之后每次 +$1;买货先查放不放得下,再扣钱,失败不改状态。
     /// 优惠券与补给包两格还没接(等它们的效果),货架先只出货格。
     /// </summary>
@@ -117,6 +117,9 @@ namespace GameRules
                     ClearType type = _catalog.TechTypeOf(offer.Id);
                     if (run.LevelOf(type) >= run.Config.ClearTypes.MaxLevel(type)) return ShopBuyResult.SlotFull;
                     break;
+                case ItemKind.Mod:
+                    if (run.Consumables.Count >= run.Config.ConsumableSlots) return ShopBuyResult.SlotFull;
+                    break;
                 case ItemKind.Block:
                     break;
                 default:
@@ -132,6 +135,9 @@ namespace GameRules
                     break;
                 case ItemKind.Tech:
                     run.UpgradeType(_catalog.TechTypeOf(offer.Id));
+                    break;
+                case ItemKind.Mod:
+                    run.TryAddConsumable(offer.Id);
                     break;
                 case ItemKind.Block:
                     BlockEntry block = FindBlock(offer.Id);
@@ -172,12 +178,15 @@ namespace GameRules
 
         private static ShopOffer RollOne(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty)
         {
-            // 改造未接:权重 12 先并进基因(60+12),合计仍是 100
+            // 权重按设计稿 §4.1:基因 60 / 方块 16 / 科技 12 / 改造 12
             int roll = rng.Index(100);
-            if (roll < 72 && catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty);
-            if (roll < 92 && catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty);
-            if (catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty);
+            if (roll < 60 && catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty);
+            if (roll < 76 && catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty);
+            if (roll < 88 && catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty);
+            if (catalog.Mods.Count > 0) return ModOffer(rng, catalog, difficulty);
             if (catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty);
+            if (catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty);
+            if (catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty);
             throw new InvalidOperationException("目录里没有任何可卖的东西");
         }
 
@@ -191,6 +200,12 @@ namespace GameRules
         {
             CatalogEntry e = catalog.Techs[rng.Index(catalog.Techs.Count)];
             return new ShopOffer(ItemKind.Tech, e.Id, Price(e.Price, difficulty));
+        }
+
+        private static ShopOffer ModOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty)
+        {
+            CatalogEntry e = catalog.Mods[rng.Index(catalog.Mods.Count)];
+            return new ShopOffer(ItemKind.Mod, e.Id, Price(e.Price, difficulty));
         }
 
         private static ShopOffer BlockOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty)
