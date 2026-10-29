@@ -43,19 +43,24 @@ public static class RunFlow
         CloseAfterOpen(typeof(UIMapPanel), typeof(UIMainMenuPanel));
     }
 
-    /// <summary>接着打:战斗里的局回战斗窗,选关/商店之间的局回地图。</summary>
+    /// <summary>接着打:战斗里的局回战斗窗,选关/商店之间的局回地图;主界面在窗开出来之后关掉。</summary>
     public static void Resume(RunState run)
     {
         RunSaveService.Instance.Resume(run);
-        if (run.Blind != null) ShowBattle(run, true);
-        else ShowMap(run);
+        if (run.Blind != null)
+        {
+            ShowBattle(run, true);
+            CloseAfterOpen(typeof(UIBattlePanel), typeof(UIMainMenuPanel));
+            return;
+        }
+        ShowMap(run);
     }
 
     public static void ShowMap(RunState run)
     {
         AudioConfigMgr.SwitchMusic(AudioIds.MusicBoard);
         GameModule.UI.ShowUIAsync<UIMapPanel>(run);
-        CloseAfterOpen(typeof(UIMapPanel), typeof(UIBattlePanel), typeof(UIBattleResultPanel), typeof(UIShopPanel));
+        CloseAfterOpen(typeof(UIMapPanel), typeof(UIMainMenuPanel), typeof(UIBattlePanel), typeof(UIBattleResultPanel), typeof(UIShopPanel));
     }
 
     /// <summary>进节点并开打:开盲注的事件不演,战斗窗打开时按状态全量刷新。</summary>
@@ -112,7 +117,7 @@ public static class RunFlow
         run.OpenShop();
         RunSaveService.Instance.CommitRun(run, "开店");
         GameModule.UI.ShowUIAsync<UIShopPanel>(run);
-        CloseAfterOpen(typeof(UIShopPanel), typeof(UIBattlePanel), typeof(UIBattleResultPanel), typeof(UIMapPanel));
+        CloseAfterOpen(typeof(UIShopPanel), typeof(UIMainMenuPanel), typeof(UIBattlePanel), typeof(UIBattleResultPanel), typeof(UIMapPanel));
     }
 
     /// <summary>离开商店:关店,回地图。</summary>
