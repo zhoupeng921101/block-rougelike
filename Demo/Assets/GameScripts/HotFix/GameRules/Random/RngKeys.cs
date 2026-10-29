@@ -12,6 +12,9 @@ namespace GameRules
         /// <summary>盲注开始洗方块库。按层分、不按段分,也不带节点:跳过前一层不改后一层的洗牌,换节点刷不出别的洗牌。</summary>
         public static string Shuffle(int segment, int layer) => At("shuffle", segment, layer);
 
+        /// <summary>开局生成地图布局。不带段层、整局只消费一次:地图在开新局那一刻就定死,之后的选路不重掷。</summary>
+        public const string Map = "map";
+
         private static string At(string purpose, int segment, int layer)
         {
             if (segment < 1) throw new ArgumentOutOfRangeException(nameof(segment), segment, "段从 1 数");
