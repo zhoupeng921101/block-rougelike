@@ -445,6 +445,17 @@ namespace GameRules
         }
 
         /// <summary>
+        /// 结算完离开这一场:盲注对象丢掉,回到「两个盲注之间」(地图、商店、结算屏之间都能存档)。
+        /// 盲注还在进行时调用是流程错误:先判胜负再离场。
+        /// </summary>
+        public void LeaveBlind()
+        {
+            if (Blind == null) return;
+            if (Blind.Outcome == BlindOutcome.InProgress) throw new InvalidOperationException("盲注还没结束,不能离场");
+            Blind = null;
+        }
+
+        /// <summary>
         /// 落子一步:校验 → 落子 → 判线 → 结算 → 判胜 → 发组 → 判负,一次推进到下一个稳定状态(07 号票 §4 的 17 段)。
         /// 被拒不抛异常、不改状态。落点以参数的 rot 为准,不看槽上存的朝向。
         /// </summary>

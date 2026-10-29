@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using GameRules;
 using TEngine;
 using UnityEngine;
@@ -98,12 +98,21 @@ public partial class UIBattlePanel : UIPanelMono
             Log.Info($"[UIBattlePanel] 盲注结束:{blind.Outcome}({blind.FailReason}),累计 {blind.Score}/{blind.Spec.Target},第 {result.Step} 步");
     }
 
-    /// <summary>结局步演完再过 <see cref="ClearPacing.ResultDelay"/>,弹结果浮层(13 号票:胜或负、失败原因、累计分 / 目标分、返回主界面)。</summary>
+    /// <summary>
+    /// 结局步演完再过 <see cref="ClearPacing.ResultDelay"/>,弹结果浮层(13 号票:胜或负、失败原因、累计分 / 目标分)。
+    /// 赢了先结算入账(回地图后钱已经变了),输了删档;浮层上「继续」回地图或主界面,由 <see cref="RunFlow"/> 接。
+    /// </summary>
     private void ShowResult(BlindEnded ended, long total)
     {
+        bool won = ended.Outcome == BlindOutcome.Won;
+        long target = _run.Blind.Spec.Target;
+        Settlement? settlement = null;
+        if (won && _run.Progress.CurrentNodeId != 0) settlement = RunFlow.SettleWon(_run);
+        else if (!won) RunFlow.LoseRun();
         RectTransform board = m_part_BoardArea.rectTransform;
         GameModule.UI.ShowUIAsync<UIBattleResultPanel>(new UIBattleResultPanel.Data(
-            ended.Outcome, ended.Reason, total, _run.Blind.Spec.Target, board.TransformPoint(board.rect.center), BackToMenu));
+            ended.Outcome, ended.Reason, total, target, board.TransformPoint(board.rect.center), settlement,
+            () => RunFlow.AfterResult(_run, won), BackToMenu));
     }
 
     /// <summary>

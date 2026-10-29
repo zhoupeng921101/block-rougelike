@@ -16,6 +16,19 @@ public static class TextKeys
         public const string Start = "ui.main_menu.start";
         public const string Continue = "ui.main_menu.continue";
         public const string Language = "ui.main_menu.language";
+        public const string Difficulty = "ui.main_menu.difficulty";
+    }
+
+    /// <summary>地图屏里由代码画的文案。</summary>
+    public static class Map
+    {
+        public const string Title = "ui.map.title";
+        public const string Info = "ui.map.info";
+        public const string Back = "ui.map.back";
+        public const string Node = "ui.map.node";
+        public const string NodeBoss = "ui.map.node_boss";
+        public const string NodeSkip = "ui.map.node_skip";
+        public const string Boss = "ui.map.boss";
     }
 
     /// <summary>战斗界面里由代码画的文案;静态标签走预制体上的 LocalizedText,不在这里。</summary>
@@ -34,7 +47,9 @@ public static class TextKeys
         public const string Level = "ui.battle.level";
         public const string Mult = "ui.battle.mult";
         public const string Points = "ui.battle.points";
+        public const string ResultContinue = "ui.battle.result_continue";
         public const string ResultLost = "ui.battle.result_lost";
+        public const string ResultReward = "ui.battle.result_reward";
         public const string ResultScore = "ui.battle.result_score";
         public const string ResultWon = "ui.battle.result_won";
         public const string ScoreOf = "ui.battle.score_of";
@@ -52,6 +67,31 @@ public static class TextKeys
             case FailReason.BudgetExhausted: return Battle.FailBudget;
             case FailReason.CannotPlace: return Battle.FailStuck;
             default: throw new ArgumentOutOfRangeException(nameof(reason), reason, "不是失败原因");
+        }
+    }
+
+    /// <summary>三个难度档的显示名。</summary>
+    public static string Of(RunDifficulty difficulty)
+    {
+        switch (difficulty)
+        {
+            case RunDifficulty.Standard: return "run_difficulty.standard.name";
+            case RunDifficulty.Advanced: return "run_difficulty.advanced.name";
+            case RunDifficulty.Expert: return "run_difficulty.expert.name";
+            default: throw new ArgumentOutOfRangeException(nameof(difficulty), difficulty, "不是难度档");
+        }
+    }
+
+    /// <summary>节点的强度档(轻 / 中 / 重);首领不在这里,它有自己的文案。</summary>
+    public static string Of(NodeStrength strength)
+    {
+        switch (strength)
+        {
+            case NodeStrength.Light: return "node_strength.light.name";
+            case NodeStrength.Normal: return "node_strength.normal.name";
+            case NodeStrength.Heavy: return "node_strength.heavy.name";
+            case NodeStrength.Boss: return "node_strength.boss.name";
+            default: throw new ArgumentOutOfRangeException(nameof(strength), strength, "不是节点强度");
         }
     }
 

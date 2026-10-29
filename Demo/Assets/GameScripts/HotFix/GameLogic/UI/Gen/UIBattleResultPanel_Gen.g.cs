@@ -20,12 +20,16 @@ public partial class UIBattleResultPanel : UIPanelMono
 	[SerializeField] private TextMeshProUGUI m_tmp_Title = null!;
 	[SerializeField] private TextMeshProUGUI m_tmp_Reason = null!;
 	[SerializeField] private TextMeshProUGUI m_tmp_Score = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_Reward = null!;
+	[SerializeField] private Button m_btn_Continue = null!;
 	[SerializeField] private Button m_btn_Back = null!;
 	#pragma warning restore CS0414
 
 	protected override void ScriptGenerator()
 	{
 		BindMask(m_btn_Mask);
+		m_btn_Continue.onClick.RemoveAllListeners();
+		m_btn_Continue.onClick.AddListener(OnClick_ContinueBtn);
 		m_btn_Back.onClick.RemoveAllListeners();
 		m_btn_Back.onClick.AddListener(OnClick_BackBtn);
 	}
@@ -33,6 +37,8 @@ public partial class UIBattleResultPanel : UIPanelMono
 	#endregion
 
 	#region 事件
+
+	private partial void OnClick_ContinueBtn();
 
 	private partial void OnClick_BackBtn();
 

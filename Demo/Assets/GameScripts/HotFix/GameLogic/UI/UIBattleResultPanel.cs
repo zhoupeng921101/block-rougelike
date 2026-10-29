@@ -1,18 +1,19 @@
-﻿using System;
+using System;
 using System.Globalization;
 using GameRules;
 using TEngine;
 using UnityEngine;
 
 /// <summary>
-/// 盲注结果浮层(13 号票):全屏压暗,卡片中心对准网格中心;胜 660×400、负 660×480。写胜或负、失败原因、累计分 / 目标分,只有「返回主界面」一个出口。
-/// 战斗窗在结局步演完、再过 <see cref="ClearPacing.ResultDelay"/> 后打开它(30 号票)。Esc 等同「返回主界面」(12 号票),由下面仍在跑的战斗窗接。
-/// 遮罩只挡点击、点了不关:浮层是一局的终点,关掉它底下就是一张拿不起块的盘。
+/// 盲注结果浮层(13 号票):全屏压暗,卡片中心对准网格中心;胜 660×400、负 660×480。
+/// 写胜或负、失败原因、累计分 / 目标分、赢了再加一行通关奖励与利息;两个出口:「继续」回地图(胜)或主界面(负),
+/// 「返回主界面」直接放弃这一局。战斗窗在结局步演完、再过 <see cref="ClearPacing.ResultDelay"/> 后打开它(30 号票)。
+/// 遮罩只挡点击、点了不关:浮层是一场的终点,关掉它底下就是一张拿不起块的盘。
 /// </summary>
 [Window(UILayer.Window, location : "UIBattleResultPanel")]
 public partial class UIBattleResultPanel
 {
-    /// <summary>打开时传的内容。<see cref="Back"/> 是「返回主界面」,由战斗窗给(它连自己一起关)。</summary>
+    /// <summary>打开时传的内容。<see cref="Continue"/> 是「继续」,<see cref="Back"/> 是「返回主界面」,都由战斗窗给(它连自己一起关)。</summary>
     public sealed class Data
     {
         public readonly BlindOutcome Outcome;
@@ -23,22 +24,30 @@ public partial class UIBattleResultPanel
         /// <summary>网格中心的世界坐标,卡片中心对准它。</summary>
         public readonly Vector3 Anchor;
 
+        /// <summary>这一场的结算(赢了才有):通关奖励与利息。</summary>
+        public readonly Settlement? Settlement;
+
+        public readonly Action Continue;
+
         public readonly Action Back;
 
-        public Data(BlindOutcome outcome, FailReason reason, long total, long target, Vector3 anchor, Action back)
+        public Data(BlindOutcome outcome, FailReason reason, long total, long target, Vector3 anchor, Settlement? settlement,
+            Action continueAction, Action back)
         {
             Outcome = outcome;
             Reason = reason;
             Total = total;
             Target = target;
             Anchor = anchor;
+            Settlement = settlement;
+            Continue = continueAction;
             Back = back;
         }
     }
 
     [Header("卡片")]
     [Tooltip("胜利时的卡片尺寸(13 号票)。")]
-    [SerializeField] private Vector2 _wonSize = new Vector2(660f, 400f);
+    [SerializeField] private Vector2 _wonSize = new Vector2(660f, 460f);
     [Tooltip("失败时的卡片尺寸,多一行失败原因(13 号票)。")]
     [SerializeField] private Vector2 _lostSize = new Vector2(660f, 480f);
     [Tooltip("胜利标题的颜色。")]
@@ -68,13 +77,23 @@ public partial class UIBattleResultPanel
         if (reason != null) m_tmp_Reason.text = table.Get(reason);
         m_tmp_Score.text = table.Format(TextKeys.Battle.ResultScore,
             _data.Total.ToString(CultureInfo.InvariantCulture), _data.Target.ToString(CultureInfo.InvariantCulture));
+        Settlement? settlement = _data.Settlement;
+        m_tmp_Reward.gameObject.SetActive(won && settlement.HasValue);
+        if (settlement.HasValue)
+        {
+            m_tmp_Reward.text = table.Format(TextKeys.Battle.ResultReward,
+                settlement.Value.Reward.ToString(CultureInfo.InvariantCulture),
+                settlement.Value.Interest.ToString(CultureInfo.InvariantCulture));
+        }
+        m_btn_Continue.gameObject.SetActive(won);
         m_rect_Card.sizeDelta = won ? _wonSize : _lostSize;
         m_rect_Card.position = _data.Anchor;
     }
 
     #region 事件
 
-    private partial void OnClick_BackBtn() => _data?.Back?.Invoke();
+    private partial void OnClick_ContinueBtn() => _data?.Continue?.Invoke();
 
+    private partial void OnClick_BackBtn() => _data?.Back?.Invoke();
     #endregion
 }

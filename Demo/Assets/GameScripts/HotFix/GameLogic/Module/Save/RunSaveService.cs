@@ -43,10 +43,10 @@ public sealed class RunSaveService : Singleton<RunSaveService>, IUpdate
         Application.quitting -= Flush;
     }
 
-    /// <summary>主界面探测「继续」:能读、校验通过、盲注还在进行中的局,否则 null。点「继续」直接用这个结果,不再读第二次。</summary>
-    public RunState Probe() => _file.Load(PlaceholderTuning.Config);
+    /// <summary>主界面探测「继续」:能读、校验通过、还没打完的局,否则 null。点「继续」直接用这个结果,不再读第二次。</summary>
+    public RunState Probe() => _file.Load(MinimalContent.Config);
 
-    /// <summary>开新局:先删掉旧局的档,再写第一份。<paramref name="run"/> 已经开了盲注、发完第一组(<see cref="RunSnapshot.Write"/> 的前提)。</summary>
+    /// <summary>开新局:先删掉旧局的档,再写第一份。开局这一步还没有盲注(下一步是选关),快照的 blind 写 null。</summary>
     public void StartNew(RunState run)
     {
         _file.Delete();
@@ -61,15 +61,26 @@ public sealed class RunSaveService : Singleton<RunSaveService>, IUpdate
         _dirty = false;
     }
 
-    /// <summary>一步被接受之后、交给演出之前调。定了结局:先照常写终局快照,再删档(09 §2)。</summary>
+    /// <summary>两场之间(地图、商店、结算之后)也存:这时 blind 为 null,读回来照样能继续。</summary>
+    public void CommitRun(RunState run, string what)
+    {
+        _run = run;
+        Write(what);
+    }
+
+    /// <summary>一步被接受之后、交给演出之前调。只写照这一步之后的局面,不删档:输赢的删档在 <see cref="EndRun"/> 与结算之后定。</summary>
     public void CommitStep(RunState run, StepResult result)
     {
         _run = run;
         Write($"第 {result.Step} 步");
-        if (run.Blind.Outcome == BlindOutcome.InProgress) return;
+    }
+
+    /// <summary>这一局结束(输了、或打完最后一段):删档。</summary>
+    public void EndRun()
+    {
+        Flush();
         _file.Delete();
         _run = null;
-        Log.Info($"[RunSave] 盲注结束({run.Blind.Outcome}),已删档");
     }
 
     /// <summary>转了朝向(不算步):置脏,等防抖或下一个写入点合并写。</summary>

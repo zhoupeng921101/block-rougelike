@@ -159,7 +159,8 @@ public sealed class RunSaveFile
             _warn($"{name} 是坏档:{result.Error} {result.Path}: {result.Detail}");
             return Verdict.Bad;
         }
-        if (result.State.Blind.Outcome != BlindOutcome.InProgress) return Verdict.Ended;
+        if (result.State.Blind != null && result.State.Blind.Outcome != BlindOutcome.InProgress) return Verdict.Ended;
+        if (result.State.Progress.IsComplete(result.State.Map)) return Verdict.Ended;
         state = result.State;
         return Verdict.InProgress;
     }
