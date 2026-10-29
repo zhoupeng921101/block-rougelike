@@ -477,6 +477,8 @@ public abstract class UIPanelMono : MonoBehaviour
             UIClickSfx.Attach(gameObject);
             RegisterEvent();
             OnCreate();
+            // 开窗音:占位素材 window_pop,每窗一声
+            AudioConfigMgr.Play(AudioIds.WindowPop);
 
             // ScriptGenerator 是遮罩绑定的产出点，跑完才能判有没有绑上。
             if (_maskBinding == null && IsPopupLayer(WindowLayer))
