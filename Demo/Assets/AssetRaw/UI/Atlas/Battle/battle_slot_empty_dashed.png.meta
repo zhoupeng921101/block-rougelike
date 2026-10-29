@@ -1,0 +1,884 @@
+fileFormatVersion: 2
+guid: ba6dc693a29018c408ec6335c76f2b3e
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -4003907524519430334
+    second: battle_slot_empty_dashed_0
+  - first:
+      213: 7490739308318995977
+    second: battle_slot_empty_dashed_1
+  - first:
+      213: 1942930437442391272
+    second: battle_slot_empty_dashed_2
+  - first:
+      213: -397247616255068642
+    second: battle_slot_empty_dashed_3
+  - first:
+      213: 2500101785563336120
+    second: battle_slot_empty_dashed_4
+  - first:
+      213: -4743588530328410318
+    second: battle_slot_empty_dashed_5
+  - first:
+      213: 3833709327932684823
+    second: battle_slot_empty_dashed_6
+  - first:
+      213: -8368760558579989778
+    second: battle_slot_empty_dashed_7
+  - first:
+      213: 4498252312238358831
+    second: battle_slot_empty_dashed_8
+  - first:
+      213: 34282908584166454
+    second: battle_slot_empty_dashed_9
+  - first:
+      213: 8224733480386710603
+    second: battle_slot_empty_dashed_10
+  - first:
+      213: -2652317425625179011
+    second: battle_slot_empty_dashed_11
+  - first:
+      213: 478528261107513783
+    second: battle_slot_empty_dashed_12
+  - first:
+      213: 2723435705992303145
+    second: battle_slot_empty_dashed_13
+  - first:
+      213: 4441961304798911387
+    second: battle_slot_empty_dashed_14
+  - first:
+      213: -4817107068818189597
+    second: battle_slot_empty_dashed_15
+  - first:
+      213: 3906359553320449745
+    second: battle_slot_empty_dashed_16
+  - first:
+      213: -3449657431637388888
+    second: battle_slot_empty_dashed_17
+  - first:
+      213: 4438933995768657595
+    second: battle_slot_empty_dashed_18
+  - first:
+      213: 3287737274421596205
+    second: battle_slot_empty_dashed_19
+  - first:
+      213: 772563859595311203
+    second: battle_slot_empty_dashed_20
+  - first:
+      213: 1558793158718280800
+    second: battle_slot_empty_dashed_21
+  - first:
+      213: 7538006162393854494
+    second: battle_slot_empty_dashed_22
+  - first:
+      213: -9127548961749491784
+    second: battle_slot_empty_dashed_23
+  - first:
+      213: -5748034733890320468
+    second: battle_slot_empty_dashed_24
+  - first:
+      213: -25472181765267823
+    second: battle_slot_empty_dashed_25
+  - first:
+      213: 8592950638545111656
+    second: battle_slot_empty_dashed_26
+  - first:
+      213: -2864824049300263144
+    second: battle_slot_empty_dashed_27
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: 4
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 1
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 144
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 247718fe1534f68c0800000000000000
+      internalID: -4003907524519430334
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_1
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 153
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 906b86996b374f760800000000000000
+      internalID: 7490739308318995977
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_2
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 153
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ec4c0350fca6fa10800000000000000
+      internalID: 1942930437442391272
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_3
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 153
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e16fe31d561bc7af0800000000000000
+      internalID: -397247616255068642
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_4
+      rect:
+        serializedVersion: 2
+        x: 76
+        y: 153
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8bd82dee35522b220800000000000000
+      internalID: 2500101785563336120
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_5
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 153
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 23768214d536b2eb0800000000000000
+      internalID: -4743588530328410318
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_6
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 153
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 71a77876252143530800000000000000
+      internalID: 3833709327932684823
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_7
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 144
+        width: 14
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ee24a8f8c903cdb80800000000000000
+      internalID: -8368760558579989778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_8
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 124
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f210c0d25a00d6e30800000000000000
+      internalID: 4498252312238358831
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_9
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 104
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 634c60caf1cc97000800000000000000
+      internalID: 34282908584166454
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_10
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 124
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b4c46be168f142270800000000000000
+      internalID: 8224733480386710603
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_11
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 104
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d7c580e9a53113bd0800000000000000
+      internalID: -2652317425625179011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_12
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 84
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7b97c4a0be214a600800000000000000
+      internalID: 478528261107513783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_13
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 922594068569bc520800000000000000
+      internalID: 2723435705992303145
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_14
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 84
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9bd19ea54405ad30800000000000000
+      internalID: 4441961304798911387
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_15
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 64
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e2911e94a2362db0800000000000000
+      internalID: -4817107068818189597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_16
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 44
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d67e94215d263630800000000000000
+      internalID: 3906359553320449745
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_17
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 24
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a1977ec7da5020d0800000000000000
+      internalID: -3449657431637388888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_18
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 44
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb6323f53f24a9d30800000000000000
+      internalID: 4438933995768657595
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_19
+      rect:
+        serializedVersion: 2
+        x: 143
+        y: 24
+        width: 7
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d20d5b4c1a360ad20800000000000000
+      internalID: 3287737274421596205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_20
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 16
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 368bb71bcb2b8ba00800000000000000
+      internalID: 772563859595311203
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_21
+      rect:
+        serializedVersion: 2
+        x: 16
+        y: 0
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06456b77e12f1a510800000000000000
+      internalID: 1558793158718280800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_22
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 0
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e12f038aaa06c9860800000000000000
+      internalID: 7538006162393854494
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_23
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 0
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8bf9fe0449e645180800000000000000
+      internalID: -9127548961749491784
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_24
+      rect:
+        serializedVersion: 2
+        x: 76
+        y: 0
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca74cd92dd0ea30b0800000000000000
+      internalID: -5748034733890320468
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_25
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 0
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19e1a368f2185aff0800000000000000
+      internalID: -25472181765267823
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_26
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 0
+        width: 20
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86a82fe041b404770800000000000000
+      internalID: 8592950638545111656
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: battle_slot_empty_dashed_27
+      rect:
+        serializedVersion: 2
+        x: 136
+        y: 0
+        width: 14
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81f2675a4b91e38d0800000000000000
+      internalID: -2864824049300263144
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      battle_slot_empty_dashed_0: -4003907524519430334
+      battle_slot_empty_dashed_1: 7490739308318995977
+      battle_slot_empty_dashed_10: 8224733480386710603
+      battle_slot_empty_dashed_11: -2652317425625179011
+      battle_slot_empty_dashed_12: 478528261107513783
+      battle_slot_empty_dashed_13: 2723435705992303145
+      battle_slot_empty_dashed_14: 4441961304798911387
+      battle_slot_empty_dashed_15: -4817107068818189597
+      battle_slot_empty_dashed_16: 3906359553320449745
+      battle_slot_empty_dashed_17: -3449657431637388888
+      battle_slot_empty_dashed_18: 4438933995768657595
+      battle_slot_empty_dashed_19: 3287737274421596205
+      battle_slot_empty_dashed_2: 1942930437442391272
+      battle_slot_empty_dashed_20: 772563859595311203
+      battle_slot_empty_dashed_21: 1558793158718280800
+      battle_slot_empty_dashed_22: 7538006162393854494
+      battle_slot_empty_dashed_23: -9127548961749491784
+      battle_slot_empty_dashed_24: -5748034733890320468
+      battle_slot_empty_dashed_25: -25472181765267823
+      battle_slot_empty_dashed_26: 8592950638545111656
+      battle_slot_empty_dashed_27: -2864824049300263144
+      battle_slot_empty_dashed_3: -397247616255068642
+      battle_slot_empty_dashed_4: 2500101785563336120
+      battle_slot_empty_dashed_5: -4743588530328410318
+      battle_slot_empty_dashed_6: 3833709327932684823
+      battle_slot_empty_dashed_7: -8368760558579989778
+      battle_slot_empty_dashed_8: 4498252312238358831
+      battle_slot_empty_dashed_9: 34282908584166454
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// <summary>
 /// 战斗界面 Part 代码用的布局常量,设计分辨率 1920×1080(UIRoot 按高匹配)。各区坐标与锚点以 13 号票的布局表为准,摆在战斗窗 prefab 上,不在这里。
-/// 方块颜色是占位色块,正式美术不在本图。
+/// 方块的样子 = 按骨牌种类取的皮图(<see cref="SkinOf(BlockInstance)"/>),块色(<see cref="ColorOf(TetrominoKind)"/>)只给特效与虚影角标染色。
 /// </summary>
 public static class BlockLayout
 {
@@ -93,7 +93,7 @@ public static class BlockLayout
     /// <summary>光带基色。UI_GlowCell 按到行边的距离再乘一道衰减,alpha 取动物乐园同一档(≈0.88),纯色条时代的 0x80 换上辉光后太淡。</summary>
     public static readonly Color ClearPreviewGlowColor = new Color32(0x5e, 0xe7, 0xff, 0xE0);
 
-    /// <summary>七种骨牌的占位色,下标 = (int)<see cref="TetrominoKind"/>。取自 13 号票线框。</summary>
+    /// <summary>七种骨牌的块色,下标 = (int)<see cref="TetrominoKind"/>。取自 13 号票线框,与方块皮图同色相;特效与虚影角标按它染。</summary>
     private static readonly Color[] KindColors =
     {
         new Color32(0x46, 0xcd, 0xe6, 0xFF), // I
@@ -108,7 +108,7 @@ public static class BlockLayout
     /// <summary>死格的颜色。本图没有死格的来源,规则核心留着钩子(05 号票)。</summary>
     public static readonly Color DeadCellColor = new Color32(0x05, 0x07, 0x0d, 0xFF);
 
-    /// <summary>骨牌种类数(占位色的个数)。</summary>
+    /// <summary>骨牌种类数(块色的个数)。</summary>
     public static int KindCount => KindColors.Length;
 
     public static Color ColorOf(TetrominoKind kind)
@@ -117,32 +117,47 @@ public static class BlockLayout
         return k >= 0 && k < KindColors.Length ? KindColors[k] : Color.white;
     }
 
-    // 强化的占位染色(规则 §4.4):骨牌底色朝强化色推一截,一眼分得出;正式美术来了换成贴图。
+    /// <summary>方块皮图在战斗图集(Atlas_Battle)里的名字,下标 = (int)<see cref="TetrominoKind"/>。BlockPart 的皮节点绑着该图集按名取。</summary>
+    private static readonly string[] KindSkins =
+    {
+        "battle_block_I", "battle_block_O", "battle_block_T", "battle_block_S", "battle_block_Z", "battle_block_J", "battle_block_L",
+    };
+
+    public static string SkinNameOf(TetrominoKind kind)
+    {
+        int k = (int)kind;
+        return k >= 0 && k < KindSkins.Length ? KindSkins[k] : KindSkins[0];
+    }
+
+    // 强化的占位染色(规则 §4.4):乘在皮图上,一眼分得出;正式美术来了换成贴图。万能乘不出「变亮」,取淡紫区分。
     private static readonly Color GlassTint = new Color(0.85f, 0.95f, 1f, 1f);
     private static readonly Color SteelTint = new Color(0.62f, 0.66f, 0.72f, 1f);
     private static readonly Color GoldTint = new Color(1f, 0.82f, 0.25f, 1f);
-    private static readonly Color WildTint = new Color(1f, 1f, 1f, 1f);
+    private static readonly Color WildTint = new Color(1f, 0.72f, 1f, 1f);
     private const float EnhancementTintShare = 0.55f;
     private const float GlassAlpha = 0.72f;
 
     /// <summary>
-    /// 一块的格色:骨牌底色,带强化时朝强化色推(琉璃另带半透明)。版本不染色,标在托盘点数旁(<see cref="EditionMark"/>)。
+    /// 一块画成什么样:皮图按骨牌种类,带强化时乘一道强化色(琉璃另带半透明)。版本不染色,标在托盘点数旁(<see cref="EditionMark"/>)。
     /// </summary>
-    public static Color ColorOf(BlockInstance block)
+    public static BlockSkin SkinOf(BlockInstance block)
     {
-        Color c = ColorOf(block.Kind);
+        Color tint = Color.white;
         switch (block.Enhancement)
         {
             case Enhancement.Glass:
-                c = Color.Lerp(c, GlassTint, EnhancementTintShare);
-                c.a = GlassAlpha;
-                return c;
-            case Enhancement.Steel: return Color.Lerp(c, SteelTint, EnhancementTintShare);
-            case Enhancement.Gold: return Color.Lerp(c, GoldTint, EnhancementTintShare);
-            case Enhancement.Wild: return Color.Lerp(c, WildTint, EnhancementTintShare);
-            default: return c;
+                tint = Color.Lerp(tint, GlassTint, EnhancementTintShare);
+                tint.a = GlassAlpha;
+                break;
+            case Enhancement.Steel: tint = Color.Lerp(tint, SteelTint, EnhancementTintShare); break;
+            case Enhancement.Gold: tint = Color.Lerp(tint, GoldTint, EnhancementTintShare); break;
+            case Enhancement.Wild: tint = Color.Lerp(tint, WildTint, EnhancementTintShare); break;
         }
+        return new BlockSkin(block.Kind, tint);
     }
+
+    /// <summary>不看强化、只按种类的样子(落子演出、弃置演出、全清方块雨)。</summary>
+    public static BlockSkin SkinOf(TetrominoKind kind) => new BlockSkin(kind, Color.white);
 
     /// <summary>托盘点数旁的版本角标(闪箔 ◇、镭射 ◆、多彩 ★,都是思源黑体里有的字形);没有版本返回空串。</summary>
     public static string EditionMark(Edition edition)
@@ -166,4 +181,20 @@ public static class BlockLayout
         float g = c.grayscale * GreyBrightness;
         return new Color(g, g, g, c.a * GreyAlpha);
     }
+}
+
+/// <summary>一格方块的样子:皮图按骨牌种类,颜色乘在皮图上(强化染色、置灰都在这里)。</summary>
+public readonly struct BlockSkin
+{
+    public readonly TetrominoKind Kind;
+    public readonly Color Tint;
+
+    public BlockSkin(TetrominoKind kind, Color tint)
+    {
+        Kind = kind;
+        Tint = tint;
+    }
+
+    /// <summary>置灰后的样子(这块怎么转都放不下)。</summary>
+    public BlockSkin Greyed() => new BlockSkin(Kind, BlockLayout.Greyed(Tint));
 }

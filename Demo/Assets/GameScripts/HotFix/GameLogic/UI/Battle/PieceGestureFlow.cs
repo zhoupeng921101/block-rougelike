@@ -60,7 +60,7 @@ public sealed class PieceGestureFlow
     private int _dragSlot = -1;
     private int _dragId;
     private RectTransform _dragPiece;
-    private Color _dragColor;
+    private BlockSkin _dragSkin;
 
     /// <summary>左键按在哪个槽上、还没抬起(含没越过起拖阈值的那一段);-1 = 没按。</summary>
     private int _pressSlot = -1;
@@ -221,7 +221,7 @@ public sealed class PieceGestureFlow
         _dragSlot = slot;
         _dragId = v.InstanceId;
         BattleAudio.Pickup();
-        _dragColor = BlockLayout.ColorOf(_run.FindInstance(_dragId));
+        _dragSkin = BlockLayout.SkinOf(_run.FindInstance(_dragId));
         _dragPiece = v.Slot.PieceRoot;
         _tray.SetHeld(slot);
 
@@ -333,7 +333,7 @@ public sealed class PieceGestureFlow
             ClearResolution clear = _run.ResolveClear(_dragId, rot, row, col);
             if (clear.Legal)
             {
-                _board.ShowGhost(shape, col, row, _dragColor);
+                _board.ShowGhost(shape, col, row, _dragSkin);
                 if (clear.HasClear)
                 {
                     _board.ShowClearPreview(clear.Rows, clear.Cols);

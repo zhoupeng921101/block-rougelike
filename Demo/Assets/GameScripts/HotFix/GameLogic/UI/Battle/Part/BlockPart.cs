@@ -7,26 +7,50 @@ using TEngine;
 using Ease = DG.Tweening.Ease;
 
 /// <summary>
-/// 一格方块(盘上的格、托盘里的格、落点虚影共用这一个模板)。本图是占位色块:prefab 上的 ExImage 不带图、开着 m_DrawOnNull,
-/// 颜色由调用方按骨牌种类给(<see cref="BlockLayout.ColorOf"/>)。正式美术来了再按名换图。
+/// 一格方块(盘上的格、托盘里的格、落点虚影共用这一个模板)。皮节点 m_eximg_Skin 绑着战斗图集,按骨牌种类按名取皮图
+/// (<see cref="BlockLayout.SkinNameOf"/>);死格不取图、开着 m_DrawOnNull 画成纯色。
 /// </summary>
 public sealed class BlockPart : MonoBehaviour
 {
     [SerializeField] private ExImage m_eximg_Skin = null!;
+    [SerializeField] private Image m_img_GhostMark = null!;
 
     /// <summary>自身矩阵位置（Part 是裸 MonoBehaviour，无框架基类可提供该便捷属性）。</summary>
     public RectTransform rectTransform => (RectTransform)transform;
 
-    /// <summary>格色(含 alpha)。置灰、虚影都经它或 <see cref="SetAlpha"/> 改。</summary>
-    public void SetColor(Color color)
+    /// <summary>当前画的样子;死格为 null。只给战斗窗的调试核对与特效取色读。</summary>
+    public BlockSkin? Skin { get; private set; }
+
+    /// <summary>格的块色:特效按它染(格爆点、拖尾);死格取死格色。</summary>
+    public Color FxColor => Skin.HasValue ? BlockLayout.ColorOf(Skin.Value.Kind) : BlockLayout.DeadCellColor;
+
+    public void SetSkin(BlockSkin skin)
     {
-        m_eximg_Skin.color = color;
+        Skin = skin;
+        m_eximg_Skin.SpriteName = BlockLayout.SkinNameOf(skin.Kind);
+        m_eximg_Skin.color = skin.Tint;
+        m_img_GhostMark.gameObject.SetActive(false);
     }
 
-    /// <summary>当前格色。只给战斗窗的调试核对读。</summary>
-    public Color Color => m_eximg_Skin.color;
+    /// <summary>死格:不取皮图,纯色暗块。</summary>
+    public void SetDead()
+    {
+        Skin = null;
+        m_eximg_Skin.SpriteName = string.Empty;
+        m_eximg_Skin.color = BlockLayout.DeadCellColor;
+        m_img_GhostMark.gameObject.SetActive(false);
+    }
 
-    /// <summary>整格半透明(落点虚影用)。<see cref="SetColor"/> 会连 alpha 一起覆盖,须在它之后调。</summary>
+    /// <summary>落点虚影:半透明方砖,四角括号按块色染(效果图 v3A)。</summary>
+    public void SetGhost(BlockSkin skin)
+    {
+        SetSkin(skin);
+        SetAlpha(BlockLayout.GhostAlpha);
+        m_img_GhostMark.color = BlockLayout.ColorOf(skin.Kind);
+        m_img_GhostMark.gameObject.SetActive(true);
+    }
+
+    /// <summary>整格半透明。<see cref="SetSkin"/> 会连 alpha 一起覆盖,须在它之后调。</summary>
     public void SetAlpha(float alpha)
     {
         var c = m_eximg_Skin.color;

@@ -105,8 +105,8 @@ public sealed class BoardPreviewLayer
     /// <summary>
     /// 落点虚影:<paramref name="shape"/> 包围盒左上角落在 (col,row) 时,每格画一块半透明方块。只在放得下时调,调用前先 <see cref="ClearGhostAndPreview"/>。
     /// </summary>
-    /// <param name="color">手上那块的颜色,虚影照它画、alpha 取 <see cref="BlockLayout.GhostAlpha"/>。</param>
-    public void ShowGhost(BlockShape shape, int col, int row, Color color)
+    /// <param name="skin">手上那块的样子,虚影照它画、alpha 取 <see cref="BlockLayout.GhostAlpha"/>。</param>
+    public void ShowGhost(BlockShape shape, int col, int row, BlockSkin skin)
     {
         if (shape == null) return;
         float visual = _geo.BoardCellVisual();
@@ -122,8 +122,7 @@ public sealed class BoardPreviewLayer
                 var ghost = _ghostPool[_ghostUsed++];
                 ghost.rectTransform.sizeDelta = ghostSize;
                 ghost.rectTransform.anchoredPosition = _geo.CellLocalPos(gc, gr);
-                ghost.SetColor(color);
-                ghost.SetAlpha(BlockLayout.GhostAlpha);
+                ghost.SetGhost(skin);
                 ghost.gameObject.SetActive(true);
             }
         }

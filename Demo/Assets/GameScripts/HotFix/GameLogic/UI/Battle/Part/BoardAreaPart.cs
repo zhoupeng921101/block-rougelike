@@ -96,7 +96,7 @@ public sealed class BoardAreaPart : MonoBehaviour
     public BlockPart PartAt(int row, int col) => _cells.PartAt(row, col);
 
     /// <inheritdoc cref="BoardCellRenderer.ShowPlaced"/>
-    public List<BlockPart> ShowPlaced(IReadOnlyList<int> cells, Color color) => _cells.ShowPlaced(cells, color);
+    public List<BlockPart> ShowPlaced(IReadOnlyList<int> cells, BlockSkin skin) => _cells.ShowPlaced(cells, skin);
 
     /// <inheritdoc cref="BoardCellRenderer.TakeForExit"/>
     public BlockPart TakeForExit(int row, int col) => _cells.TakeForExit(row, col);
@@ -129,7 +129,7 @@ public sealed class BoardAreaPart : MonoBehaviour
     public void InitPools() => _preview.InitPools();
 
     /// <inheritdoc cref="BoardPreviewLayer.ShowGhost"/>
-    public void ShowGhost(BlockShape shape, int col, int row, Color color) => _preview.ShowGhost(shape, col, row, color);
+    public void ShowGhost(BlockShape shape, int col, int row, BlockSkin skin) => _preview.ShowGhost(shape, col, row, skin);
 
     /// <summary>消除预览:填充与光带(<see cref="BoardPreviewLayer.ShowClearPreview"/>),外加行列里已有的块上浮(<see cref="BoardCellRenderer.HighlightLines"/>)。</summary>
     public void ShowClearPreview(IReadOnlyList<int> rows, IReadOnlyList<int> cols)

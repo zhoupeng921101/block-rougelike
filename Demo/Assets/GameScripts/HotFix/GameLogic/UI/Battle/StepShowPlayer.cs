@@ -186,7 +186,7 @@ public sealed class StepShowPlayer
         // 预览池从头用起:下面按线号取光带(TryGetBand)要和这次 ShowClearPreview 的次序对上;
         // 手势流只在画过预览时才收,上一步留下的已淡出的光带还占着池位
         _board.ClearGhostAndPreview();
-        List<BlockPart> parts = _board.ShowPlaced(placed.Cells, BlockLayout.ColorOf(placed.Kind));
+        List<BlockPart> parts = _board.ShowPlaced(placed.Cells, BlockLayout.SkinOf(placed.Kind));
         foreach (BlockPart part in parts) _seq.Insert(0f, part.PunchTween(ClearPacing.PlacePunch * k));
         _fx.Place(placed.Cells);
         if (clear == null) return;
@@ -231,7 +231,7 @@ public sealed class StepShowPlayer
             BlockPart part = _board.TakeForExit(r, c);
             if (part == null) continue;
             _temps.Add(part.gameObject);
-            _fx.CellBurst(beat.Time, r, c, part.Color);
+            _fx.CellBurst(beat.Time, r, c, part.FxColor);
             float exit = ClearPacing.CellExit * k;
             _seq.Insert(beat.Time, part.ExitTween(exit, BlockLayout.CellExitEndScale));
             // 刚落下的格可能在头几拍就退场,这时它的放大还没播完:等放大播完再销毁(退场后它已看不见),免得补间写到销毁了的节点上
@@ -358,7 +358,7 @@ public sealed class StepShowPlayer
 
         BlockShape shape = BlockShapeMap.GetRotated(Tetromino.BaseShapeId(block.Kind), release.Rot);
         float cell = _board.CellSize();
-        Color color = BlockLayout.ColorOf(block.Kind);
+        BlockSkin skin = BlockLayout.SkinOf(block.Kind);
         for (int r = 0; r < shape.Height; r++)
         {
             for (int c = 0; c < shape.Width; c++)
@@ -366,7 +366,7 @@ public sealed class StepShowPlayer
                 if (((shape.Shape[r] >> (shape.Width - c - 1)) & 1) == 0) continue;
                 BlockPart part = _board.CreateLooseCell(prt);
                 if (part == null) continue;
-                part.SetColor(color);
+                part.SetSkin(skin);
                 part.rectTransform.anchoredPosition = new Vector2((c - (shape.Width - 1) / 2f) * cell, ((shape.Height - 1) / 2f - r) * cell);
             }
         }

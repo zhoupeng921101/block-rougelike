@@ -120,7 +120,7 @@ public partial class UIBattlePanel
         string invalid = _run.Validate();
         Check(invalid == null, "规则核心 Validate: " + invalid);
 
-        // 盘面:有块(或死格)的格恰好有一个方块,颜色按所属块的种类,位置是格心
+        // 盘面:有块(或死格)的格恰好有一个方块,样子按所属块的种类与强化,位置是格心
         Check(Mathf.Approximately(m_part_BoardArea.CellSize(), BlockLayout.CellSize), $"格距 {m_part_BoardArea.CellSize()} ≠ 布局表的 {BlockLayout.CellSize}");
         for (int cell = 0; cell < BoardCells.Count; cell++)
         {
@@ -131,8 +131,7 @@ public partial class UIBattlePanel
             bool drawn = part != null && part.gameObject.activeSelf;
             Check(drawn == (owner != 0 || dead), $"格 ({r},{c}):规则核心 {(dead ? "死格" : owner == 0 ? "空" : "块 #" + owner)},画面{(drawn ? "有" : "没有")}方块");
             if (!drawn || owner == 0) continue;
-            Color want = BlockLayout.ColorOf(run.FindInstance(owner).Kind);
-            Check(Same(part.Color, want), $"格 ({r},{c}) 的颜色不是块 #{owner} 的种类色");
+            Check(Same(part.Skin, BlockLayout.SkinOf(run.FindInstance(owner))), $"格 ({r},{c}) 的样子不是块 #{owner} 的");
             Check(Vector2.Distance(part.rectTransform.anchoredPosition, m_part_BoardArea.CellLocalPos(c, r)) < 0.01f, $"格 ({r},{c}) 的方块不在格心");
         }
 
@@ -152,9 +151,9 @@ public partial class UIBattlePanel
             BlockInstance block = run.FindInstance(ts.Id);
             bool greyed = !run.CanPlaceAnyRotation(ts.Id);
             Check(v.Greyed == greyed, $"槽 {i}:置灰画成 {v.Greyed},规则核心「怎么转都放不下」= {greyed}");
-            Color want = BlockLayout.ColorOf(block.Kind);
-            if (greyed) want = BlockLayout.Greyed(want);
-            foreach (BlockPart cellPart in v.Cells) Check(Same(cellPart.Color, want), $"槽 {i} 的格色不对(置灰 {greyed})");
+            BlockSkin want = BlockLayout.SkinOf(block);
+            if (greyed) want = want.Greyed();
+            foreach (BlockPart cellPart in v.Cells) Check(Same(cellPart.Skin, want), $"槽 {i} 的格样子不对(置灰 {greyed})");
             Check(ShapeOf(v.Cells) == ShapeKey(BlockShapeMap.GetRotated(Tetromino.BaseShapeId(block.Kind), ts.Rot)),
                 $"槽 {i}:格子拼出的形状不是 {block.Kind} rot {ts.Rot}");
             Check(v.Points != null && v.Points.Text == table.Format(TextKeys.Battle.Points, block.Points), $"槽 {i} 的点数不是 {block.Points}");
@@ -181,6 +180,8 @@ public partial class UIBattlePanel
         }
         return problems.Count == 0 ? null : string.Join(";", problems);
     }
+
+    private static bool Same(BlockSkin? a, BlockSkin b) => a.HasValue && a.Value.Kind == b.Kind && Same(a.Value.Tint, b.Tint);
 
     private static bool Same(Color a, Color b) =>
         Mathf.Abs(a.r - b.r) < 0.002f && Mathf.Abs(a.g - b.g) < 0.002f && Mathf.Abs(a.b - b.b) < 0.002f && Mathf.Abs(a.a - b.a) < 0.002f;

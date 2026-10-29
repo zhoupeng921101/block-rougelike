@@ -4,7 +4,7 @@ using GameRules;
 using UnityEngine;
 
 /// <summary>
-/// 盘上每一格画成什么样:有块的格一个 <see cref="BlockPart"/>,颜色按所属块的骨牌种类;死格画成暗块;空格不画(格底在 m_grid_CellBg 那一层)。
+/// 盘上每一格画成什么样:有块的格一个 <see cref="BlockPart"/>,皮图按所属块的骨牌种类、强化染色;死格画成暗块;空格不画(格底在 m_grid_CellBg 那一层)。
 ///
 /// 增删改一律「空则退场、有则复用、缺则新建摆位」:复用而非每次重建,故全量刷新与拖动预览这类高频刷新不产生 Instantiate。
 /// 输入只有规则核心的只读盘面(<see cref="IBoardView"/>);格上不标点数(13 号票:点数只标在托盘块上)。
@@ -38,7 +38,7 @@ public sealed class BoardCellRenderer
     }
 
     /// <summary>
-    /// 按盘面全量重画。<paramref name="instanceOf"/> 按实例 id 取块(要它的骨牌种类定颜色),取不到的格按白色画。
+    /// 按盘面全量重画。<paramref name="instanceOf"/> 按实例 id 取块(要它的种类与强化定样子),取不到的格按死格画。
     /// </summary>
     public void Refresh(IBoardView board, Func<int, BlockInstance> instanceOf)
     {
@@ -147,7 +147,9 @@ public sealed class BoardCellRenderer
 
         var block = existing ?? CreateCell(r, c);
         if (block == null) return; // 失败原因已由 UIPartFactory 记录
-        block.SetColor(dead ? BlockLayout.DeadCellColor : ColorOfOwner(instanceOf, owner));
+        BlockInstance b = dead ? null : instanceOf(owner);
+        if (b == null) block.SetDead();
+        else block.SetSkin(BlockLayout.SkinOf(b));
     }
 
     /// <summary>在 (r, c) 新建一格并登记进格表。格尺寸与位置按盘面层 rect 现算;单格视觉边长 = 格距 - BoardCellGap,与格底同口径。</summary>
@@ -172,7 +174,7 @@ public sealed class BoardCellRenderer
     /// 把刚落下那块的格画上(<paramref name="cells"/> 是 row*8 + col),返回各格。被消的格在规则核心的终态里已经空了,
     /// 全量刷新画不出来,演出要先按 <see cref="GameRules.PiecePlaced"/> 把它们摆上,再逐拍摘走。
     /// </summary>
-    public List<BlockPart> ShowPlaced(IReadOnlyList<int> cells, Color color)
+    public List<BlockPart> ShowPlaced(IReadOnlyList<int> cells, BlockSkin skin)
     {
         var parts = new List<BlockPart>(cells.Count);
         foreach (int cell in cells)
@@ -180,7 +182,7 @@ public sealed class BoardCellRenderer
             int r = BoardCells.RowOf(cell), c = BoardCells.ColOf(cell);
             var block = _blockParts[r, c] ?? CreateCell(r, c);
             if (block == null) continue;
-            block.SetColor(color);
+            block.SetSkin(skin);
             parts.Add(block);
         }
         return parts;
@@ -194,11 +196,5 @@ public sealed class BoardCellRenderer
         _blockParts[r, c] = null;
         _highlighted.Remove(part);
         return part;
-    }
-
-    private static Color ColorOfOwner(Func<int, BlockInstance> instanceOf, int owner)
-    {
-        BlockInstance b = instanceOf(owner);
-        return b != null ? BlockLayout.ColorOf(b) : Color.white;
     }
 }

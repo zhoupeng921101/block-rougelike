@@ -108,15 +108,15 @@ public sealed class TrayAreaPart : MonoBehaviour
             return view;
         }
         view.Greyed = !run.CanPlaceAnyRotation(traySlot.Id);
-        Color color = BlockLayout.ColorOf(block);
-        if (view.Greyed) color = BlockLayout.Greyed(color);
+        BlockSkin skin = BlockLayout.SkinOf(block);
+        if (view.Greyed) skin = skin.Greyed();
 
         int baseId = Tetromino.BaseShapeId(block.Kind);
         BlockShape src = BlockShapeMap.Get(baseId);
         BlockShape rotated = BlockShapeMap.GetRotated(baseId, traySlot.Rot);
         var pieceRoot = slot.PieceRoot;
         pieceRoot.sizeDelta = new Vector2(rotated.Width * BlockLayout.SlotCell, rotated.Height * BlockLayout.SlotCell);
-        BuildPieceCells(pieceRoot, src, rotated, traySlot.Rot, color, view.Cells);
+        BuildPieceCells(pieceRoot, src, rotated, traySlot.Rot, skin, view.Cells);
 
         var points = UIPartFactory.Create<ElementPart>(_elementPrefab, srt, nameof(TrayAreaPart));
         if (points != null)
@@ -134,7 +134,7 @@ public sealed class TrayAreaPart : MonoBehaviour
     /// 按形状位图铺格。遍历沿 <paramref name="src"/>(原始朝向)走、只把落点转到 rot 档,与规则核心落子写盘同一口径:
     /// 块内格的序号按原始朝向编、不随旋转变,改成沿转过的形状遍历,序号的含义就变了(逐格触发要用这个序号)。
     /// </summary>
-    private void BuildPieceCells(RectTransform pieceRoot, BlockShape src, BlockShape rotated, int rot, Color color, List<BlockPart> sink)
+    private void BuildPieceCells(RectTransform pieceRoot, BlockShape src, BlockShape rotated, int rot, BlockSkin skin, List<BlockPart> sink)
     {
         float cell = BlockLayout.SlotCell;
         float visual = cell - BlockLayout.SlotCellGap;
@@ -153,7 +153,7 @@ public sealed class TrayAreaPart : MonoBehaviour
                 crt.pivot = new Vector2(0.5f, 0.5f);
                 crt.sizeDelta = new Vector2(visual, visual);
                 crt.anchoredPosition = new Vector2(offX + rc * cell, offY - rr * cell);
-                part.SetColor(color);
+                part.SetSkin(skin);
                 sink.Add(part);
             }
         }

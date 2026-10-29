@@ -156,7 +156,7 @@ public sealed class AllClearRainFx : MonoBehaviour
             d.Root.anchoredPosition = new Vector2(x, _span * 0.5f + _margin);
             d.Block.sizeDelta = new Vector2(size, size);
             d.Block.localRotation = Quaternion.identity;
-            d.Block.GetComponent<BlockPart>().SetColor(color);
+            d.Block.GetComponent<BlockPart>().SetSkin(BlockLayout.SkinOf((GameRules.TetrominoKind)kind));
 
             d.Trail.rectTransform.sizeDelta = new Vector2(size * TrailWidth, size * TrailLength);
             d.Trail.color = new Color(color.r, color.g, color.b, TrailAlpha);
