@@ -178,6 +178,45 @@ namespace GameRules
         }
 
         /// <summary>
+        /// 进地图节点(局外循环设计稿 §2):只能进当前可选范围内的节点;进完要打完或跳过才算结算。
+        /// 战斗与地图的接线由表现层按「进节点 → 开盲注」两步走。
+        /// </summary>
+        public bool EnterNode(int nodeId) => Progress.Enter(Map, nodeId);
+
+        /// <summary>当前节点该打的那一场:目标分按节点的层×强度与难度算,弃置按难度加减,每组块数取配置默认。</summary>
+        public BlindSpec SpecForCurrentNode()
+        {
+            if (Progress.CurrentNodeId == 0) throw new InvalidOperationException("还没进节点");
+            if (Progress.CurrentResolved) throw new InvalidOperationException("当前节点已结算");
+            MapNode node = Map.Get(Progress.CurrentNodeId);
+            int discards = Math.Max(0, Config.BaseDiscards + DifficultyRules.Of(Difficulty).DiscardDelta);
+            return new BlindSpec(node.Segment, node.Layer, RunTargets.For(node, Difficulty, Config), discards, Config.DefaultGroupSize);
+        }
+
+        /// <summary>开当前节点的盲注。上一个盲注还在进行时由 <see cref="StartBlind"/> 拦下。</summary>
+        public StepResult StartBlindForCurrentNode() => StartBlind(SpecForCurrentNode());
+
+        /// <summary>
+        /// 结算一场打赢的盲注:按当前节点算通关奖励与利息,入账,并把地图进度推到「已结算」。
+        /// 盲注没赢、当前节点没有待结算的盲注、或盲注与节点不是同一关时抛异常(调用方按事件流走,不该出现)。
+        /// </summary>
+        public Settlement SettleBlind()
+        {
+            if (Blind == null) throw new InvalidOperationException("没有盲注可结算");
+            if (Blind.Outcome != BlindOutcome.Won) throw new InvalidOperationException("盲注没有赢,不能结算");
+            if (Progress.CurrentNodeId == 0 || Progress.CurrentResolved) throw new InvalidOperationException("当前节点没有待结算的盲注");
+            MapNode node = Map.Get(Progress.CurrentNodeId);
+            if (Blind.Spec.Segment != node.Segment || Blind.Spec.Layer != node.Layer)
+            {
+                throw new InvalidOperationException("盲注与当前节点不是同一关");
+            }
+            Settlement settlement = RunEconomy.Settle(node, Difficulty, _money, Config);
+            AddMoney(settlement.Total);
+            Progress.Resolve();
+            return new Settlement(node.Id, settlement.Reward, settlement.Interest, _money);
+        }
+
+        /// <summary>
         /// 落子一步:校验 → 落子 → 判线 → 结算 → 判胜 → 发组 → 判负,一次推进到下一个稳定状态(07 号票 §4 的 17 段)。
         /// 被拒不抛异常、不改状态。落点以参数的 rot 为准,不看槽上存的朝向。
         /// </summary>

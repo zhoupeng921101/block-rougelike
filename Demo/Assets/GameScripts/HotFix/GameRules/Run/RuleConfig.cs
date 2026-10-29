@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using static System.FormattableString;
 
 namespace GameRules
 {
@@ -42,17 +43,52 @@ namespace GameRules
         /// <summary>一局几段(设计稿 §1);地图布局按它生成。</summary>
         public int MapSegments { get; }
 
+        /// <summary>第一段第一层的目标分(阶段 4 的占位值 350)。</summary>
+        public int FirstTarget { get; }
+
+        /// <summary>段间目标分倍率,千分值(设计稿 §1 的 ×2.3)。</summary>
+        public int SegmentTargetPermille { get; }
+
+        /// <summary>每盲注的基础弃置次数;难度档在这上面加减。</summary>
+        public int BaseDiscards { get; }
+
+        /// <summary>每组块数的默认值(规则 §2.1 定为 3,不是占位)。</summary>
+        public int DefaultGroupSize { get; }
+
+        /// <summary>利息:每持有这么多钱得 $1。</summary>
+        public int InterestPer { get; }
+
+        /// <summary>利息封顶的持有额(标准档);难度档会改它。</summary>
+        public int InterestCap { get; }
+
         public RuleConfig(IEnumerable<LibraryEntry> defaultLibrary, ClearTypeTable clearTypes, EffectRegistry effects,
-            int startingMoney = 4, int mapSegments = RunMap.DefaultSegments)
+            int startingMoney = 4, int mapSegments = RunMap.DefaultSegments, int firstTarget = 350,
+            int segmentTargetPermille = 2300, int baseDiscards = 3, int defaultGroupSize = 3,
+            int interestPer = 10, int interestCap = 50)
         {
             if (defaultLibrary == null) throw new ArgumentNullException(nameof(defaultLibrary));
             if (startingMoney < 0) throw new ArgumentOutOfRangeException(nameof(startingMoney), startingMoney, "起始金钱不能为负");
             if (mapSegments < 1) throw new ArgumentOutOfRangeException(nameof(mapSegments), mapSegments, "段数至少为 1");
+            if (firstTarget < 0) throw new ArgumentOutOfRangeException(nameof(firstTarget), firstTarget, "目标分不能为负");
+            if (segmentTargetPermille < 1000) throw new ArgumentOutOfRangeException(nameof(segmentTargetPermille), segmentTargetPermille, "段间倍率至少 ×1");
+            if (baseDiscards < 0) throw new ArgumentOutOfRangeException(nameof(baseDiscards), baseDiscards, "弃置次数不能为负");
+            if (defaultGroupSize < 1 || defaultGroupSize > BlindSpec.MaxGroupSize)
+            {
+                throw new ArgumentOutOfRangeException(nameof(defaultGroupSize), defaultGroupSize, Invariant($"每组块数在 1..{BlindSpec.MaxGroupSize}"));
+            }
+            if (interestPer < 1) throw new ArgumentOutOfRangeException(nameof(interestPer), interestPer, "利息门槛至少 1");
+            if (interestCap < 0) throw new ArgumentOutOfRangeException(nameof(interestCap), interestCap, "利息封顶不能为负");
             DefaultLibrary = new List<LibraryEntry>(defaultLibrary).AsReadOnly();
             ClearTypes = clearTypes ?? throw new ArgumentNullException(nameof(clearTypes));
             Effects = effects ?? throw new ArgumentNullException(nameof(effects));
             StartingMoney = startingMoney;
             MapSegments = mapSegments;
+            FirstTarget = firstTarget;
+            SegmentTargetPermille = segmentTargetPermille;
+            BaseDiscards = baseDiscards;
+            DefaultGroupSize = defaultGroupSize;
+            InterestPer = interestPer;
+            InterestCap = interestCap;
             effects.Seal();
         }
     }

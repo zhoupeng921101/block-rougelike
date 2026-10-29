@@ -37,11 +37,20 @@ namespace GameRules
         /// <summary>第一段的普通节点不能跳:规则 §2.3,逼玩家先建立基础盘。</summary>
         public bool CanSkip => !IsBoss && Segment > 1;
 
-        /// <summary>目标分倍率(设计稿 §2.2):轻 ×0.9、中 ×1.0、重 ×1.1;首领按大盲 ×1.4 折成层 1 的 ×2.1。</summary>
-        public int TargetPermille => Strength == NodeStrength.Light ? 900
-            : Strength == NodeStrength.Normal ? 1000
-            : Strength == NodeStrength.Heavy ? 1100
-            : 2100;
+        /// <summary>
+        /// 目标分倍率(设计稿 §1、§2.2):大盲是层 1 的 ×1.5,首领是 ×2.1;普通节点再乘轻 ×0.9 / 中 ×1.0 / 重 ×1.1。
+        /// 千分值,层与强度都按整数折,1500 × 1100 / 1000 = 1650 不丢精度。
+        /// </summary>
+        public int TargetPermille
+        {
+            get
+            {
+                if (IsBoss) return 2100;
+                int layer = Layer == 1 ? 1000 : 1500;
+                int strength = Strength == NodeStrength.Light ? 900 : Strength == NodeStrength.Normal ? 1000 : 1100;
+                return layer * strength / 1000;
+            }
+        }
 
         /// <summary>通关奖励(美元)。首领 $6,其余 $3/$4/$5(设计稿 §3.1)。</summary>
         public int Reward => Strength == NodeStrength.Light ? 3
