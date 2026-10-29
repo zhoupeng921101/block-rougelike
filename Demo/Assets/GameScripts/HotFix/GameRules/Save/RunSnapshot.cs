@@ -28,8 +28,9 @@ namespace GameRules
         private static readonly string[] MapMembers = { "segmentCount", "nodes", "progress" };
         private static readonly string[] MapNodeMembers = { "id", "segment", "layer", "strength", "tag" };
         private static readonly string[] ProgressMembers = { "current", "resolved", "visited" };
-        private static readonly string[] ShopMembers = { "rerolls", "guaranteeGene", "voucher", "goods" };
+        private static readonly string[] ShopMembers = { "rerolls", "guaranteeGene", "voucher", "booster", "pack", "goods" };
         private static readonly string[] ShopOfferMembers = { "kind", "id", "price", "sold" };
+        private static readonly string[] PackMembers = { "boosterId", "picksLeft", "options" };
         private static readonly string[] BlockMembers = { "id", "kind", "points", "enhancement", "edition" };
         private static readonly string[] GeneMembers = { "id" };
         private static readonly string[] BlindMembers =
@@ -178,11 +179,33 @@ namespace GameRules
             w.Name("voucher");
             if (shop.Voucher == null) w.Null();
             else WriteOffer(w, shop.Voucher.Value);
+            w.Name("booster");
+            if (shop.Booster == null) w.Null();
+            else WriteOffer(w, shop.Booster.Value);
+            w.Name("pack");
+            WritePack(w, shop.Pack);
             w.Name("goods").BeginArray(JsonLayout.Lines);
             foreach (ShopOffer offer in shop.Goods)
             {
                 WriteOffer(w, offer);
             }
+            w.End();
+            w.End();
+        }
+
+        /// <summary>开了一半的包:包号、还剩几次、以及剩下的候选。已选走的候选不在列表里。</summary>
+        private static void WritePack(CanonicalJsonWriter w, BoosterPack pack)
+        {
+            if (pack == null)
+            {
+                w.Null();
+                return;
+            }
+            w.BeginObject(JsonLayout.Lines);
+            w.Name("boosterId").Int(pack.BoosterId);
+            w.Name("picksLeft").Int(pack.PicksLeft);
+            w.Name("options").BeginArray(JsonLayout.Lines);
+            foreach (ShopOffer option in pack.Options) WriteOffer(w, option);
             w.End();
             w.End();
         }
@@ -299,7 +322,19 @@ namespace GameRules
                 voucher = ReadOffer(p, s[2], "shop.voucher");
                 if (p.Failed) return false;
             }
-            List<JsonNode> items = p.ReadArray(s[3], "shop.goods");
+            ShopOffer? booster = null;
+            if (s[3].Kind != JsonKind.Null)
+            {
+                booster = ReadOffer(p, s[3], "shop.booster");
+                if (p.Failed) return false;
+            }
+            BoosterPack pack = null;
+            if (s[4].Kind != JsonKind.Null)
+            {
+                pack = ReadPack(p, s[4], "shop.pack");
+                if (pack == null) return false;
+            }
+            List<JsonNode> items = p.ReadArray(s[5], "shop.goods");
             if (items == null) return false;
             if (items.Count != ShopState.GoodsCount)
             {
@@ -313,8 +348,26 @@ namespace GameRules
                 goods[i] = ReadOffer(p, items[i], path);
                 if (p.Failed) return false;
             }
-            shop = ShopState.Restore(goods, rerolls, guaranteeGene, voucher, catalog, difficulty);
+            shop = ShopState.Restore(goods, rerolls, guaranteeGene, voucher, booster, pack, catalog, difficulty);
             return true;
+        }
+
+        private static BoosterPack ReadPack(Parser p, JsonNode node, string path)
+        {
+            JsonNode[] members = p.ReadObject(node, path, PackMembers);
+            if (members == null) return null;
+            int boosterId = p.ReadInt(members[0], path + ".boosterId");
+            int picksLeft = p.ReadInt(members[1], path + ".picksLeft");
+            List<JsonNode> options = p.ReadArray(members[2], path + ".options");
+            if (options == null) return null;
+            var list = new List<ShopOffer>(options.Count);
+            for (int i = 0; i < options.Count; i++)
+            {
+                list.Add(ReadOffer(p, options[i], Invariant($"{path}.options[{i}]")));
+                if (p.Failed) return null;
+            }
+            if (picksLeft < 0) p.Fail(SnapshotError.BadValue, path + ".picksLeft", "剩下次数不能为负");
+            return BoosterPack.Restore(boosterId, picksLeft, list);
         }
 
         /// <summary>读一件货;kinds 与价格在这里只做基本合法性,放不放得下归 <see cref="ShopState.TryBuy"/>。</summary>

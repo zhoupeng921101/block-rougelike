@@ -35,7 +35,7 @@ namespace GameRules
     /// <summary>
     /// 一个商店的货架(局外循环设计稿 §4):4 个货格,权重 基因 60 / 方块 16 / 科技 12 / 改造 12;另挂一张优惠券(每段第一场)。
     /// 刷新只换货格,第一次 $5、之后每次 +$1,议价券再减;买货先查放不放得下,再扣钱,失败不改状态。
-    /// 补给包那一格还没接(等开包的选择流程)。
+    /// 另挂一个补给包,买了当场开、选够次数关。
     /// </summary>
     public sealed class ShopState
     {
@@ -46,8 +46,16 @@ namespace GameRules
         private readonly RunDifficulty _difficulty;
         private readonly bool _guaranteeGene;
         private ShopOffer? _voucher;
+        private ShopOffer? _booster;
+        private BoosterPack _pack;
 
         public IReadOnlyList<ShopOffer> Goods => _goods;
+
+        /// <summary>本店挂着的补给包;买了就变成正在开的 <see cref="Pack"/>。</summary>
+        public ShopOffer? Booster => _booster;
+
+        /// <summary>正在开的补给包;没买或已经选完是 null。</summary>
+        public BoosterPack Pack => _pack;
 
         /// <summary>已经刷新过几次;刷新费 = 5 + 这个数(再减议价券)。</summary>
         public int Rerolls { get; private set; }
@@ -65,7 +73,7 @@ namespace GameRules
         public bool GuaranteeGene => _guaranteeGene;
 
         private ShopState(ShopOffer[] goods, ContentCatalog catalog, RunDifficulty difficulty, bool guaranteeGene, int rerolls,
-            ShopOffer? voucher)
+            ShopOffer? voucher, ShopOffer? booster, BoosterPack pack)
         {
             _goods = goods;
             _catalog = catalog;
@@ -73,19 +81,27 @@ namespace GameRules
             _guaranteeGene = guaranteeGene;
             Rerolls = rerolls;
             _voucher = voucher;
+            _booster = booster;
+            _pack = pack;
         }
 
-        /// <summary>读档的还原口(<see cref="RunSnapshot"/>):货架、刷新次数、券与保底标记原样接上;目录与难度取自当局配置。</summary>
+        /// <summary>读档的还原口(<see cref="RunSnapshot"/>):货架、刷新次数、券、包与保底标记原样接上;目录与难度取自当局配置。</summary>
         internal static ShopState Restore(ShopOffer[] goods, int rerolls, bool guaranteeGene, ShopOffer? voucher,
-            ContentCatalog catalog, RunDifficulty difficulty) =>
-            new ShopState(goods, catalog, difficulty, guaranteeGene, rerolls, voucher);
+            ShopOffer? booster, BoosterPack pack, ContentCatalog catalog, RunDifficulty difficulty) =>
+            new ShopState(goods, catalog, difficulty, guaranteeGene, rerolls, voucher, booster, pack);
 
-        /// <summary>深拷贝货架(卖掉的标记也要拷),给 <see cref="RunState.Clone"/> 的试走用。</summary>
+        /// <summary>深拷贝货架(卖掉的标记与开了一半的包也要拷),给 <see cref="RunState.Clone"/> 的试走用。</summary>
         internal ShopState Clone()
         {
             var goods = new ShopOffer[_goods.Length];
             for (int i = 0; i < goods.Length; i++) goods[i] = _goods[i];
-            return new ShopState(goods, _catalog, _difficulty, _guaranteeGene, Rerolls, _voucher);
+            BoosterPack pack = null;
+            if (_pack != null)
+            {
+                var options = new List<ShopOffer>(_pack.Options);
+                pack = BoosterPack.Restore(_pack.BoosterId, _pack.PicksLeft, options);
+            }
+            return new ShopState(goods, _catalog, _difficulty, _guaranteeGene, Rerolls, _voucher, _booster, pack);
         }
 
         /// <summary>
@@ -102,7 +118,10 @@ namespace GameRules
             ShopOffer? voucher = offerVoucher && catalog.Vouchers.Count > 0
                 ? (ShopOffer?)RollVoucher(rng, catalog, run.Difficulty, pricePermille)
                 : null;
-            return new ShopState(goods, catalog, run.Difficulty, guaranteeGene, 0, voucher);
+            ShopOffer? booster = catalog.Boosters.Count > 0
+                ? (ShopOffer?)RollBooster(rng, catalog, run.Difficulty, pricePermille)
+                : null;
+            return new ShopState(goods, catalog, run.Difficulty, guaranteeGene, 0, voucher, booster, null);
         }
 
         /// <summary>刷新货格并扣费。钱不够返回 false,货架与钱都不动。</summary>
@@ -181,6 +200,30 @@ namespace GameRules
             return ShopBuyResult.Ok;
         }
 
+        /// <summary>买本店的补给包:扣钱后立刻开包,包里是几件候选,由 <see cref="ChooseBooster"/> 选。</summary>
+        public ShopBuyResult TryBuyBooster(IRandomSource rng, RunState run)
+        {
+            if (rng == null) throw new ArgumentNullException(nameof(rng));
+            if (run == null) throw new ArgumentNullException(nameof(run));
+            if (_pack != null) return ShopBuyResult.UnknownOffer;
+            if (_booster == null) return ShopBuyResult.SoldOut;
+            ShopOffer offer = _booster.Value;
+            if (offer.Price > run.Money) return ShopBuyResult.NotEnoughMoney;
+            if (!run.TrySpend(offer.Price)) return ShopBuyResult.NotEnoughMoney;
+            _pack = BoosterPack.Open(rng, _catalog, offer.Id);
+            _booster = null;
+            return ShopBuyResult.Ok;
+        }
+
+        /// <summary>从正在开的包里选第 <paramref name="index"/> 件;选够次数包就关。</summary>
+        public ShopBuyResult ChooseBooster(int index, RunState run)
+        {
+            if (_pack == null) return ShopBuyResult.SoldOut;
+            ShopBuyResult result = _pack.Choose(index, run);
+            if (result == ShopBuyResult.Ok && _pack.IsClosed) _pack = null;
+            return result;
+        }
+
         private static bool CanTakeGene(RunState run, int geneId) =>
             run.Genes.Count < run.GeneSlots && run.Config.Effects.Find(EffectSource.Gene, geneId) != null;
 
@@ -252,6 +295,12 @@ namespace GameRules
         {
             CatalogEntry e = catalog.Vouchers[rng.Index(catalog.Vouchers.Count)];
             return new ShopOffer(ItemKind.Voucher, e.Id, Price(e.Price, difficulty, pricePermille));
+        }
+
+        private static ShopOffer RollBooster(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
+        {
+            CatalogEntry e = catalog.Boosters[rng.Index(catalog.Boosters.Count)];
+            return new ShopOffer(ItemKind.Booster, e.Id, Price(e.Price, difficulty, pricePermille));
         }
 
         private static int Price(int basePrice, RunDifficulty difficulty, int pricePermille) =>

@@ -90,7 +90,15 @@ namespace GameRules
             {
                 vouchers.Add(new CatalogEntry(ItemKind.Voucher, voucherId, VoucherCatalog.Price));
             }
-            return new ContentCatalog(genes, techs, mods, new List<CatalogEntry>(), vouchers, blocks, techTypes);
+            var boosters = new List<CatalogEntry>
+            {
+                new CatalogEntry(ItemKind.Booster, BoosterPack.GenePack, 6),
+                new CatalogEntry(ItemKind.Booster, BoosterPack.TechPack, 4),
+                new CatalogEntry(ItemKind.Booster, BoosterPack.ModPack, 4),
+                new CatalogEntry(ItemKind.Booster, BoosterPack.BlockPack, 5),
+                new CatalogEntry(ItemKind.Booster, BoosterPack.MixedPack, 8),
+            };
+            return new ContentCatalog(genes, techs, mods, boosters, vouchers, blocks, techTypes);
         }
 
         private static ClearTypeTable BuildClearTypes()
