@@ -47,9 +47,9 @@ public partial class UIBattleResultPanel
 
     [Header("卡片")]
     [Tooltip("胜利时的卡片尺寸(13 号票)。")]
-    [SerializeField] private Vector2 _wonSize = new Vector2(660f, 460f);
+    [SerializeField] private Vector2 _wonSize = new Vector2(660f, 580f);
     [Tooltip("失败时的卡片尺寸,多一行失败原因(13 号票)。")]
-    [SerializeField] private Vector2 _lostSize = new Vector2(660f, 480f);
+    [SerializeField] private Vector2 _lostSize = new Vector2(660f, 580f);
     [Tooltip("胜利标题的颜色。")]
     [SerializeField] private Color _wonColor = new Color32(0xf0, 0xc6, 0x3f, 0xFF);
     [Tooltip("失败标题的颜色。")]

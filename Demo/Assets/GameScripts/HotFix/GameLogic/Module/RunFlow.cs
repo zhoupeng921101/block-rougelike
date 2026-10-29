@@ -34,12 +34,13 @@ public static class RunFlow
         _ => RunDifficulty.Standard,
     };
 
-    /// <summary>开新局:不带盲注(下一步是选关),难度取主界面选的那一档;旧局的档在开局时删掉。</summary>
+    /// <summary>开新局:不带盲注(下一步是选关),难度取主界面选的那一档;旧局的档在开局时删掉,主界面在选关屏开出来后关掉。</summary>
     public static void StartNew(RunDifficulty difficulty)
     {
         RunState run = RunState.NewRun(SeedText.FromEntropy(NewEntropy()), MinimalContent.Config, difficulty);
         RunSaveService.Instance.StartNew(run);
         ShowMap(run);
+        CloseAfterOpen(typeof(UIMapPanel), typeof(UIMainMenuPanel));
     }
 
     /// <summary>接着打:战斗里的局回战斗窗,选关/商店之间的局回地图。</summary>
@@ -125,10 +126,8 @@ public static class RunFlow
     public static void BackToMenu()
     {
         RunSaveService.Instance.Leave();
-        GameModule.UI.CloseUI<UIBattlePanel>();
-        GameModule.UI.CloseUI<UIBattleResultPanel>();
-        GameModule.UI.CloseUI<UIMapPanel>();
-        GameModule.UI.CloseUI<UIShopPanel>();
+        GameModule.UI.ShowUIAsync<UIMainMenuPanel>();
+        CloseAfterOpen(typeof(UIMainMenuPanel), typeof(UIBattlePanel), typeof(UIBattleResultPanel), typeof(UIMapPanel), typeof(UIShopPanel));
     }
 
     private static void ShowBattle(RunState run, bool resumed) =>

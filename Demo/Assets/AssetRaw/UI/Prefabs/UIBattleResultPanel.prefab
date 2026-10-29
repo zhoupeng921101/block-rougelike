@@ -893,8 +893,8 @@ MonoBehaviour:
   m_tmp_Reward: {fileID: 5918984796002652633}
   m_btn_Continue: {fileID: 4846678036278675852}
   m_btn_Back: {fileID: 6576584037319287138}
-  _wonSize: {x: 660, y: 400}
-  _lostSize: {x: 660, y: 480}
+  _wonSize: {x: 660, y: 580}
+  _lostSize: {x: 660, y: 580}
   _wonColor: {r: 0.9411765, g: 0.7764706, b: 0.24705882, a: 1}
   _lostColor: {r: 0.9411765, g: 0.32156864, b: 0.32156864, a: 1}
 --- !u!1 &4101991575671341326
