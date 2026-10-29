@@ -112,7 +112,8 @@ namespace GameRules
                     NodeStrength[] strengths = PickStrengths(rng, count);
                     for (int i = 0; i < count; i++)
                     {
-                        nodes.Add(new MapNode(id++, segment, layer, strengths[i]));
+                        int tag = segment > 1 ? 1 + rng.Index(Tags.Count) : 0;
+                        nodes.Add(new MapNode(id++, segment, layer, strengths[i], tag));
                     }
                 }
             }
@@ -195,6 +196,7 @@ namespace GameRules
                 if (n.Layer < 1 || n.Layer > LayersPerSegment) return $"map.nodes[{i}].layer: 超出 1..{LayersPerSegment}";
                 if (!Enum.IsDefined(typeof(NodeStrength), n.Strength)) return $"map.nodes[{i}].strength: 未定义的值 {(int)n.Strength}";
                 if (n.TagId < 0) return $"map.nodes[{i}].tag: 标签号不能为负";
+                if (n.TagId != 0 && !Tags.IsKnown(n.TagId)) return $"map.nodes[{i}].tag: 未登记的标签 {n.TagId}";
                 bool bossLayer = n.Layer == LayersPerSegment;
                 if (bossLayer != n.IsBoss) return $"map.nodes[{i}]: 首领只能出现在第 {LayersPerSegment} 层";
             }

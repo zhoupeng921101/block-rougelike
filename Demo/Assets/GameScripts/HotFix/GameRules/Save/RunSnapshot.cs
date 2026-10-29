@@ -27,7 +27,7 @@ namespace GameRules
         private static readonly string[] StreamMembers = { "key", "s0", "s1" };
         private static readonly string[] MapMembers = { "segmentCount", "nodes", "progress" };
         private static readonly string[] MapNodeMembers = { "id", "segment", "layer", "strength", "tag" };
-        private static readonly string[] ProgressMembers = { "current", "resolved", "visited" };
+        private static readonly string[] ProgressMembers = { "current", "resolved", "skipped", "visited" };
         private static readonly string[] ShopMembers = { "rerolls", "guaranteeGene", "voucher", "booster", "pack", "goods" };
         private static readonly string[] ShopOfferMembers = { "kind", "id", "price", "sold" };
         private static readonly string[] PackMembers = { "boosterId", "picksLeft", "options" };
@@ -164,6 +164,7 @@ namespace GameRules
             w.Name("progress").BeginObject(JsonLayout.Lines);
             w.Name("current").Int(progress.CurrentNodeId);
             w.Name("resolved").Bool(progress.CurrentResolved);
+            w.Name("skipped").Bool(progress.CurrentSkipped);
             w.Name("visited");
             WriteIds(w, progress.Visited);
             w.End();
@@ -413,11 +414,12 @@ namespace GameRules
             if (pr == null) return false;
             int current = p.ReadInt(pr[0], "map.progress.current");
             bool resolved = p.ReadBool(pr[1], "map.progress.resolved");
-            List<int> visited = p.ReadIntList(pr[2], "map.progress.visited");
+            bool skipped = p.ReadBool(pr[2], "map.progress.skipped");
+            List<int> visited = p.ReadIntList(pr[3], "map.progress.visited");
             if (p.Failed) return false;
 
             map = RunMap.Restore(nodes, segmentCount);
-            progress = MapProgress.Restore(current, resolved, visited);
+            progress = MapProgress.Restore(current, resolved, skipped, visited);
             return true;
         }
 

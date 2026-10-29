@@ -293,11 +293,79 @@ namespace GameRules
         {
             if (Shop != null) return Shop;
             if (Progress.CurrentNodeId == 0 || !Progress.CurrentResolved) throw new InvalidOperationException("当前节点还没结算,不能开店");
+            if (Progress.CurrentSkipped) throw new InvalidOperationException("跳过的节点不进商店");
             if (Progress.IsComplete(Map)) throw new InvalidOperationException("整局已结束,没有商店");
             MapNode node = Map.Get(Progress.CurrentNodeId);
             bool guaranteeGene = Progress.Visited.Count <= 3;
             Shop = ShopState.Open(Rng.Get(RngKeys.Shop(node.Segment, node.Layer)), this, guaranteeGene, node.Layer == 1);
             return Shop;
+        }
+
+        /// <summary>
+        /// 跳过当前可选的节点:不打、不拿通关奖励、不开店,换一个标签(设计稿 §2.3)。
+        /// 节点不可跳(首领、第一段)或不在可选范围时返回 false,状态不动。
+        /// </summary>
+        public bool SkipNode(int nodeId)
+        {
+            if (nodeId < 1 || nodeId > Map.Nodes.Count) return false;
+            MapNode node = Map.Get(nodeId);
+            if (!node.CanSkip) return false;
+            if (!Progress.Skip(Map, nodeId)) return false;
+            Shop = null;
+            ApplyTag(node.TagId);
+            return true;
+        }
+
+        /// <summary>标签的效果:首版四种都能当场结清;目录里没有可给的东西时折算成 $3。</summary>
+        private void ApplyTag(int tagId)
+        {
+            IRandomSource rng = Rng.Get(RngKeys.Tag);
+            switch (tagId)
+            {
+                case Tags.Cash:
+                    AddMoney(6);
+                    break;
+                case Tags.Tech:
+                    if (!GrantRandomTech(rng)) AddMoney(3);
+                    break;
+                case Tags.Mod:
+                    if (!GrantRandomMod(rng)) AddMoney(3);
+                    break;
+                case Tags.Blocks:
+                    if (!GrantRandomBlocks(rng)) AddMoney(3);
+                    break;
+            }
+        }
+
+        private bool GrantRandomTech(IRandomSource rng)
+        {
+            var candidates = new List<ClearType>(ClearTypes.Count);
+            for (int t = 0; t < ClearTypes.Count; t++)
+            {
+                ClearType type = (ClearType)t;
+                if (_typeLevels[t] < Config.ClearTypes.MaxLevel(type)) candidates.Add(type);
+            }
+            if (candidates.Count == 0) return false;
+            UpgradeType(candidates[rng.Index(candidates.Count)]);
+            return true;
+        }
+
+        private bool GrantRandomMod(IRandomSource rng)
+        {
+            if (Config.Catalog.Mods.Count == 0) return false;
+            int id = Config.Catalog.Mods[rng.Index(Config.Catalog.Mods.Count)].Id;
+            return TryAddConsumable(id);
+        }
+
+        private bool GrantRandomBlocks(IRandomSource rng)
+        {
+            if (Config.Catalog.Blocks.Count == 0) return false;
+            for (int i = 0; i < 3; i++)
+            {
+                BlockEntry entry = Config.Catalog.Blocks[rng.Index(Config.Catalog.Blocks.Count)];
+                AddBlock(entry.Kind, entry.Points);
+            }
+            return true;
         }
 
         /// <summary>

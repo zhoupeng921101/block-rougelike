@@ -146,6 +146,17 @@ namespace GameRules.Tests
         }
 
         [Test]
+        public void Generate_TagsOnlyOnSkippableNodes()
+        {
+            RunMap map = RunMap.Generate(Seed);
+            foreach (MapNode node in map.Nodes)
+            {
+                if (node.CanSkip) Assert.That(node.TagId, Is.InRange(1, Tags.Count), $"段 {node.Segment} 层 {node.Layer} 的节点该有标签");
+                else Assert.AreEqual(0, node.TagId, "首领与第一段不派签");
+            }
+        }
+
+        [Test]
         public void NodeValues_MatchDesign()
         {
             Assert.AreEqual(900, new MapNode(1, 2, 1, NodeStrength.Light).TargetPermille);

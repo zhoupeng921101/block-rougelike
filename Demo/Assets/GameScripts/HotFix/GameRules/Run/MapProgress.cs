@@ -17,6 +17,9 @@ namespace GameRules
         /// <summary>当前节点是否已结算(战斗胜利或跳过)。还没进节点时为 true,免得开局就被判「等待结算」。</summary>
         public bool CurrentResolved { get; private set; }
 
+        /// <summary>当前节点是跳过的(没打、没拿奖励、没进商店)。进下一个节点时清掉。</summary>
+        public bool CurrentSkipped { get; private set; }
+
         /// <summary>走过的节点,按进入次序。</summary>
         public IReadOnlyList<int> Visited => _visited;
 
@@ -26,10 +29,11 @@ namespace GameRules
             CurrentResolved = true;
         }
 
-        private MapProgress(int current, bool resolved, List<int> visited)
+        private MapProgress(int current, bool resolved, bool skipped, List<int> visited)
         {
             CurrentNodeId = current;
             CurrentResolved = resolved;
+            CurrentSkipped = skipped;
             _visited = visited;
         }
 
@@ -51,10 +55,25 @@ namespace GameRules
                 if (n.Id != nodeId) continue;
                 CurrentNodeId = nodeId;
                 CurrentResolved = false;
+                CurrentSkipped = false;
                 _visited.Add(nodeId);
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// 跳过当前可选的节点:进节点、直接结算、记「跳过」。节点不可跳(首领、第一段)时返回 false 且不改状态。
+        /// </summary>
+        public bool Skip(RunMap map, int nodeId)
+        {
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            if (nodeId < 1 || nodeId > map.Nodes.Count) return false;
+            if (!map.Get(nodeId).CanSkip) return false;
+            if (!Enter(map, nodeId)) return false;
+            CurrentResolved = true;
+            CurrentSkipped = true;
+            return true;
         }
 
         /// <summary>结算当前节点(战斗胜利或跳过)。没有待结算的节点时不改状态,返回 false。</summary>
@@ -72,11 +91,11 @@ namespace GameRules
             return CurrentNodeId == map.FinalBoss.Id && CurrentResolved;
         }
 
-        public MapProgress Clone() => new MapProgress(CurrentNodeId, CurrentResolved, new List<int>(_visited));
+        public MapProgress Clone() => new MapProgress(CurrentNodeId, CurrentResolved, CurrentSkipped, new List<int>(_visited));
 
         /// <summary>读档的还原口(<see cref="RunSnapshot"/>):字段原样接上,随后由 <see cref="Validate"/> 校验。</summary>
-        internal static MapProgress Restore(int current, bool resolved, List<int> visited) =>
-            new MapProgress(current, resolved, visited ?? new List<int>());
+        internal static MapProgress Restore(int current, bool resolved, bool skipped, List<int> visited) =>
+            new MapProgress(current, resolved, skipped, visited ?? new List<int>());
 
         /// <summary>状态约束,返回第一条不成立的,形如「路径: 说明」;全部成立返回 null。与存档读入后的校验共用。</summary>
         public string Validate(RunMap map)
@@ -86,8 +105,10 @@ namespace GameRules
             {
                 if (_visited.Count != 0) return "map.visited: 还没进节点却已有走过的节点";
                 if (!CurrentResolved) return "map.resolved: 还没进节点却处于待结算";
+                if (CurrentSkipped) return "map.skipped: 还没进节点却标着跳过";
                 return null;
             }
+            if (CurrentSkipped && !CurrentResolved) return "map.skipped: 跳过的节点必须已结算";
             if (CurrentNodeId < 1 || CurrentNodeId > map.Nodes.Count) return "map.current: 节点号不在图上";
             if (_visited.Count == 0 || _visited[_visited.Count - 1] != CurrentNodeId)
             {
