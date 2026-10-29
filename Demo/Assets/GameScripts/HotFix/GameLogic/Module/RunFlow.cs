@@ -53,6 +53,7 @@ public static class RunFlow
     {
         GameModule.UI.CloseUI<UIBattlePanel>();
         GameModule.UI.CloseUI<UIBattleResultPanel>();
+        GameModule.UI.CloseUI<UIShopPanel>();
         GameModule.UI.ShowUIAsync<UIMapPanel>(run);
     }
 
@@ -79,7 +80,7 @@ public static class RunFlow
     public static void LoseRun() => RunSaveService.Instance.EndRun();
 
     /// <summary>
-    /// 结果浮层的出口:赢了先结算再回地图(商店还没接窗,先跳过),整局打完回主界面;输了整局结束。
+    /// 结果浮层的出口:赢了先结算再进商店(跳过的节点不开店),整局打完回主界面;输了整局结束。
     /// </summary>
     public static void AfterResult(RunState run, bool won)
     {
@@ -95,6 +96,29 @@ public static class RunFlow
             RunSaveService.Instance.EndRun();
             return;
         }
+        ShowShop(run);
+    }
+
+    /// <summary>结算后开店;已经开着就沿用(界面来回切不重掷)。跳过的节点不进商店,直接回地图。</summary>
+    public static void ShowShop(RunState run)
+    {
+        if (run.Progress.CurrentSkipped || run.Progress.IsComplete(run.Map))
+        {
+            ShowMap(run);
+            return;
+        }
+        run.OpenShop();
+        RunSaveService.Instance.CommitRun(run, "开店");
+        GameModule.UI.CloseUI<UIBattlePanel>();
+        GameModule.UI.CloseUI<UIBattleResultPanel>();
+        GameModule.UI.ShowUIAsync<UIShopPanel>(run);
+    }
+
+    /// <summary>离开商店:关店,回地图。</summary>
+    public static void LeaveShop(RunState run)
+    {
+        run.CloseShop();
+        RunSaveService.Instance.CommitRun(run, "离店");
         ShowMap(run);
     }
 
@@ -105,6 +129,7 @@ public static class RunFlow
         GameModule.UI.CloseUI<UIBattlePanel>();
         GameModule.UI.CloseUI<UIBattleResultPanel>();
         GameModule.UI.CloseUI<UIMapPanel>();
+        GameModule.UI.CloseUI<UIShopPanel>();
     }
 
     private static void ShowBattle(RunState run, bool resumed) =>

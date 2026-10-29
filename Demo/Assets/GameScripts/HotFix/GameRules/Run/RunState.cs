@@ -455,6 +455,17 @@ namespace GameRules
             Blind = null;
         }
 
+        /// <summary>关店:货架作废,下一步回地图。</summary>
+        public void CloseShop() => Shop = null;
+
+        /// <summary>本店那条随机流(刷新货格、开补给包都消费它);没进节点时抛异常。</summary>
+        public IRandomSource ShopRng()
+        {
+            if (Progress.CurrentNodeId == 0) throw new InvalidOperationException("还没进节点");
+            MapNode node = Map.Get(Progress.CurrentNodeId);
+            return Rng.Get(RngKeys.Shop(node.Segment, node.Layer));
+        }
+
         /// <summary>
         /// 落子一步:校验 → 落子 → 判线 → 结算 → 判胜 → 发组 → 判负,一次推进到下一个稳定状态(07 号票 §4 的 17 段)。
         /// 被拒不抛异常、不改状态。落点以参数的 rot 为准,不看槽上存的朝向。

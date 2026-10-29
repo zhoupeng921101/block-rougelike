@@ -31,6 +31,21 @@ public static class TextKeys
         public const string Boss = "ui.map.boss";
     }
 
+    /// <summary>商店屏里由代码画的文案。</summary>
+    public static class Shop
+    {
+        public const string Title = "ui.shop.title";
+        public const string Info = "ui.shop.info";
+        public const string Goods = "ui.shop.goods";
+        public const string Voucher = "ui.shop.voucher";
+        public const string Booster = "ui.shop.booster";
+        public const string Pack = "ui.shop.pack";
+        public const string PackTitle = "ui.shop.pack_title";
+        public const string Sold = "ui.shop.sold";
+        public const string Reroll = "ui.shop.reroll";
+        public const string Leave = "ui.shop.leave";
+    }
+
     /// <summary>战斗界面里由代码画的文案;静态标签走预制体上的 LocalizedText,不在这里。</summary>
     public static class Battle
     {
@@ -92,6 +107,21 @@ public static class TextKeys
             case NodeStrength.Heavy: return "node_strength.heavy.name";
             case NodeStrength.Boss: return "node_strength.boss.name";
             default: throw new ArgumentOutOfRangeException(nameof(strength), strength, "不是节点强度");
+        }
+    }
+
+    /// <summary>商品种类名(商店与补给包里显示)。</summary>
+    public static string Of(ItemKind kind)
+    {
+        switch (kind)
+        {
+            case ItemKind.Gene: return "item_kind.gene.name";
+            case ItemKind.Tech: return "item_kind.tech.name";
+            case ItemKind.Mod: return "item_kind.mod.name";
+            case ItemKind.Block: return "item_kind.block.name";
+            case ItemKind.Booster: return "item_kind.booster.name";
+            case ItemKind.Voucher: return "item_kind.voucher.name";
+            default: throw new ArgumentOutOfRangeException(nameof(kind), kind, "不是商品种类");
         }
     }
 
