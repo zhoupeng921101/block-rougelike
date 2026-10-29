@@ -140,12 +140,13 @@ public partial class UIMapPanel : UIPanelMono
         _buttons.Add(go);
     }
 
-    private static string LabelOf(TextTable table, MapNode node)
+    private string LabelOf(TextTable table, MapNode node)
     {
         if (node.IsBoss)
         {
-            string boss = Bosses.Name(node.BossId);
-            return table.Format(TextKeys.Map.NodeBoss, node.Segment, node.Layer) + "\n" + boss;
+            string label = table.Format(TextKeys.Map.NodeBoss, node.Segment, node.Layer);
+            // 情报标签之前只看得见「首领」,拿到之后才显示这一场带什么负面效果
+            return _run.BossIntel ? label + "\n" + Bosses.Name(node.BossId) : label;
         }
         string strength = table.Get(TextKeys.Of(node.Strength));
         string key = node.CanSkip ? TextKeys.Map.NodeSkip : TextKeys.Map.Node;

@@ -61,7 +61,11 @@ namespace GameRules.Tests
             string before = Signature(run);
             Assert.IsTrue(run.SkipNode(target.Id));
             Assert.IsTrue(run.Progress.CurrentSkipped);
-            Assert.AreNotEqual(before, Signature(run), "标签的效果要落进这一局");
+            // 一半标签当场结清(钱/科技/改造/加块),另一半挂「下一次」的状态;两种都算「落进了这一局」
+            string after = Signature(run);
+            bool immediate = before != after;
+            bool pending = !run.Pending.IsEmpty || run.BossIntel || run.SegmentInterestCapBonus > 0;
+            Assert.IsTrue(immediate || pending, $"标签 {target.TagId} 没有留下任何效果");
             Assert.Throws<InvalidOperationException>(() => run.OpenShop(), "跳过的节点不进商店");
         }
 

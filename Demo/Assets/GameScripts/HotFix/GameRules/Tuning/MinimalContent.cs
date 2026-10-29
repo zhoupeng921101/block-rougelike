@@ -85,7 +85,8 @@ namespace GameRules
             foreach (int voucherId in new[]
                      {
                          VoucherCatalog.GeneSlot, VoucherCatalog.ConsumableSlot, VoucherCatalog.GroupSize, VoucherCatalog.InterestCap,
-                         VoucherCatalog.Reroll, VoucherCatalog.Discard, VoucherCatalog.LightTarget, VoucherCatalog.Wholesale, VoucherCatalog.StartMoney,
+                         VoucherCatalog.Counter, VoucherCatalog.Reroll, VoucherCatalog.Discard, VoucherCatalog.LightTarget,
+                         VoucherCatalog.Wholesale, VoucherCatalog.StartMoney, VoucherCatalog.Rarity,
                      })
             {
                 vouchers.Add(new CatalogEntry(ItemKind.Voucher, voucherId, VoucherCatalog.Price));

@@ -17,8 +17,14 @@ namespace GameRules
         public readonly int TargetPermille;
         public readonly int PricePermille;
 
+        /// <summary>柜台券带来的货格加成(每张 +1)。</summary>
+        public readonly int ShopSlotBonus;
+
+        /// <summary>稀券:基因池稀有度权重提升(普通 70/25/5 → 60/30/10)。</summary>
+        public readonly bool ShiftRarity;
+
         private RunModifiers(int geneSlots, int consumableSlots, int groupSize, int discards, int interestCap,
-            int rerollDiscount, int targetPermille, int pricePermille)
+            int rerollDiscount, int targetPermille, int pricePermille, int shopSlots, bool shiftRarity)
         {
             GeneSlotBonus = geneSlots;
             ConsumableSlotBonus = consumableSlots;
@@ -28,11 +34,14 @@ namespace GameRules
             RerollDiscount = rerollDiscount;
             TargetPermille = targetPermille;
             PricePermille = pricePermille;
+            ShopSlotBonus = shopSlots;
+            ShiftRarity = shiftRarity;
         }
 
         public static RunModifiers From(IReadOnlyList<int> vouchers)
         {
-            int gene = 0, consumable = 0, group = 0, discard = 0, cap = 0, reroll = 0, target = 1000, price = 1000;
+            int gene = 0, consumable = 0, group = 0, discard = 0, cap = 0, reroll = 0, target = 1000, price = 1000, shopSlots = 0;
+            bool shift = false;
             if (vouchers != null)
             {
                 foreach (int id in vouchers)
@@ -47,17 +56,19 @@ namespace GameRules
                         case VoucherCatalog.Discard: discard++; break;
                         case VoucherCatalog.LightTarget: target = target * 950 / 1000; break;
                         case VoucherCatalog.Wholesale: price = price * 800 / 1000; break;
-                        default: break; // 启动券是买的那一刻立即生效,不留修正
+                        case VoucherCatalog.Counter: shopSlots++; break;
+                        case VoucherCatalog.Rarity: shift = true; break;
+                        default: break; // 启动券是买的那一刻立即生效,不留修正;回收券等卖价系统接上再说
                     }
                 }
             }
-            return new RunModifiers(gene, consumable, group, discard, cap, reroll, target, price);
+            return new RunModifiers(gene, consumable, group, discard, cap, reroll, target, price, shopSlots, shift);
         }
     }
 
     /// <summary>
     /// 最小内容集里的优惠券。号写死:进存档的是号,改名或挪号就是改存档形状。
-    /// 没实现效果的券(柜台/稀有度/回收)先不进目录,免得买到一张空券。
+    /// 回收券(卖价 75%)等卖价系统接上再进目录,其余 11 张都有效果。
     /// </summary>
     public static class VoucherCatalog
     {
@@ -65,11 +76,13 @@ namespace GameRules
         public const int ConsumableSlot = 2;
         public const int GroupSize = 3;
         public const int InterestCap = 4;
+        public const int Counter = 5;
         public const int Reroll = 6;
         public const int Discard = 7;
         public const int LightTarget = 8;
         public const int Wholesale = 9;
         public const int StartMoney = 10;
+        public const int Rarity = 11;
 
         /// <summary>券的统一定价(设计稿 §4.3 的候选值);难度与批发券再在这上面乘。</summary>
         public const int Price = 10;
@@ -82,11 +95,13 @@ namespace GameRules
                 case ConsumableSlot:
                 case GroupSize:
                 case InterestCap:
+                case Counter:
                 case Reroll:
                 case Discard:
                 case LightTarget:
                 case Wholesale:
                 case StartMoney:
+                case Rarity:
                     return true;
                 default:
                     return false;

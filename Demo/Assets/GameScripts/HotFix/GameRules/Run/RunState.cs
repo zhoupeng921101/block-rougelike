@@ -62,6 +62,30 @@ namespace GameRules
         /// <summary>券带来的参数修正;每次都从券列表现算。</summary>
         public RunModifiers Modifiers => RunModifiers.From(_vouchers);
 
+        /// <summary>跳过节点换来的「下一次」效果(折扣、扩货、急售、补给、轻敌、弃权);用掉即清。</summary>
+        public RunPending Pending { get; }
+
+        /// <summary>情报标签:买到之后地图一直显示首领的负面效果;没拿到时首领只显示「首领」。</summary>
+        public bool BossIntel { get; private set; }
+
+        /// <summary>蓄息标签给的那一段加的利息封顶(美元);<see cref="_interestBonusSegment"/> 之外不生效。</summary>
+        private int _interestBonus;
+
+        /// <summary>蓄息标签作用到哪一段;0 = 没有。</summary>
+        private int _interestBonusSegment;
+
+        /// <summary>当前这一段的利息封顶加值(蓄息只在它那一段有效)。</summary>
+        public int SegmentInterestCapBonus => _interestBonusSegment != 0 && CurrentSegment == _interestBonusSegment ? _interestBonus : 0;
+
+        /// <summary>蓄息给的封顶加值本身(存档用;生效与否看 <see cref="SegmentInterestCapBonus"/>)。</summary>
+        public int PendingInterestBonus => _interestBonus;
+
+        /// <summary>蓄息作用在哪一段(存档用)。</summary>
+        public int PendingInterestBonusSegment => _interestBonusSegment;
+
+        /// <summary>现在走到第几段(还没进节点算第 1 段)。</summary>
+        public int CurrentSegment => Progress.CurrentNodeId == 0 ? 1 : Map.Get(Progress.CurrentNodeId).Segment;
+
         /// <summary>基因槽总数 = 配置默认 + 扩槽券。</summary>
         public int GeneSlots => Config.GeneSlots + Modifiers.GeneSlotBonus;
 
@@ -75,7 +99,8 @@ namespace GameRules
 
         private RunState(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map, MapProgress progress,
             ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels, List<GeneSlot> genes,
-            List<int> consumables, List<int> vouchers, BlindState blind)
+            List<int> consumables, List<int> vouchers, BlindState blind, RunPending pending, bool bossIntel,
+            int interestBonus, int interestBonusSegment)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             Rng = rng;
@@ -91,6 +116,10 @@ namespace GameRules
             _consumables = consumables;
             _vouchers = vouchers;
             Blind = blind;
+            Pending = pending ?? new RunPending();
+            BossIntel = bossIntel;
+            _interestBonus = interestBonus;
+            _interestBonusSegment = interestBonusSegment;
             Library = library.AsReadOnly();
             TypeLevels = Array.AsReadOnly(typeLevels);
             Genes = genes.AsReadOnly();
@@ -110,7 +139,8 @@ namespace GameRules
             var rng = new RngStreams(seed);
             RunMap map = RunMap.Generate(rng.Get(RngKeys.Map), config.MapSegments);
             var run = new RunState(config, rng, difficulty, config.StartingMoney, map, new MapProgress(), null,
-                1, new List<BlockInstance>(), levels, new List<GeneSlot>(), new List<int>(), new List<int>(), null);
+                1, new List<BlockInstance>(), levels, new List<GeneSlot>(), new List<int>(), new List<int>(), null,
+                new RunPending(), false, 0, 0);
             foreach (LibraryEntry e in config.DefaultLibrary)
             {
                 run._library.Add(new BlockInstance(run.IssueId(), e.Kind, e.Points, e.Enhancement, e.Edition));
@@ -121,9 +151,10 @@ namespace GameRules
         /// <summary>读档的还原口(<see cref="RunSnapshot"/>):各字段原样接上,不查约束,读档随后调 <see cref="Validate"/>。</summary>
         internal static RunState Restore(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map,
             MapProgress progress, ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels,
-            List<GeneSlot> genes, List<int> consumables, List<int> vouchers, BlindState blind) =>
+            List<GeneSlot> genes, List<int> consumables, List<int> vouchers, BlindState blind, RunPending pending,
+            bool bossIntel, int interestBonus, int interestBonusSegment) =>
             new RunState(config, rng, difficulty, money, map, progress, shop, nextInstanceId, library, typeLevels, genes,
-                consumables, vouchers, blind);
+                consumables, vouchers, blind, pending, bossIntel, interestBonus, interestBonusSegment);
 
         /// <summary>
         /// 唯一的取号口。方块库的块、首领预置块、将来「生成一块」的效果都从这里取,所以不能假设 id 都在方块库里。
@@ -319,17 +350,21 @@ namespace GameRules
             return entered;
         }
 
-        /// <summary>当前节点该打的那一场:目标分按节点的层×强度、难度与券算,弃置按难度与券加减,每组块数取默认加券。</summary>
+        /// <summary>
+        /// 当前节点该打的那一场:目标分按节点的层×强度、难度、券与「轻敌」算,弃置按难度、券与「弃权」加减,
+        /// 每组块数取默认加券。盲注那份待生效效果在开盲注时清掉(见 <see cref="SpecForCurrentNode"/> 的调用方)。
+        /// </summary>
         public BlindSpec SpecForCurrentNode()
         {
             if (Progress.CurrentNodeId == 0) throw new InvalidOperationException("还没进节点");
             if (Progress.CurrentResolved) throw new InvalidOperationException("当前节点已结算");
             MapNode node = Map.Get(Progress.CurrentNodeId);
             int boss = node.BossId;
-            int discards = Math.Max(0, Config.BaseDiscards + DifficultyRules.Of(Difficulty).DiscardDelta + Modifiers.DiscardBonus);
+            int discards = Math.Max(0, Config.BaseDiscards + DifficultyRules.Of(Difficulty).DiscardDelta + Modifiers.DiscardBonus
+                + Pending.BlindDiscards);
             int groupSize = Math.Min(BlindSpec.MaxGroupSize, Config.DefaultGroupSize + Modifiers.GroupSizeBonus);
-            // 首领的目标分修正并进券的修正,只做一次四舍五入
-            int extra = Modifiers.TargetPermille * Bosses.TargetPermille(boss) / 1000;
+            // 首领、券、轻敌三档并进一个千分值,只做一次四舍五入
+            int extra = Modifiers.TargetPermille * Bosses.TargetPermille(boss) / 1000 * Pending.BlindTargetPermille / 1000;
             long target = RunTargets.For(node, Difficulty, Config, extra);
             return new BlindSpec(node.Segment, node.Layer, target, Bosses.Discards(discards, boss), Bosses.GroupSize(groupSize, boss), boss);
         }
@@ -337,8 +372,13 @@ namespace GameRules
         /// <summary>当前节点的首领(0 = 普通场);给表现层与「情报」标签预览用。</summary>
         public int CurrentBoss => Progress.CurrentNodeId == 0 ? Bosses.None : Map.Get(Progress.CurrentNodeId).BossId;
 
-        /// <summary>开当前节点的盲注。上一个盲注还在进行时由 <see cref="StartBlind"/> 拦下。</summary>
-        public StepResult StartBlindForCurrentNode() => StartBlind(SpecForCurrentNode());
+        /// <summary>开当前节点的盲注。上一个盲注还在进行时由 <see cref="StartBlind"/> 拦下;轻敌与弃权在这里用掉。</summary>
+        public StepResult StartBlindForCurrentNode()
+        {
+            BlindSpec spec = SpecForCurrentNode();
+            Pending.ClearBlind();
+            return StartBlind(spec);
+        }
 
         /// <summary>
         /// 结算之后开店;已经开着就返回同一个(界面来回切不再重掷)。前 3 场保底一个基因格。
@@ -352,7 +392,9 @@ namespace GameRules
             if (Progress.IsComplete(Map)) throw new InvalidOperationException("整局已结束,没有商店");
             MapNode node = Map.Get(Progress.CurrentNodeId);
             bool guaranteeGene = Progress.Visited.Count <= 3;
-            Shop = ShopState.Open(Rng.Get(RngKeys.Shop(node.Segment, node.Layer)), this, guaranteeGene, node.Layer == 1);
+            Shop = ShopState.Open(Rng.Get(RngKeys.Shop(node.Segment, node.Layer)), this, guaranteeGene, node.Layer == 1,
+                Pending.ShopDiscountPermille, Pending.ExtraShopGoods, Pending.FreeReroll, Pending.FreeBooster);
+            Pending.ClearShop();
             return Shop;
         }
 
@@ -371,7 +413,7 @@ namespace GameRules
             return true;
         }
 
-        /// <summary>标签的效果:首版四种都能当场结清;目录里没有可给的东西时折算成 $3。</summary>
+        /// <summary>标签的效果(设计稿 §7.1):四种当场结清,四种改下一次商店,两种改下一个盲注,一个开情报。</summary>
         private void ApplyTag(int tagId)
         {
             IRandomSource rng = Rng.Get(RngKeys.Tag);
@@ -388,6 +430,31 @@ namespace GameRules
                     break;
                 case Tags.Blocks:
                     if (!GrantRandomBlocks(rng)) AddMoney(3);
+                    break;
+                case Tags.Discount:
+                    Pending.ShopDiscountPermille = Tags.DiscountPermille;
+                    break;
+                case Tags.ExtraGoods:
+                    Pending.ExtraShopGoods += 1;
+                    break;
+                case Tags.FireSale:
+                    Pending.FreeReroll = true;
+                    break;
+                case Tags.Supply:
+                    Pending.FreeBooster = true;
+                    break;
+                case Tags.LightTarget:
+                    Pending.BlindTargetPermille = Tags.LightTargetPermille;
+                    break;
+                case Tags.ExtraDiscards:
+                    Pending.BlindDiscards += Tags.ExtraDiscardCount;
+                    break;
+                case Tags.InterestCap:
+                    _interestBonus = Tags.InterestCapBonus;
+                    _interestBonusSegment = CurrentSegment;
+                    break;
+                case Tags.Intel:
+                    BossIntel = true;
                     break;
             }
         }
@@ -437,7 +504,7 @@ namespace GameRules
             {
                 throw new InvalidOperationException("盲注与当前节点不是同一关");
             }
-            int interestCap = DifficultyRules.Of(Difficulty).InterestCap + Modifiers.InterestCapBonus;
+            int interestCap = DifficultyRules.Of(Difficulty).InterestCap + Modifiers.InterestCapBonus + SegmentInterestCapBonus;
             Settlement settlement = RunEconomy.Settle(node, _money, Config.InterestPer, interestCap);
             AddMoney(settlement.Total);
             Progress.Resolve();
@@ -569,7 +636,8 @@ namespace GameRules
             var genes = new List<GeneSlot>(_genes.Count);
             foreach (GeneSlot g in _genes) genes.Add(g.Clone());
             return new RunState(Config, Rng.Clone(), Difficulty, _money, Map, Progress.Clone(), Shop?.Clone(), NextInstanceId,
-                library, (int[])_typeLevels.Clone(), genes, new List<int>(_consumables), new List<int>(_vouchers), Blind?.Clone());
+                library, (int[])_typeLevels.Clone(), genes, new List<int>(_consumables), new List<int>(_vouchers), Blind?.Clone(),
+                Pending.Clone(), BossIntel, _interestBonus, _interestBonusSegment);
         }
 
         /// <summary>
@@ -586,13 +654,20 @@ namespace GameRules
         {
             if (!Enum.IsDefined(typeof(RunDifficulty), Difficulty)) return Invariant($"difficulty: 未定义的值 {(int)Difficulty}");
             if (_money < 0) return Invariant($"money: {_money} 为负");
+            string pendingError = Pending.Validate();
+            if (pendingError != null) return pendingError;
+            if (_interestBonus < 0) return Invariant($"interestBonus: {_interestBonus} 为负");
+            if (_interestBonusSegment < 0) return Invariant($"interestBonusSegment: {_interestBonusSegment} 为负");
             string mapError = Map.Validate();
             if (mapError != null) return mapError;
             string progressError = Progress.Validate(Map);
             if (progressError != null) return "map: " + progressError;
             if (Shop != null)
             {
-                if (Shop.Goods.Count != ShopState.GoodsCount) return Invariant($"shop.goods: 应有 {ShopState.GoodsCount} 格,实有 {Shop.Goods.Count}");
+                if (Shop.Count < ShopState.GoodsCount || Shop.Count > ShopState.MaxGoodsCount)
+                {
+                    return Invariant($"shop.goods: 应有 {ShopState.GoodsCount}..{ShopState.MaxGoodsCount} 格,实有 {Shop.Count}");
+                }
                 if (Shop.Rerolls < 0) return Invariant($"shop.rerolls: {Shop.Rerolls} 为负");
                 if (!Progress.CurrentResolved) return "shop: 当前节点还没结算就开着商店";
                 foreach (ShopOffer offer in Shop.Goods)

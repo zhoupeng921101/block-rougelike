@@ -22,6 +22,7 @@ namespace GameRules
         {
             "format", "schema", "seed", "rng", "difficulty", "money", "map", "shop",
             "nextInstanceId", "library", "typeLevels", "consumables", "vouchers", "genes", "blind",
+            "pending", "bossIntel", "interestBonus", "interestBonusSegment",
         };
         private static readonly string[] RngMembers = { "scheme", "streams" };
         private static readonly string[] StreamMembers = { "key", "s0", "s1" };
@@ -39,6 +40,10 @@ namespace GameRules
             "draw", "tray", "owner", "dead", "discarded", "departed", "removed", "tempBlocks",
         };
         private static readonly string[] SpecMembers = { "segment", "layer", "target", "discards", "groupSize", "boss" };
+        private static readonly string[] PendingMembers =
+        {
+            "shopDiscount", "extraShopGoods", "freeReroll", "freeBooster", "blindTarget", "blindDiscards",
+        };
         private static readonly string[] SlotMembers = { "id", "rot" };
         private static readonly string[] TypeLevelMembers = BuildTypeLevelMembers();
 
@@ -87,6 +92,18 @@ namespace GameRules
 
             if (blind == null) w.Name("blind").Null();
             else WriteBlind(w, blind);
+
+            w.Name("pending").BeginObject(JsonLayout.Inline)
+                .Name("shopDiscount").Int(run.Pending.ShopDiscountPermille)
+                .Name("extraShopGoods").Int(run.Pending.ExtraShopGoods)
+                .Name("freeReroll").Bool(run.Pending.FreeReroll)
+                .Name("freeBooster").Bool(run.Pending.FreeBooster)
+                .Name("blindTarget").Int(run.Pending.BlindTargetPermille)
+                .Name("blindDiscards").Int(run.Pending.BlindDiscards)
+                .End();
+            w.Name("bossIntel").Bool(run.BossIntel);
+            w.Name("interestBonus").Int(run.PendingInterestBonus);
+            w.Name("interestBonusSegment").Int(run.PendingInterestBonusSegment);
 
             w.End();
             return w.Finish();
@@ -308,8 +325,25 @@ namespace GameRules
                 blind = ReadBlind(p, v[14]);
                 if (blind == null) return null;
             }
+
+            JsonNode[] pd = p.ReadObject(v[15], "pending", PendingMembers);
+            if (pd == null) return null;
+            var pending = new RunPending
+            {
+                ShopDiscountPermille = p.ReadInt(pd[0], "pending.shopDiscount"),
+                ExtraShopGoods = p.ReadInt(pd[1], "pending.extraShopGoods"),
+                FreeReroll = p.ReadBool(pd[2], "pending.freeReroll"),
+                FreeBooster = p.ReadBool(pd[3], "pending.freeBooster"),
+                BlindTargetPermille = p.ReadInt(pd[4], "pending.blindTarget"),
+                BlindDiscards = p.ReadInt(pd[5], "pending.blindDiscards"),
+            };
+            bool bossIntel = p.ReadBool(v[16], "bossIntel");
+            int interestBonus = p.ReadInt(v[17], "interestBonus");
+            int interestBonusSegment = p.ReadInt(v[18], "interestBonusSegment");
+            if (p.Failed) return null;
+
             return RunState.Restore(config, RngStreams.Restore(seed, streams), difficulty, money, map, progress, shop, nextInstanceId,
-                library, levels, genes, consumables, vouchers, blind);
+                library, levels, genes, consumables, vouchers, blind, pending, bossIntel, interestBonus, interestBonusSegment);
         }
 
         /// <summary>货架。null 是合法的(不在商店)。</summary>
@@ -341,9 +375,10 @@ namespace GameRules
             }
             List<JsonNode> items = p.ReadArray(s[5], "shop.goods");
             if (items == null) return false;
-            if (items.Count != ShopState.GoodsCount)
+            if (items.Count < ShopState.GoodsCount || items.Count > ShopState.MaxGoodsCount)
             {
-                p.Fail(SnapshotError.Shape, "shop.goods", Invariant($"应有 {ShopState.GoodsCount} 格"));
+                p.Fail(SnapshotError.Shape, "shop.goods",
+                    Invariant($"应有 {ShopState.GoodsCount}..{ShopState.MaxGoodsCount} 格"));
                 return false;
             }
             var goods = new ShopOffer[items.Count];
