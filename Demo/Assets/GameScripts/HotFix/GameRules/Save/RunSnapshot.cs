@@ -19,9 +19,15 @@ namespace GameRules
 
         // 读入端按这些次序对形状;写出端的调用次序与它们一致,往返单测逐字节比对兜住两边
         private static readonly string[] RootMembers =
-            { "format", "schema", "seed", "rng", "nextInstanceId", "library", "typeLevels", "genes", "blind" };
+        {
+            "format", "schema", "seed", "rng", "difficulty", "money", "map",
+            "nextInstanceId", "library", "typeLevels", "genes", "blind",
+        };
         private static readonly string[] RngMembers = { "scheme", "streams" };
         private static readonly string[] StreamMembers = { "key", "s0", "s1" };
+        private static readonly string[] MapMembers = { "segmentCount", "nodes", "progress" };
+        private static readonly string[] MapNodeMembers = { "id", "segment", "layer", "strength", "tag" };
+        private static readonly string[] ProgressMembers = { "current", "resolved", "visited" };
         private static readonly string[] BlockMembers = { "id", "kind", "points", "enhancement", "edition" };
         private static readonly string[] GeneMembers = { "id" };
         private static readonly string[] BlindMembers =
@@ -35,12 +41,12 @@ namespace GameRules
 
         /// <summary>
         /// 状态 → 规范文本。状态须过 <see cref="RunState.Validate"/>(未定义的枚举值写不出名字,直接抛)。
-        /// 本图的快照总带着盲注;两个盲注之间(商店)的形状归阶段 5,到时升 schema。
+        /// 盲注可以为 null(商店、选关这些两个盲注之间的时刻),那里写 null;战斗中的形状与此前相同。
         /// </summary>
         public static string Write(RunState run)
         {
             if (run == null) throw new ArgumentNullException(nameof(run));
-            BlindState blind = run.Blind ?? throw new ArgumentException("还没开盲注:本图的快照总带着盲注(09 号票 §1)", nameof(run));
+            BlindState blind = run.Blind;
             var w = new CanonicalJsonWriter();
             w.BeginObject(JsonLayout.Lines);
             w.Name("format").String(Format);
@@ -56,6 +62,10 @@ namespace GameRules
             }
             w.End().End();
 
+            w.Name("difficulty").String(NameOf(run.Difficulty));
+            w.Name("money").Int(run.Money);
+            WriteMap(w, run.Map, run.Progress);
+
             w.Name("nextInstanceId").Int(run.NextInstanceId);
             w.Name("library");
             WriteBlocks(w, run.Library);
@@ -66,8 +76,18 @@ namespace GameRules
             foreach (GeneSlot g in run.Genes) w.BeginObject(JsonLayout.Inline).Name("id").Int(g.GeneId).End();
             w.End();
 
-            w.Name("blind").BeginObject(JsonLayout.Lines);
+            if (blind == null) w.Name("blind").Null();
+            else WriteBlind(w, blind);
+
+            w.End();
+            return w.Finish();
+        }
+
+        /// <summary>一个盲注的形状。字段次序与 <see cref="BlindMembers"/> 一致。</summary>
+        private static void WriteBlind(CanonicalJsonWriter w, BlindState blind)
+        {
             BlindSpec spec = blind.Spec;
+            w.Name("blind").BeginObject(JsonLayout.Lines);
             w.Name("spec").BeginObject(JsonLayout.Inline)
                 .Name("segment").Int(spec.Segment)
                 .Name("layer").Int(spec.Layer)
@@ -113,9 +133,32 @@ namespace GameRules
             w.Name("tempBlocks");
             WriteBlocks(w, blind.TempBlocks);
             w.End();
+        }
 
+        /// <summary>地图布局与进度。布局进档是因为生成代码以后可能改;存下来才能让旧档照原图继续打。</summary>
+        private static void WriteMap(CanonicalJsonWriter w, RunMap map, MapProgress progress)
+        {
+            w.Name("map").BeginObject(JsonLayout.Lines);
+            w.Name("segmentCount").Int(map.SegmentCount);
+            w.Name("nodes").BeginArray(JsonLayout.Lines);
+            foreach (MapNode n in map.Nodes)
+            {
+                w.BeginObject(JsonLayout.Inline)
+                    .Name("id").Int(n.Id)
+                    .Name("segment").Int(n.Segment)
+                    .Name("layer").Int(n.Layer)
+                    .Name("strength").String(NameOf(n.Strength))
+                    .Name("tag").Int(n.TagId)
+                    .End();
+            }
             w.End();
-            return w.Finish();
+            w.Name("progress").BeginObject(JsonLayout.Lines);
+            w.Name("current").Int(progress.CurrentNodeId);
+            w.Name("resolved").Bool(progress.CurrentResolved);
+            w.Name("visited");
+            WriteIds(w, progress.Visited);
+            w.End();
+            w.End();
         }
 
         /// <summary>
@@ -165,17 +208,22 @@ namespace GameRules
 
             List<RngStreamState> streams = ReadStreams(p, v[3]);
             if (streams == null) return null;
-            int nextInstanceId = p.ReadInt(v[4], "nextInstanceId");
+            RunDifficulty difficulty = p.ReadEnum<RunDifficulty>(v[4], "difficulty");
+            int money = p.ReadInt(v[5], "money");
             if (p.Failed) return null;
-            List<BlockInstance> library = ReadBlocks(p, v[5], "library");
+            if (money < 0) return p.Fail(SnapshotError.BadValue, "money", "金钱不能为负");
+            if (!ReadMap(p, v[6], out RunMap map, out MapProgress progress)) return null;
+            int nextInstanceId = p.ReadInt(v[7], "nextInstanceId");
+            if (p.Failed) return null;
+            List<BlockInstance> library = ReadBlocks(p, v[8], "library");
             if (library == null) return null;
 
-            JsonNode[] lv = p.ReadObject(v[6], "typeLevels", TypeLevelMembers);
+            JsonNode[] lv = p.ReadObject(v[9], "typeLevels", TypeLevelMembers);
             if (lv == null) return null;
             var levels = new int[ClearTypes.Count];
             for (int t = 0; t < levels.Length; t++) levels[t] = p.ReadInt(lv[t], "typeLevels." + TypeLevelMembers[t]);
 
-            List<JsonNode> geneItems = p.ReadArray(v[7], "genes");
+            List<JsonNode> geneItems = p.ReadArray(v[10], "genes");
             if (geneItems == null) return null;
             var genes = new List<GeneSlot>(geneItems.Count);
             for (int i = 0; i < geneItems.Count; i++)
@@ -187,9 +235,51 @@ namespace GameRules
             }
             if (p.Failed) return null;
 
-            BlindState blind = ReadBlind(p, v[8]);
-            if (blind == null) return null;
-            return RunState.Restore(config, RngStreams.Restore(seed, streams), nextInstanceId, library, levels, genes, blind);
+            BlindState blind = null;
+            if (v[11].Kind != JsonKind.Null)
+            {
+                blind = ReadBlind(p, v[11]);
+                if (blind == null) return null;
+            }
+            return RunState.Restore(config, RngStreams.Restore(seed, streams), difficulty, money, map, progress, nextInstanceId,
+                library, levels, genes, blind);
+        }
+
+        /// <summary>地图布局与进度。布局的形状约束由 <see cref="RunMap.Validate"/> 在整局校验里查,这里只判读得下来。</summary>
+        private static bool ReadMap(Parser p, JsonNode node, out RunMap map, out MapProgress progress)
+        {
+            map = null;
+            progress = null;
+            JsonNode[] m = p.ReadObject(node, "map", MapMembers);
+            if (m == null) return false;
+            int segmentCount = p.ReadInt(m[0], "map.segmentCount");
+            List<JsonNode> nodeItems = p.ReadArray(m[1], "map.nodes");
+            if (nodeItems == null) return false;
+            var nodes = new List<MapNode>(nodeItems.Count);
+            for (int i = 0; i < nodeItems.Count; i++)
+            {
+                string path = Invariant($"map.nodes[{i}]");
+                JsonNode[] n = p.ReadObject(nodeItems[i], path, MapNodeMembers);
+                if (n == null) return false;
+                int id = p.ReadInt(n[0], path + ".id");
+                int segment = p.ReadInt(n[1], path + ".segment");
+                int layer = p.ReadInt(n[2], path + ".layer");
+                NodeStrength strength = p.ReadEnum<NodeStrength>(n[3], path + ".strength");
+                int tag = p.ReadInt(n[4], path + ".tag");
+                if (p.Failed) return false;
+                nodes.Add(new MapNode(id, segment, layer, strength, tag));
+            }
+
+            JsonNode[] pr = p.ReadObject(m[2], "map.progress", ProgressMembers);
+            if (pr == null) return false;
+            int current = p.ReadInt(pr[0], "map.progress.current");
+            bool resolved = p.ReadBool(pr[1], "map.progress.resolved");
+            List<int> visited = p.ReadIntList(pr[2], "map.progress.visited");
+            if (p.Failed) return false;
+
+            map = RunMap.Restore(nodes, segmentCount);
+            progress = MapProgress.Restore(current, resolved, visited);
+            return true;
         }
 
         private static List<RngStreamState> ReadStreams(Parser p, JsonNode node)
@@ -450,6 +540,17 @@ namespace GameRules
                 if (Failed) return null;
                 if (node.Kind != JsonKind.String) return Fail<string>(SnapshotError.Shape, path, "应是字符串");
                 return node.String;
+            }
+
+            public bool ReadBool(JsonNode node, string path)
+            {
+                if (Failed) return false;
+                if (node.Kind != JsonKind.Bool)
+                {
+                    Fail<JsonNode>(SnapshotError.Shape, path, "应是布尔");
+                    return false;
+                }
+                return node.Bool;
             }
 
             /// <summary>规范的十进制整数串:写出端 <c>long.ToString(InvariantCulture)</c> 写得出的形状,不认 +、前导零、-0、空白。</summary>

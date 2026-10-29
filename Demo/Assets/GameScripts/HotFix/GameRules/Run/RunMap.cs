@@ -172,5 +172,46 @@ namespace GameRules
             if (nodes == null) throw new ArgumentNullException(nameof(nodes));
             return new RunMap(nodes, segmentCount);
         }
+
+        /// <summary>布局约束,返回第一条不成立的;成立返回 null。读档后由 <see cref="RunState.Validate"/> 调。</summary>
+        public string Validate()
+        {
+            if (SegmentCount < 1) return "map.segmentCount: 至少 1 段";
+            if (_nodes.Count == 0) return "map.nodes: 不能为空";
+            for (int i = 0; i < _nodes.Count; i++)
+            {
+                MapNode n = _nodes[i];
+                if (n.Id != i + 1) return $"map.nodes[{i}].id: 应为 {i + 1}";
+                if (n.Segment < 1 || n.Segment > SegmentCount) return $"map.nodes[{i}].segment: 超出 1..{SegmentCount}";
+                if (n.Layer < 1 || n.Layer > LayersPerSegment) return $"map.nodes[{i}].layer: 超出 1..{LayersPerSegment}";
+                if (!Enum.IsDefined(typeof(NodeStrength), n.Strength)) return $"map.nodes[{i}].strength: 未定义的值 {(int)n.Strength}";
+                if (n.TagId < 0) return $"map.nodes[{i}].tag: 标签号不能为负";
+                bool bossLayer = n.Layer == LayersPerSegment;
+                if (bossLayer != n.IsBoss) return $"map.nodes[{i}]: 首领只能出现在第 {LayersPerSegment} 层";
+            }
+            for (int segment = 1; segment <= SegmentCount; segment++)
+            {
+                for (int layer = 1; layer < LayersPerSegment; layer++)
+                {
+                    IReadOnlyList<MapNode> nodes = NodesAt(segment, layer);
+                    int expectedMin = segment == 1 && layer == 1 ? 1 : 2;
+                    if (nodes.Count < expectedMin || nodes.Count > 3)
+                    {
+                        return $"map: 段 {segment} 层 {layer} 应有 {expectedMin}..3 个节点,实有 {nodes.Count}";
+                    }
+                    var strengths = new HashSet<NodeStrength>();
+                    foreach (MapNode n in nodes)
+                    {
+                        if (!strengths.Add(n.Strength)) return $"map: 段 {segment} 层 {layer} 的强度重复";
+                    }
+                    if (!strengths.Contains(NodeStrength.Normal)) return $"map: 段 {segment} 层 {layer} 缺「中」节点";
+                }
+                if (NodesAt(segment, LayersPerSegment).Count != 1)
+                {
+                    return $"map: 段 {segment} 应有且只有一个首领";
+                }
+            }
+            return null;
+        }
     }
 }

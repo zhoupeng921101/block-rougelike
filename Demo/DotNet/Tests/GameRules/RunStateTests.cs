@@ -233,6 +233,33 @@ namespace GameRules.Tests
             Assert.Throws<NotSupportedException>(() => ((IList<int>)view.TypeLevels)[0] = 2);
         }
 
+        [Test]
+        public void NewRun_HasMapMoneyAndDifficulty()
+        {
+            RunState run = RunState.NewRun(Seed, PlaceholderTuning.Config, RunDifficulty.Expert);
+            Assert.AreEqual(RunDifficulty.Expert, run.Difficulty);
+            Assert.AreEqual(PlaceholderTuning.Config.StartingMoney, run.Money);
+            Assert.AreEqual(RunMap.DefaultSegments, run.Map.SegmentCount);
+            Assert.AreEqual(0, run.Progress.CurrentNodeId);
+            Assert.IsNull(run.Progress.Validate(run.Map));
+            Assert.IsNull(run.Validate());
+        }
+
+        [Test]
+        public void Money_AddAndSpend_AreSigned()
+        {
+            RunState run = RunState.NewRun(Seed, PlaceholderTuning.Config);
+            int start = run.Money;
+            run.AddMoney(5);
+            Assert.AreEqual(start + 5, run.Money);
+            Assert.IsTrue(run.TrySpend(4));
+            Assert.AreEqual(start + 1, run.Money);
+            Assert.IsFalse(run.TrySpend(start + 2), "钱不够时不改状态");
+            Assert.AreEqual(start + 1, run.Money);
+            Assert.Throws<ArgumentOutOfRangeException>(() => run.AddMoney(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => run.TrySpend(-1));
+        }
+
         private static string Inv(FormattableString s) => FormattableString.Invariant(s);
 
         private static string Dump(RunState run) => TestRules.Dump(run);

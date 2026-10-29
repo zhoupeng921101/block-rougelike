@@ -89,9 +89,17 @@ namespace GameRules.Tests
         }
 
         [Test]
-        public void Write_RefusesARunWithoutABlind()
+        public void Write_WithoutABlind_RoundTripsBetweenBlinds()
         {
-            Assert.Throws<ArgumentException>(() => RunSnapshot.Write(RunState.NewRun("TESTSEED", PlaceholderTuning.Config)));
+            RunState run = RunState.NewRun("TESTSEED", PlaceholderTuning.Config);
+            string text = RunSnapshot.Write(run);
+            SnapshotReadResult read = RunSnapshot.Read(text, PlaceholderTuning.Config);
+            Assert.IsTrue(read.Ok, Describe(read));
+            Assert.IsNull(read.State.Blind, "两个盲注之间没有盲注");
+            Assert.AreEqual(PlaceholderTuning.Config.StartingMoney, read.State.Money);
+            Assert.AreEqual(RunDifficulty.Standard, read.State.Difficulty);
+            Assert.AreEqual(0, read.State.Progress.CurrentNodeId);
+            Assert.AreEqual(text, RunSnapshot.Write(read.State));
         }
 
         // ---- 规范形 ----
@@ -191,7 +199,7 @@ namespace GameRules.Tests
             yield return Bad("超出 32 位", "\"combo\": 0,", "\"combo\": 4294967296,", SnapshotError.OutOfRange, "blind.combo");
             yield return Bad("前导零", "\"combo\": 0,", "\"combo\": 01,", SnapshotError.Syntax, "blind.combo");
             yield return Bad("种子不规范", "\"seed\": \"TESTSEED\",", "\"seed\": \"testseed\",", SnapshotError.BadValue, "seed");
-            yield return Bad("键不合语法", "\"key\": \"shuffle@1.1\"", "\"key\": \"Shuffle@1.1\"", SnapshotError.BadValue, "rng.streams[0].key");
+            yield return Bad("键不合语法", "\"key\": \"map\"", "\"key\": \"Map\"", SnapshotError.BadValue, "rng.streams[0].key");
             yield return Bad("枚举名大小写不对", "{ \"id\": 1, \"kind\": \"I\"", "{ \"id\": 1, \"kind\": \"i\"", SnapshotError.BadValue, "library[0].kind");
             yield return Bad("枚举写成数字", "{ \"id\": 1, \"kind\": \"I\"", "{ \"id\": 1, \"kind\": \"0\"", SnapshotError.BadValue, "library[0].kind");
             yield return Bad("枚举不认", "\"outcome\": \"InProgress\",", "\"outcome\": \"Pending\",", SnapshotError.BadValue, "blind.outcome");

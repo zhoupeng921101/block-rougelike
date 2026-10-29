@@ -45,4 +45,12 @@ namespace GameRules
         /// <summary>待放置区剩下的块怎么转都放不下,弃置次数也用完了。</summary>
         CannotPlace = 2,
     }
+
+    /// <summary>难度(局外循环设计稿 §5)。三档累加:专家 = 专家的全部修正。</summary>
+    public enum RunDifficulty
+    {
+        Standard = 0,
+        Advanced = 1,
+        Expert = 2,
+    }
 }

@@ -74,6 +74,10 @@ namespace GameRules
 
         public MapProgress Clone() => new MapProgress(CurrentNodeId, CurrentResolved, new List<int>(_visited));
 
+        /// <summary>读档的还原口(<see cref="RunSnapshot"/>):字段原样接上,随后由 <see cref="Validate"/> 校验。</summary>
+        internal static MapProgress Restore(int current, bool resolved, List<int> visited) =>
+            new MapProgress(current, resolved, visited ?? new List<int>());
+
         /// <summary>状态约束,返回第一条不成立的,形如「路径: 说明」;全部成立返回 null。与存档读入后的校验共用。</summary>
         public string Validate(RunMap map)
         {

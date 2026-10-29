@@ -13,8 +13,21 @@ namespace GameRules
         private readonly List<BlockInstance> _library;
         private readonly int[] _typeLevels;
         private readonly List<GeneSlot> _genes;
+        private int _money;
 
         public RuleConfig Config { get; }
+
+        /// <summary>本局的难度档(局外循环设计稿 §5);只影响开局参数与目标分曲线,不改战斗规则本身。</summary>
+        public RunDifficulty Difficulty { get; }
+
+        /// <summary>持有的金钱。本图只有通关奖励与利息两个来源;能不能透支等经济票再接。</summary>
+        public int Money => _money;
+
+        /// <summary>这一局的地图布局。开局一次生成,之后只读。</summary>
+        public RunMap Map { get; }
+
+        /// <summary>走到地图哪里(当前节点、是否已结算、走过的节点)。</summary>
+        public MapProgress Progress { get; }
 
         /// <summary>本局的全部随机流。表现层的随机(演出、粒子)用引擎自己的,绝不取这里,否则改一个动画就改了这一局(08 号票)。</summary>
         public RngStreams Rng { get; }
@@ -40,11 +53,15 @@ namespace GameRules
 
         IBlindView IRunView.Blind => Blind;
 
-        private RunState(RuleConfig config, RngStreams rng, int nextInstanceId, List<BlockInstance> library,
-            int[] typeLevels, List<GeneSlot> genes, BlindState blind)
+        private RunState(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map, MapProgress progress,
+            int nextInstanceId, List<BlockInstance> library, int[] typeLevels, List<GeneSlot> genes, BlindState blind)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             Rng = rng;
+            Difficulty = difficulty;
+            _money = money;
+            Map = map ?? throw new ArgumentNullException(nameof(map));
+            Progress = progress ?? throw new ArgumentNullException(nameof(progress));
             NextInstanceId = nextInstanceId;
             _library = library;
             _typeLevels = typeLevels;
@@ -55,12 +72,19 @@ namespace GameRules
             Genes = genes.AsReadOnly();
         }
 
-        /// <summary>开新局:按配置里默认方块库清单的顺序逐块取号建库。种子文本须已规范(<see cref="SeedText"/>)。</summary>
-        public static RunState NewRun(string seed, RuleConfig config)
+        /// <summary>
+        /// 开新局:先生成地图(只消费 <c>map</c> 一条流一次),再按配置里默认方块库清单的顺序逐块取号建库。
+        /// 种子文本须已规范(<see cref="SeedText"/>)。难度默认标准档,选难度的那一屏由表现层传入。
+        /// </summary>
+        public static RunState NewRun(string seed, RuleConfig config, RunDifficulty difficulty = RunDifficulty.Standard)
         {
+            if (config == null) throw new ArgumentNullException(nameof(config));
             var levels = new int[ClearTypes.Count];
             for (int i = 0; i < levels.Length; i++) levels[i] = 1;
-            var run = new RunState(config, new RngStreams(seed), 1, new List<BlockInstance>(), levels, new List<GeneSlot>(), null);
+            var rng = new RngStreams(seed);
+            RunMap map = RunMap.Generate(rng.Get(RngKeys.Map), config.MapSegments);
+            var run = new RunState(config, rng, difficulty, config.StartingMoney, map, new MapProgress(),
+                1, new List<BlockInstance>(), levels, new List<GeneSlot>(), null);
             foreach (LibraryEntry e in config.DefaultLibrary)
             {
                 run._library.Add(new BlockInstance(run.IssueId(), e.Kind, e.Points, e.Enhancement, e.Edition));
@@ -69,9 +93,10 @@ namespace GameRules
         }
 
         /// <summary>读档的还原口(<see cref="RunSnapshot"/>):各字段原样接上,不查约束,读档随后调 <see cref="Validate"/>。</summary>
-        internal static RunState Restore(RuleConfig config, RngStreams rng, int nextInstanceId, List<BlockInstance> library,
-            int[] typeLevels, List<GeneSlot> genes, BlindState blind) =>
-            new RunState(config, rng, nextInstanceId, library, typeLevels, genes, blind);
+        internal static RunState Restore(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map,
+            MapProgress progress, int nextInstanceId, List<BlockInstance> library, int[] typeLevels, List<GeneSlot> genes,
+            BlindState blind) =>
+            new RunState(config, rng, difficulty, money, map, progress, nextInstanceId, library, typeLevels, genes, blind);
 
         /// <summary>
         /// 唯一的取号口。方块库的块、首领预置块、将来「生成一块」的效果都从这里取,所以不能假设 id 都在方块库里。
@@ -81,6 +106,23 @@ namespace GameRules
         {
             if (NextInstanceId == int.MaxValue) throw new InvalidOperationException("实例 id 用尽");
             return NextInstanceId++;
+        }
+
+        /// <summary>入账。金额为负抛异常:扣钱走 <see cref="TrySpend"/>,两条路分开,读代码的人不会把符号搞反。</summary>
+        public void AddMoney(int amount)
+        {
+            if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount), amount, "入账金额不能为负");
+            if (_money > int.MaxValue - amount) throw new InvalidOperationException("金钱溢出");
+            _money += amount;
+        }
+
+        /// <summary>扣钱。钱不够返回 false 且不改状态;金额为负抛异常。</summary>
+        public bool TrySpend(int amount)
+        {
+            if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount), amount, "扣款金额不能为负");
+            if (amount > _money) return false;
+            _money -= amount;
+            return true;
         }
 
         public int LevelOf(ClearType type)
@@ -237,7 +279,8 @@ namespace GameRules
             foreach (BlockInstance b in _library) library.Add(b.Clone());
             var genes = new List<GeneSlot>(_genes.Count);
             foreach (GeneSlot g in _genes) genes.Add(g.Clone());
-            return new RunState(Config, Rng.Clone(), NextInstanceId, library, (int[])_typeLevels.Clone(), genes, Blind?.Clone());
+            return new RunState(Config, Rng.Clone(), Difficulty, _money, Map, Progress.Clone(), NextInstanceId, library,
+                (int[])_typeLevels.Clone(), genes, Blind?.Clone());
         }
 
         /// <summary>
@@ -252,6 +295,13 @@ namespace GameRules
         /// </summary>
         public string Validate()
         {
+            if (!Enum.IsDefined(typeof(RunDifficulty), Difficulty)) return Invariant($"difficulty: 未定义的值 {(int)Difficulty}");
+            if (_money < 0) return Invariant($"money: {_money} 为负");
+            string mapError = Map.Validate();
+            if (mapError != null) return mapError;
+            string progressError = Progress.Validate(Map);
+            if (progressError != null) return "map: " + progressError;
+
             // id → 所在区;null = 还没在任何区里见到。只按 id 查,不遍历,结果次序全由下面的有序列表定
             var zoneOf = new Dictionary<int, string>();
             int prev = 0;
