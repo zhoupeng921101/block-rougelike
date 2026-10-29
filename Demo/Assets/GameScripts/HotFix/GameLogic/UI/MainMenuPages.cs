@@ -58,7 +58,7 @@ public sealed class MainMenuPages
             RunFlow.Difficulty = _difficulty;
             RunFlow.StartNew(_difficulty);
         }, true, 30, RuntimeUI.ButtonAccent);
-        BackButton(page, new Vector2(980f, y - 30f));
+        BackButton(page, new Vector2(980f, y - 30f), 380f);
     }
 
     /// <summary>选项:声音总开关、语言。两样都随点随存。</summary>
@@ -161,8 +161,8 @@ public sealed class MainMenuPages
         return _page;
     }
 
-    private void BackButton(RectTransform page, Vector2 position)
+    private void BackButton(RectTransform page, Vector2 position, float width = 300f)
     {
-        RuntimeUI.Button(page, _font, TextTable.Instance.Get(TextKeys.Menu.Back), position, new Vector2(300f, 84f), Close, true, 30);
+        RuntimeUI.Button(page, _font, TextTable.Instance.Get(TextKeys.Menu.Back), position, new Vector2(width, 84f), Close, true, 30);
     }
 }

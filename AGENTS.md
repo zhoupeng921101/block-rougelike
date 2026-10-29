@@ -28,12 +28,13 @@ Demo/            新游戏的 Unity 工程（Unity 6000.3.19f1 + TEngine），�
 
 | 任务 | 入口 |
 |---|---|
-| 新游戏的设计、选型、推进 | [新游戏/README.md](新游戏/README.md)、[新游戏/设计/3B核心规则.md](新游戏/设计/3B核心规则.md)、`.scratch/3b-首个盲注/map.md`（阶段 3+4 的推进地图） |
+| 新游戏的设计、选型、推进 | [新游戏/README.md](新游戏/README.md)、[新游戏/设计/3B核心规则.md](新游戏/设计/3B核心规则.md) |
 | 复刻件的推进、口径、已知坑 | [复刻/README.md](复刻/README.md)、`.scratch/balatro-复刻/map.md` |
 | 查三款的玩法、数值、资产 | [参考/README.md](参考/README.md) 的路由表 |
 | 三款之间的机制对比 | [参考/横向对比.md](参考/横向对比.md) |
 | 怎么查、条目类别、追源码 | [参考/研究约定.md](参考/研究约定.md) |
 | 改解析脚本 / 重跑流水线 / 提交 | [参考/工具文档/维护约定.md](参考/工具文档/维护约定.md) |
+| 用 DeepSeek(DSH)做 `Demo/` 的开发 | [Demo/AGENTS.md](Demo/AGENTS.md)、skill `devflow` |
 
 **版本以目录名为准**，不把这些版本的结论推广到其他版本。
 

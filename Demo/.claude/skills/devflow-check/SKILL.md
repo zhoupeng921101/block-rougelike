@@ -18,7 +18,7 @@ description: devflow 工作流规则族的一致性检查(分钟级、无状态�
 
 默认根 = 主工程;被显式指定其他根时按该根检查。
 
-- 卡片:`devflow`、`devflow-client`、`devflow-ui`、`daily-code-review`、`unity-check`、`playtest`、`devflow-explore`、`grilling-fast`、`refs-check`、`dotween-effects`、`luban-dev`(各取 SKILL.md)。纳入判据 = 该卡承载了族内不变量的出现点。每日审查若注册了定时任务(本作现未注册),其 backing 文件在用户全局目录、仓外不入本检查,但须是只读仓内正本的 shim,内联程序副本即 finding。
+- 卡片:`devflow`、`devflow-client`、`devflow-ui`、`daily-code-review`、`unity-check`、`playtest`、`devflow-explore`、`refs-check`、`dotween-effects`、`luban-dev`(各取 SKILL.md)。纳入判据 = 该卡承载了族内不变量的出现点。每日审查若注册了定时任务(本作现未注册),其 backing 文件在用户全局目录、仓外不入本检查,但须是只读仓内正本的 shim,内联程序副本即 finding。
 - CLAUDE.md 的工作流条款:「devflow 适用面」、「轻量无人值守」、裁定项结构化行、Unity 槽位分工行、构建入口行。
 - 脚本与索引:`.claude/devflow/` 下全部现役 `.ps1`(以目录现场枚举为准)与 `README.md`。
 - 检查与台账:`.claude/devflow/obligation-ledger.md`、`.claude/devflow/hooks/*.ps1`、`.claude/settings.json` hooks 节——卡片对检查行为的断言以 hook 脚本实际实现为准。

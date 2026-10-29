@@ -24,3 +24,4 @@ __pycache__/
 /.gate/
 # playtest 跑测中间产物(表头 dump / 日志 / 探针输出)
 /playtest/
+.scratch/
