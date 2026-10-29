@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using GameRules;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,7 +8,7 @@ using UnityEngine.UI;
 /// 主界面(规则 §8.1):按钮列是「继续」「开始游戏」「收藏」「选项」「语言」。
 /// 「继续」只在探测到进行中的局时显示:打开时探测一次,从局内回来(本窗重新露出)再探测一次。
 /// 「开始游戏」先进难度选择页(规则 §8.2),选好再开局;声音开关在「选项」页里。三个子页见 <see cref="MainMenuPages"/>。
-/// 预制体里原有的难度切档、声音两个按钮藏起来,「收藏」「选项」照它们的样子运行时克隆进按钮列。
+/// 预制体里原有的难度切档、声音两个按钮藏起来;「收藏」「选项」照「语言」按钮运行时克隆进按钮列。
 /// </summary>
 [Window(UILayer.Bottom, fullScreen: true)]
 public partial class UIMainMenuPanel : UIPanelMono
@@ -17,8 +18,8 @@ public partial class UIMainMenuPanel : UIPanelMono
 
     private MainMenuPages _pages;
 
-    private Text _collectionLabel;
-    private Text _optionsLabel;
+    private TMP_Text _collectionLabel;
+    private TMP_Text _optionsLabel;
 
     protected override void OnCreate()
     {
@@ -65,17 +66,21 @@ public partial class UIMainMenuPanel : UIPanelMono
         _pages?.Redraw();
     }
 
-    /// <summary>照难度按钮的样子克隆一个按钮进按钮列(排在「语言」前面),返回它的文字节点。</summary>
-    private Text CloneMenuButton(string name, System.Action onClick)
+    /// <summary>
+    /// 照「语言」按钮克隆一个按钮进按钮列(排在它前面),返回它的文字节点。
+    /// 克隆件上的 <see cref="LocalizedText"/> 立即拆掉:它会按「语言」的 key 重画,文字改由 <see cref="RefreshLabels"/> 画。
+    /// </summary>
+    private TMP_Text CloneMenuButton(string name, System.Action onClick)
     {
-        GameObject go = Instantiate(m_btn_Difficulty.gameObject, m_btn_Difficulty.transform.parent);
+        GameObject go = Instantiate(m_btn_Language.gameObject, m_btn_Language.transform.parent);
         go.name = name;
         go.SetActive(true);
         go.transform.SetSiblingIndex(m_btn_Language.transform.GetSiblingIndex());
         UnityEngine.UI.Button button = go.GetComponent<UnityEngine.UI.Button>();
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => onClick());
-        return go.GetComponentInChildren<Text>(true);
+        foreach (LocalizedText localized in go.GetComponentsInChildren<LocalizedText>(true)) DestroyImmediate(localized);
+        return go.GetComponentInChildren<TMP_Text>(true);
     }
 
     /// <summary>开新局要先选难度(规则 §8.2);旧局的档在开局时删掉(规则 §8.1:开始新游戏会放弃旧局)。</summary>
