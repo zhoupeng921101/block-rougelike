@@ -14,6 +14,7 @@ namespace GameRules
         private readonly int[] _typeLevels;
         private readonly List<GeneSlot> _genes;
         private readonly List<int> _consumables;
+        private readonly List<int> _vouchers;
         private int _money;
 
         public RuleConfig Config { get; }
@@ -55,6 +56,18 @@ namespace GameRules
         /// <summary>道具栏里的改造(号);本图只买不用,使用归战斗表现。</summary>
         public IReadOnlyList<int> Consumables { get; }
 
+        /// <summary>本局已经买下的优惠券(号),按买下的次序。</summary>
+        public IReadOnlyList<int> Vouchers { get; }
+
+        /// <summary>券带来的参数修正;每次都从券列表现算。</summary>
+        public RunModifiers Modifiers => RunModifiers.From(_vouchers);
+
+        /// <summary>基因槽总数 = 配置默认 + 扩槽券。</summary>
+        public int GeneSlots => Config.GeneSlots + Modifiers.GeneSlotBonus;
+
+        /// <summary>道具栏格数 = 配置默认 + 扩容券。</summary>
+        public int ConsumableSlots => Config.ConsumableSlots + Modifiers.ConsumableSlotBonus;
+
         /// <summary>当前盲注;开局后、开第一个盲注前为 null。</summary>
         public BlindState Blind { get; private set; }
 
@@ -62,7 +75,7 @@ namespace GameRules
 
         private RunState(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map, MapProgress progress,
             ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels, List<GeneSlot> genes,
-            List<int> consumables, BlindState blind)
+            List<int> consumables, List<int> vouchers, BlindState blind)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             Rng = rng;
@@ -76,11 +89,13 @@ namespace GameRules
             _typeLevels = typeLevels;
             _genes = genes;
             _consumables = consumables;
+            _vouchers = vouchers;
             Blind = blind;
             Library = library.AsReadOnly();
             TypeLevels = Array.AsReadOnly(typeLevels);
             Genes = genes.AsReadOnly();
             Consumables = consumables.AsReadOnly();
+            Vouchers = vouchers.AsReadOnly();
         }
 
         /// <summary>
@@ -95,7 +110,7 @@ namespace GameRules
             var rng = new RngStreams(seed);
             RunMap map = RunMap.Generate(rng.Get(RngKeys.Map), config.MapSegments);
             var run = new RunState(config, rng, difficulty, config.StartingMoney, map, new MapProgress(), null,
-                1, new List<BlockInstance>(), levels, new List<GeneSlot>(), new List<int>(), null);
+                1, new List<BlockInstance>(), levels, new List<GeneSlot>(), new List<int>(), new List<int>(), null);
             foreach (LibraryEntry e in config.DefaultLibrary)
             {
                 run._library.Add(new BlockInstance(run.IssueId(), e.Kind, e.Points, e.Enhancement, e.Edition));
@@ -106,9 +121,9 @@ namespace GameRules
         /// <summary>读档的还原口(<see cref="RunSnapshot"/>):各字段原样接上,不查约束,读档随后调 <see cref="Validate"/>。</summary>
         internal static RunState Restore(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map,
             MapProgress progress, ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels,
-            List<GeneSlot> genes, List<int> consumables, BlindState blind) =>
+            List<GeneSlot> genes, List<int> consumables, List<int> vouchers, BlindState blind) =>
             new RunState(config, rng, difficulty, money, map, progress, shop, nextInstanceId, library, typeLevels, genes,
-                consumables, blind);
+                consumables, vouchers, blind);
 
         /// <summary>
         /// 唯一的取号口。方块库的块、首领预置块、将来「生成一块」的效果都从这里取,所以不能假设 id 都在方块库里。
@@ -156,7 +171,7 @@ namespace GameRules
         /// <summary>商店买基因用:槽满、或注册表里没有这张基因时返回 false 且不改状态。</summary>
         public bool TryAddGene(int geneId)
         {
-            if (_genes.Count >= Config.GeneSlots) return false;
+            if (_genes.Count >= GeneSlots) return false;
             if (Config.Effects.Find(EffectSource.Gene, geneId) == null) return false;
             AddGene(geneId);
             return true;
@@ -166,13 +181,28 @@ namespace GameRules
         public bool TryAddConsumable(int itemId)
         {
             if (itemId < 1) throw new ArgumentOutOfRangeException(nameof(itemId), itemId, "改造号从 1 起");
-            if (_consumables.Count >= Config.ConsumableSlots) return false;
+            if (_consumables.Count >= ConsumableSlots) return false;
             _consumables.Add(itemId);
             return true;
         }
 
         /// <summary>用掉或卖掉一件改造。没有这件时返回 false。</summary>
         public bool RemoveConsumable(int itemId) => _consumables.Remove(itemId);
+
+        /// <summary>
+        /// 买下一张优惠券:号不认、或已经持有时返回 false。启动券在买下的这一刻入账 $4,其余券的效果在
+        /// <see cref="Modifiers"/> 里现算;券不占格。
+        /// </summary>
+        public bool TryAddVoucher(int voucherId)
+        {
+            if (!VoucherCatalog.IsKnown(voucherId)) return false;
+            if (_vouchers.Contains(voucherId)) return false;
+            _vouchers.Add(voucherId);
+            if (voucherId == VoucherCatalog.StartMoney) AddMoney(4);
+            return true;
+        }
+
+        public bool HasVoucher(int voucherId) => _vouchers.Contains(voucherId);
 
         /// <summary>科技升级一种消除类型。已经到表里最高级时返回 false。</summary>
         public bool UpgradeType(ClearType type)
@@ -241,14 +271,15 @@ namespace GameRules
             return entered;
         }
 
-        /// <summary>当前节点该打的那一场:目标分按节点的层×强度与难度算,弃置按难度加减,每组块数取配置默认。</summary>
+        /// <summary>当前节点该打的那一场:目标分按节点的层×强度、难度与券算,弃置按难度与券加减,每组块数取默认加券。</summary>
         public BlindSpec SpecForCurrentNode()
         {
             if (Progress.CurrentNodeId == 0) throw new InvalidOperationException("还没进节点");
             if (Progress.CurrentResolved) throw new InvalidOperationException("当前节点已结算");
             MapNode node = Map.Get(Progress.CurrentNodeId);
-            int discards = Math.Max(0, Config.BaseDiscards + DifficultyRules.Of(Difficulty).DiscardDelta);
-            return new BlindSpec(node.Segment, node.Layer, RunTargets.For(node, Difficulty, Config), discards, Config.DefaultGroupSize);
+            int discards = Math.Max(0, Config.BaseDiscards + DifficultyRules.Of(Difficulty).DiscardDelta + Modifiers.DiscardBonus);
+            int groupSize = Math.Min(BlindSpec.MaxGroupSize, Config.DefaultGroupSize + Modifiers.GroupSizeBonus);
+            return new BlindSpec(node.Segment, node.Layer, RunTargets.For(node, Difficulty, Config, Modifiers.TargetPermille), discards, groupSize);
         }
 
         /// <summary>开当前节点的盲注。上一个盲注还在进行时由 <see cref="StartBlind"/> 拦下。</summary>
@@ -265,7 +296,7 @@ namespace GameRules
             if (Progress.IsComplete(Map)) throw new InvalidOperationException("整局已结束,没有商店");
             MapNode node = Map.Get(Progress.CurrentNodeId);
             bool guaranteeGene = Progress.Visited.Count <= 3;
-            Shop = ShopState.Open(Rng.Get(RngKeys.Shop(node.Segment, node.Layer)), Config.Catalog, Difficulty, guaranteeGene);
+            Shop = ShopState.Open(Rng.Get(RngKeys.Shop(node.Segment, node.Layer)), this, guaranteeGene, node.Layer == 1);
             return Shop;
         }
 
@@ -283,7 +314,8 @@ namespace GameRules
             {
                 throw new InvalidOperationException("盲注与当前节点不是同一关");
             }
-            Settlement settlement = RunEconomy.Settle(node, Difficulty, _money, Config);
+            int interestCap = DifficultyRules.Of(Difficulty).InterestCap + Modifiers.InterestCapBonus;
+            Settlement settlement = RunEconomy.Settle(node, _money, Config.InterestPer, interestCap);
             AddMoney(settlement.Total);
             Progress.Resolve();
             return new Settlement(node.Id, settlement.Reward, settlement.Interest, _money);
@@ -392,7 +424,7 @@ namespace GameRules
             var genes = new List<GeneSlot>(_genes.Count);
             foreach (GeneSlot g in _genes) genes.Add(g.Clone());
             return new RunState(Config, Rng.Clone(), Difficulty, _money, Map, Progress.Clone(), Shop?.Clone(), NextInstanceId,
-                library, (int[])_typeLevels.Clone(), genes, new List<int>(_consumables), Blind?.Clone());
+                library, (int[])_typeLevels.Clone(), genes, new List<int>(_consumables), new List<int>(_vouchers), Blind?.Clone());
         }
 
         /// <summary>
@@ -449,13 +481,19 @@ namespace GameRules
                 int gene = _genes[i].GeneId;
                 if (Config.Effects.Find(EffectSource.Gene, gene) == null) return Invariant($"genes[{i}].id: 基因 {gene} 没在效果注册表里登记");
             }
-            if (_consumables.Count > Config.ConsumableSlots)
+            if (_genes.Count > GeneSlots) return Invariant($"genes: 有 {_genes.Count} 张,基因槽只有 {GeneSlots} 格");
+            if (_consumables.Count > ConsumableSlots)
             {
-                return Invariant($"consumables: 有 {_consumables.Count} 件,道具栏只有 {Config.ConsumableSlots} 格");
+                return Invariant($"consumables: 有 {_consumables.Count} 件,道具栏只有 {ConsumableSlots} 格");
             }
             for (int i = 0; i < _consumables.Count; i++)
             {
                 if (_consumables[i] < 1) return Invariant($"consumables[{i}]: {_consumables[i]} 不是有效的改造号");
+            }
+            for (int i = 0; i < _vouchers.Count; i++)
+            {
+                if (!VoucherCatalog.IsKnown(_vouchers[i])) return Invariant($"vouchers[{i}]: {_vouchers[i]} 不是有效的券号");
+                if (_vouchers.IndexOf(_vouchers[i]) != i) return Invariant($"vouchers[{i}]: 券 {_vouchers[i]} 重复");
             }
             if (Blind == null) return null;
 

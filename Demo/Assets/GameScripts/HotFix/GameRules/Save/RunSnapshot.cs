@@ -21,14 +21,14 @@ namespace GameRules
         private static readonly string[] RootMembers =
         {
             "format", "schema", "seed", "rng", "difficulty", "money", "map", "shop",
-            "nextInstanceId", "library", "typeLevels", "consumables", "genes", "blind",
+            "nextInstanceId", "library", "typeLevels", "consumables", "vouchers", "genes", "blind",
         };
         private static readonly string[] RngMembers = { "scheme", "streams" };
         private static readonly string[] StreamMembers = { "key", "s0", "s1" };
         private static readonly string[] MapMembers = { "segmentCount", "nodes", "progress" };
         private static readonly string[] MapNodeMembers = { "id", "segment", "layer", "strength", "tag" };
         private static readonly string[] ProgressMembers = { "current", "resolved", "visited" };
-        private static readonly string[] ShopMembers = { "rerolls", "guaranteeGene", "goods" };
+        private static readonly string[] ShopMembers = { "rerolls", "guaranteeGene", "voucher", "goods" };
         private static readonly string[] ShopOfferMembers = { "kind", "id", "price", "sold" };
         private static readonly string[] BlockMembers = { "id", "kind", "points", "enhancement", "edition" };
         private static readonly string[] GeneMembers = { "id" };
@@ -78,6 +78,8 @@ namespace GameRules
             w.End();
             w.Name("consumables");
             WriteIds(w, run.Consumables);
+            w.Name("vouchers");
+            WriteIds(w, run.Vouchers);
             w.Name("genes").BeginArray(JsonLayout.Lines);
             foreach (GeneSlot g in run.Genes) w.BeginObject(JsonLayout.Inline).Name("id").Int(g.GeneId).End();
             w.End();
@@ -173,18 +175,26 @@ namespace GameRules
             w.Name("shop").BeginObject(JsonLayout.Lines);
             w.Name("rerolls").Int(shop.Rerolls);
             w.Name("guaranteeGene").Bool(shop.GuaranteeGene);
+            w.Name("voucher");
+            if (shop.Voucher == null) w.Null();
+            else WriteOffer(w, shop.Voucher.Value);
             w.Name("goods").BeginArray(JsonLayout.Lines);
             foreach (ShopOffer offer in shop.Goods)
             {
-                w.BeginObject(JsonLayout.Inline)
-                    .Name("kind").String(NameOf(offer.Kind))
-                    .Name("id").Int(offer.Id)
-                    .Name("price").Int(offer.Price)
-                    .Name("sold").Bool(offer.Sold)
-                    .End();
+                WriteOffer(w, offer);
             }
             w.End();
             w.End();
+        }
+
+        private static void WriteOffer(CanonicalJsonWriter w, ShopOffer offer)
+        {
+            w.BeginObject(JsonLayout.Inline)
+                .Name("kind").String(NameOf(offer.Kind))
+                .Name("id").Int(offer.Id)
+                .Name("price").Int(offer.Price)
+                .Name("sold").Bool(offer.Sold)
+                .End();
         }
 
         /// <summary>
@@ -250,7 +260,7 @@ namespace GameRules
             var levels = new int[ClearTypes.Count];
             for (int t = 0; t < levels.Length; t++) levels[t] = p.ReadInt(lv[t], "typeLevels." + TypeLevelMembers[t]);
 
-            List<JsonNode> geneItems = p.ReadArray(v[12], "genes");
+            List<JsonNode> geneItems = p.ReadArray(v[13], "genes");
             if (geneItems == null) return null;
             var genes = new List<GeneSlot>(geneItems.Count);
             for (int i = 0; i < geneItems.Count; i++)
@@ -261,16 +271,17 @@ namespace GameRules
                 genes.Add(new GeneSlot(p.ReadInt(g[0], path + ".id")));
             }
             List<int> consumables = p.ReadIntList(v[11], "consumables");
+            List<int> vouchers = p.ReadIntList(v[12], "vouchers");
             if (p.Failed) return null;
 
             BlindState blind = null;
-            if (v[13].Kind != JsonKind.Null)
+            if (v[14].Kind != JsonKind.Null)
             {
-                blind = ReadBlind(p, v[13]);
+                blind = ReadBlind(p, v[14]);
                 if (blind == null) return null;
             }
             return RunState.Restore(config, RngStreams.Restore(seed, streams), difficulty, money, map, progress, shop, nextInstanceId,
-                library, levels, genes, consumables, blind);
+                library, levels, genes, consumables, vouchers, blind);
         }
 
         /// <summary>货架。null 是合法的(不在商店)。</summary>
@@ -282,7 +293,13 @@ namespace GameRules
             if (s == null) return false;
             int rerolls = p.ReadInt(s[0], "shop.rerolls");
             bool guaranteeGene = p.ReadBool(s[1], "shop.guaranteeGene");
-            List<JsonNode> items = p.ReadArray(s[2], "shop.goods");
+            ShopOffer? voucher = null;
+            if (s[2].Kind != JsonKind.Null)
+            {
+                voucher = ReadOffer(p, s[2], "shop.voucher");
+                if (p.Failed) return false;
+            }
+            List<JsonNode> items = p.ReadArray(s[3], "shop.goods");
             if (items == null) return false;
             if (items.Count != ShopState.GoodsCount)
             {
@@ -293,22 +310,25 @@ namespace GameRules
             for (int i = 0; i < goods.Length; i++)
             {
                 string path = Invariant($"shop.goods[{i}]");
-                JsonNode[] o = p.ReadObject(items[i], path, ShopOfferMembers);
-                if (o == null) return false;
-                ItemKind kind = p.ReadEnum<ItemKind>(o[0], path + ".kind");
-                int id = p.ReadInt(o[1], path + ".id");
-                int price = p.ReadInt(o[2], path + ".price");
-                bool sold = p.ReadBool(o[3], path + ".sold");
+                goods[i] = ReadOffer(p, items[i], path);
                 if (p.Failed) return false;
-                if (price < 0)
-                {
-                    p.Fail(SnapshotError.BadValue, path + ".price", "价格不能为负");
-                    return false;
-                }
-                goods[i] = new ShopOffer(kind, id, price, sold);
             }
-            shop = ShopState.Restore(goods, rerolls, guaranteeGene, catalog, difficulty);
+            shop = ShopState.Restore(goods, rerolls, guaranteeGene, voucher, catalog, difficulty);
             return true;
+        }
+
+        /// <summary>读一件货;kinds 与价格在这里只做基本合法性,放不放得下归 <see cref="ShopState.TryBuy"/>。</summary>
+        private static ShopOffer ReadOffer(Parser p, JsonNode node, string path)
+        {
+            JsonNode[] o = p.ReadObject(node, path, ShopOfferMembers);
+            if (o == null) return default;
+            ItemKind kind = p.ReadEnum<ItemKind>(o[0], path + ".kind");
+            int id = p.ReadInt(o[1], path + ".id");
+            int price = p.ReadInt(o[2], path + ".price");
+            bool sold = p.ReadBool(o[3], path + ".sold");
+            if (p.Failed) return default;
+            if (price < 0) p.Fail(SnapshotError.BadValue, path + ".price", "价格不能为负");
+            return new ShopOffer(kind, id, price, sold);
         }
 
         /// <summary>地图布局与进度。布局的形状约束由 <see cref="RunMap.Validate"/> 在整局校验里查,这里只判读得下来。</summary>

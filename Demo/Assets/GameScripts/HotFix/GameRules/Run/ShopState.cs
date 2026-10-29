@@ -33,9 +33,9 @@ namespace GameRules
     }
 
     /// <summary>
-    /// 一个商店的货架(局外循环设计稿 §4):4 个货格,权重 基因 60 / 方块 16 / 科技 12 / 改造 12。
-    /// 刷新只换货格,第一次 $5、之后每次 +$1;买货先查放不放得下,再扣钱,失败不改状态。
-    /// 优惠券与补给包两格还没接(等它们的效果),货架先只出货格。
+    /// 一个商店的货架(局外循环设计稿 §4):4 个货格,权重 基因 60 / 方块 16 / 科技 12 / 改造 12;另挂一张优惠券(每段第一场)。
+    /// 刷新只换货格,第一次 $5、之后每次 +$1,议价券再减;买货先查放不放得下,再扣钱,失败不改状态。
+    /// 补给包那一格还没接(等开包的选择流程)。
     /// </summary>
     public sealed class ShopState
     {
@@ -45,45 +45,64 @@ namespace GameRules
         private readonly ContentCatalog _catalog;
         private readonly RunDifficulty _difficulty;
         private readonly bool _guaranteeGene;
+        private ShopOffer? _voucher;
 
         public IReadOnlyList<ShopOffer> Goods => _goods;
 
-        /// <summary>已经刷新过几次;刷新费 = 5 + 这个数。</summary>
+        /// <summary>已经刷新过几次;刷新费 = 5 + 这个数(再减议价券)。</summary>
         public int Rerolls { get; private set; }
 
+        /// <summary>不带券的刷新费,界面上按 <see cref="RerollCostFor"/> 显示实付。</summary>
         public int RerollCost => 5 + Rerolls;
+
+        /// <summary>按当局的券算刷新费(议价券每张 −$2,最低 0)。</summary>
+        public int RerollCostFor(RunState run) => Math.Max(0, RerollCost - run.Modifiers.RerollDiscount);
+
+        /// <summary>本店挂着的优惠券;没有就是 null。每段第一场才挂一张。</summary>
+        public ShopOffer? Voucher => _voucher;
 
         /// <summary>开局前几场的保底基因;进存档,读档后刷新照样保底。</summary>
         public bool GuaranteeGene => _guaranteeGene;
 
-        private ShopState(ShopOffer[] goods, ContentCatalog catalog, RunDifficulty difficulty, bool guaranteeGene, int rerolls)
+        private ShopState(ShopOffer[] goods, ContentCatalog catalog, RunDifficulty difficulty, bool guaranteeGene, int rerolls,
+            ShopOffer? voucher)
         {
             _goods = goods;
             _catalog = catalog;
             _difficulty = difficulty;
             _guaranteeGene = guaranteeGene;
             Rerolls = rerolls;
+            _voucher = voucher;
         }
 
-        /// <summary>读档的还原口(<see cref="RunSnapshot"/>):货架、刷新次数与保底标记原样接上;目录与难度取自当局配置。</summary>
-        internal static ShopState Restore(ShopOffer[] goods, int rerolls, bool guaranteeGene, ContentCatalog catalog, RunDifficulty difficulty) =>
-            new ShopState(goods, catalog, difficulty, guaranteeGene, rerolls);
+        /// <summary>读档的还原口(<see cref="RunSnapshot"/>):货架、刷新次数、券与保底标记原样接上;目录与难度取自当局配置。</summary>
+        internal static ShopState Restore(ShopOffer[] goods, int rerolls, bool guaranteeGene, ShopOffer? voucher,
+            ContentCatalog catalog, RunDifficulty difficulty) =>
+            new ShopState(goods, catalog, difficulty, guaranteeGene, rerolls, voucher);
 
         /// <summary>深拷贝货架(卖掉的标记也要拷),给 <see cref="RunState.Clone"/> 的试走用。</summary>
         internal ShopState Clone()
         {
             var goods = new ShopOffer[_goods.Length];
             for (int i = 0; i < goods.Length; i++) goods[i] = _goods[i];
-            return new ShopState(goods, _catalog, _difficulty, _guaranteeGene, Rerolls);
+            return new ShopState(goods, _catalog, _difficulty, _guaranteeGene, Rerolls, _voucher);
         }
 
-        /// <summary>开一个新商店。<paramref name="guaranteeGene"/> 用于开局前几场:至少给一个基因格。</summary>
-        public static ShopState Open(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, bool guaranteeGene)
+        /// <summary>
+        /// 开一个新商店。<paramref name="guaranteeGene"/> 用于开局前几场:至少给一个基因格;
+        /// <paramref name="offerVoucher"/> 用于每段第一场:挂一张券。
+        /// </summary>
+        public static ShopState Open(IRandomSource rng, RunState run, bool guaranteeGene, bool offerVoucher)
         {
             if (rng == null) throw new ArgumentNullException(nameof(rng));
-            if (catalog == null) throw new ArgumentNullException(nameof(catalog));
-            ShopOffer[] goods = Roll(rng, catalog, difficulty, guaranteeGene);
-            return new ShopState(goods, catalog, difficulty, guaranteeGene, 0);
+            if (run == null) throw new ArgumentNullException(nameof(run));
+            ContentCatalog catalog = run.Config.Catalog;
+            int pricePermille = run.Modifiers.PricePermille;
+            ShopOffer[] goods = Roll(rng, catalog, run.Difficulty, guaranteeGene, pricePermille);
+            ShopOffer? voucher = offerVoucher && catalog.Vouchers.Count > 0
+                ? (ShopOffer?)RollVoucher(rng, catalog, run.Difficulty, pricePermille)
+                : null;
+            return new ShopState(goods, catalog, run.Difficulty, guaranteeGene, 0, voucher);
         }
 
         /// <summary>刷新货格并扣费。钱不够返回 false,货架与钱都不动。</summary>
@@ -91,9 +110,9 @@ namespace GameRules
         {
             if (rng == null) throw new ArgumentNullException(nameof(rng));
             if (run == null) throw new ArgumentNullException(nameof(run));
-            int cost = RerollCost;
+            int cost = RerollCostFor(run);
             if (!run.TrySpend(cost)) return false;
-            ShopOffer[] fresh = Roll(rng, _catalog, _difficulty, _guaranteeGene);
+            ShopOffer[] fresh = Roll(rng, _catalog, _difficulty, _guaranteeGene, run.Modifiers.PricePermille);
             for (int i = 0; i < _goods.Length; i++) _goods[i] = fresh[i];
             Rerolls++;
             return true;
@@ -118,7 +137,7 @@ namespace GameRules
                     if (run.LevelOf(type) >= run.Config.ClearTypes.MaxLevel(type)) return ShopBuyResult.SlotFull;
                     break;
                 case ItemKind.Mod:
-                    if (run.Consumables.Count >= run.Config.ConsumableSlots) return ShopBuyResult.SlotFull;
+                    if (run.Consumables.Count >= run.ConsumableSlots) return ShopBuyResult.SlotFull;
                     break;
                 case ItemKind.Block:
                     break;
@@ -148,8 +167,22 @@ namespace GameRules
             return ShopBuyResult.Ok;
         }
 
+        /// <summary>买本店挂着的优惠券。没有券、已经持有、钱不够都返回对应的失败码。</summary>
+        public ShopBuyResult TryBuyVoucher(RunState run)
+        {
+            if (run == null) throw new ArgumentNullException(nameof(run));
+            if (_voucher == null) return ShopBuyResult.SoldOut;
+            ShopOffer offer = _voucher.Value;
+            if (run.HasVoucher(offer.Id)) return ShopBuyResult.SoldOut;
+            if (offer.Price > run.Money) return ShopBuyResult.NotEnoughMoney;
+            if (!run.TrySpend(offer.Price)) return ShopBuyResult.NotEnoughMoney;
+            if (!run.TryAddVoucher(offer.Id)) return ShopBuyResult.UnknownOffer;
+            _voucher = null;
+            return ShopBuyResult.Ok;
+        }
+
         private static bool CanTakeGene(RunState run, int geneId) =>
-            run.Genes.Count < run.Config.GeneSlots && run.Config.Effects.Find(EffectSource.Gene, geneId) != null;
+            run.Genes.Count < run.GeneSlots && run.Config.Effects.Find(EffectSource.Gene, geneId) != null;
 
         private BlockEntry FindBlock(int blockId)
         {
@@ -160,61 +193,68 @@ namespace GameRules
             throw new InvalidOperationException("目录里没有这块方块: " + blockId);
         }
 
-        private static ShopOffer[] Roll(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, bool guaranteeGene)
+        private static ShopOffer[] Roll(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, bool guaranteeGene,
+            int pricePermille)
         {
             var goods = new ShopOffer[GoodsCount];
             bool hasGene = false;
             for (int i = 0; i < goods.Length; i++)
             {
-                goods[i] = RollOne(rng, catalog, difficulty);
+                goods[i] = RollOne(rng, catalog, difficulty, pricePermille);
                 if (goods[i].Kind == ItemKind.Gene) hasGene = true;
             }
             if (guaranteeGene && !hasGene && catalog.Genes.Count > 0)
             {
-                goods[0] = GeneOffer(rng, catalog, difficulty);
+                goods[0] = GeneOffer(rng, catalog, difficulty, pricePermille);
             }
             return goods;
         }
 
-        private static ShopOffer RollOne(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty)
+        private static ShopOffer RollOne(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
         {
             // 权重按设计稿 §4.1:基因 60 / 方块 16 / 科技 12 / 改造 12
             int roll = rng.Index(100);
-            if (roll < 60 && catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty);
-            if (roll < 76 && catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty);
-            if (roll < 88 && catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty);
-            if (catalog.Mods.Count > 0) return ModOffer(rng, catalog, difficulty);
-            if (catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty);
-            if (catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty);
-            if (catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty);
+            if (roll < 60 && catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty, pricePermille);
+            if (roll < 76 && catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty, pricePermille);
+            if (roll < 88 && catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty, pricePermille);
+            if (catalog.Mods.Count > 0) return ModOffer(rng, catalog, difficulty, pricePermille);
+            if (catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty, pricePermille);
+            if (catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty, pricePermille);
+            if (catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty, pricePermille);
             throw new InvalidOperationException("目录里没有任何可卖的东西");
         }
 
-        private static ShopOffer GeneOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty)
+        private static ShopOffer GeneOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
         {
             CatalogEntry e = catalog.Genes[rng.Index(catalog.Genes.Count)];
-            return new ShopOffer(ItemKind.Gene, e.Id, Price(e.Price, difficulty));
+            return new ShopOffer(ItemKind.Gene, e.Id, Price(e.Price, difficulty, pricePermille));
         }
 
-        private static ShopOffer TechOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty)
+        private static ShopOffer TechOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
         {
             CatalogEntry e = catalog.Techs[rng.Index(catalog.Techs.Count)];
-            return new ShopOffer(ItemKind.Tech, e.Id, Price(e.Price, difficulty));
+            return new ShopOffer(ItemKind.Tech, e.Id, Price(e.Price, difficulty, pricePermille));
         }
 
-        private static ShopOffer ModOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty)
+        private static ShopOffer ModOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
         {
             CatalogEntry e = catalog.Mods[rng.Index(catalog.Mods.Count)];
-            return new ShopOffer(ItemKind.Mod, e.Id, Price(e.Price, difficulty));
+            return new ShopOffer(ItemKind.Mod, e.Id, Price(e.Price, difficulty, pricePermille));
         }
 
-        private static ShopOffer BlockOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty)
+        private static ShopOffer BlockOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
         {
             BlockEntry e = catalog.Blocks[rng.Index(catalog.Blocks.Count)];
-            return new ShopOffer(ItemKind.Block, e.Id, Price(e.Price, difficulty));
+            return new ShopOffer(ItemKind.Block, e.Id, Price(e.Price, difficulty, pricePermille));
         }
 
-        private static int Price(int basePrice, RunDifficulty difficulty) =>
-            (int)((long)basePrice * DifficultyRules.Of(difficulty).PricePermille / 1000);
+        private static ShopOffer RollVoucher(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
+        {
+            CatalogEntry e = catalog.Vouchers[rng.Index(catalog.Vouchers.Count)];
+            return new ShopOffer(ItemKind.Voucher, e.Id, Price(e.Price, difficulty, pricePermille));
+        }
+
+        private static int Price(int basePrice, RunDifficulty difficulty, int pricePermille) =>
+            (int)((long)basePrice * DifficultyRules.Of(difficulty).PricePermille * pricePermille / 1000000);
     }
 }

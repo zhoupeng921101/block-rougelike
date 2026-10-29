@@ -81,8 +81,16 @@ namespace GameRules
                     blocks.Add(new BlockEntry(id++, (TetrominoKind)kind, points, 3 + points));
                 }
             }
-            return new ContentCatalog(genes, techs, mods, new List<CatalogEntry>(),
-                new List<CatalogEntry>(), blocks, techTypes);
+            var vouchers = new List<CatalogEntry>();
+            foreach (int voucherId in new[]
+                     {
+                         VoucherCatalog.GeneSlot, VoucherCatalog.ConsumableSlot, VoucherCatalog.GroupSize, VoucherCatalog.InterestCap,
+                         VoucherCatalog.Reroll, VoucherCatalog.Discard, VoucherCatalog.LightTarget, VoucherCatalog.Wholesale, VoucherCatalog.StartMoney,
+                     })
+            {
+                vouchers.Add(new CatalogEntry(ItemKind.Voucher, voucherId, VoucherCatalog.Price));
+            }
+            return new ContentCatalog(genes, techs, mods, new List<CatalogEntry>(), vouchers, blocks, techTypes);
         }
 
         private static ClearTypeTable BuildClearTypes()

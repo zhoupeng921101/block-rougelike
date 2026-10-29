@@ -11,7 +11,7 @@ namespace GameRules.Tests
             {
                 string seed = SeedText.FromEntropy((ulong)i * 2654435761UL + 17UL);
                 RunState run = RunState.NewRun(seed, MinimalContent.Config);
-                ShopState shop = ShopState.Open(run.Rng.Get(RngKeys.Shop(1, 1)), run.Config.Catalog, run.Difficulty, true);
+                ShopState shop = ShopState.Open(run.Rng.Get(RngKeys.Shop(1, 1)), run, true, false);
                 for (int j = 0; j < shop.Goods.Count; j++)
                 {
                     if (shop.Goods[j].Kind == ItemKind.Mod) return (run, shop, j);

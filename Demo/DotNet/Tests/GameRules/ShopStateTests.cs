@@ -6,7 +6,7 @@ namespace GameRules.Tests
     public class ShopStateTests
     {
         private static ShopState Open(RunState run, int segment = 1, int layer = 1, bool guaranteeGene = true) =>
-            ShopState.Open(run.Rng.Get(RngKeys.Shop(segment, layer)), run.Config.Catalog, run.Difficulty, guaranteeGene);
+            ShopState.Open(run.Rng.Get(RngKeys.Shop(segment, layer)), run, guaranteeGene, false);
 
         private static int IndexOf(ShopState shop, ItemKind kind)
         {

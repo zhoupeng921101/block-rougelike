@@ -52,11 +52,16 @@ namespace GameRules
         }
 
         /// <summary>节点的目标分 = 段基准 × 节点的层×强度 × 难度修正,两次都四舍五入。</summary>
-        public static int For(MapNode node, RunDifficulty difficulty, RuleConfig config)
+        public static int For(MapNode node, RunDifficulty difficulty, RuleConfig config) =>
+            For(node, difficulty, config, 1000);
+
+        /// <summary>再加一层券的修正(如轻装券 ×0.95);<paramref name="extraPermille"/> 默认 1000 = 不修。</summary>
+        public static int For(MapNode node, RunDifficulty difficulty, RuleConfig config, int extraPermille)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
+            if (extraPermille < 0) throw new ArgumentOutOfRangeException(nameof(extraPermille), extraPermille, "修正不能为负");
             long value = BaseFor(node.Segment, config);
-            value = (value * node.TargetPermille * DifficultyRules.Of(difficulty).TargetPermille + 500000) / 1000000;
+            value = (value * node.TargetPermille * DifficultyRules.Of(difficulty).TargetPermille * extraPermille + 500000000L) / 1000000000L;
             if (value > int.MaxValue) throw new InvalidOperationException("目标分溢出");
             return (int)value;
         }
@@ -91,14 +96,24 @@ namespace GameRules
         public static int InterestOf(int money, RunDifficulty difficulty, RuleConfig config)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
+            return InterestOf(money, config.InterestPer, DifficultyRules.Of(difficulty).InterestCap);
+        }
+
+        /// <summary>按给定的每档门槛与封顶算利息;券可能改封顶,所以另开这一个口。</summary>
+        public static int InterestOf(int money, int per, int cap)
+        {
             if (money < 0) throw new ArgumentOutOfRangeException(nameof(money), money, "持有额不能为负");
-            int cap = DifficultyRules.Of(difficulty).InterestCap;
-            int counted = Math.Min(money, cap);
-            return counted / config.InterestPer;
+            if (per < 1) throw new ArgumentOutOfRangeException(nameof(per), per, "利息门槛至少 1");
+            if (cap < 0) throw new ArgumentOutOfRangeException(nameof(cap), cap, "利息封顶不能为负");
+            return Math.Min(money, cap) / per;
         }
 
         /// <summary>算这一场的结算,不改状态。钱要在调用之后才加进去,<see cref="Settlement.MoneyAfter"/> 由调用方补。</summary>
         public static Settlement Settle(MapNode node, RunDifficulty difficulty, int money, RuleConfig config) =>
             new Settlement(node.Id, node.Reward, InterestOf(money, difficulty, config), money);
+
+        /// <summary>按给定的门槛与封顶算结算(券改了封顶时用)。</summary>
+        public static Settlement Settle(MapNode node, int money, int per, int cap) =>
+            new Settlement(node.Id, node.Reward, InterestOf(money, per, cap), money);
     }
 }
