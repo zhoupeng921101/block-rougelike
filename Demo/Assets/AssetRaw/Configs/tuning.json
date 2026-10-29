@@ -1,0 +1,64 @@
+{
+  "note": "阶段 5 的占位数值表：游戏启动时读这一份覆盖 GameRules 的 RunTuning 默认值；阶段 6 定标改这里。",
+  "run": {
+    "startingMoney": 4,
+    "mapSegments": 6,
+    "firstTarget": 350,
+    "segmentTargetPermille": 2300,
+    "baseDiscards": 3,
+    "defaultGroupSize": 3,
+    "interestPer": 10,
+    "interestCap": 50,
+    "geneSlots": 4,
+    "consumableSlots": 2
+  },
+  "difficulty": {
+    "standard": { "targetPermille": 1000, "discardDelta": 0, "interestCap": 50, "pricePermille": 1000 },
+    "advanced": { "targetPermille": 1150, "discardDelta": -1, "interestCap": 50, "pricePermille": 1000 },
+    "expert": { "targetPermille": 1300, "discardDelta": -1, "interestCap": 25, "pricePermille": 1200 }
+  },
+  "map": {
+    "layerSecondPermille": 1500,
+    "bossPermille": 2100,
+    "lightPermille": 900,
+    "normalPermille": 1000,
+    "heavyPermille": 1100,
+    "rewardLight": 3,
+    "rewardNormal": 4,
+    "rewardHeavy": 5,
+    "rewardBoss": 6
+  },
+  "shop": {
+    "goodsCount": 4,
+    "rerollBase": 5,
+    "rerollStep": 1,
+    "weightGene": 60,
+    "weightBlock": 16,
+    "weightTech": 12,
+    "weightMod": 12,
+    "geneCommonPermille": 700,
+    "geneUncommonPermille": 250,
+    "geneRarePermille": 50,
+    "geneCommonShiftPermille": 600,
+    "geneUncommonShiftPermille": 300,
+    "geneRareShiftPermille": 100
+  },
+  "boss": {
+    "presetBlocks": 6,
+    "shrinkBlocks": 4,
+    "deadCellCount": 5,
+    "highWallPermille": 1300,
+    "shatterGroupSize": 2,
+    "spawnPerDeal": 1,
+    "yawEverySteps": 4
+  },
+  "tag": {
+    "cash": 6,
+    "blocks": 3,
+    "fallbackMoney": 3,
+    "discountPermille": 750,
+    "lightTargetPermille": 850,
+    "extraDiscards": 2,
+    "interestCap": 20
+  }
+}

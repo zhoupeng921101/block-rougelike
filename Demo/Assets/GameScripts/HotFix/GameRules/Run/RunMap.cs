@@ -45,22 +45,10 @@ namespace GameRules
         /// 目标分倍率(设计稿 §1、§2.2):大盲是层 1 的 ×1.5,首领是 ×2.1;普通节点再乘轻 ×0.9 / 中 ×1.0 / 重 ×1.1。
         /// 千分值,层与强度都按整数折,1500 × 1100 / 1000 = 1650 不丢精度。
         /// </summary>
-        public int TargetPermille
-        {
-            get
-            {
-                if (IsBoss) return 2100;
-                int layer = Layer == 1 ? 1000 : 1500;
-                int strength = Strength == NodeStrength.Light ? 900 : Strength == NodeStrength.Normal ? 1000 : 1100;
-                return layer * strength / 1000;
-            }
-        }
+        public int TargetPermille => RunTuning.Default.NodeTargetPermille(this);
 
-        /// <summary>通关奖励(美元)。首领 $6,其余 $3/$4/$5(设计稿 §3.1)。</summary>
-        public int Reward => Strength == NodeStrength.Light ? 3
-            : Strength == NodeStrength.Normal ? 4
-            : Strength == NodeStrength.Heavy ? 5
-            : 6;
+        /// <summary>通关奖励(美元)。首领 $6,其余 $3/$4/$5(设计稿 §3.1);数值在 <see cref="RunTuning"/>。</summary>
+        public int Reward => RunTuning.Default.NodeReward(this);
     }
 
     /// <summary>

@@ -294,7 +294,7 @@ namespace GameRules
             if (p.Failed) return null;
             if (money < 0) return p.Fail(SnapshotError.BadValue, "money", "金钱不能为负");
             if (!ReadMap(p, v[6], out RunMap map, out MapProgress progress)) return null;
-            if (!ReadShop(p, v[7], config.Catalog, difficulty, out ShopState shop)) return null;
+            if (!ReadShop(p, v[7], config.Catalog, difficulty, config.Tuning, out ShopState shop)) return null;
             int nextInstanceId = p.ReadInt(v[8], "nextInstanceId");
             if (p.Failed) return null;
             List<BlockInstance> library = ReadBlocks(p, v[9], "library");
@@ -347,7 +347,7 @@ namespace GameRules
         }
 
         /// <summary>货架。null 是合法的(不在商店)。</summary>
-        private static bool ReadShop(Parser p, JsonNode node, ContentCatalog catalog, RunDifficulty difficulty, out ShopState shop)
+        private static bool ReadShop(Parser p, JsonNode node, ContentCatalog catalog, RunDifficulty difficulty, RunTuning tuning, out ShopState shop)
         {
             shop = null;
             if (node.Kind == JsonKind.Null) return true;
@@ -388,7 +388,7 @@ namespace GameRules
                 goods[i] = ReadOffer(p, items[i], path);
                 if (p.Failed) return false;
             }
-            shop = ShopState.Restore(goods, rerolls, guaranteeGene, voucher, booster, pack, catalog, difficulty);
+            shop = ShopState.Restore(goods, rerolls, guaranteeGene, voucher, booster, pack, catalog, difficulty, tuning);
             return true;
         }
 

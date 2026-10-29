@@ -32,11 +32,11 @@ namespace GameRules.Tests
         [Test]
         public void DifficultyRules_MatchDesign()
         {
-            DifficultyRules standard = DifficultyRules.Of(RunDifficulty.Standard);
+            DifficultyTuning standard = RunTuning.Default.DifficultyOf(RunDifficulty.Standard);
             Assert.AreEqual((1000, 0, 50, 1000), (standard.TargetPermille, standard.DiscardDelta, standard.InterestCap, standard.PricePermille));
-            DifficultyRules advanced = DifficultyRules.Of(RunDifficulty.Advanced);
+            DifficultyTuning advanced = RunTuning.Default.DifficultyOf(RunDifficulty.Advanced);
             Assert.AreEqual((1150, -1, 50, 1000), (advanced.TargetPermille, advanced.DiscardDelta, advanced.InterestCap, advanced.PricePermille));
-            DifficultyRules expert = DifficultyRules.Of(RunDifficulty.Expert);
+            DifficultyTuning expert = RunTuning.Default.DifficultyOf(RunDifficulty.Expert);
             Assert.AreEqual((1300, -1, 25, 1200), (expert.TargetPermille, expert.DiscardDelta, expert.InterestCap, expert.PricePermille));
         }
 

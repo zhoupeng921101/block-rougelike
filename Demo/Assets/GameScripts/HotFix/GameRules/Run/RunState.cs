@@ -304,7 +304,7 @@ namespace GameRules
             switch (boss)
             {
                 case Bosses.Shrink:
-                    int take = Math.Min(Bosses.ShrinkBlocks, blind.DrawList.Count);
+                    int take = Math.Min(Config.Tuning.ShrinkBlocks, blind.DrawList.Count);
                     for (int i = 0; i < take; i++)
                     {
                         int last = blind.DrawList.Count - 1;
@@ -314,10 +314,10 @@ namespace GameRules
                     blind.RemovedList.Sort();
                     break;
                 case Bosses.Preset:
-                    Bosses.SpawnBlocks(blind, rng, this, Bosses.PresetBlocks);
+                    Bosses.SpawnBlocks(blind, rng, this, Config.Tuning.PresetBlocks);
                     break;
                 case Bosses.DeadCells:
-                    Bosses.MarkDeadCells(blind, rng, Bosses.DeadCellCount);
+                    Bosses.MarkDeadCells(blind, rng, Config.Tuning.DeadCellCount);
                     break;
             }
         }
@@ -327,7 +327,7 @@ namespace GameRules
         {
             if (Blind == null || Blind.Outcome != BlindOutcome.InProgress) return;
             if (Blind.Spec.BossId != Bosses.Spawn) return;
-            Bosses.SpawnBlocks(Blind, Rng.Get(RngKeys.Boss(Blind.Spec.Segment, Blind.Spec.Layer)), this, Bosses.SpawnPerDeal);
+            Bosses.SpawnBlocks(Blind, Rng.Get(RngKeys.Boss(Blind.Spec.Segment, Blind.Spec.Layer)), this, Config.Tuning.SpawnPerDeal);
         }
 
         /// <summary>一步收尾后的首领效果:偏航盲每 4 步把盘面整体转 90°。由步管线调用。</summary>
@@ -335,7 +335,7 @@ namespace GameRules
         {
             if (Blind == null || Blind.Outcome != BlindOutcome.InProgress) return;
             if (Blind.Spec.BossId != Bosses.Yaw) return;
-            if (Blind.Step <= 0 || Blind.Step % Bosses.YawEverySteps != 0) return;
+            if (Blind.Step <= 0 || Blind.Step % Config.Tuning.YawEverySteps != 0) return;
             Blind.Board.Rotate();
         }
 
@@ -360,13 +360,13 @@ namespace GameRules
             if (Progress.CurrentResolved) throw new InvalidOperationException("当前节点已结算");
             MapNode node = Map.Get(Progress.CurrentNodeId);
             int boss = node.BossId;
-            int discards = Math.Max(0, Config.BaseDiscards + DifficultyRules.Of(Difficulty).DiscardDelta + Modifiers.DiscardBonus
+            int discards = Math.Max(0, Config.BaseDiscards + Config.Tuning.DifficultyOf(Difficulty).DiscardDelta + Modifiers.DiscardBonus
                 + Pending.BlindDiscards);
             int groupSize = Math.Min(BlindSpec.MaxGroupSize, Config.DefaultGroupSize + Modifiers.GroupSizeBonus);
             // 首领、券、轻敌三档并进一个千分值,只做一次四舍五入
-            int extra = Modifiers.TargetPermille * Bosses.TargetPermille(boss) / 1000 * Pending.BlindTargetPermille / 1000;
+            int extra = Modifiers.TargetPermille * Bosses.BossPermilleOf(boss, Config.Tuning) / 1000 * Pending.BlindTargetPermille / 1000;
             long target = RunTargets.For(node, Difficulty, Config, extra);
-            return new BlindSpec(node.Segment, node.Layer, target, Bosses.Discards(discards, boss), Bosses.GroupSize(groupSize, boss), boss);
+            return new BlindSpec(node.Segment, node.Layer, target, Bosses.Discards(discards, boss, Config.Tuning), Bosses.GroupSize(groupSize, boss, Config.Tuning), boss);
         }
 
         /// <summary>当前节点的首领(0 = 普通场);给表现层与「情报」标签预览用。</summary>
@@ -420,19 +420,19 @@ namespace GameRules
             switch (tagId)
             {
                 case Tags.Cash:
-                    AddMoney(6);
+                    AddMoney(Config.Tuning.TagCash);
                     break;
                 case Tags.Tech:
-                    if (!GrantRandomTech(rng)) AddMoney(3);
+                    if (!GrantRandomTech(rng)) AddMoney(Config.Tuning.TagFallbackMoney);
                     break;
                 case Tags.Mod:
-                    if (!GrantRandomMod(rng)) AddMoney(3);
+                    if (!GrantRandomMod(rng)) AddMoney(Config.Tuning.TagFallbackMoney);
                     break;
                 case Tags.Blocks:
-                    if (!GrantRandomBlocks(rng)) AddMoney(3);
+                    if (!GrantRandomBlocks(rng)) AddMoney(Config.Tuning.TagFallbackMoney);
                     break;
                 case Tags.Discount:
-                    Pending.ShopDiscountPermille = Tags.DiscountPermille;
+                    Pending.ShopDiscountPermille = Config.Tuning.TagDiscountPermille;
                     break;
                 case Tags.ExtraGoods:
                     Pending.ExtraShopGoods += 1;
@@ -444,13 +444,13 @@ namespace GameRules
                     Pending.FreeBooster = true;
                     break;
                 case Tags.LightTarget:
-                    Pending.BlindTargetPermille = Tags.LightTargetPermille;
+                    Pending.BlindTargetPermille = Config.Tuning.TagLightTargetPermille;
                     break;
                 case Tags.ExtraDiscards:
-                    Pending.BlindDiscards += Tags.ExtraDiscardCount;
+                    Pending.BlindDiscards += Config.Tuning.TagExtraDiscards;
                     break;
                 case Tags.InterestCap:
-                    _interestBonus = Tags.InterestCapBonus;
+                    _interestBonus = Config.Tuning.TagInterestCap;
                     _interestBonusSegment = CurrentSegment;
                     break;
                 case Tags.Intel:
@@ -482,7 +482,7 @@ namespace GameRules
         private bool GrantRandomBlocks(IRandomSource rng)
         {
             if (Config.Catalog.Blocks.Count == 0) return false;
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < Config.Tuning.TagBlocks; i++)
             {
                 BlockEntry entry = Config.Catalog.Blocks[rng.Index(Config.Catalog.Blocks.Count)];
                 AddBlock(entry.Kind, entry.Points);
@@ -504,8 +504,8 @@ namespace GameRules
             {
                 throw new InvalidOperationException("盲注与当前节点不是同一关");
             }
-            int interestCap = DifficultyRules.Of(Difficulty).InterestCap + Modifiers.InterestCapBonus + SegmentInterestCapBonus;
-            Settlement settlement = RunEconomy.Settle(node, _money, Config.InterestPer, interestCap);
+            int interestCap = Config.Tuning.DifficultyOf(Difficulty).InterestCap + Modifiers.InterestCapBonus + SegmentInterestCapBonus;
+            Settlement settlement = RunEconomy.Settle(node, Config.Tuning.NodeReward(node), _money, Config.InterestPer, interestCap);
             AddMoney(settlement.Total);
             Progress.Resolve();
             return new Settlement(node.Id, settlement.Reward, settlement.Interest, _money);

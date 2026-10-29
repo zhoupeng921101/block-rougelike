@@ -37,7 +37,7 @@ public static class RunFlow
     /// <summary>开新局:不带盲注(下一步是选关),难度取主界面选的那一档;旧局的档在开局时删掉,主界面在选关屏开出来后关掉。</summary>
     public static void StartNew(RunDifficulty difficulty)
     {
-        RunState run = RunState.NewRun(SeedText.FromEntropy(NewEntropy()), MinimalContent.Config, difficulty);
+        RunState run = RunState.NewRun(SeedText.FromEntropy(NewEntropy()), TuningTable.Instance.Config, difficulty);
         RunSaveService.Instance.StartNew(run);
         ShowMap(run);
         CloseAfterOpen(typeof(UIMapPanel), typeof(UIMainMenuPanel));

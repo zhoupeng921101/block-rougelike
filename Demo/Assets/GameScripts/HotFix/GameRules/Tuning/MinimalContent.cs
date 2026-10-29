@@ -19,8 +19,11 @@ namespace GameRules
         /// <summary>科技要能升级,类型表就得有 2 级以上:四条对应科技的线各给 3 级,其余仍只有 1 级。</summary>
         public static ClearTypeTable ClearTypes { get; } = BuildClearTypes();
 
+        /// <summary>默认方块库(28 块):数值表只换数字,不换内容。</summary>
+        public static IReadOnlyList<LibraryEntry> Library { get; } = BuildLibrary();
+
         /// <summary>带最小基因效果与商店目录的规则配置(阶段 5 的 Demo 与单测用它;阶段 3 的 PlaceholderTuning.Config 保持空效果)。</summary>
-        public static RuleConfig Config { get; } = new RuleConfig(BuildLibrary(), ClearTypes, Effects, catalog: Catalog);
+        public static RuleConfig Config { get; } = new RuleConfig(Library, ClearTypes, Effects, catalog: Catalog);
 
         private static EffectRegistry BuildEffects()
         {

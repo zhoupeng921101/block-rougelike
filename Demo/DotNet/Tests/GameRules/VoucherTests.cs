@@ -63,7 +63,7 @@ namespace GameRules.Tests
             Assert.AreEqual(5, RunEconomy.InterestOf(run.Money, run.Difficulty, run.Config), "标准档封顶 $50");
             Assert.IsTrue(run.TryAddVoucher(VoucherCatalog.InterestCap));
             Assert.AreEqual(7, RunEconomy.InterestOf(run.Money, run.Config.InterestPer,
-                DifficultyRules.Of(run.Difficulty).InterestCap + run.Modifiers.InterestCapBonus));
+                run.Config.Tuning.DifficultyOf(run.Difficulty).InterestCap + run.Modifiers.InterestCapBonus));
         }
 
         [Test]

@@ -28,6 +28,7 @@ public partial class GameApp
 
     private static async UniTaskVoid StartGameLogic()
     {
+        await TuningTable.Instance.LoadAsync();
         await TextTable.Instance.LoadAsync();
         GameModule.UI.ShowUIAsync<UIMainMenuPanel>();
         var menu = await GameModule.UI.WaitOpenedAsync(typeof(UIMainMenuPanel));

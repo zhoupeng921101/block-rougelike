@@ -50,6 +50,7 @@ namespace GameRules
         private readonly RunDifficulty _difficulty;
         private readonly bool _guaranteeGene;
         private readonly bool _freeReroll;
+        private readonly RunTuning _tuning;
         private ShopOffer? _voucher;
         private ShopOffer? _booster;
         private BoosterPack _pack;
@@ -84,7 +85,7 @@ namespace GameRules
         public bool GuaranteeGene => _guaranteeGene;
 
         private ShopState(ShopOffer[] goods, ContentCatalog catalog, RunDifficulty difficulty, bool guaranteeGene, int rerolls,
-            ShopOffer? voucher, ShopOffer? booster, BoosterPack pack, bool freeReroll = false)
+            ShopOffer? voucher, ShopOffer? booster, BoosterPack pack, RunTuning tuning = null, bool freeReroll = false)
         {
             _goods = goods;
             _catalog = catalog;
@@ -94,13 +95,14 @@ namespace GameRules
             _voucher = voucher;
             _booster = booster;
             _pack = pack;
+            _tuning = tuning ?? RunTuning.Default;
             _freeReroll = freeReroll;
         }
 
         /// <summary>读档的还原口(<see cref="RunSnapshot"/>):货架、刷新次数、券、包与保底标记原样接上;目录与难度取自当局配置。</summary>
         internal static ShopState Restore(ShopOffer[] goods, int rerolls, bool guaranteeGene, ShopOffer? voucher,
-            ShopOffer? booster, BoosterPack pack, ContentCatalog catalog, RunDifficulty difficulty) =>
-            new ShopState(goods, catalog, difficulty, guaranteeGene, rerolls, voucher, booster, pack);
+            ShopOffer? booster, BoosterPack pack, ContentCatalog catalog, RunDifficulty difficulty, RunTuning tuning) =>
+            new ShopState(goods, catalog, difficulty, guaranteeGene, rerolls, voucher, booster, pack, tuning);
 
         /// <summary>深拷贝货架(卖掉的标记与开了一半的包也要拷),给 <see cref="RunState.Clone"/> 的试走用。</summary>
         internal ShopState Clone()
@@ -113,7 +115,7 @@ namespace GameRules
                 var options = new List<ShopOffer>(_pack.Options);
                 pack = BoosterPack.Restore(_pack.BoosterId, _pack.PicksLeft, options);
             }
-            return new ShopState(goods, _catalog, _difficulty, _guaranteeGene, Rerolls, _voucher, _booster, pack, _freeReroll);
+            return new ShopState(goods, _catalog, _difficulty, _guaranteeGene, Rerolls, _voucher, _booster, pack, _tuning, _freeReroll);
         }
 
         /// <summary>
@@ -127,16 +129,17 @@ namespace GameRules
             if (rng == null) throw new ArgumentNullException(nameof(rng));
             if (run == null) throw new ArgumentNullException(nameof(run));
             ContentCatalog catalog = run.Config.Catalog;
-            int count = Math.Min(MaxGoodsCount, GoodsCount + extraGoods + run.Modifiers.ShopSlotBonus);
+            RunTuning tuning = run.Config.Tuning;
+            int count = Math.Min(tuning.GoodsCount + 2, tuning.GoodsCount + extraGoods + run.Modifiers.ShopSlotBonus);
             int pricePermille = run.Modifiers.PricePermille * Math.Max(1, discountPermille) / 1000;
-            ShopOffer[] goods = Roll(rng, catalog, run.Difficulty, guaranteeGene, pricePermille, count, run.Modifiers.ShiftRarity);
+            ShopOffer[] goods = Roll(rng, catalog, run.Difficulty, guaranteeGene, pricePermille, count, run.Modifiers.ShiftRarity, tuning);
             ShopOffer? voucher = offerVoucher && catalog.Vouchers.Count > 0
-                ? (ShopOffer?)RollVoucher(rng, catalog, run.Difficulty, pricePermille)
+                ? (ShopOffer?)RollVoucher(rng, catalog, run.Difficulty, pricePermille, tuning)
                 : null;
             ShopOffer? booster = catalog.Boosters.Count > 0
-                ? (ShopOffer?)RollBooster(rng, catalog, run.Difficulty, freeBooster ? 0 : pricePermille)
+                ? (ShopOffer?)RollBooster(rng, catalog, run.Difficulty, freeBooster ? 0 : pricePermille, tuning)
                 : null;
-            return new ShopState(goods, catalog, run.Difficulty, guaranteeGene, 0, voucher, booster, null, freeReroll);
+            return new ShopState(goods, catalog, run.Difficulty, guaranteeGene, 0, voucher, booster, null, tuning, freeReroll);
         }
 
         /// <summary>刷新货格并扣费。钱不够返回 false,货架与钱都不动;急售给的那一次免费且不记次数。</summary>
@@ -147,7 +150,7 @@ namespace GameRules
             int cost = RerollCostFor(run);
             if (!run.TrySpend(cost)) return false;
             ShopOffer[] fresh = Roll(rng, _catalog, _difficulty, _guaranteeGene, run.Modifiers.PricePermille, _goods.Length,
-                run.Modifiers.ShiftRarity);
+                run.Modifiers.ShiftRarity, _tuning);
             for (int i = 0; i < _goods.Length; i++) _goods[i] = fresh[i];
             if (!_freeReroll) Rerolls++;
             return true;
@@ -253,34 +256,35 @@ namespace GameRules
         }
 
         private static ShopOffer[] Roll(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, bool guaranteeGene,
-            int pricePermille, int count, bool shiftRarity = false)
+            int pricePermille, int count, bool shiftRarity, RunTuning tuning)
         {
             var goods = new ShopOffer[count];
             bool hasGene = false;
             for (int i = 0; i < goods.Length; i++)
             {
-                goods[i] = RollOne(rng, catalog, difficulty, pricePermille, shiftRarity);
+                goods[i] = RollOne(rng, catalog, difficulty, pricePermille, shiftRarity, tuning);
                 if (goods[i].Kind == ItemKind.Gene) hasGene = true;
             }
             if (guaranteeGene && !hasGene && catalog.Genes.Count > 0)
             {
-                goods[0] = GeneOffer(rng, catalog, difficulty, pricePermille, shiftRarity);
+                goods[0] = GeneOffer(rng, catalog, difficulty, pricePermille, shiftRarity, tuning);
             }
             return goods;
         }
 
         private static ShopOffer RollOne(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille,
-            bool shiftRarity)
+            bool shiftRarity, RunTuning tuning)
         {
-            // 权重按设计稿 §4.1:基因 60 / 方块 16 / 科技 12 / 改造 12
+            // 权重按设计稿 §4.1:基因 60 / 方块 16 / 科技 12 / 改造 12(数值在 RunTuning)
+            int gene = tuning.WeightGene, block = tuning.WeightBlock, tech = tuning.WeightTech;
             int roll = rng.Index(100);
-            if (roll < 60 && catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty, pricePermille, shiftRarity);
-            if (roll < 76 && catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty, pricePermille);
-            if (roll < 88 && catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty, pricePermille);
-            if (catalog.Mods.Count > 0) return ModOffer(rng, catalog, difficulty, pricePermille);
-            if (catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty, pricePermille, shiftRarity);
-            if (catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty, pricePermille);
-            if (catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty, pricePermille);
+            if (roll < gene && catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty, pricePermille, shiftRarity, tuning);
+            if (roll < gene + block && catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty, pricePermille, tuning);
+            if (roll < gene + block + tech && catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty, pricePermille, tuning);
+            if (catalog.Mods.Count > 0) return ModOffer(rng, catalog, difficulty, pricePermille, tuning);
+            if (catalog.Genes.Count > 0) return GeneOffer(rng, catalog, difficulty, pricePermille, shiftRarity, tuning);
+            if (catalog.Blocks.Count > 0) return BlockOffer(rng, catalog, difficulty, pricePermille, tuning);
+            if (catalog.Techs.Count > 0) return TechOffer(rng, catalog, difficulty, pricePermille, tuning);
             throw new InvalidOperationException("目录里没有任何可卖的东西");
         }
 
@@ -289,17 +293,15 @@ namespace GameRules
         /// 池子里没有某一档时把那一档的权重并回去,不至于抽空。
         /// </summary>
         private static ShopOffer GeneOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille,
-            bool shiftRarity)
+            bool shiftRarity, RunTuning tuning)
         {
-            int common = shiftRarity ? 600 : 700;
-            int uncommon = shiftRarity ? 300 : 250;
-            int rare = shiftRarity ? 100 : 50;
+            tuning.GeneWeights(shiftRarity, out int common, out int uncommon, out int rare);
             int roll = rng.Index(1000);
             int tier = roll < common ? 0 : roll < common + uncommon ? 1 : 2;
             CatalogEntry? pick = PickByRarity(rng, catalog, tier);
             if (!pick.HasValue) pick = catalog.Genes[rng.Index(catalog.Genes.Count)];
             CatalogEntry e = pick.Value;
-            return new ShopOffer(ItemKind.Gene, e.Id, Price(e.Price, difficulty, pricePermille));
+            return new ShopOffer(ItemKind.Gene, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
         }
 
         /// <summary>在某个稀有度档里随机挑一个;这一档为空返回 null(调用方退回全池)。</summary>
@@ -320,37 +322,37 @@ namespace GameRules
             return null;
         }
 
-        private static ShopOffer TechOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
+        private static ShopOffer TechOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille, RunTuning tuning)
         {
             CatalogEntry e = catalog.Techs[rng.Index(catalog.Techs.Count)];
-            return new ShopOffer(ItemKind.Tech, e.Id, Price(e.Price, difficulty, pricePermille));
+            return new ShopOffer(ItemKind.Tech, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
         }
 
-        private static ShopOffer ModOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
+        private static ShopOffer ModOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille, RunTuning tuning)
         {
             CatalogEntry e = catalog.Mods[rng.Index(catalog.Mods.Count)];
-            return new ShopOffer(ItemKind.Mod, e.Id, Price(e.Price, difficulty, pricePermille));
+            return new ShopOffer(ItemKind.Mod, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
         }
 
-        private static ShopOffer BlockOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
+        private static ShopOffer BlockOffer(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille, RunTuning tuning)
         {
             BlockEntry e = catalog.Blocks[rng.Index(catalog.Blocks.Count)];
-            return new ShopOffer(ItemKind.Block, e.Id, Price(e.Price, difficulty, pricePermille));
+            return new ShopOffer(ItemKind.Block, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
         }
 
-        private static ShopOffer RollVoucher(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
+        private static ShopOffer RollVoucher(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille, RunTuning tuning)
         {
             CatalogEntry e = catalog.Vouchers[rng.Index(catalog.Vouchers.Count)];
-            return new ShopOffer(ItemKind.Voucher, e.Id, Price(e.Price, difficulty, pricePermille));
+            return new ShopOffer(ItemKind.Voucher, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
         }
 
-        private static ShopOffer RollBooster(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille)
+        private static ShopOffer RollBooster(IRandomSource rng, ContentCatalog catalog, RunDifficulty difficulty, int pricePermille, RunTuning tuning)
         {
             CatalogEntry e = catalog.Boosters[rng.Index(catalog.Boosters.Count)];
-            return new ShopOffer(ItemKind.Booster, e.Id, Price(e.Price, difficulty, pricePermille));
+            return new ShopOffer(ItemKind.Booster, e.Id, Price(e.Price, difficulty, pricePermille, tuning));
         }
 
-        private static int Price(int basePrice, RunDifficulty difficulty, int pricePermille) =>
-            (int)((long)basePrice * DifficultyRules.Of(difficulty).PricePermille * pricePermille / 1000000);
+        private static int Price(int basePrice, RunDifficulty difficulty, int pricePermille, RunTuning tuning) =>
+            (int)((long)basePrice * tuning.DifficultyOf(difficulty).PricePermille * pricePermille / 1000000);
     }
 }

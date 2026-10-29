@@ -44,7 +44,7 @@ public sealed class RunSaveService : Singleton<RunSaveService>, IUpdate
     }
 
     /// <summary>主界面探测「继续」:能读、校验通过、还没打完的局,否则 null。点「继续」直接用这个结果,不再读第二次。</summary>
-    public RunState Probe() => _file.Load(MinimalContent.Config);
+    public RunState Probe() => _file.Load(TuningTable.Instance.Config);
 
     /// <summary>开新局:先删掉旧局的档,再写第一份。开局这一步还没有盲注(下一步是选关),快照的 blind 写 null。</summary>
     public void StartNew(RunState run)

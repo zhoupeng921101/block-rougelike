@@ -3,34 +3,6 @@ using static System.FormattableString;
 
 namespace GameRules
 {
-    /// <summary>难度档对一局参数的修正(局外循环设计稿 §5):三档累加,只改目标分、弃置、利息封顶与价格。</summary>
-    public readonly struct DifficultyRules
-    {
-        public readonly int TargetPermille;
-        public readonly int DiscardDelta;
-        public readonly int InterestCap;
-        public readonly int PricePermille;
-
-        private DifficultyRules(int targetPermille, int discardDelta, int interestCap, int pricePermille)
-        {
-            TargetPermille = targetPermille;
-            DiscardDelta = discardDelta;
-            InterestCap = interestCap;
-            PricePermille = pricePermille;
-        }
-
-        public static DifficultyRules Of(RunDifficulty difficulty)
-        {
-            switch (difficulty)
-            {
-                case RunDifficulty.Standard: return new DifficultyRules(1000, 0, 50, 1000);
-                case RunDifficulty.Advanced: return new DifficultyRules(1150, -1, 50, 1000);
-                case RunDifficulty.Expert: return new DifficultyRules(1300, -1, 25, 1200);
-                default: throw new ArgumentOutOfRangeException(nameof(difficulty), difficulty, "没定义的难度档");
-            }
-        }
-    }
-
     /// <summary>目标分曲线的整数算法(设计稿 §1):段间按配置倍率连乘、每段四舍五入;段内按节点的层×强度;最后乘难度修正。</summary>
     public static class RunTargets
     {
@@ -61,7 +33,7 @@ namespace GameRules
             if (config == null) throw new ArgumentNullException(nameof(config));
             if (extraPermille < 0) throw new ArgumentOutOfRangeException(nameof(extraPermille), extraPermille, "修正不能为负");
             long value = BaseFor(node.Segment, config);
-            value = (value * node.TargetPermille * DifficultyRules.Of(difficulty).TargetPermille * extraPermille + 500000000L) / 1000000000L;
+            value = (value * config.Tuning.NodeTargetPermille(node) * config.Tuning.DifficultyOf(difficulty).TargetPermille * extraPermille + 500000000L) / 1000000000L;
             if (value > int.MaxValue) throw new InvalidOperationException("目标分溢出");
             return (int)value;
         }
@@ -96,7 +68,7 @@ namespace GameRules
         public static int InterestOf(int money, RunDifficulty difficulty, RuleConfig config)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
-            return InterestOf(money, config.InterestPer, DifficultyRules.Of(difficulty).InterestCap);
+            return InterestOf(money, config.InterestPer, config.Tuning.DifficultyOf(difficulty).InterestCap);
         }
 
         /// <summary>按给定的每档门槛与封顶算利息;券可能改封顶,所以另开这一个口。</summary>
@@ -110,10 +82,10 @@ namespace GameRules
 
         /// <summary>算这一场的结算,不改状态。钱要在调用之后才加进去,<see cref="Settlement.MoneyAfter"/> 由调用方补。</summary>
         public static Settlement Settle(MapNode node, RunDifficulty difficulty, int money, RuleConfig config) =>
-            new Settlement(node.Id, node.Reward, InterestOf(money, difficulty, config), money);
+            new Settlement(node.Id, config.Tuning.NodeReward(node), InterestOf(money, difficulty, config), money);
 
         /// <summary>按给定的门槛与封顶算结算(券改了封顶时用)。</summary>
-        public static Settlement Settle(MapNode node, int money, int per, int cap) =>
-            new Settlement(node.Id, node.Reward, InterestOf(money, per, cap), money);
+        public static Settlement Settle(MapNode node, int reward, int money, int per, int cap) =>
+            new Settlement(node.Id, reward, InterestOf(money, per, cap), money);
     }
 }

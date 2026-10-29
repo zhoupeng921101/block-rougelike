@@ -100,14 +100,18 @@ namespace GameRules
         }
 
         /// <summary>目标分修正(千分值):高墙盲 ×1.3,其余不修。</summary>
-        public static int TargetPermille(int boss) => boss == HighWall ? HighWallPermille : 1000;
+        public static int TargetPermille(int boss, RunTuning tuning = null) =>
+            boss == HighWall ? (tuning ?? RunTuning.Default).HighWallPermille : 1000;
+
+        /// <summary>目标分修正(千分值)的别名,给规格计算用。</summary>
+        public static int BossPermilleOf(int boss, RunTuning tuning = null) => TargetPermille(boss, tuning);
 
         /// <summary>每组块数:碎组盲压到 2;券加过也压回去(首领效果优先于券,设计稿 §7.2)。</summary>
-        public static int GroupSize(int groupSize, int boss) =>
-            boss == Shatter ? Math.Min(groupSize, ShatterGroupSize) : groupSize;
+        public static int GroupSize(int groupSize, int boss, RunTuning tuning = null) =>
+            boss == Shatter ? Math.Min(groupSize, (tuning ?? RunTuning.Default).ShatterGroupSize) : groupSize;
 
         /// <summary>弃置次数:断弃盲归零。</summary>
-        public static int Discards(int discards, int boss) => boss == NoDiscard ? 0 : discards;
+        public static int Discards(int discards, int boss, RunTuning tuning = null) => boss == NoDiscard ? 0 : discards;
 
         /// <summary>开局预置 / 增殖用的随机形状落点:放得下才落,避免直接凑成一条线。</summary>
         internal static void SpawnBlocks(BlindState blind, IRandomSource rng, RunState run, int count)
