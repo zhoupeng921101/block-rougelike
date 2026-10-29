@@ -16,6 +16,9 @@ namespace GameRules
 
         IReadOnlyList<GeneSlot> Genes { get; }
 
+        /// <summary>道具栏里的改造(号);战斗界面按它画道具栏。</summary>
+        IReadOnlyList<int> Consumables { get; }
+
         IBlindView Blind { get; }
 
         int LevelOf(ClearType type);

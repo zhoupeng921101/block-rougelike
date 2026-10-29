@@ -81,11 +81,15 @@ public partial class UIShopPanel : UIPanelMono
         }
     }
 
-    private static string Describe(TextTable table, ShopOffer offer) =>
-        offer.Sold
-            ? table.Get(TextKeys.Shop.Sold)
-            : table.Format(TextKeys.Shop.Goods, table.Get(TextKeys.Of(offer.Kind)),
-                offer.Id.ToString(CultureInfo.InvariantCulture), offer.Price.ToString(CultureInfo.InvariantCulture));
+    private static string Describe(TextTable table, ShopOffer offer)
+    {
+        if (offer.Sold) return table.Get(TextKeys.Shop.Sold);
+        // 基因有名字(如「点 +30」)就显示名字,其余按「种类 #号」显示
+        string name = table.Has(TextKeys.Gene(offer.Id))
+            ? table.Get(TextKeys.Gene(offer.Id))
+            : table.Get(TextKeys.Of(offer.Kind)) + " #" + offer.Id.ToString(CultureInfo.InvariantCulture);
+        return table.Format(TextKeys.Shop.Goods, name, offer.Price.ToString(CultureInfo.InvariantCulture));
+    }
 
     private void Buy(int index) => AfterBuy(_run.Shop.TryBuy(index, _run), "买货");
 

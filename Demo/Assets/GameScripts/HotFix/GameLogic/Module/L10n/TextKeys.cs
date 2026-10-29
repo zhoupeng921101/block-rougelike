@@ -87,6 +87,12 @@ public static class TextKeys
         }
     }
 
+    /// <summary>基因的显示名(最小内容集 1..8 号)。</summary>
+    public static string Gene(int geneId) => "gene." + geneId + ".name";
+
+    /// <summary>道具栏里一件改造的显示名(带号,调用方 Format 掉 {0})。</summary>
+    public const string ItemLabel = "ui.battle.item_label";
+
     /// <summary>三个难度档的显示名。</summary>
     public static string Of(RunDifficulty difficulty)
     {

@@ -24,6 +24,8 @@ public partial class UIBattlePanel : UIPanelMono
 	[SerializeField] private Slider m_slider_Score = null!;
 	[SerializeField] private TextMeshProUGUI m_tmp_ScoreTarget = null!;
 	[SerializeField] private BoardAreaPart m_part_BoardArea = null!;
+	[SerializeField] private RectTransform m_rect_GeneSlots = null!;
+	[SerializeField] private RectTransform m_rect_ItemSlots = null!;
 	[SerializeField] private Button m_btn_Back = null!;
 	[SerializeField] private TrayAreaPart m_part_TrayArea = null!;
 	[SerializeField] private DiscardAreaPart m_part_Discard = null!;

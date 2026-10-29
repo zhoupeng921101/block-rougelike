@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Globalization;
 using GameRules;
+using TMPro;
 using TEngine;
 using UnityEngine;
 
@@ -27,6 +29,14 @@ public partial class UIBattlePanel : UIPanelMono
     [Tooltip("特效素材(现在全是动物乐园的占位,见 Effects/ZooPlaceholder/占位登记表.md)")]
     [SerializeField] private BattleFxAssets _fxAssets = new BattleFxAssets();
 
+    /// <summary>基因栏与道具栏的槽位文字(OnCreate 里按 prefab 的槽格各建一个)。</summary>
+    private List<TextMeshProUGUI> _geneLabels;
+    private List<TextMeshProUGUI> _itemLabels;
+
+    /// <summary>槽里有东西 / 空槽的文字颜色。</summary>
+    private static readonly Color FilledColor = new Color(1f, 0.92f, 0.7f, 1f);
+    private static readonly Color EmptyColor = new Color(0.45f, 0.47f, 0.55f, 1f);
+
     /// <summary>打开战斗窗时的 UserData:这一局,以及它是不是从主界面「继续」进来的(开局特效不同,31 号票第 20 项)。</summary>
     public sealed class Entry
     {
@@ -49,6 +59,17 @@ public partial class UIBattlePanel : UIPanelMono
         _fx = new BattleFxDirector(_fxAssets, m_part_BoardArea, rectTransform, gameObject);
         _show = new StepShowPlayer(gameObject, rectTransform, m_part_BoardArea, m_part_TrayArea, m_part_Discard, m_part_TypeTable, m_part_Badge,
             m_tmp_Score, m_slider_Score, m_tmp_LibraryLeft, _fxAssets, _fx, _gesture, ShowResult);
+        _geneLabels = CreateSlotLabels(m_rect_GeneSlots, m_tmp_BlindTitle);
+        _itemLabels = CreateSlotLabels(m_rect_ItemSlots, m_tmp_BlindTitle);
+        AddServiceEvent(
+            () => TextTable.Instance.LanguageChanged += OnLanguageChanged,
+            () => { if (TextTable.IsValid) TextTable.Instance.LanguageChanged -= OnLanguageChanged; });
+    }
+
+    /// <summary>切语言时整屏重画(基因名、道具名与其它带参数的文案都要跟着换)。</summary>
+    private void OnLanguageChanged()
+    {
+        if (_run?.Blind != null) Refresh(_run);
     }
 
     protected override void OnDestroyWindow() => _show?.Kill();
@@ -139,6 +160,54 @@ public partial class UIBattlePanel : UIPanelMono
         m_part_TypeTable.Refresh(run);
         m_part_BoardArea.Refresh(run);
         m_part_Discard.Refresh(blind.DiscardsLeft);
+        RefreshGenesAndItems(run);
+    }
+
+    /// <summary>
+    /// 基因栏与道具栏:按槽位把这一局持有的一件件画出来(买到就在下一场战斗里看得见)。
+    /// 槽格是 prefab 里的静态框,文字节点在 <see cref="OnCreate"/> 里按槽位各建一个,之后只改文字。
+    /// </summary>
+    private void RefreshGenesAndItems(IRunView run)
+    {
+        TextTable table = TextTable.Instance;
+        for (int i = 0; i < _geneLabels.Count; i++)
+        {
+            bool filled = i < run.Genes.Count;
+            _geneLabels[i].text = filled ? table.Get(TextKeys.Gene(run.Genes[i].GeneId)) : string.Empty;
+            _geneLabels[i].color = filled ? FilledColor : EmptyColor;
+        }
+        for (int i = 0; i < _itemLabels.Count; i++)
+        {
+            bool filled = i < run.Consumables.Count;
+            _itemLabels[i].text = filled ? table.Format(TextKeys.ItemLabel, run.Consumables[i]) : string.Empty;
+            _itemLabels[i].color = filled ? FilledColor : EmptyColor;
+        }
+    }
+
+    /// <summary>给每个槽格建一个居中文字节点,按父框大小铺满;返回各槽的文字。</summary>
+    private List<TextMeshProUGUI> CreateSlotLabels(RectTransform slots, TMP_Text template)
+    {
+        var labels = new List<TextMeshProUGUI>(slots.childCount);
+        foreach (Transform slot in slots)
+        {
+            var go = new GameObject("文字", typeof(RectTransform), typeof(TextMeshProUGUI));
+            go.layer = gameObject.layer;
+            go.transform.SetParent(slot, false);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
+            var label = go.GetComponent<TextMeshProUGUI>();
+            label.font = template.font;
+            label.fontSize = 20f;
+            label.alignment = TextAlignmentOptions.Center;
+            label.color = EmptyColor;
+            label.text = string.Empty;
+            label.raycastTarget = false;
+            labels.Add(label);
+        }
+        return labels;
     }
 
     private static float ProgressOf(long score, long target) => target > 0 ? Mathf.Clamp01((float)((double)score / target)) : 1f;

@@ -67,6 +67,9 @@ public sealed class TextTable : Singleton<TextTable>
         return key;
     }
 
+    /// <summary>表里有没有这个 key(不报警)。</summary>
+    public bool Has(string key) => key != null && _texts.ContainsKey(key);
+
     /// <summary>查文案并填 <c>{0}</c>、<c>{1}</c>… 占位;数字按 InvariantCulture 转文字,不随系统区域。</summary>
     public string Format(string key, params object[] args)
     {

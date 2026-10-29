@@ -4932,7 +4932,7 @@ GameObject:
   - component: {fileID: 6775833301108003475}
   - component: {fileID: 7692426196404044270}
   m_Layer: 5
-  m_Name: "\u69FD\u683C"
+  m_Name: m_rect_GeneSlots
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7310,6 +7310,8 @@ MonoBehaviour:
   m_slider_Score: {fileID: 1640191735197720662}
   m_tmp_ScoreTarget: {fileID: 2868459602116056203}
   m_part_BoardArea: {fileID: 3789162808064280701}
+  m_rect_GeneSlots: {fileID: 6775833301108003475}
+  m_rect_ItemSlots: {fileID: 6675583770931828516}
   m_btn_Back: {fileID: 4947035954433990182}
   m_part_TrayArea: {fileID: 537671325450301301}
   m_part_Discard: {fileID: 600164367687511040}
@@ -7892,7 +7894,7 @@ GameObject:
   - component: {fileID: 6675583770931828516}
   - component: {fileID: 641595681988685561}
   m_Layer: 5
-  m_Name: "\u69FD\u683C"
+  m_Name: m_rect_ItemSlots
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
