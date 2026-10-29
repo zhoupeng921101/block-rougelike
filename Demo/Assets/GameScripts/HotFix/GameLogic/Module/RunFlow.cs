@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using GameRules;
 using TEngine;
 using UnityEngine;
@@ -51,10 +52,8 @@ public static class RunFlow
 
     public static void ShowMap(RunState run)
     {
-        GameModule.UI.CloseUI<UIBattlePanel>();
-        GameModule.UI.CloseUI<UIBattleResultPanel>();
-        GameModule.UI.CloseUI<UIShopPanel>();
         GameModule.UI.ShowUIAsync<UIMapPanel>(run);
+        CloseAfterOpen(typeof(UIMapPanel), typeof(UIBattlePanel), typeof(UIBattleResultPanel), typeof(UIShopPanel));
     }
 
     /// <summary>进节点并开打:开盲注的事件不演,战斗窗打开时按状态全量刷新。</summary>
@@ -63,8 +62,8 @@ public static class RunFlow
         if (!run.EnterNode(nodeId)) return;
         run.StartBlindForCurrentNode();
         RunSaveService.Instance.CommitRun(run, "进节点");
-        GameModule.UI.CloseUI<UIMapPanel>();
         ShowBattle(run, false);
+        CloseAfterOpen(typeof(UIBattlePanel), typeof(UIMapPanel));
     }
 
     /// <summary>打赢之后:入账、把地图推到已结算、丢掉盲注,回到两场之间的形状再存一次。返回这一场的结算,给结果浮层显示。</summary>
@@ -85,14 +84,15 @@ public static class RunFlow
     public static void AfterResult(RunState run, bool won)
     {
         GameModule.UI.CloseUI<UIBattleResultPanel>();
-        GameModule.UI.CloseUI<UIBattlePanel>();
         if (!won)
         {
+            GameModule.UI.CloseUI<UIBattlePanel>();
             RunSaveService.Instance.Leave();
             return;
         }
         if (run.Progress.IsComplete(run.Map))
         {
+            GameModule.UI.CloseUI<UIBattlePanel>();
             RunSaveService.Instance.EndRun();
             return;
         }
@@ -109,9 +109,8 @@ public static class RunFlow
         }
         run.OpenShop();
         RunSaveService.Instance.CommitRun(run, "开店");
-        GameModule.UI.CloseUI<UIBattlePanel>();
-        GameModule.UI.CloseUI<UIBattleResultPanel>();
         GameModule.UI.ShowUIAsync<UIShopPanel>(run);
+        CloseAfterOpen(typeof(UIShopPanel), typeof(UIBattlePanel), typeof(UIBattleResultPanel), typeof(UIMapPanel));
     }
 
     /// <summary>离开商店:关店,回地图。</summary>
@@ -134,6 +133,24 @@ public static class RunFlow
 
     private static void ShowBattle(RunState run, bool resumed) =>
         GameModule.UI.ShowUIAsync<UIBattlePanel>(new UIBattlePanel.Entry(run, resumed));
+
+    /// <summary>
+    /// 新窗开出来之后再关旧窗:同一帧里关窗会释放资源句柄,把正要加载的那张 prefab 的异步操作卡死(实测窗再也不出现)。
+    /// 所以换屏一律「先开、等它开出来、再关别的」。
+    /// </summary>
+    private static void CloseAfterOpen(Type opened, params Type[] others)
+    {
+        CloseAfterOpenAsync(opened, others).Forget();
+    }
+
+    private static async UniTaskVoid CloseAfterOpenAsync(Type opened, Type[] others)
+    {
+        await GameModule.UI.WaitOpenedAsync(opened);
+        foreach (Type type in others)
+        {
+            if (type != opened) GameModule.UI.CloseUI(type);
+        }
+    }
 
     /// <summary>种子的熵。规则核心不碰非确定来源,熵在这里取。</summary>
     private static ulong NewEntropy() => BitConverter.ToUInt64(Guid.NewGuid().ToByteArray(), 0);
