@@ -165,6 +165,7 @@ namespace GameRules
 
             // #17 收尾
             blind.Step++;
+            run.ApplyBossOnStepEnd();
             events.Add(new StepEnded(blind.Step, blind.Combo, blind.Score, blind.DiscardsLeft, blind.DrawList.Count));
             return new StepResult(blind.Step, events);
         }
@@ -178,6 +179,7 @@ namespace GameRules
                 var slots = new int[blind.TraySlots.Length];
                 for (int i = 0; i < slots.Length; i++) slots[i] = blind.TraySlots[i].Id;
                 events.Add(new GroupDealt(blind.Group, slots));
+                run.ApplyBossOnDeal();
             }
             FailReason failure = run.PendingFailure();
             if (failure != FailReason.None) End(blind, BlindOutcome.Lost, failure, events);

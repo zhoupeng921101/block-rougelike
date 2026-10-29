@@ -189,7 +189,7 @@ namespace GameRules.Tests
             Assert.AreEqual("  \"format\": \"3b.run\",", lines[1]);
             Assert.AreEqual("  \"schema\": 1,", lines[2]);
             StringAssert.Contains("\n  \"library\": [\n    { \"id\": 1, \"kind\": \"I\", \"points\": 1, \"enhancement\": \"None\", \"edition\": \"None\" },\n", text);
-            StringAssert.Contains("\n    \"spec\": { \"segment\": 1, \"layer\": 1, \"target\": \"350\", \"discards\": 3, \"groupSize\": 3 },\n", text);
+            StringAssert.Contains("\n    \"spec\": { \"segment\": 1, \"layer\": 1, \"target\": \"350\", \"discards\": 3, \"groupSize\": 3, \"boss\": 0 },\n", text);
             Assert.AreEqual(8, lines.Count(l => l.StartsWith("      [", StringComparison.Ordinal)), "owner 一行盘面一行");
             foreach (string line in lines)
             {
@@ -249,7 +249,7 @@ namespace GameRules.Tests
             yield return Bad("枚举不认", "\"outcome\": \"InProgress\",", "\"outcome\": \"Pending\",", SnapshotError.BadValue, "blind.outcome");
             yield return Bad("十进制串不规范", "\"target\": \"350\"", "\"target\": \"+350\"", SnapshotError.BadValue, "blind.spec.target");
             yield return Bad("十进制串前导零", "\"target\": \"350\"", "\"target\": \"0350\"", SnapshotError.BadValue, "blind.spec.target");
-            yield return Bad("规格越界", "\"groupSize\": 3 }", "\"groupSize\": 6 }", SnapshotError.BadValue, "blind.spec.groupSize");
+            yield return Bad("规格越界", "\"groupSize\": 3,", "\"groupSize\": 6,", SnapshotError.BadValue, "blind.spec.groupSize");
             yield return Bad("实例 id 为 0", "{ \"id\": 1, \"kind\"", "{ \"id\": 0, \"kind\"", SnapshotError.BadValue, "library[0].id");
             yield return Bad("id 重复", "{ \"id\": 2, \"kind\"", "{ \"id\": 1, \"kind\"", SnapshotError.Invalid, "library[1].id");
             yield return Bad("计数器不大于最大 id", "\"nextInstanceId\": 29,", "\"nextInstanceId\": 28,", SnapshotError.Invalid, "library[27].id");
@@ -284,7 +284,15 @@ namespace GameRules.Tests
         public void BadDocument_Truncated()
         {
             string text = StartText();
-            foreach (int cut in new[] { 1, 10, text.Length / 3, text.Length / 2, text.Length - 3, text.Length - 2 })
+            // 切点落在值里(而不是某个成员名里),这样解析器报错时带得出路径
+            int[] cuts =
+            {
+                1, 10,
+                text.IndexOf("\"nodes\"", StringComparison.Ordinal) + 40,
+                text.IndexOf("\"library\"", StringComparison.Ordinal) + 40,
+                text.Length - 3, text.Length - 2,
+            };
+            foreach (int cut in cuts)
             {
                 SnapshotReadResult r = RunSnapshot.Read(text.Substring(0, cut), PlaceholderTuning.Config);
                 Assert.AreEqual(SnapshotError.Syntax, r.Error, Inv($"截在 {cut}:{Describe(r)}"));

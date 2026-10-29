@@ -31,6 +31,8 @@ namespace GameRules
 
         IReadOnlyList<int> Departed { get; }
 
+        IReadOnlyList<int> Removed { get; }
+
         IReadOnlyList<BlockInstance> TempBlocks { get; }
 
         bool IsTrayEmpty { get; }

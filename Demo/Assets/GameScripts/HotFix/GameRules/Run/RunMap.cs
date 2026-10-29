@@ -23,13 +23,17 @@ namespace GameRules
         /// <summary>跳过这个节点给的标签;0 = 不给(首领、第一段)。标签表在阶段 5 的内容清单里,这里只存号。</summary>
         public readonly int TagId;
 
-        public MapNode(int id, int segment, int layer, NodeStrength strength, int tagId = 0)
+        /// <summary>这一场带的首领负面效果(<see cref="Bosses"/>);0 = 不是首领场。</summary>
+        public readonly int BossId;
+
+        public MapNode(int id, int segment, int layer, NodeStrength strength, int tagId = 0, int bossId = Bosses.None)
         {
             Id = id;
             Segment = segment;
             Layer = layer;
             Strength = strength;
             TagId = tagId;
+            BossId = bossId;
         }
 
         public bool IsBoss => Strength == NodeStrength.Boss;
@@ -104,7 +108,7 @@ namespace GameRules
                 {
                     if (layer == LayersPerSegment)
                     {
-                        nodes.Add(new MapNode(id++, segment, layer, NodeStrength.Boss));
+                        nodes.Add(new MapNode(id++, segment, layer, NodeStrength.Boss, 0, Bosses.Pick(segment, rng)));
                         continue;
                     }
                     // 第一段第一层只有一条路:新玩家第一场必定是标准盲注
@@ -199,6 +203,19 @@ namespace GameRules
                 if (n.TagId != 0 && !Tags.IsKnown(n.TagId)) return $"map.nodes[{i}].tag: 未登记的标签 {n.TagId}";
                 bool bossLayer = n.Layer == LayersPerSegment;
                 if (bossLayer != n.IsBoss) return $"map.nodes[{i}]: 首领只能出现在第 {LayersPerSegment} 层";
+                if (bossLayer)
+                {
+                    if (n.BossId == Bosses.None) return $"map.nodes[{i}].boss: 首领场没有首领";
+                    if (!Bosses.IsKnown(n.BossId)) return $"map.nodes[{i}].boss: 未登记的首领 {n.BossId}";
+                    if (Array.IndexOf(Bosses.CandidatesOf(n.Segment), n.BossId) < 0)
+                    {
+                        return $"map.nodes[{i}].boss: 首领 {n.BossId} 不在段 {n.Segment} 的候选里";
+                    }
+                }
+                else if (n.BossId != Bosses.None)
+                {
+                    return $"map.nodes[{i}].boss: 普通节点不能带首领";
+                }
             }
             for (int segment = 1; segment <= SegmentCount; segment++)
             {

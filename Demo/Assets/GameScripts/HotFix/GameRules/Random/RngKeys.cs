@@ -21,6 +21,9 @@ namespace GameRules
         /// <summary>商店出货与刷新。按层分:同一段里换节点不出别的货,刷新次数也记在这条流上。</summary>
         public static string Shop(int segment, int layer) => At("shop", segment, layer);
 
+        /// <summary>首领效果里的随机(预置块的形状与落点、死格位置、增殖补块)。按段层分:一场首领的随机只与本场有关。</summary>
+        public static string Boss(int segment, int layer) => At("boss", segment, layer);
+
         private static string At(string purpose, int segment, int layer)
         {
             if (segment < 1) throw new ArgumentOutOfRangeException(nameof(segment), segment, "段从 1 数");

@@ -26,7 +26,7 @@ namespace GameRules
         private static readonly string[] RngMembers = { "scheme", "streams" };
         private static readonly string[] StreamMembers = { "key", "s0", "s1" };
         private static readonly string[] MapMembers = { "segmentCount", "nodes", "progress" };
-        private static readonly string[] MapNodeMembers = { "id", "segment", "layer", "strength", "tag" };
+        private static readonly string[] MapNodeMembers = { "id", "segment", "layer", "strength", "tag", "boss" };
         private static readonly string[] ProgressMembers = { "current", "resolved", "skipped", "visited" };
         private static readonly string[] ShopMembers = { "rerolls", "guaranteeGene", "voucher", "booster", "pack", "goods" };
         private static readonly string[] ShopOfferMembers = { "kind", "id", "price", "sold" };
@@ -36,9 +36,9 @@ namespace GameRules
         private static readonly string[] BlindMembers =
         {
             "spec", "outcome", "failReason", "step", "group", "score", "combo", "discardsLeft",
-            "draw", "tray", "owner", "dead", "discarded", "departed", "tempBlocks",
+            "draw", "tray", "owner", "dead", "discarded", "departed", "removed", "tempBlocks",
         };
-        private static readonly string[] SpecMembers = { "segment", "layer", "target", "discards", "groupSize" };
+        private static readonly string[] SpecMembers = { "segment", "layer", "target", "discards", "groupSize", "boss" };
         private static readonly string[] SlotMembers = { "id", "rot" };
         private static readonly string[] TypeLevelMembers = BuildTypeLevelMembers();
 
@@ -103,6 +103,7 @@ namespace GameRules
                 .Name("target").String(Dec(spec.Target))
                 .Name("discards").Int(spec.Discards)
                 .Name("groupSize").Int(spec.GroupSize)
+                .Name("boss").Int(spec.BossId)
                 .End();
             w.Name("outcome").String(NameOf(blind.Outcome));
             w.Name("failReason").String(NameOf(blind.FailReason));
@@ -139,6 +140,8 @@ namespace GameRules
             WriteIds(w, blind.Discarded);
             w.Name("departed");
             WriteIds(w, blind.Departed);
+            w.Name("removed");
+            WriteIds(w, blind.Removed);
             w.Name("tempBlocks");
             WriteBlocks(w, blind.TempBlocks);
             w.End();
@@ -158,6 +161,7 @@ namespace GameRules
                     .Name("layer").Int(n.Layer)
                     .Name("strength").String(NameOf(n.Strength))
                     .Name("tag").Int(n.TagId)
+                    .Name("boss").Int(n.BossId)
                     .End();
             }
             w.End();
@@ -406,8 +410,9 @@ namespace GameRules
                 int layer = p.ReadInt(n[2], path + ".layer");
                 NodeStrength strength = p.ReadEnum<NodeStrength>(n[3], path + ".strength");
                 int tag = p.ReadInt(n[4], path + ".tag");
+                int boss = p.ReadInt(n[5], path + ".boss");
                 if (p.Failed) return false;
-                nodes.Add(new MapNode(id, segment, layer, strength, tag));
+                nodes.Add(new MapNode(id, segment, layer, strength, tag, boss));
             }
 
             JsonNode[] pr = p.ReadObject(m[2], "map.progress", ProgressMembers);
@@ -529,11 +534,20 @@ namespace GameRules
             List<int> discarded = p.ReadIntList(b[12], "blind.discarded");
             List<int> departed = p.ReadIntList(b[13], "blind.departed");
             if (p.Failed) return null;
-            List<BlockInstance> temp = ReadBlocks(p, b[14], "blind.tempBlocks");
+            List<int> removed = p.ReadIntList(b[14], "blind.removed");
+            if (removed == null) return null;
+            List<BlockInstance> temp = ReadBlocks(p, b[15], "blind.tempBlocks");
             if (temp == null) return null;
 
-            return BlindState.Restore(new BlindSpec(segment, layer, target, discards, groupSize), outcome, failReason, step, group, score,
-                combo, discardsLeft, draw, tray, BoardState.Restore(owner, dead), discarded, departed, temp);
+            int boss = p.ReadInt(s[5], "blind.spec.boss");
+            if (p.Failed) return null;
+            if (boss != Bosses.None && !Bosses.IsKnown(boss))
+            {
+                return p.Fail<BlindState>(SnapshotError.BadValue, "blind.spec.boss", Invariant($"未登记的首领 {boss}"));
+            }
+
+            return BlindState.Restore(new BlindSpec(segment, layer, target, discards, groupSize, boss), outcome, failReason, step, group, score,
+                combo, discardsLeft, draw, tray, BoardState.Restore(owner, dead), discarded, departed, removed, temp);
         }
 
         private static int[] ReadOwner(Parser p, JsonNode node)

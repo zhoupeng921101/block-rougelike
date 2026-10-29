@@ -22,7 +22,10 @@ namespace GameRules
         /// <summary>每组块数,也是待放置区的槽数。</summary>
         public int GroupSize { get; }
 
-        public BlindSpec(int segment, int layer, long target, int discards, int groupSize)
+        /// <summary>这一场带的首领负面效果(设计稿 §7.2);0 = 普通盲注。只有第 3 层的首领场非 0。</summary>
+        public int BossId { get; }
+
+        public BlindSpec(int segment, int layer, long target, int discards, int groupSize, int bossId = Bosses.None)
         {
             if (segment < 1) throw new ArgumentOutOfRangeException(nameof(segment), segment, "段从 1 数");
             if (layer < 1) throw new ArgumentOutOfRangeException(nameof(layer), layer, "层从 1 数");
@@ -32,11 +35,20 @@ namespace GameRules
             {
                 throw new ArgumentOutOfRangeException(nameof(groupSize), groupSize, "每组块数在 1 到 MaxGroupSize 之间");
             }
+            if (bossId != Bosses.None)
+            {
+                if (!Bosses.IsKnown(bossId)) throw new ArgumentOutOfRangeException(nameof(bossId), bossId, "没定义的首领");
+                if (layer != RunMap.LayersPerSegment)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(bossId), bossId, "首领只出现在第 3 层");
+                }
+            }
             Segment = segment;
             Layer = layer;
             Target = target;
             Discards = discards;
             GroupSize = groupSize;
+            BossId = bossId;
         }
     }
 }

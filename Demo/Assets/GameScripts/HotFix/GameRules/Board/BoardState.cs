@@ -157,13 +157,38 @@ namespace GameRules
             return id;
         }
 
-        /// <summary>
-        /// 死格钩子,本图只有单测调用。只许置在空格上,否则破坏不变式;占着块的格变成死格怎么处理,等有死格来源时再定。
-        /// </summary>
+        /// <summary>死格钩子,盘上只有首领(死格盲)与单测会调。只许置在空格上,否则破坏不变式。</summary>
         public void SetDead(int cell)
         {
             if (_owner[CheckCell(cell)] != 0) throw new InvalidOperationException(Invariant($"格 {cell} 上有块,不能置死格"));
             _dead |= BoardCells.BoardMaskBit(cell);
+            _blockingStale = true;
+        }
+
+        /// <summary>
+        /// 整盘顺时针转 90°(偏航盲):块与死格一起转,格层按 id 跟着走。
+        /// 转完每块的格子集合可能不再等于它的形状——盘上只存「谁占了哪格」,结算按 id 读块的属性,不受影响。
+        /// </summary>
+        internal void Rotate()
+        {
+            var rotated = new int[BoardCells.Count];
+            ulong dead = 0UL;
+            for (int cell = 0; cell < BoardCells.Count; cell++)
+            {
+                int target = BoardCells.Index(BoardCells.ColOf(cell), BoardCells.Rows - 1 - BoardCells.RowOf(cell));
+                rotated[target] = _owner[cell];
+                if (IsDead(cell)) dead |= BoardCells.BoardMaskBit(target);
+            }
+
+            for (int cell = 0; cell < BoardCells.Count; cell++) ClearCell(cell);
+            _dead = dead;
+            for (int cell = 0; cell < BoardCells.Count; cell++)
+            {
+                int id = rotated[cell];
+                if (id == 0) continue;
+                _owner[cell] = id;
+                _occupied.OrRow(BoardCells.RowOf(cell), BoardCells.RowMaskBit(BoardCells.ColOf(cell)));
+            }
             _blockingStale = true;
         }
 

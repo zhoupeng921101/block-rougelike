@@ -257,7 +257,55 @@ namespace GameRules
             blind.DrawList.Sort();
             Rng.Get(RngKeys.Shuffle(spec.Segment, spec.Layer)).Shuffle(blind.DrawList);
             Blind = blind;
+            ApplyBossOnStart(blind);
             return StepPipeline.AfterBlindStart(this);
+        }
+
+        /// <summary>
+        /// 开盲注时立刻生效的首领效果(设计稿 §7.2):紧缩拿掉抽牌堆末尾的几块、预置在盘上摆几块、死格标几格。
+        /// 高墙 / 碎组 / 断弃已在 <see cref="SpecForCurrentNode"/> 折进规格;增殖与偏航在走步里生效。
+        /// </summary>
+        private void ApplyBossOnStart(BlindState blind)
+        {
+            int boss = blind.Spec.BossId;
+            if (boss == Bosses.None) return;
+            IRandomSource rng = Rng.Get(RngKeys.Boss(blind.Spec.Segment, blind.Spec.Layer));
+            switch (boss)
+            {
+                case Bosses.Shrink:
+                    int take = Math.Min(Bosses.ShrinkBlocks, blind.DrawList.Count);
+                    for (int i = 0; i < take; i++)
+                    {
+                        int last = blind.DrawList.Count - 1;
+                        blind.RemovedList.Add(blind.DrawList[last]);
+                        blind.DrawList.RemoveAt(last);
+                    }
+                    blind.RemovedList.Sort();
+                    break;
+                case Bosses.Preset:
+                    Bosses.SpawnBlocks(blind, rng, this, Bosses.PresetBlocks);
+                    break;
+                case Bosses.DeadCells:
+                    Bosses.MarkDeadCells(blind, rng, Bosses.DeadCellCount);
+                    break;
+            }
+        }
+
+        /// <summary>发一组之后的首领效果:增殖盲在随机空格补一块。由步管线调用,不在规则核心外直接调。</summary>
+        internal void ApplyBossOnDeal()
+        {
+            if (Blind == null || Blind.Outcome != BlindOutcome.InProgress) return;
+            if (Blind.Spec.BossId != Bosses.Spawn) return;
+            Bosses.SpawnBlocks(Blind, Rng.Get(RngKeys.Boss(Blind.Spec.Segment, Blind.Spec.Layer)), this, Bosses.SpawnPerDeal);
+        }
+
+        /// <summary>一步收尾后的首领效果:偏航盲每 4 步把盘面整体转 90°。由步管线调用。</summary>
+        internal void ApplyBossOnStepEnd()
+        {
+            if (Blind == null || Blind.Outcome != BlindOutcome.InProgress) return;
+            if (Blind.Spec.BossId != Bosses.Yaw) return;
+            if (Blind.Step <= 0 || Blind.Step % Bosses.YawEverySteps != 0) return;
+            Blind.Board.Rotate();
         }
 
         /// <summary>
@@ -277,10 +325,17 @@ namespace GameRules
             if (Progress.CurrentNodeId == 0) throw new InvalidOperationException("还没进节点");
             if (Progress.CurrentResolved) throw new InvalidOperationException("当前节点已结算");
             MapNode node = Map.Get(Progress.CurrentNodeId);
+            int boss = node.BossId;
             int discards = Math.Max(0, Config.BaseDiscards + DifficultyRules.Of(Difficulty).DiscardDelta + Modifiers.DiscardBonus);
             int groupSize = Math.Min(BlindSpec.MaxGroupSize, Config.DefaultGroupSize + Modifiers.GroupSizeBonus);
-            return new BlindSpec(node.Segment, node.Layer, RunTargets.For(node, Difficulty, Config, Modifiers.TargetPermille), discards, groupSize);
+            // 首领的目标分修正并进券的修正,只做一次四舍五入
+            int extra = Modifiers.TargetPermille * Bosses.TargetPermille(boss) / 1000;
+            long target = RunTargets.For(node, Difficulty, Config, extra);
+            return new BlindSpec(node.Segment, node.Layer, target, Bosses.Discards(discards, boss), Bosses.GroupSize(groupSize, boss), boss);
         }
+
+        /// <summary>当前节点的首领(0 = 普通场);给表现层与「情报」标签预览用。</summary>
+        public int CurrentBoss => Progress.CurrentNodeId == 0 ? Bosses.None : Map.Get(Progress.CurrentNodeId).BossId;
 
         /// <summary>开当前节点的盲注。上一个盲注还在进行时由 <see cref="StartBlind"/> 拦下。</summary>
         public StepResult StartBlindForCurrentNode() => StartBlind(SpecForCurrentNode());
@@ -603,6 +658,8 @@ namespace GameRules
             err = ClaimAll(zoneOf, Blind.DiscardedList, "blind.discarded");
             if (err != null) return err;
             err = ClaimAll(zoneOf, Blind.DepartedList, "blind.departed");
+            if (err != null) return err;
+            err = ClaimAll(zoneOf, Blind.RemovedList, "blind.removed");
             if (err != null) return err;
 
             foreach (BlockInstance b in _library)

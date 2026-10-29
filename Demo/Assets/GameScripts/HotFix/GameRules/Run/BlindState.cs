@@ -14,6 +14,7 @@ namespace GameRules
         internal readonly TraySlot[] TraySlots;
         internal readonly List<int> DiscardedList;
         internal readonly List<int> DepartedList;
+        internal readonly List<int> RemovedList;
         internal readonly List<BlockInstance> TempList;
 
         public BlindSpec Spec { get; }
@@ -48,20 +49,23 @@ namespace GameRules
         /// <summary>消尽堆:最后一格被消掉才离场,按离场先后。</summary>
         public IReadOnlyList<int> Departed { get; }
 
-        /// <summary>不属于方块库、只活在本盲注里的块(首领预置块等,本图没有)。</summary>
+        /// <summary>本盲注被拿掉的块(紧缩盲),按 id 升序。它们不在抽牌堆、不在盘上,打完这一场就自动回方块库。</summary>
+        public IReadOnlyList<int> Removed { get; }
+
+        /// <summary>不属于方块库、只活在本盲注里的块(首领预置块、增殖盲生成的块)。</summary>
         public IReadOnlyList<BlockInstance> TempBlocks { get; }
 
         IBoardView IBlindView.Board => Board;
 
         internal BlindState(BlindSpec spec)
             : this(spec, new List<int>(), new TraySlot[spec.GroupSize], new BoardState(),
-                new List<int>(), new List<int>(), new List<BlockInstance>())
+                new List<int>(), new List<int>(), new List<int>(), new List<BlockInstance>())
         {
             DiscardsLeft = spec.Discards;
         }
 
         private BlindState(BlindSpec spec, List<int> draw, TraySlot[] tray, BoardState board,
-            List<int> discarded, List<int> departed, List<BlockInstance> temp)
+            List<int> discarded, List<int> departed, List<int> removed, List<BlockInstance> temp)
         {
             Spec = spec ?? throw new ArgumentNullException(nameof(spec));
             DrawList = draw;
@@ -69,19 +73,21 @@ namespace GameRules
             Board = board;
             DiscardedList = discarded;
             DepartedList = departed;
+            RemovedList = removed;
             TempList = temp;
             Draw = draw.AsReadOnly();
             Tray = Array.AsReadOnly(tray);
             Discarded = discarded.AsReadOnly();
             Departed = departed.AsReadOnly();
+            Removed = removed.AsReadOnly();
             TempBlocks = temp.AsReadOnly();
         }
 
         /// <summary>读档的还原口(<see cref="RunSnapshot"/>):各区原样接上,不查约束,读档随后调 <see cref="RunState.Validate"/>。</summary>
         internal static BlindState Restore(BlindSpec spec, BlindOutcome outcome, FailReason failReason, int step, int group, long score,
             int combo, int discardsLeft, List<int> draw, TraySlot[] tray, BoardState board, List<int> discarded, List<int> departed,
-            List<BlockInstance> temp) =>
-            new BlindState(spec, draw, tray, board, discarded, departed, temp)
+            List<int> removed, List<BlockInstance> temp) =>
+            new BlindState(spec, draw, tray, board, discarded, departed, removed, temp)
             {
                 Outcome = outcome,
                 FailReason = failReason,
@@ -97,7 +103,7 @@ namespace GameRules
             var temp = new List<BlockInstance>(TempList.Count);
             foreach (BlockInstance b in TempList) temp.Add(b.Clone());
             return new BlindState(Spec, new List<int>(DrawList), (TraySlot[])TraySlots.Clone(), Board.Clone(),
-                new List<int>(DiscardedList), new List<int>(DepartedList), temp)
+                new List<int>(DiscardedList), new List<int>(DepartedList), new List<int>(RemovedList), temp)
             {
                 Outcome = Outcome,
                 FailReason = FailReason,
