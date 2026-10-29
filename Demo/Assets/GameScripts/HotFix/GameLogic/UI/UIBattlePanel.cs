@@ -146,15 +146,13 @@ public partial class UIBattlePanel : UIPanelMono
     private static string Num(long n) => n.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>
-    /// 回主界面:先写掉转朝向的脏标记,主界面露出来时重新探测「继续」;演出中途也直接走,杀掉全部补间(21 号票第 5 节);结果浮层开着就一起关。
-    /// 按钮、Esc、浮层上的按钮都经这里。
+    /// 回主界面:先杀掉演出,再交给 <see cref="RunFlow.BackToMenu"/>(关掉局内各窗并把主界面开回来)。
+    /// 主界面在开局时已经关掉,这里不重开就会剩一张空屏。
     /// </summary>
     private void BackToMenu()
     {
-        RunSaveService.Instance.Leave();
         _show?.Kill();
-        GameModule.UI.CloseUI<UIBattleResultPanel>();
-        GameModule.UI.CloseUI<UIBattlePanel>();
+        RunFlow.BackToMenu();
     }
 
     /// <summary>调试入口(编辑器与开发包),实现在 UIBattlePanel.Debug.cs;出包时连调用一起编掉。</summary>

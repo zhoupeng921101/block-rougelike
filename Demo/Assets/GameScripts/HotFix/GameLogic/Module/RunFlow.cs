@@ -81,21 +81,21 @@ public static class RunFlow
     public static void LoseRun() => RunSaveService.Instance.EndRun();
 
     /// <summary>
-    /// 结果浮层的出口:赢了先结算再进商店(跳过的节点不开店),整局打完回主界面;输了整局结束。
+    /// 结果浮层的出口:赢了先结算再进商店(跳过的节点不开店);输了、或整局打完,回主界面
+    /// (主界面在开局时关掉了,这里必须重新开,否则关掉战斗窗只剩空屏)。
     /// </summary>
     public static void AfterResult(RunState run, bool won)
     {
         GameModule.UI.CloseUI<UIBattleResultPanel>();
         if (!won)
         {
-            GameModule.UI.CloseUI<UIBattlePanel>();
-            RunSaveService.Instance.Leave();
+            BackToMenu();
             return;
         }
         if (run.Progress.IsComplete(run.Map))
         {
-            GameModule.UI.CloseUI<UIBattlePanel>();
             RunSaveService.Instance.EndRun();
+            BackToMenu();
             return;
         }
         ShowShop(run);
