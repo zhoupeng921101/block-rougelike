@@ -54,6 +54,8 @@
   {"key": "ui.main_menu.continue", "zh": "继续", "en": "Continue"},
   {"key": "ui.main_menu.difficulty", "zh": "难度：{0}", "en": "Difficulty: {0}"},
   {"key": "ui.main_menu.language", "zh": "语言", "en": "Language"},
+  {"key": "ui.main_menu.sound_off", "zh": "声音：关", "en": "Sound: Off"},
+  {"key": "ui.main_menu.sound_on", "zh": "声音：开", "en": "Sound: On"},
   {"key": "ui.main_menu.start", "zh": "开始游戏", "en": "Start Game"},
   {"key": "ui.map.back", "zh": "返回主界面", "en": "Main Menu"},
   {"key": "ui.map.boss", "zh": "{0}", "en": "{0}"},

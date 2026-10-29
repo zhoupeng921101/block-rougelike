@@ -121,16 +121,21 @@ public sealed class StepShowPlayer
             {
                 _tray.PlayPopIn(ClearPacing.GroupPopIn * k);
                 _libraryLeft.text = Num(drawLeft);
+                BattleAudio.GroupDealt();
             });
         }
 
         if (discarded != null) PlayDiscard(discarded, release, k);
         if (placed != null) PlacePiece(placed, clear, t, k);
+        if (discarded != null) BattleAudio.Discard();
+        else if (placed != null) BattleAudio.Place();
         if (clear != null && baseApplied != null && booked != null && placed != null) PlayClear(placed, clear, baseApplied, booked, t, k);
 
         if (ended != null)
         {
             long total = _final.Total;
+            BlindEnded endedEvent = ended;
+            _seq.InsertCallback(t.ResultAt, () => BattleAudio.Result(endedEvent.Outcome, endedEvent.Reason));
             _seq.InsertCallback(t.ResultAt, () => _showResult(ended, total));
         }
         // 序列至少拉到演完:没有回调的步(不成线的落子)也要把放大播完
@@ -208,10 +213,17 @@ public sealed class StepShowPlayer
         PlaceTallyBox(box, placed.Cells);
 
         // 逐格段:每拍弹「+k」、计数框底分跳一下,格在它自己的最后一拍退场
+        int beatIndex = 0;
         foreach (ClearBeat beat in t.Beats)
         {
             int r = BoardCells.RowOf(beat.Cell), c = BoardCells.ColOf(beat.Cell);
-            if (beat.Kind == ClearBeatKind.Cell) PopCellGain(r, c, beat.Points, beat.Time, k);
+            if (beat.Kind == ClearBeatKind.Cell)
+            {
+                beatIndex++;
+                // 逐拍音:一拍一声,逐拍升调(33 号票);与「+k」同一刻响
+                BattleAudio.Beat(beatIndex, beat.Time);
+                PopCellGain(r, c, beat.Points, beat.Time, k);
+            }
             long chips = beat.Chips, mult = beat.MultPermille;
             _seq.InsertCallback(beat.Time, () => row.SetChipsMult(chips, mult));
             _seq.Insert(beat.Time, Bump(row.ChipsText.transform, ClearPacing.TallyBump * k));
@@ -250,6 +262,8 @@ public sealed class StepShowPlayer
 
         // 合成:「底分 × 倍率」并成「= 得分」
         long gain = booked.Gain;
+        // 冲击、评价语音与清屏在合成那一刻响,和评价字同时
+        BattleAudio.ClearResult(clear.Type, t.MergeAt);
         _seq.InsertCallback(t.MergeAt, () => row.ChipsText.text = text.Format(TextKeys.Battle.Gain, gain));
         _seq.Insert(t.MergeAt, row.MultText.DOFade(0f, ClearPacing.Merge * k));
         _seq.Insert(t.MergeAt, Bump(row.ChipsText.transform, ClearPacing.Merge * k));
@@ -268,6 +282,8 @@ public sealed class StepShowPlayer
         });
         // 飞分落地那一刻,累计分上放一发星环
         _fx.LandRing(t.RollAt, _score);
+        BattleAudio.FlyStart();
+        _seq.InsertCallback(t.RollAt, BattleAudio.FlyLand);
 
         // 落地:框删掉,累计分从旧值滚到新值,进度条同步走
         long from = booked.Total - booked.Gain, to = booked.Total;

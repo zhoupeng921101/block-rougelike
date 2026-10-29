@@ -195,7 +195,11 @@ public sealed class PieceGestureFlow
     {
         bool wasDragging = IsDragging;
         AbortGesture();
-        if (wasDragging) RefreshTray();
+        if (wasDragging)
+        {
+            BattleAudio.Return();
+            RefreshTray();
+        }
     }
 
     // ─── 拾起、拖动、抬手 ─────────────────────────────────────────
@@ -216,6 +220,7 @@ public sealed class PieceGestureFlow
 
         _dragSlot = slot;
         _dragId = v.InstanceId;
+        BattleAudio.Pickup();
         _dragColor = BlockLayout.ColorOf(_run.FindInstance(_dragId).Kind);
         _dragPiece = v.Slot.PieceRoot;
         _tray.SetHeld(slot);
@@ -421,6 +426,7 @@ public sealed class PieceGestureFlow
         if (v == null || v.InstanceId == 0) return;
         if (!_run.SetRotation(v.InstanceId, BlockShapeMap.NormalizeRot(SlotRot(slot) + steps))) return;
         _rotated();
+        BattleAudio.Rotate();
         bool clockwise = steps > 0;
         for (int i = 0; i < Math.Abs(steps); i++)
         {
@@ -439,6 +445,7 @@ public sealed class PieceGestureFlow
     {
         if (!_run.SetRotation(_dragId, BlockShapeMap.NormalizeRot(SlotRot(_dragSlot) + steps))) return;
         _rotated();
+        BattleAudio.Rotate();
         var fx = _dragPiece.gameObject.GetOrAddComponent<RotateFx>();
         bool clockwise = steps > 0;
         for (int i = 0; i < Math.Abs(steps); i++) fx.PlayStep(null, null, clockwise);

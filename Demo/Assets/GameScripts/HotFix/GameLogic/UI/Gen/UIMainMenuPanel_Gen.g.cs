@@ -21,6 +21,8 @@ public partial class UIMainMenuPanel : UIPanelMono
 	[SerializeField] private Button m_btn_Language = null!;
 	[SerializeField] private Button m_btn_Difficulty = null!;
 	[SerializeField] private Text m_text_Difficulty = null!;
+	[SerializeField] private Button m_btn_Sound = null!;
+	[SerializeField] private Text m_text_Sound = null!;
 	#pragma warning restore CS0414
 
 	protected override void ScriptGenerator()
@@ -33,6 +35,8 @@ public partial class UIMainMenuPanel : UIPanelMono
 		m_btn_Language.onClick.AddListener(OnClick_LanguageBtn);
 		m_btn_Difficulty.onClick.RemoveAllListeners();
 		m_btn_Difficulty.onClick.AddListener(OnClick_DifficultyBtn);
+		m_btn_Sound.onClick.RemoveAllListeners();
+		m_btn_Sound.onClick.AddListener(OnClick_SoundBtn);
 	}
 
 	#endregion
@@ -46,6 +50,8 @@ public partial class UIMainMenuPanel : UIPanelMono
 	private partial void OnClick_LanguageBtn();
 
 	private partial void OnClick_DifficultyBtn();
+
+	private partial void OnClick_SoundBtn();
 
 	#endregion
 }

@@ -17,18 +17,21 @@ public partial class UIMainMenuPanel : UIPanelMono
     {
         m_text_Version.text = "v" + Application.version;
         AddServiceEvent(
-            () => TextTable.Instance.LanguageChanged += RefreshDifficulty,
-            () => { if (TextTable.IsValid) TextTable.Instance.LanguageChanged -= RefreshDifficulty; });
-        RefreshDifficulty();
+            () => TextTable.Instance.LanguageChanged += RefreshLabels,
+            () => { if (TextTable.IsValid) TextTable.Instance.LanguageChanged -= RefreshLabels; });
+        RefreshLabels();
         ProbeSave();
+        // 首帧的可见性翻转早于 OnCreate(见 UIPanelMono.OnVisibleChanged 注),背景音乐在这里落一次
+        AudioConfigMgr.SwitchMusic(AudioIds.MusicMain);
     }
 
     protected override void OnVisibleChanged(bool visible)
     {
         if (visible)
         {
-            RefreshDifficulty();
+            RefreshLabels();
             ProbeSave();
+            AudioConfigMgr.SwitchMusic(AudioIds.MusicMain);
         }
     }
 
@@ -38,10 +41,12 @@ public partial class UIMainMenuPanel : UIPanelMono
         m_btn_Continue.gameObject.SetActive(_saved != null);
     }
 
-    private void RefreshDifficulty()
+    /// <summary>难度、声音两个按钮上的文字(都随语言切换重画)。</summary>
+    private void RefreshLabels()
     {
         TextTable table = TextTable.Instance;
         m_text_Difficulty.text = table.Format(TextKeys.MainMenu.Difficulty, table.Get(TextKeys.Of(RunFlow.Difficulty)));
+        m_text_Sound.text = table.Get(SoundSettings.IsOn ? TextKeys.MainMenu.SoundOn : TextKeys.MainMenu.SoundOff);
     }
 
     /// <summary>开新局(选中的难度 + 新种子),下一步是选关。旧局的档在开局时删掉(规则 §8.1:开始新游戏会放弃旧局)。</summary>
@@ -64,7 +69,14 @@ public partial class UIMainMenuPanel : UIPanelMono
     private partial void OnClick_DifficultyBtn()
     {
         RunFlow.Difficulty = RunFlow.NextDifficulty(RunFlow.Difficulty);
-        RefreshDifficulty();
+        RefreshLabels();
+    }
+
+    /// <summary>声音总开关:音乐、音效、界面音效、语音一起开或关,存进 PlayerPrefs(启动时按同一套键还原)。</summary>
+    private partial void OnClick_SoundBtn()
+    {
+        SoundSettings.Toggle();
+        RefreshLabels();
     }
 
     private partial void OnClick_LanguageBtn()

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.Audio;
 using YooAsset;
 
@@ -21,6 +21,7 @@ namespace TEngine
         private IResourceModule _resourceModule;
         private Transform _transform;
         private float _volume = 1.0f;
+        private float _pitch = 1.0f;
         private float _duration;
         private float _fadeoutTimer;
         private const float FADEOUT_DURATION = 0.2f;
@@ -99,6 +100,19 @@ namespace TEngine
                 }
             }
             get => _volume;
+        }
+
+        /// <summary>
+        /// 音高(1 = 原调)。逐拍音靠它逐拍升调:起播时写入 AudioSource,加载期设置也能在真正出声那一刻生效。
+        /// </summary>
+        public float Pitch
+        {
+            set
+            {
+                _pitch = value;
+                if (_source != null) _source.pitch = _pitch;
+            }
+            get => _pitch;
         }
 
         /// <summary>
@@ -417,6 +431,7 @@ namespace TEngine
             if (clip.loadState == AudioDataLoadState.Loaded)
             {
                 _waitDecodeTimer = 0f;
+                _source.pitch = _pitch;
                 _source.Play();
                 _audioAgentRuntimeState = AudioAgentRuntimeState.Playing;
                 return;

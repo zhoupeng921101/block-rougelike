@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -473,6 +473,8 @@ public abstract class UIPanelMono : MonoBehaviour
         {
             _isCreate = true;
             ScriptGenerator();
+            // 这一窗的按钮全部接上点击音效(33 号票:界面音效);挂点在生成绑定之后,新按钮也已绑好
+            UIClickSfx.Attach(gameObject);
             RegisterEvent();
             OnCreate();
 

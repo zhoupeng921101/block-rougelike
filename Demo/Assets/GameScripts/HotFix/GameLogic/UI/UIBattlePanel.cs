@@ -66,6 +66,7 @@ public partial class UIBattlePanel : UIPanelMono
         }
         _gesture.Bind(_run);
         Refresh(_run);
+        AudioConfigMgr.SwitchMusic(AudioIds.MusicBoard);
         _fx.PlayOpening(entry.Resumed);
     }
 

@@ -53,6 +53,7 @@ public static class RunFlow
 
     public static void ShowMap(RunState run)
     {
+        AudioConfigMgr.SwitchMusic(AudioIds.MusicBoard);
         GameModule.UI.ShowUIAsync<UIMapPanel>(run);
         CloseAfterOpen(typeof(UIMapPanel), typeof(UIBattlePanel), typeof(UIBattleResultPanel), typeof(UIShopPanel));
     }
