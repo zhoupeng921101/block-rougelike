@@ -3,9 +3,9 @@ using GameRules;
 using UnityEngine;
 
 /// <summary>
-/// 战斗演出用到的特效素材(32 号票),由战斗窗序列化持有、随窗 prefab 进包。现在挂的全是动物乐园搬来的占位,
-/// 放在 <c>Assets/AssetRaw/Effects/ZooPlaceholder/</c>,逐件登记在那里的 <c>占位登记表.md</c>;阶段 6 换素材只改这里的引用。
-/// 动画名与内容宽在 <see cref="BattleFxNames"/>。
+/// 战斗演出用到的特效素材(32 号票),由战斗窗序列化持有、随窗 prefab 进包。
+/// 阶段 6 起特效件已全部换成自绘的图与补间(见 <c>UI/VFX/</c> 下各 Fx 类);
+/// 只剩粒子 prefab 与两个着色器仍是占位,登记在 <c>Assets/AssetRaw/Effects/ZooPlaceholder/占位登记表.md</c>。
 /// </summary>
 [Serializable]
 public sealed class BattleFxAssets
@@ -17,13 +17,7 @@ public sealed class BattleFxAssets
     [Tooltip("彩虹消行光束:同一构图的多色光带,Excellent 档起替代普通光束")]
     public Sprite ClearBeamRainbow;
 
-    [Tooltip("清屏整盘特效 db_CC,与 db_FHQP 轮播")]
-    public GameObject BoardClearA;
-
-    [Tooltip("清屏整盘特效 db_FHQP,与 db_CC 轮播")]
-    public GameObject BoardClearB;
-
-    [Tooltip("开盲注盘面点亮:代码现摆的 8×8 格,用柔光团当格心(见 BoardOpenFx)")]
+    [Tooltip("开盲注盘面点亮 / 清屏整盘亮起共用的格心柔光(代码现摆,见 BoardOpenFx / BoardClearFx)")]
     public Sprite BoardOpenGlow;
 
     [Tooltip("「继续」进战斗窗的扫描线横光带(已换成自绘图,见 BoardSweepFx)")]
@@ -51,15 +45,4 @@ public sealed class BattleFxAssets
 
     [Tooltip("得分数字 11 张:0–9 与「+」")]
     public Sprite[] Digits;
-}
-
-/// <summary>
-/// <see cref="BattleFxAssets"/> 里骨骼与 Spine 素材的动画名、内容宽(取自各自 <c>_ske.json</c> / 动物乐园名表,逐字一致;拼错的表现是不播特效、只记一条 Warning)。
-/// 消行光束与评价字的颜色取「这一步落下那块的种类色」(31 号票第 4 节)。
-/// </summary>
-public static class BattleFxNames
-{
-    public const string BoardClearAAnim = "qingchang";
-
-    public const string BoardClearBAnim = "fuhuoqipan";
 }

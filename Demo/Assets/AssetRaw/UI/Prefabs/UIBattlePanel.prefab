@@ -7607,8 +7607,6 @@ MonoBehaviour:
   _fxAssets:
     ClearBeam: {fileID: -9067098949259766306, guid: 04423393f19b47146b39529a691ae168, type: 3}
     ClearBeamRainbow: {fileID: -8517400822810689459, guid: b272ddd911c5b8d49a8501a1e1aebe61, type: 3}
-    BoardClearA: {fileID: 3490472105201019977, guid: f72b273146b1444489d1417fb7ff48db, type: 3}
-    BoardClearB: {fileID: 3477674498991530191, guid: 1bc401c95f28c0243817a94a8d8ac95f, type: 3}
     BoardOpenGlow: {fileID: 21300000, guid: 006da3a5034d82146acd0b8b9252275b, type: 3}
     BoardSweepBand: {fileID: 4302448841272011129, guid: 81a62de4599e4bc41a4172422d590520, type: 3}
     LandRing: {fileID: 6041209723939941297, guid: e5f3e99c6842fd84da4caa75d88757f7, type: 3}

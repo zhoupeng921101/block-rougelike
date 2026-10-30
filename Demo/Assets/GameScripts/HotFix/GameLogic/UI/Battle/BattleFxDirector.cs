@@ -247,10 +247,7 @@ public sealed class BattleFxDirector
         _seq.InsertCallback(t.CellsGoneAt + ClearPacing.AllClearBoardFx * k, () =>
         {
             bool a = (_boardClearTurn++ & 1) == 0;
-            var go = DragonBoneFx.SpawnFitWidth(FxLayer, a ? _assets.BoardClearA : _assets.BoardClearB,
-                a ? BattleFxNames.BoardClearAAnim : BattleFxNames.BoardClearBAnim, BoardCenter(), N * _board.CellSize(), 0f, Speed);
-            // 沉到特效层最底:盖在格底上、不盖住同时在场的碎块与方块雨
-            if (go != null) go.transform.SetAsFirstSibling();
+            BoardClearFx.Play(FxLayer, _assets.BoardOpenGlow, N, _board.CellSize(), BoardCenter(), Speed, !a);
         });
     }
 
