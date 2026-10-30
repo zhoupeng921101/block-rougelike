@@ -105,8 +105,8 @@ public sealed class BattleFxDirector
     {
         int tier = ClearFxTiers.TierOf(clear.Type);
         bool rainbow = ClearFxTiers.RainbowBeam(tier);
-        GameObject beam = rainbow ? _assets.ClearLineRainbow : _assets.ClearLine;
-        string anim = rainbow ? BattleFxNames.ClearLineRainbowAnim : BattleFxNames.ClearLineAnimOf(kind);
+        Sprite beam = rainbow ? _assets.ClearBeamRainbow : _assets.ClearBeam;
+        Color beamTint = BlockLayout.ColorOf(kind);
 
         float lastBeam = 0f;
         foreach (ClearLine line in t.Lines)
@@ -118,7 +118,7 @@ public sealed class BattleFxDirector
             {
                 Vector2 a = isRow ? _board.CellLocalPos(0, idx) : _board.CellLocalPos(idx, 0);
                 Vector2 b = isRow ? _board.CellLocalPos(N - 1, idx) : _board.CellLocalPos(idx, N - 1);
-                DragonBoneFx.SpawnFitWidth(FxLayer, beam, anim, (a + b) * 0.5f, N * _board.CellSize(), isRow ? 0f : 90f, Speed);
+                ClearBeamFx.Spawn(FxLayer, beam, (a + b) * 0.5f, N * _board.CellSize(), isRow ? 0f : 90f, beamTint, Speed);
             });
         }
 

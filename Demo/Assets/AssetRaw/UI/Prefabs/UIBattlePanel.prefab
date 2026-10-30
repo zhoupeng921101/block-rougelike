@@ -7605,8 +7605,8 @@ MonoBehaviour:
   m_part_Discard: {fileID: 600164367687511040}
   m_part_Badge: {fileID: 8517213414150091807}
   _fxAssets:
-    ClearLine: {fileID: 8838293735434653763, guid: da9cfdcd77d9e4b409a282caf4c1b36e, type: 3}
-    ClearLineRainbow: {fileID: 1248346137657967480, guid: 7efbb13a3ca6d91448d7ad631102270b, type: 3}
+    ClearBeam: {fileID: -9067098949259766306, guid: 04423393f19b47146b39529a691ae168, type: 3}
+    ClearBeamRainbow: {fileID: -8517400822810689459, guid: b272ddd911c5b8d49a8501a1e1aebe61, type: 3}
     BoardClearA: {fileID: 3490472105201019977, guid: f72b273146b1444489d1417fb7ff48db, type: 3}
     BoardClearB: {fileID: 3477674498991530191, guid: 1bc401c95f28c0243817a94a8d8ac95f, type: 3}
     BoardOpen: {fileID: 7519413460619071365, guid: 70ab7922b095c11428e8d029aa921402, type: 3}

@@ -241,6 +241,29 @@ for y in range(H):
             bpx[x, y] = (206, 244, 255, aa)
 save(band, "sweep", "sweep_band.png")
 
+# ---------- 消行光束：一张白色横光带（代码按骨牌色染）+ 一张彩虹版 ----------
+# 512×64：中间一条亮核、上下柔和衰减、两头渐隐；行方向直接用，列方向由代码转 90 度。
+W, H = 512, 64
+
+
+def 横光带(color_at):
+    im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    px = im.load()
+    for y in range(H):
+        t = abs((y - H / 2) / (H / 2))
+        a = int(255 * max(0.0, 1 - t) ** 2.2)
+        for x in range(W):
+            edge = min(1.0, min(x, W - 1 - x) / 56.0)
+            aa = int(a * (0.25 + 0.75 * edge))
+            if aa > 0:
+                px[x, y] = color_at(x) + (aa,)
+    return im
+
+
+save(横光带(lambda x: (255, 255, 255)), "beam", "beam_line.png")
+彩虹 = [(255, 90, 90), (255, 170, 60), (255, 235, 90), (110, 235, 130), (90, 200, 255), (150, 120, 255), (240, 120, 220)]
+save(横光带(lambda x: 彩虹[min(len(彩虹) - 1, x * len(彩虹) // W)]), "beam", "beam_rainbow.png")
+
 # ---------- 对照板：一对一对排 ----------
 show = pairs[:12]
 cell_w, cell_h = 420, 130

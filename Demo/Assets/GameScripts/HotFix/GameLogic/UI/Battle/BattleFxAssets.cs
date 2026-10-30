@@ -11,11 +11,11 @@ using UnityEngine;
 public sealed class BattleFxAssets
 {
     [Header("骨骼与 Spine")]
-    [Tooltip("消行光束 db_xc:一条线一发,7 色动画对 7 种骨牌")]
-    public GameObject ClearLine;
+    [Tooltip("消行光束的白色横光带(按骨牌色染,见 ClearBeamFx)")]
+    public Sprite ClearBeam;
 
-    [Tooltip("彩虹消行光束 db_clearRainbow:Excellent 档起替代 db_xc")]
-    public GameObject ClearLineRainbow;
+    [Tooltip("彩虹消行光束:同一构图的多色光带,Excellent 档起替代普通光束")]
+    public Sprite ClearBeamRainbow;
 
     [Tooltip("清屏整盘特效 db_CC,与 db_FHQP 轮播")]
     public GameObject BoardClearA;
@@ -59,17 +59,6 @@ public sealed class BattleFxAssets
 /// </summary>
 public static class BattleFxNames
 {
-    /// <summary>七种骨牌 → db_xc 的颜色动画,下标 = (int)<see cref="TetrominoKind"/>,与 <see cref="BlockLayout.ColorOf"/> 的占位色对应(I 青取浅蓝)。</summary>
-    private static readonly string[] ClearLineAnims = { "wathetblue", "yellow", "purple", "green", "red", "blue", "orange" };
-
-    public static string ClearLineAnimOf(TetrominoKind kind)
-    {
-        int k = (int)kind;
-        return k >= 0 && k < ClearLineAnims.Length ? ClearLineAnims[k] : "wathetblue";
-    }
-
-    public const string ClearLineRainbowAnim = "colour_elimination_A";
-
     public const string BoardClearAAnim = "qingchang";
 
     public const string BoardClearBAnim = "fuhuoqipan";
