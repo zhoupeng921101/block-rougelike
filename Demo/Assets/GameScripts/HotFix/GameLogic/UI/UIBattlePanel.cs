@@ -32,6 +32,12 @@ public partial class UIBattlePanel : UIPanelMono
     /// <summary>基因栏与道具栏:换位、出售、把道具拖到目标上使用(槽位文字在 OnCreate 里按 prefab 的槽格各建一个)。</summary>
     private BattleInventory _inventory;
 
+    /// <summary>本场最大连击。结算屏要「最大连击」,规则核心只留当前连击(Blind.Combo),这里按每一步记一个最大值。</summary>
+    private int _maxCombo;
+
+    /// <summary>记最大连击时的那一场(存的是当前节点 id,换节点就归零)。</summary>
+    private int _maxComboNodeId = -1;
+
     /// <summary>打开战斗窗时的 UserData:这一局,以及它是不是从主界面「继续」进来的(开局特效不同,31 号票第 20 项)。</summary>
     public sealed class Entry
     {
@@ -113,8 +119,26 @@ public partial class UIBattlePanel : UIPanelMono
         RunSaveService.Instance.CommitStep(_run, result);
         _show.Play(result, release, _run);
         IBlindView blind = _run.Blind;
+        TrackCombo(blind);
         if (blind.Outcome != BlindOutcome.InProgress)
             Log.Info($"[UIBattlePanel] 盲注结束:{blind.Outcome}({blind.FailReason}),累计 {blind.Score}/{blind.Spec.Target},第 {result.Step} 步");
+    }
+
+    /// <summary>
+    /// 记本场最大连击(结算屏用)。规则核心只在 <c>Blind.Combo</c> 上留当前值,一步没消除就清零,
+    /// 没有「本场最大」;这里在每一步被接受后记一次最大值。纯展示量:不进规则核心、不进存档,
+    /// 读档续打时从当前的连击数起算。
+    /// </summary>
+    private void TrackCombo(IBlindView blind)
+    {
+        if (blind == null) return;
+        int nodeId = _run.Progress.CurrentNodeId;
+        if (_maxComboNodeId != nodeId)
+        {
+            _maxComboNodeId = nodeId;
+            _maxCombo = 0;
+        }
+        if (blind.Combo > _maxCombo) _maxCombo = blind.Combo;
     }
 
     /// <summary>
@@ -124,13 +148,19 @@ public partial class UIBattlePanel : UIPanelMono
     private void ShowResult(BlindEnded ended, long total)
     {
         bool won = ended.Outcome == BlindOutcome.Won;
-        long target = _run.Blind.Spec.Target;
+        IBlindView blind = _run.Blind;
+        long target = blind.Spec.Target;
+        int segment = blind.Spec.Segment;
+        int layer = blind.Spec.Layer;
+        // 盲注在这一步之后就被 SettleBlind 丢掉,类型分布与段/层得先抄下来
+        var counts = new int[blind.TypeCounts.Count];
+        for (int i = 0; i < counts.Length; i++) counts[i] = blind.TypeCounts[i];
+
         Settlement? settlement = null;
         if (won && _run.Progress.CurrentNodeId != 0) settlement = RunFlow.SettleWon(_run);
         else if (!won) RunFlow.LoseRun();
-        RectTransform board = m_part_BoardArea.rectTransform;
         GameModule.UI.ShowUIAsync<UIBattleResultPanel>(new UIBattleResultPanel.Data(
-            ended.Outcome, ended.Reason, total, target, board.TransformPoint(board.rect.center), settlement,
+            ended.Outcome, ended.Reason, total, target, segment, layer, _maxCombo, counts, settlement, _run,
             () => RunFlow.AfterResult(_run, won), BackToMenu));
     }
 

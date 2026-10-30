@@ -69,7 +69,39 @@ public static class TextKeys
         public const string ResultReward = "ui.battle.result_reward";
         public const string ResultScore = "ui.battle.result_score";
         public const string ResultWon = "ui.battle.result_won";
+        public const string ResultHeader = "ui.battle.result_header";
+        public const string ResultEnterShop = "ui.battle.result_enter_shop";
+        public const string ResultBlind = "ui.battle.result_blind";
+        public const string ResultTarget = "ui.battle.result_target";
+        public const string ResultCombo = "ui.battle.result_combo";
+        public const string ResultDist = "ui.battle.result_dist";
+        public const string ResultRewardLabel = "ui.battle.result_reward_label";
+        public const string ResultInterestLabel = "ui.battle.result_interest_label";
+        public const string ResultInterestNote = "ui.battle.result_interest_note";
+        public const string ResultIncomeLabel = "ui.battle.result_income_label";
+        public const string ResultHoldLabel = "ui.battle.result_hold_label";
         public const string ScoreOf = "ui.battle.score_of";
+        public const string TypeHeader = "ui.battle.type_header";
+        public const string TypeValueHeader = "ui.battle.type_value_header";
+    }
+
+    /// <summary>三个盲注层级的名字(结算屏副标题、奖励行)。层级传 1–3。</summary>
+    public static string BlindNameOf(int layer)
+    {
+        switch (layer)
+        {
+            case 1: return "ui.blind.normal";
+            case 2: return "ui.blind.heavy";
+            case 3: return "ui.blind.boss";
+            default: return "ui.blind.normal";
+        }
+    }
+
+    /// <summary>各屏共用的零碎文案。</summary>
+    public static class Common
+    {
+        public const string Money = "ui.common.money";
+        public const string Library = "ui.common.library";
     }
 
     /// <summary>

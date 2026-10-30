@@ -15,19 +15,35 @@ public partial class UIBattleResultPanel : UIPanelMono
 	#region 脚本工具生成的代码
 
 	#pragma warning disable CS0414 // 绑定字段按 prefab 节点结构生成,是否被业务消费由业务定;生成物不为此报警
-	[SerializeField] private Button m_btn_Mask = null!;
-	[SerializeField] private RectTransform m_rect_Card = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_Money = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_HeaderTitle = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_HeaderInfo = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_LibraryCount = null!;
+	[SerializeField] private RectTransform m_rect_TypeTable = null!;
+	[SerializeField] private RectTransform m_rect_Inventory = null!;
 	[SerializeField] private TextMeshProUGUI m_tmp_Title = null!;
-	[SerializeField] private TextMeshProUGUI m_tmp_Reason = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_Subtitle = null!;
 	[SerializeField] private TextMeshProUGUI m_tmp_Score = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_Target = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_Combo = null!;
+	[SerializeField] private RectTransform m_rect_Dist = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_RewardNote = null!;
 	[SerializeField] private TextMeshProUGUI m_tmp_Reward = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_InterestNote = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_Interest = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_Reason = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_Income = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_IncomeLabel = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_HoldLabel = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_Hold = null!;
 	[SerializeField] private Button m_btn_Continue = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_ContinueLabel = null!;
 	[SerializeField] private Button m_btn_Back = null!;
+	[SerializeField] private TextMeshProUGUI m_tmp_BackLabel = null!;
 	#pragma warning restore CS0414
 
 	protected override void ScriptGenerator()
 	{
-		BindMask(m_btn_Mask);
 		m_btn_Continue.onClick.RemoveAllListeners();
 		m_btn_Continue.onClick.AddListener(OnClick_ContinueBtn);
 		m_btn_Back.onClick.RemoveAllListeners();
