@@ -327,14 +327,14 @@ public partial class UIShopPanel : UIPanelMono
     }
 
     /// <summary>物品种类 → 图集里的图标名。基因按 id 取,其余按种类;补给包再按包的种类细分。</summary>
-    private static string IconOf(ItemKind kind, int id)
+    private string IconOf(ItemKind kind, int id)
     {
         switch (kind)
         {
             case ItemKind.Gene: return GeneIcons[Mathf.Abs(id) % GeneIcons.Length];
             case ItemKind.Tech: return TechIcons[Mathf.Abs(id) % TechIcons.Length];
             case ItemKind.Mod: return "run_icon_mod_ironcore";
-            case ItemKind.Block: return "run_icon_pack_block";
+            case ItemKind.Block: return BlockIcon(id);
             case ItemKind.Voucher: return "run_icon_coupon";
             case ItemKind.Booster:
                 switch (id)
@@ -347,6 +347,16 @@ public partial class UIShopPanel : UIPanelMono
                 }
             default: return "run_icon_pack_gene";
         }
+    }
+
+    /// <summary>方块类的货:按方块种类取那张迷你骨牌(和右栏方块库同一个图标)。</summary>
+    private string BlockIcon(int blockId)
+    {
+        foreach (BlockEntry block in _run.Config.Catalog.Blocks)
+        {
+            if (block.Id == blockId) return "run_libblock_" + block.Kind.ToString().ToLowerInvariant();
+        }
+        return "run_icon_pack_block";
     }
 
     private void Buy(int index) => AfterBuy(_run.Shop.TryBuy(index, _run), "买货");

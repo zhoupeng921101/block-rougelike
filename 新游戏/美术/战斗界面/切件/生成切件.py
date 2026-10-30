@@ -84,6 +84,21 @@ def 虚影角标():
     return im
 存像素件(虚影角标(), "虚影角标", "方块")
 
+# 死格：几乎全黑的方砖，中间一道裂（死格盲与几张基因会造出来）
+def 死格():
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    px = im.load()
+    for y in range(16):
+        for x in range(16):
+            if (x in (0, 15)) and (y in (0, 15)):
+                continue
+            edge = x in (0, 15) or y in (0, 15)
+            px[x, y] = (hx("#1a1420") if edge else hx("#07070d")) + (255,)
+    for (x, y) in ((5, 3), (6, 4), (6, 5), (7, 6), (8, 6), (9, 7), (9, 8), (10, 9), (10, 10), (11, 11)):
+        px[x, y] = hx("#3a2a44") + (255,)
+    return im
+存像素件(死格(), "死格", "方块")
+
 # ---------- 面板：平滑九宫格 ----------
 SS = 4
 def 圆角框(w, h, r, fill, border=None, bw=0, dash=None):

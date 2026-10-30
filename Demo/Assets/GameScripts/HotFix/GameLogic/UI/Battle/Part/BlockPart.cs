@@ -1,4 +1,4 @@
-﻿using DG.Tweening;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 using TEngine;
@@ -32,14 +32,17 @@ public sealed class BlockPart : MonoBehaviour
         m_img_GhostMark.gameObject.SetActive(false);
     }
 
-    /// <summary>死格:不取皮图,纯色暗块。</summary>
+    /// <summary>死格:盘上的死格皮图(几乎全黑、中间一道裂),不再用纯色块顶。</summary>
     public void SetDead()
     {
         Skin = null;
-        m_eximg_Skin.SpriteName = string.Empty;
-        m_eximg_Skin.color = BlockLayout.DeadCellColor;
+        m_eximg_Skin.SpriteName = DeadSkinName;
+        m_eximg_Skin.color = Color.white;
         m_img_GhostMark.gameObject.SetActive(false);
     }
+
+    /// <summary>死格皮图在战斗图集里的名字(80×80,和方块皮图同一套预放大)。</summary>
+    private const string DeadSkinName = "battle_block_dead";
 
     /// <summary>落点虚影:半透明方砖,四角括号按块色染(效果图 v3A)。</summary>
     public void SetGhost(BlockSkin skin)
