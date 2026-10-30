@@ -48,8 +48,6 @@ public sealed class BattleFxDirector
     /// <summary>清屏整盘特效与开局点亮的轮播游标。static:挂在实例上的话每局第一发恒是表里第一套。</summary>
     private static int _boardClearTurn;
 
-    private static int _boardOpenTurn = -1;
-
     public BattleFxDirector(BattleFxAssets assets, BoardAreaPart board, RectTransform root, GameObject link)
     {
         _assets = assets;
@@ -166,9 +164,7 @@ public sealed class BattleFxDirector
 
     private void SpawnBoardOpen()
     {
-        if (_boardOpenTurn < 0) _boardOpenTurn = UnityEngine.Random.Range(0, BattleFxNames.BoardOpenAnimCount);
-        DragonBoneFx.SpawnFitWidth(FxLayer, _assets.BoardOpen, BattleFxNames.BoardOpenAnimAt(_boardOpenTurn++),
-            BoardCenter(), N * _board.CellSize(), 0f, Speed);
+        BoardOpenFx.Play(FxLayer, _assets.BoardOpenGlow, N, _board.CellSize(), BoardCenter(), Speed);
     }
 
     /// <summary>扫描线自盘底外扫到盘顶外,越出盘面的两段裁掉;光带图 + 补间,不再用 DragonBones(见 <see cref="BoardSweepFx"/>)。</summary>

@@ -23,8 +23,8 @@ public sealed class BattleFxAssets
     [Tooltip("清屏整盘特效 db_FHQP,与 db_CC 轮播")]
     public GameObject BoardClearB;
 
-    [Tooltip("开盲注盘面点亮 db_boardOpen")]
-    public GameObject BoardOpen;
+    [Tooltip("开盲注盘面点亮:代码现摆的 8×8 格,用柔光团当格心(见 BoardOpenFx)")]
+    public Sprite BoardOpenGlow;
 
     [Tooltip("「继续」进战斗窗的扫描线横光带(已换成自绘图,见 BoardSweepFx)")]
     public Sprite BoardSweepBand;
@@ -62,23 +62,6 @@ public static class BattleFxNames
     public const string BoardClearAAnim = "qingchang";
 
     public const string BoardClearBAnim = "fuhuoqipan";
-
-    /// <summary>开局点亮:整盘 8×8 格按对角线依次点亮再熄灭,a / b 两套走向各 7 色,每次开盲注轮下一个。</summary>
-    private static readonly string[] BoardOpenAnims =
-    {
-        "in_a_1", "in_a_2", "in_a_3", "in_a_4", "in_a_5", "in_a_6", "in_a_7",
-        "in_b_1", "in_b_2", "in_b_3", "in_b_4", "in_b_5", "in_b_6", "in_b_7",
-    };
-
-    public static int BoardOpenAnimCount => BoardOpenAnims.Length;
-
-    /// <summary>取第 <paramref name="idx"/> 个开局点亮动画;取模轮回。</summary>
-    public static string BoardOpenAnimAt(int idx)
-    {
-        int i = idx % BoardOpenAnims.Length;
-        if (i < 0) i += BoardOpenAnims.Length;
-        return BoardOpenAnims[i];
-    }
 
     /// <summary>星环唯一的动画(约 1.33 秒,前半程即成形)。</summary>
     public const string LandRingAnim = "idle";
