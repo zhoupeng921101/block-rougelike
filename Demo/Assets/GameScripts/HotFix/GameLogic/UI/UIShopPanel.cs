@@ -25,10 +25,11 @@ public partial class UIShopPanel : UIPanelMono
     private static readonly Color32 TextDim = new Color32(0x5c, 0x6f, 0x7a, 0xFF);
     private static readonly Color32 GoldColor = new Color32(0xff, 0xc8, 0x3d, 0xFF);
 
-    /// <summary>基因图标第一批只有四张(激光炮 / 陨石 / 黑洞 / 导弹),按基因 id 稳定地取一张。</summary>
+    /// <summary>基因图标:第一批四张武器(激光炮 / 陨石 / 黑洞 / 导弹)加第二批四张(水晶 / 星 / 盾 / 时钟),按 id 稳定地取一张。</summary>
     private static readonly string[] GeneIcons =
     {
         "run_icon_gene_cannon", "run_icon_gene_meteor", "run_icon_gene_blackhole", "run_icon_gene_missile",
+        "run_icon_gene_crystal", "run_icon_item_star", "run_icon_item_shield", "run_icon_item_clock",
     };
 
     private static readonly string[] TechIcons =
@@ -325,16 +326,25 @@ public partial class UIShopPanel : UIPanelMono
         return button;
     }
 
-    /// <summary>物品种类 → 图集里的图标名。基因第一批只有四张、按 id 取;改造暂时借科技那张。</summary>
+    /// <summary>物品种类 → 图集里的图标名。基因按 id 取,其余按种类;补给包再按包的种类细分。</summary>
     private static string IconOf(ItemKind kind, int id)
     {
         switch (kind)
         {
             case ItemKind.Gene: return GeneIcons[Mathf.Abs(id) % GeneIcons.Length];
             case ItemKind.Tech: return TechIcons[Mathf.Abs(id) % TechIcons.Length];
-            case ItemKind.Mod: return "run_icon_tech_rail";
-            case ItemKind.Block: return "run_libblock_t";
+            case ItemKind.Mod: return "run_icon_mod_ironcore";
+            case ItemKind.Block: return "run_icon_pack_block";
             case ItemKind.Voucher: return "run_icon_coupon";
+            case ItemKind.Booster:
+                switch (id)
+                {
+                    case 2: return "run_icon_pack_tech";
+                    case 3: return "run_icon_mod_ironcore";
+                    case 4: return "run_icon_pack_block";
+                    case 5: return "run_icon_item_star";
+                    default: return "run_icon_pack_gene";
+                }
             default: return "run_icon_pack_gene";
         }
     }

@@ -350,6 +350,97 @@ for name, col, use in (("节点环_可打", C["高亮边"], "选关：目前能�
 勾.save(out("图标", "勾.png"))
 清单["件"]["图标/勾.png"] = {"尺寸": [16, 16], "显示": [32, 32], "过滤": "Bilinear", "用在": "选关：打过的节点右上角打勾"}
 
+# ---------- 第二批基因 / 道具图标：给商店货架与基因槽凑够可区分的种类 ----------
+# 水晶：七彩基因那类「稀有 / 多彩」的东西
+def 水晶(px):
+    body, light, dark = hx("#a46cf5"), hx("#e6d8ff"), hx("#4b2f7a")
+    for y in range(4, 17):
+        half = max(1, round((y - 3) * 0.55))
+        for x in range(10 - half, 10 + half):
+            px[x, y] = body + (255,)
+    for y in range(5, 15):
+        px[8, y] = light + (255,)
+    for y in range(5, 17):
+        px[11, y] = dark + (255,)
+    矩形(px, 9, 3, 10, 4, light)
+
+# 铁芯改造：金属块，中间一颗红核
+def 铁芯(px):
+    shell, edge, core, hot = hx("#8a97a3"), hx("#3d4650"), hx("#ff4d6a"), hx("#ffb3c0")
+    矩形(px, 3, 4, 16, 16, edge)
+    矩形(px, 4, 5, 15, 15, shell)
+    矩形(px, 5, 6, 14, 6, hx("#b6c2cc"))          # 顶面亮边
+    矩形(px, 8, 9, 11, 12, edge)
+    矩形(px, 9, 10, 10, 11, core)
+    px[9, 10] = hot + (255,)
+    矩形(px, 12, 13, 13, 14, edge)
+
+# 时钟：延迟 / 计时类
+def 时钟(px):
+    face, edge, hand = hx("#e8eef2"), hx("#3a5262"), hx("#ffc83d")
+    圆(px, 10, 10, 7, edge)
+    圆(px, 10, 10, 6, face)
+    for i in range(6):
+        px[10, 5 + i] = edge + (255,)
+    描(px, [(10, 10), (10, 6)], hand)
+    描(px, [(10, 10), (13, 11)], hand)
+    矩形(px, 9, 2, 10, 3, edge)
+
+# 盾：防护 / 免死类
+def 盾(px):
+    body, light, edge = hx("#4fb3ff"), hx("#cfeaff"), hx("#173a5e")
+    for y in range(4, 17):
+        half = 6 if y < 12 else max(1, 6 - (y - 11) * 1)
+        for x in range(10 - half, 10 + half):
+            px[x, y] = body + (255,)
+    for y in range(4, 17):
+        half = 6 if y < 12 else max(1, 6 - (y - 11) * 1)
+        px[10 - half, y] = edge + (255,)
+        px[10 + half - 1, y] = edge + (255,)
+    描(px, [(6, 6), (10, 4), (13, 6)], light)
+
+# 硬币：经济类
+def 硬币(px):
+    rim, face, ink = hx("#c98f1a"), hx("#ffc83d"), hx("#5a3d05")
+    圆(px, 10, 10, 7, rim)
+    圆(px, 10, 10, 5, face)
+    矩形(px, 9, 7, 10, 12, ink)
+    矩形(px, 8, 8, 8, 10, ink)
+    矩形(px, 11, 11, 11, 12, ink)
+
+# 星：稀有 / 传说标记
+def 星(px):
+    body, light = hx("#ffc83d"), hx("#fff2b0")
+    for (x, y) in ((9, 3), (10, 3), (9, 4), (10, 4)):
+        px[x, y] = light + (255,)
+    for i in range(4, 16):
+        half = max(0, 6 - abs(i - 10))
+        for x in range(10 - half, 10 + half):
+            px[x, i] = body + (255,)
+    for i in range(1, 5):
+        px[10 - i, 10 - i] = body + (255,)
+        px[10 + i - 1, 10 - i] = body + (255,)
+        px[10 - i, 10 + i] = light + (255,)
+
+# 方块包：补给包里的「方块包」
+def 方块包(px):
+    box, edge, face = hx("#a46cf5"), hx("#3b2966"), hx("#e6d8ff")
+    矩形(px, 3, 7, 16, 17, edge)
+    矩形(px, 4, 8, 15, 16, box)
+    矩形(px, 2, 5, 17, 7, box)
+    矩形(px, 2, 5, 17, 5, edge)
+    矩形(px, 7, 10, 9, 12, face)
+    矩形(px, 11, 10, 13, 12, face)
+    矩形(px, 9, 13, 11, 15, face)
+
+存图标(像素图标(水晶), "基因_水晶", "基因图标：稀有 / 多彩那类（商店货架按 id 取）")
+存图标(像素图标(铁芯), "改造_铁芯", "改造图标：铁芯改造（一块变成铁芯方块）")
+存图标(像素图标(时钟), "道具_时钟", "道具图标：延迟 / 计时类")
+存图标(像素图标(盾), "道具_盾", "道具图标：防护 / 免死类")
+存图标(像素图标(硬币), "道具_硬币", "图标：经济类")
+存图标(像素图标(星), "道具_星", "图标：稀有 / 传说标记")
+存图标(像素图标(方块包), "道具_方块包", "补给包图标：方块包")
+
 
 # ---------- 方块库：4 格拼成的迷你骨牌（1 格 = 14 设计像素） ----------
 方块色 = {"I": "#3fd0e8", "O": "#f2c53d", "T": "#a46cf5", "S": "#4cd06a", "Z": "#f05454", "J": "#3e7bff", "L": "#ff9a3c"}
