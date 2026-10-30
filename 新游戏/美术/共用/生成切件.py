@@ -227,6 +227,130 @@ def 票券(px):
 
 存图标(像素图标(票券), "券_金色", "右栏优惠券：金色票券")
 
+# ---------- 基因 / 道具图标：20×20 手绘，照 v3A 的基因槽画成物件 ----------
+# 激光炮：炮管朝右，炮身深灰蓝，炮口一点青光
+def 激光炮(px):
+    body, edge, glow = hx("#5c7f96"), hx("#2a4152"), hx("#7ff0ff")
+    矩形(px, 2, 8, 9, 13, edge)
+    矩形(px, 3, 9, 8, 12, body)
+    矩形(px, 9, 9, 16, 11, edge)
+    矩形(px, 10, 10, 15, 10, body)
+    矩形(px, 16, 8, 18, 12, edge)
+    矩形(px, 17, 9, 18, 11, glow)
+    矩形(px, 4, 14, 7, 15, edge)
+
+# 陨石：一块带棱角的岩石，右上一条火尾
+def 陨石(px):
+    rock, edge, fire, hot = hx("#8a6a55"), hx("#4a3527"), hx("#ff8a2a"), hx("#ffd84a")
+    for y in range(8, 18):
+        for x in range(3, 14):
+            if (x - 8) ** 2 * 0.8 + (y - 13) ** 2 <= 30:
+                px[x, y] = rock + (255,)
+    for x, y in ((4, 10), (5, 9), (6, 8), (7, 7), (8, 6), (9, 5), (10, 4), (11, 3), (12, 2)):
+        px[x, y] = fire + (255,)
+        px[x + 1, y + 1] = hot + (255,)
+    矩形(px, 5, 12, 6, 13, edge); 矩形(px, 10, 14, 11, 15, edge); 矩形(px, 9, 11, 10, 12, edge)
+
+# 黑洞：外圈紫环，里面全黑，中心一点亮
+def 黑洞(px):
+    ring, dim, core = hx("#a46cf5"), hx("#4b2f7a"), hx("#e6d8ff")
+    for y in range(20):
+        for x in range(20):
+            r2 = (x - 10) ** 2 + (y - 10) ** 2
+            if 20 <= r2 <= 46:
+                px[x, y] = (ring if r2 >= 33 else dim) + (255,)
+            elif r2 < 20:
+                px[x, y] = (6, 4, 12, 255)
+    px[10, 10] = core + (255,); px[9, 10] = core + (255,); px[10, 9] = core + (255,)
+
+# 导弹：竖着的火箭，尾焰朝下
+def 导弹(px):
+    body, edge, fin, flame = hx("#d9e3ea"), hx("#6d7f8c"), hx("#ff4d6a"), hx("#ffc83d")
+    矩形(px, 8, 4, 11, 13, edge)
+    矩形(px, 9, 5, 10, 13, body)
+    矩形(px, 8, 3, 11, 3, edge)
+    矩形(px, 7, 9, 7, 13, fin); 矩形(px, 12, 9, 12, 13, fin)
+    矩形(px, 9, 14, 10, 15, flame); px[9, 16] = (255, 200, 61, 255)
+    矩形(px, 9, 6, 10, 7, hx("#3e8fe0"))
+
+存图标(像素图标(激光炮), "基因_激光炮", "基因图标：激光炮（v3A 基因槽的武器画法）")
+存图标(像素图标(陨石), "基因_陨石", "基因图标：陨石")
+存图标(像素图标(黑洞), "基因_黑洞", "基因图标：黑洞")
+存图标(像素图标(导弹), "基因_导弹", "基因图标：导弹")
+
+# ---------- 选关屏的星球节点：20×20，八种底子 ----------
+def 星球(px, body, light, dark, craters, lava=False, ring=None, shattered=False):
+    cx, cy, R = 10, 10, 9
+    for y in range(20):
+        for x in range(20):
+            dx, dy = x - cx, y - cy
+            if dx * dx + dy * dy > R * R:
+                continue
+            t = (dx + dy) / (2.2 * R)                    # 右上暗、左上亮
+            c = mix(body, light, max(0.0, -t) * 0.9) if t < 0 else mix(body, dark, min(1.0, t) * 0.9)
+            px[x, y] = c + (255,)
+    if ring:                                             # 星环：上半天被球挡住，下半天横过球前
+        for x in range(0, 20):
+            y = round(cy + (x - cx) * 0.34)
+            for k in (0, 1):
+                yy = y + k
+                if not (0 <= yy < 20):
+                    continue
+                if yy < cy and (x - cx) ** 2 + (yy - cy) ** 2 <= R * R:
+                    continue                                  # 被球挡住的那半
+                px[x, yy] = ring + (255,) if k == 0 else mix(ring, body, 0.45) + (255,)
+    for (x, y, r) in craters:
+        for yy in range(-r, r + 1):
+            for xx in range(-r, r + 1):
+                gx, gy = cx + x + xx, cy + y + yy
+                if xx * xx + yy * yy <= r * r and 0 <= gx < 20 and 0 <= gy < 20 \
+                        and (gx - cx) ** 2 + (gy - cy) ** 2 <= R * R:
+                    px[gx, gy] = dark + (255,)
+        gx, gy = cx + x, cy + y - r
+        if 0 <= gx < 20 and 0 <= gy < 20 and (gx - cx) ** 2 + (gy - cy) ** 2 <= R * R:
+            px[gx, gy] = mix(dark, light, 0.5) + (255,)
+    if lava:                                             # 岩浆缝：几道亮橙
+        for x0, y0, x1, y1 in ((-4, -4, 1, 0), (1, 0, -1, 4), (2, -5, 4, -1)):
+            描(px, [(cx + x0, cy + y0), (cx + x1, cy + y1)], hx("#ff7a2a"))
+    if shattered:                                        # 打碎：右下缺一块 + 几块碎屑
+        for y in range(20):
+            for x in range(20):
+                if (x - 15) ** 2 + (y - 15) ** 2 <= 16:
+                    px[x, y] = (0, 0, 0, 0)
+        for x, y in ((15, 14), (17, 12), (13, 18), (18, 17)):
+            px[x, y] = dark + (255,)
+
+星球底子 = [
+    ("灰岩", hx("#8d97a3"), hx("#dfe7ee"), hx("#4a535e"), [(-3, -2, 2), (2, 2, 2), (4, -3, 1)], {}),
+    ("橙褐", hx("#b8763f"), hx("#f0bd7a"), hx("#5e3517"), [(-3, 2, 2), (3, -1, 2)], {}),
+    ("熔岩", hx("#8e3a2a"), hx("#e8754a"), hx("#3a120c"), [(-2, -3, 2), (3, 3, 2)], {"lava": True}),
+    ("暗红", hx("#7a2b32"), hx("#c45a5a"), hx("#2c0d12"), [(0, 0, 3), (4, -2, 1)], {}),
+    ("冰蓝", hx("#6fa8c8"), hx("#d8f2ff"), hx("#2c4c62"), [(-4, -1, 1), (2, 3, 2)], {}),
+    ("紫晶", hx("#8a6bd0"), hx("#d9c7ff"), hx("#3b2966"), [(-2, 1, 2)], {"ring": hx("#c9a8ff")}),
+    ("翠绿", hx("#4f9a6a"), hx("#c9f2d4"), hx("#204a2f"), [(1, -2, 2), (-3, 3, 1)], {}),
+    ("碎块", hx("#7f7268"), hx("#cfc6bb"), hx("#3a322c"), [(-3, -2, 2), (2, 1, 1)], {"shattered": True}),
+]
+for name, body, light, dark, craters, opts in 星球底子:
+    im = 像素图标(lambda px, b=body, l=light, dk=dark, c=craters, o=opts: 星球(px, b, l, dk, c, **o))
+    im.save(out("图标", "星球_" + name + ".png"))
+    清单["件"]["图标/星球_%s.png" % name] = {"尺寸": [20, 20], "显示": [60, 60], "过滤": "Bilinear",
+                                       "用在": "选关屏地图节点里的目标星球（60 = 3 倍）；按节点绑一色一图"}
+
+# 节点状态环 + 打勾：平滑件，环 72×72、勾 16×16
+for name, col, use in (("节点环_可打", C["高亮边"], "选关：目前能打的节点外圈"),
+                       ("节点环_已打", "#4cd06a", "选关：打过的节点外圈"),
+                       ("节点环_首领", C["倍率"], "选关：首领节点外圈")):
+    im = Image.new("RGBA", (72 * SS, 72 * SS), (0, 0, 0, 0))
+    ImageDraw.Draw(im).ellipse((0, 0, 72 * SS - 1, 72 * SS - 1), outline=hx(col) + (255,), width=3 * SS)
+    存平滑(im.resize((72, 72), Image.LANCZOS), name, "", None, use)
+
+勾 = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+描(勾.load(), [(3, 9), (7, 13), (13, 3)], hx("#4cd06a"))
+描(勾.load(), [(3, 10), (7, 14), (13, 4)], hx("#bff5cc"))
+勾.save(out("图标", "勾.png"))
+清单["件"]["图标/勾.png"] = {"尺寸": [16, 16], "显示": [32, 32], "过滤": "Bilinear", "用在": "选关：打过的节点右上角打勾"}
+
+
 # ---------- 方块库：4 格拼成的迷你骨牌（1 格 = 14 设计像素） ----------
 方块色 = {"I": "#3fd0e8", "O": "#f2c53d", "T": "#a46cf5", "S": "#4cd06a", "Z": "#f05454", "J": "#3e7bff", "L": "#ff9a3c"}
 形状 = {
