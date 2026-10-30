@@ -11,7 +11,7 @@
 - **建好即改成带前缀的语义名**:中性结构名(`Button` / `Text` / `Viewport`)只用于不被代码引用的内部节点。
   命名风格随生成器:`m_btn_Close` 这样**前缀后接下划线再接语义名**。前缀表按 StartsWith 匹配,驼峰写法也能过,但与生成物不齐。
 - **新名在窗内必须唯一**:工程 UI 走按节点名绑定(`ScriptGenerator.FindNodeByNameWithWidgetBoundary`),重名会绑错引用,且只在运行期显形。
-- 写 prefab 的 `execute_code` 首行置落点守卫(正本 = unity-check「槽位分工与占用」):漂到别的槽位就是写进另一个任务的 prefab,工具照常回 OK。
+- 写 prefab 的 `execute_code` 首行置落点守卫(正本 = unity-check「实例路由与落点」):漂到别的实例就是写进另一份工程的 prefab,工具照常回 OK。
 - 用 `DefaultControls.CreateXxx` 起手省事,但它给的默认值有几处与本文冲突(ScrollRect 的 `Mask`、Text 的 Truncate、各处默认尺寸),起手后按下文逐条改。
 
 ## 各控件

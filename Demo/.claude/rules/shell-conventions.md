@@ -13,7 +13,7 @@
 多行文本、含中文、含英文引号的参数不以字符串穿越进程边界,一律写临时文件传路径:
 
 - hook 演练输入:`hook演练.ps1 -Json <文件>`,勿绕过脚本直管道。
-- 列表/数组参数:PowerShell 数组传原生进程时在 argv 层展平为多个 token,接收侧按位置错绑。跨进程清单一律写临时文件(每行一项,UTF-8)传 `-XxxFile` 类参数(先例:`槽位领取.ps1 -PathsFile`)。
+- 列表/数组参数:PowerShell 数组传原生进程时在 argv 层展平为多个 token,接收侧按位置错绑。跨进程清单一律写临时文件(每行一项,UTF-8)传 `-XxxFile` 类参数(先例:`单仓提交.ps1 -PathListFile`)。
 > 理由见 .claude/rules-archive/rules-rationale.md#shell-text-to-file-zero-counterexample
 
 ## 内联命令

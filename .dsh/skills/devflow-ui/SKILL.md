@@ -11,5 +11,5 @@ description: devflow UI 实现段(DSH 适配卡)。只由 devflow 主流程在�
 
 - 脚本调用用 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File`;MCP 工具名不变。
 - `execute_code` 首行落点守卫照正本与 `unity-check` 卡执行;长编译后台跑。
-- 呈报里的目视证据照正本产出(开窗方式 + 结果一句话 + 截图路径)。DSH 侧截图走 MCP 的同名工具,取图来源仍是槽位编辑器。
-- 本段不写业务代码与 Part 类文件的边界不变;交付走 devflow 主流程,不自行提交。
+- 呈报里的目视证据照正本产出(开窗方式 + 结果一句话 + 截图路径)。DSH 侧截图走 MCP 的同名工具,取图来源是主工程编辑器。
+- 本段不写业务代码与 Part 类文件的边界不变;提交走 devflow 主流程,不自行提交。

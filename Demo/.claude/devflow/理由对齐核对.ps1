@@ -30,7 +30,6 @@ $pairs = @(
     Marker    = "devflow/rationale.md"
     Refs      = @(
       (Join-Path $skills "devflow\SKILL.md"),
-      (Join-Path $skills "devflow\references\slot-protocol.md"),
       (Join-Path $skills "devflow\references\defect-attribution.md"),
       (Join-Path $skills "devflow\references\script-consolidation.md"),
       (Join-Path $skills "devflow\references\security-review.md"),

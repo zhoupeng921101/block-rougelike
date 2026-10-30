@@ -44,7 +44,7 @@ Demo/Assets/
     └── item_tbitem.bytes                     # Item 表二进制数据
 ```
 
-block-client 另有服务端与 editor 两个导出目标(`gen_code_bin_to_server` / `gen_code_bin_to_editor`,产物分别落服务端仓与 `Assets/Editor/GameConfigEditor/`),本作不带。表源放仓根 `Configs/` 时注意槽位稀疏检出只含 `Demo/` 与 `新游戏/`(`flow-config.psd1` `SlotSparseDirs`),接入时要加进去。
+block-client 另有服务端与 editor 两个导出目标(`gen_code_bin_to_server` / `gen_code_bin_to_editor`,产物分别落服务端仓与 `Assets/Editor/GameConfigEditor/`),本作不带。
 
 ## luban.conf 配置
 
@@ -85,7 +85,7 @@ block-client 的同一文件另有 `s`(服务端)、`e`(编辑器)两个分组�
 | `gen_code_bin_to_project_lazyload` | 客户端代码+数据 | **推荐入口**,AI 调用此脚本 |
 | `gen_code_bin_to_project` | 客户端代码+数据 | 与 `_lazyload` **实质等价**:两者都传 `--customTemplateDir CustomTemplate_Client_LazyLoad`,只差注释与变量写法。名字暗示的「标准模板 / 非懒加载」并不存在 |
 
-接入后把入口填进 `flow-config.psd1` 的 `LubanGenClientBat`(相对仓根),槽位交付合并后的 Luban 基线自动同步才会重导。
+接入后把入口填进 `flow-config.psd1` 的 `LubanGenClientBat`(相对仓根),生成域登记的导出命令核对才认得它。
 
 ### AI 调用导表命令
 

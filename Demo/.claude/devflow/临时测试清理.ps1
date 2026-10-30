@@ -5,7 +5,7 @@
 # 删除范围由构造保证(脚本永远只碰这一个目录),堵住手删路径打偏、无机器核对的缺口。
 # 票树核对与容忍度单一源 = hooks\校验库.ps1(ScratchRe / ClientSurfaceRe / Test-TicketCoversTree)。
 # 不跑任何 git 动词:测试目录被 .gitignore 忽略,从不入库,删除不产生 git 变更、无需提交;删除造成的
-# 工作树漂移由验凭据的临时测试删除容忍度承接。调用点 = 槽位交付.ps1 客户端自检 PASS 之后。
+# 工作树漂移由验凭据的临时测试删除容忍度承接。调用点 = devflow 卡第三步,客户端自检 PASS 之后、单仓提交之前。
 # -CheckOnly:验票并列出将删文件,不删任何东西(script-authoring·脚本接口设计)。
 # 退出码:0 已清理 / 无可清 / -CheckOnly 报告完成;1 票缺失 / 不可读 / 非 PASS / 缺树哈希 / 票树不覆盖当前树;2 参数错。
 [CmdletBinding(PositionalBinding=$false)]
@@ -30,7 +30,7 @@ $ticketPath = Join-Path $repoRoot ".gate\ticket.json"
 if (-not (Test-Path $ticketPath)) {
   Write-Host "REFUSED: no gate ticket at '$ticketPath' - green the gate first (客户端自检.ps1); deletion timing = gate actually green"; exit 1
 }
-# 票读取与票树核对走 校验库 单一正本(Read-Ticket / Test-TicketCoversTree),口径 = 集成交付 push 点验票
+# 票读取与票树核对走 校验库 单一正本(Read-Ticket / Test-TicketCoversTree),口径 = 单仓提交 提交点验票
 # (客户端验证面 ClientSurfaceRe:面外漂移不作废、临时测试删除豁免)。只看 result 时,上一轮留下的 PASS 票
 # 在其后改过代码、检查未重跑的树上照样放行删除——「PASS 在手才删」就失去了「在手」的含义。
 # 校验库 在验票需要时才加载:它会钉进程输出编码,早于验票的 ABORT / NOTHING TO CLEAN 路径不受影响。

@@ -36,21 +36,16 @@ function New-Fixture {
   New-Item -ItemType Directory -Force -Path $env:LOCALAPPDATA | Out-Null
   Copy-Item (Join-Path $dfDir "hooks\hook函数库.ps1") (Join-Path $df "hooks") -Force
   Copy-Item $Target (Join-Path $df "run_tests.ps1") -Force
-  # 入口只读 BoardRelPath(推哨兵里的运行态目录名);其余键给全是因为配置加载时会补路径键。
+  # 入口只读运行态根;键给全是因为配置加载时会补路径键。
   $cfg = @"
 @{
   RepoRoot         = '$($tmp -replace "'","''")'
   FantasyRoot      = '$($tmp -replace "'","''")'
   ServerDirName    = 'block-server'
-  SlotBaseDir      = '$($tmp -replace "'","''")'
-  SlotDirPrefix    = 'block-client-dev'
-  SlotCount        = '3'
   SlotBranchPrefix = 'agent/dev'
   SlotRootRe       = '-dev[1-9]$'
   ClientBaseline   = 'main'
   FantasyBaseline  = 'main'
-  StaleClaimHours  = '24'
-  BoardRelPath     = 'claude-wf-3b\board.json'
 }
 "@
   [System.IO.File]::WriteAllText((Join-Path $df "flow-config.psd1"), $cfg, (New-Object System.Text.UTF8Encoding($true)))

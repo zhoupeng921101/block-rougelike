@@ -78,22 +78,12 @@ function Resolve-WfStatePath([string]$Rel, [string]$Lad = $env:LOCALAPPDATA) {
 $script:WfStateRoot = Resolve-WfStatePath "claude-wf-3b"
 
 function Resolve-FlowRoots([hashtable]$Cfg, [string]$Here) {
-  # Fill in the path keys (RepoRoot / SlotBaseDir / FantasyRoot) whenever the config leaves
-  # them empty; an explicit value in the psd1 always wins (test fixtures rely on that).
+  # Fill in the path keys (RepoRoot / FantasyRoot) whenever the config leaves them empty;
+  # an explicit value in the psd1 always wins (test fixtures rely on that).
   # Anchor: this library always sits at <repoRoot>\Demo\.claude\devflow\hooks, so
-  # four levels up is the repo root and its parent is the slot pool base (slots are siblings).
-  # Slot normalisation is load-bearing: a slot worktree carries a full copy of .claude, so a
-  # call made from that copy would otherwise resolve the SLOT as the repo root and make
-  # 提交检查 channel detection / 集成交付 baseline checks operate on the wrong repo.
+  # four levels up is the repo root.
   $root = [System.IO.Path]::GetFullPath((Join-Path $Here "..\..\..\.."))
-  $base = Split-Path $root -Parent
-  $leaf = Split-Path $root -Leaf
-  if ($Cfg.SlotRootRe) {
-    $mainLeaf = [regex]::Replace($leaf, $Cfg.SlotRootRe, "")
-    if ($mainLeaf -and $mainLeaf -ne $leaf) { $root = Join-Path $base $mainLeaf }
-  }
   if (-not $Cfg.RepoRoot)    { $Cfg.RepoRoot = $root }
-  if (-not $Cfg.SlotBaseDir) { $Cfg.SlotBaseDir = $base }
   if (-not $Cfg.FantasyRoot -and $Cfg.ServerDirName) { $Cfg.FantasyRoot = (Join-Path $Cfg.RepoRoot $Cfg.ServerDirName) }
   return $Cfg
 }
@@ -118,12 +108,6 @@ function Test-ServerEnabled {
   # 服务端通道开关(单源):flow-config ServerDirName 非空才有服务端仓。本作没有服务端,双仓共用脚本里
   # 碰服务端仓的分支一律先问它;关闭时服务端侧视同「无改动、无票要求、无部署」。
   return [bool](Get-FlowConfig).ServerDirName
-}
-
-function Get-BoardPath {
-  # 任务看板物理路径,读写方(看板 / 占用面板 / 槽位领取内核)共用此一处;相对路径正本 = flow-config
-  # BoardRelPath,物理解析见 Resolve-WfStatePath。看板锁按其父目录取名,故容器内外也争同一把锁。
-  return (Resolve-WfStatePath (Get-FlowConfig).BoardRelPath)
 }
 
 function Get-FlowEngine {
@@ -281,46 +265,6 @@ function Get-PhaseSecs($Clock) {
   return $out
 }
 
-function Get-ClaimSha([string]$SlotRoot, [string]$Baseline) {
-  # 槽位分支上 claim 占位提交的 sha:本分支一父链上最早的那条,且 subject 以「claim:」起头;没有或查不了回空串。
-  # 消费方 = 两个 Agent 入口的 entry-verdict 遥测(入口拿不到会话身份,领取与交付那两行靠 topic + slot + claim 对上)。
-  try {
-    $sha = Get-GitOne $SlotRoot ("log --first-parent --reverse --format=%H " + $Baseline + "..HEAD")
-    if ($sha -notmatch '^[0-9a-f]{40}$') { return "" }
-    if ((Get-GitOne $SlotRoot ("log -1 --format=%s " + $sha)) -notmatch '^claim:') { return "" }
-    return $sha
-  } catch { return "" }
-}
-
-function Write-EntryVerdictTelemetry([string]$Entry, [string]$Line, [int]$Code, [hashtable]$Ctx) {
-  # Agent 入口(槽位领取 / 槽位交付)每个 VERDICT 出口写一行 event=entry-verdict。字段:entry、verdict(抬头首词)、
-  # next、exit、detail(正文前 200 字)、secs、phases(分段秒数)、slot、topic、claim(claim 占位提交 sha)、
-  # files(冲突 / 重叠路径,至多 10 条)、run(交付关联号)。入口拿不到会话身份,领取与交付靠 topic + slot + claim 对上。
-  # $Ctx 收 Clock / Slot / Topic / Claim / Files,缺的字段不写。只读不改 VERDICT 与出口码;任何异常吞掉。
-  try {
-    $f = Get-VerdictTelemetryFields $Line
-    $f["event"] = "entry-verdict"; $f["entry"] = $Entry; $f["exit"] = $Code
-    if ($null -eq $Ctx) { $Ctx = @{} }
-    if ($Ctx.Clock) {
-      $f["secs"] = [Math]::Round($Ctx.Clock.Sw.Elapsed.TotalSeconds, 1)
-      $ph = Get-PhaseSecs $Ctx.Clock
-      if ($ph.Count -gt 0) { $f["phases"] = $ph }
-    }
-    if ($Ctx.Slot) { $f["slot"] = [string]$Ctx.Slot }
-    if ($Ctx.Topic) {
-      $t = ([string]$Ctx.Topic -split "\r?\n", 2)[0].Trim()
-      if ($t.Length -gt 120) { $t = $t.Substring(0, 120) }
-      $f["topic"] = $t
-    }
-    if ($Ctx.Claim) { $f["claim"] = [string]$Ctx.Claim }
-    $files = @(@($Ctx.Files) | Where-Object { $_ } | Select-Object -First 10 | ForEach-Object { ([string]$_).Trim() })
-    if ($files.Count -gt 0) { $f["files"] = $files }
-    $run = Get-DeliverRunId
-    if ($run) { $f["run"] = $run }
-    Write-Telemetry $f
-  } catch {}
-}
-
 function Deny-ToolUse([string]$Reason, [string]$EventName) {
   # Emit PreToolUse deny as raw UTF-8 bytes on stdout (codepage-safe for Chinese text).
   if (-not $EventName) { $EventName = "PreToolUse" }
@@ -343,13 +287,6 @@ function Ask-ToolUse([string]$Reason, [string]$EventName) {
   $out = [Console]::OpenStandardOutput()
   $out.Write($bytes, 0, $bytes.Length); $out.Flush()
   exit 0
-}
-
-function Test-SlotIdle($Ahead, $Dirty, $FxAhead, $FxDirty) {
-  # 槽位空闲判据(槽位领取内核 / 占用面板 共用):双仓无领先提交 且 双仓无 tracked 未提交改动。
-  # tracked 改动会被领用的 reset --hard 抹掉,故算占用;untracked(porcelain `??`)reset 不动,不参与判定。
-  $tracked = @(@($Dirty) + @($FxDirty) | Where-Object { $_ -and -not ([string]$_).StartsWith("??", [System.StringComparison]::Ordinal) })
-  return (@($Ahead).Count -eq 0 -and @($FxAhead).Count -eq 0 -and $tracked.Count -eq 0)
 }
 
 function Get-VerdictNext([string]$Line) {
@@ -868,43 +805,6 @@ function Get-DeployLockName([string]$FantasyRoot) { return (Get-FlowLockName "de
 function Enter-DeployLock([string]$FantasyRoot, [string]$Holder, [int]$TimeoutSec = 900) { return (Enter-FlowLock "deploy" $FantasyRoot $Holder $TimeoutSec) }
 function Exit-DeployLock($Lock) { Exit-FlowLock $Lock }
 
-function Repair-LubanJunction([string]$SlotRoot, [string]$Target) {
-  # 槽位 <SlotRoot>\Tools\Luban 须是指回主仓 $Target 的 junction:Luban 运行时 DLL 不入库,槽位检出
-  # 里只有入库的 about.txt(布局正本 = devflow 卡 references/slot-protocol.md「布局」)。
-  # 消费方两处:槽位置备(建槽)与 槽位领取内核(每次领用复核)。junction 丢了不报任何错,只在槽位内
-  # 跑导表 bat 时以「Luban.dll 不存在」显形;而置备对已存在的槽位拒跑,只在建槽时建一次等于没有修复
-  # 通路(2026-09-10 实发:整棵目录树迁移把三个槽位的 junction 都变成空实体目录,随后领用的
-  # reset --hard 往里补回 about.txt,看着与正常检出无异)。
-  # 只动这一个路径:指错/悬空的 junction 仅 unlink、不碰其目标;实体目录整删(内容 = 入库 about.txt
-  # 与 ignored 文件,主仓各有一份)。建链用 New-Item 而非 mklink:失败信息是 .NET 异常文本,
-  # 不经 cmd 的 GBK 输出(本库已把 OutputEncoding 钉成 UTF-8,解 GBK 必乱码)。
-  # 回 @{ state = ok | created | skipped(目标缺失,不动) | failed; detail }。
-  $link = Join-Path $SlotRoot "Tools\Luban"
-  if (-not (Test-Path -LiteralPath $Target -PathType Container)) {
-    return @{ state = "skipped"; detail = "junction target missing: $Target" }
-  }
-  $want = [System.IO.Path]::GetFullPath($Target).TrimEnd('\')
-  try {
-    # Directory.Exists 不跟随末级 reparse point,悬空 junction 也判存在(Test-Path 会判不存在)
-    if ([System.IO.Directory]::Exists($link)) {
-      if ([System.IO.File]::GetAttributes($link) -band [System.IO.FileAttributes]::ReparsePoint) {
-        $cur = ""
-        try { $cur = [string](@((Get-Item -LiteralPath $link -Force).Target) | Select-Object -First 1) } catch {}
-        if ($cur.TrimEnd('\') -ieq $want) { return @{ state = "ok"; detail = $link } }
-        [System.IO.Directory]::Delete($link, $false)
-      } else {
-        [System.IO.Directory]::Delete($link, $true)
-      }
-    } else {
-      [void][System.IO.Directory]::CreateDirectory((Split-Path $link -Parent))
-    }
-    New-Item -ItemType Junction -Path $link -Target $want -ErrorAction Stop | Out-Null
-    return @{ state = "created"; detail = "$link -> $want" }
-  } catch {
-    return @{ state = "failed"; detail = $_.Exception.Message }
-  }
-}
-
 # ---- 合并冲突机械分流(双仓 / 双调用点共用;裁决语义正本 = devflow 卡 references/slot-protocol.md
 # 「槽位交付·冲突分流」)----
 # 消费方两处:集成交付.ps1 的双仓合并阶段,与 槽位交付.ps1 的基线同步块。两处必须同口径——
@@ -1033,50 +933,6 @@ function Get-PorcelainPaths([string[]]$Porcelain) {
   return , @($paths | ForEach-Object { $_.Trim('"') })
 }
 
-# claim 占位提交 body 里的会话身份 trailer 键。会话名的读取链是 sessionId -> 桌面端 store,
-# 而 sessionId 原本只存看板(%LOCALAPPDATA% 下非权威、可丢、并发整文件覆写会丢行),
-# 于是「git 显示槽位被占、但看板无行」这个最需要知道该切回哪个会话的时刻,恰恰取不到会话名。
-# 故把 sessionId 一并落进 claim 占位提交(占用真值所在处),看板行丢失时由 git 兜底。
-$script:ClaimSessionTrailerKey = "Session-Id"
-
-function Get-HostSessionId {
-  # 桌面端会话身份:Claude Code 注入 CLAUDE_CODE_HOST_SESSION_ID,DeepSeek Harness(DSH)注入
-  # DSH_SESSION_ID,任一存在即取;均缺失(Unity 子进程 / CLI 直调)回空串。
-  # 取法正本在此,看板.ps1 与 槽位领取内核.ps1 同源调用,不各自读一份环境变量。
-  $id = [string]$env:CLAUDE_CODE_HOST_SESSION_ID
-  if (-not $id) { $id = [string]$env:DSH_SESSION_ID }
-  return $id.Trim()
-}
-
-function Add-ClaimSessionTrailer([string]$Message, [string]$SessionId) {
-  # 把会话身份作为 git trailer 追加到 claim 提交信息末尾(传入的是含 subject 的整条 message)。
-  # SessionId 空则原样返回——无 harness 注入的场景不写空 trailer,读侧据「有无该行」判兜底可用性。
-  if (-not $SessionId) { return $Message }
-  $trailer = "{0}: {1}" -f $script:ClaimSessionTrailerKey, $SessionId
-  if (-not $Message) { return $trailer }
-  return $Message.TrimEnd() + "`n`n" + $trailer
-}
-
-function Split-ClaimBody([string]$Body) {
-  # claim body -> @{ brief = <剥掉 trailer 的简报正文>; sessionId = <trailer 值或空串> }。
-  # 只认末尾最后一个非空行:简报正文里若出现同形字符串(如引用本规约的文档段落),不会被误读成身份。
-  # 剥离是必需的——两个显示点(占用面板 claimBrief / 交付历史 简报段)都把 body 原样打给人看,
-  # trailer 对人是噪音;剥离逻辑单源于此,不在两处各写一遍。
-  $empty = @{ brief = ""; sessionId = "" }
-  if (-not $Body) { return $empty }
-  $lines = New-Object System.Collections.Generic.List[string]
-  foreach ($l in ($Body -split "`n")) { $lines.Add(([string]$l).TrimEnd("`r")) }
-  $last = -1
-  for ($i = $lines.Count - 1; $i -ge 0; $i--) {
-    if ($lines[$i].Trim()) { $last = $i; break }
-  }
-  if ($last -lt 0) { return $empty }
-  $m = [regex]::Match($lines[$last], ('^' + $script:ClaimSessionTrailerKey + ':\s*(\S+)\s*$'))
-  if (-not $m.Success) { return @{ brief = $Body.Trim(); sessionId = "" } }
-  $lines.RemoveRange($last, $lines.Count - $last)
-  return @{ brief = (($lines -join "`n").Trim()); sessionId = $m.Groups[1].Value }
-}
-
 function Sort-Ordinal([string[]]$Items) {
   # Ordinal 排序(不去重)。`, $arr` 而非 $arr 是承重的:函数输出的数组在边界解包,
   # 单元素结果会退化成标量字符串,序列化后消费方(Unity 面板的 string[] 字段)把它当字符串逐字符遍历。
@@ -1102,38 +958,6 @@ function Get-RepoFootprint([string[]]$DiffLines, [string[]]$Dirty) {
   foreach ($x in $DiffLines) { $v = ([string]$x).Trim('"'); if ($v) { $items.Add($v) } }
   foreach ($x in (Get-PorcelainPaths $Dirty)) { if ($x) { $items.Add([string]$x) } }
   return , (Sort-UniqueOrdinal $items)
-}
-
-function Get-MergeOverlap([string]$MainRepo, [string]$SlotRepo, [string]$Baseline) {
-  # 「主仓未提交路径 ∩ 槽位分支合并触碰集」判定的单一正本(消费方:合并预检 D 段 +
-  # 集成交付 执行点复核——两处曾各写一份、靠注释约定同步,正是 Get-RepoFootprint 注释
-  # 反对的形态)。
-  # 判据与 git merge 同源:触碰集取**两点** diff(基线树与槽位树的全部差异文件,含基线领先侧
-  # 改动——merge 同样要在工作树里保持/更新它们)。三点 diff 只含槽位侧改动,比 git 的实际检查窄:
-  # 槽位零改动而基线领先时它算出空集、预检放行,而 git 以「Your local changes would be
-  # overwritten by merge」拒绝(2026-07-28 事故:主树未提交的 .claude 改动落在基线领先提交里,
-  # 预检 overlap=0,客户端 merge 被拒,Fantasy 侧已合并成半完成状态)。
-  # 主仓脏路径取 porcelain(已暂存/未暂存/未跟踪一次覆盖,rename 两端都出);比对大小写折叠。
-  # porcelain 把整目录未跟踪折叠成 `?? dir/` 而非逐个文件(与 槽位领取内核 Get-OverlapHits
-  # 注释记录的同一形态),故折叠项按目录前缀对触碰集展开比对,折叠不制造漏检。
-  # 返回 @{ overlap = 命中的主仓侧路径数组; mainDirty = 主仓脏路径数; touch = 触碰集大小 }。
-  $touch = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::Ordinal)
-  foreach ($f in (Get-GitLines $SlotRepo ("-c core.quotepath=false diff " + $Baseline + "..HEAD --name-only"))) {
-    $v = ([string]$f).Trim().Trim('"')
-    if ($v) { [void]$touch.Add($v.ToLowerInvariant()) }
-  }
-  $dirty = Get-PorcelainPaths (Get-GitLines $MainRepo "-c core.quotepath=false status --porcelain")
-  $overlap = New-Object System.Collections.Generic.List[string]
-  foreach ($p in $dirty) {
-    $pn = ([string]$p).ToLowerInvariant().TrimEnd('/')
-    if (-not $pn) { continue }
-    if ($touch.Contains($pn)) { $overlap.Add([string]$p); continue }
-    $prefix = $pn + "/"
-    foreach ($t in $touch) {
-      if ($t.StartsWith($prefix, [System.StringComparison]::Ordinal)) { $overlap.Add([string]$p); break }
-    }
-  }
-  return @{ overlap = $overlap.ToArray(); mainDirty = $dirty.Count; touch = $touch.Count }
 }
 
 function Get-WorkTreeHash([string]$RepoRoot, [switch]$NoSeed) {

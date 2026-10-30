@@ -7,10 +7,9 @@
 #
 # 用法:
 #   .dsh\scripts\提交.ps1 -RepoDir <仓> -MessageFile <信息文件> -PathListFile <清单文件> [-Gate] [-CheckOnly]
-#   .dsh\scripts\提交.ps1 -RepoDir <仓> -MessageFile <信息文件> -All          (仅槽位仓)
 # -RepoDir 缺省 = 当前目录;仓根由 git 解析。
-# 不提供 -Push:本入口只服务主工程通道与人工入库通道,两条通道都不推送(判据正本 = CLAUDE.md
-# 「devflow 适用面」);槽位通道的推送由 槽位交付.ps1 经 集成交付 承载。
+# 不提供 -Push:本入口服务 devflow 与人工入库通道,两条通道都不推送(判据正本 = CLAUDE.md
+# 「devflow 适用面」)。
 # BOM 面 = 本次提交的文件集里的 .ps1 / .psd1:含非 ASCII、是合法 UTF-8 且无 BOM 时于原字节前补
 # EF BB BF(判据同 hooks\写入补BOM.ps1);非法 UTF-8 的只报不动。-CheckOnly 下只报 BOM 候选、不写。
 # -Gate 先跑 客户端自检.ps1(-ProjectDir <仓根>\Demo,分钟级):不过即停、不提交,末行补

@@ -13,7 +13,7 @@ description: devflow UI 制作段:经 MCP 搭 UGUI prefab + 生成绑定脚手�
 
 ## 开工前
 
-- 工作根固定为领取结果中的槽位 Demo;领取脚本已启动编辑器并返回按工程路径验证过的 UnityMCP 实例 id。全部 MCP 操作发往该实例、产物落槽位树;路由纪律(绑定、落点守卫、加不了守卫的工具怎么处置)正本 = unity-check 卡「槽位分工与占用」。
+- 工作根固定为主工作树 Demo;全部 MCP 操作发往它的编辑器实例(按工程路径解析 id);路由纪律(绑定、落点守卫、加不了守卫的工具怎么处置)正本 = unity-check 卡「实例路由与落点」。
 - 先跑 `/unity-check` 确认 MCP 连到本次目标实例(以 path 复核,不误打非目标实例);搭树全程依赖 Unity 响应,连不上先解决连接。
 - 读本卡工具索引 `references/ui-tools.md`(生成绑定链 API 与行为契约、图集体系、自有组件、截图做法、字体现状);建节点/选字体/用图集前先查其中既有设施(如 SpriteAtlas v2 图集链、窗口入场组件),有则直接使用,不以引擎默认组件、内置资源重新实现;**本作还没定正式字体**,用字见该篇「字体」段。
 - 读控件手册 `references/ugui-widgets.md`(各控件的节点结构、交叉引用与工程强约束、命名前缀)。block-client 的控件模板库 `UIWidgetLibrary` 尚未搬入本作,多节点控件只能手搭;**手搭后逐项对照该篇接全交叉引用**(`targetGraphic` / `viewport` / `content` / `fillRect` / `textComponent`),漏了只在运行期显形。

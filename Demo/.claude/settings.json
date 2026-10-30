@@ -122,12 +122,6 @@
             "if": "PowerShell(*.cmd*)",
             "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
             "timeout": 30
-          },
-          {
-            "type": "command",
-            "if": "PowerShell(*交付.ps1*)",
-            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PROJECT_DIR}\\.claude\\devflow\\hooks\\命令通路检查.ps1\"",
-            "timeout": 30
           }
         ]
       },

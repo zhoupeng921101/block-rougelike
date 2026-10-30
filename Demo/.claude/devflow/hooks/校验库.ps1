@@ -303,7 +303,7 @@ function Get-SubjectFormatGap([string]$MsgText) {
 }
 
 # 修复类提交的定性缺口(single source)。消费方 = 自审触发判定.ps1 的 FIX-QUALIFY 行(只报不拦)
-# 与 槽位交付.ps1 的入口前置校验(DENIED-qualify,零 git 写,归 fix-retry)。只判在场不判质量:
+# 与 单仓提交.ps1 的提交前校验(DENIED-qualify,零 git 写,归 fix-retry)。只判在场不判质量:
 # 定性写得对不对、补丁的根源写没写,仍靠人。
 # 修复类主题动词:词表闭合后只有【修复】属这一类。词表加词时须回来核一遍新词算不算修复类
 # ——少判是漏一条定性义务。
@@ -497,8 +497,7 @@ function ConvertTo-Entries($lines) {
   return , $result
 }
 
-# ---- 按需篇点名判据表(单源;消费方 = 自审触发判定.ps1 的 RULES 行(事后:改动面 + 新增行)、
-# 槽位领取.ps1 的「开工前读」行(事前:-PathsFile / -FantasyPathsFile 给的改动范围前缀)) ----
+# ---- 按需篇点名判据表(单源;消费方 = 自审触发判定.ps1 的 RULES 行(改动面 + 新增行)) ----
 # 为什么由脚本点名:按需规则篇与 TEngine 知识篇命中与否原先全靠会话对照 CLAUDE.md 路由表自认,命中触发面
 # 却无人点名时整篇读率约 1/6~2/5;同期由本脚本族报 SECURITY-REVIEW: required 的,security-review.md 读率近九成。
 # 一行 = 一条触发,命中即点名 Doc;同一篇可占多行。字段:
@@ -616,40 +615,6 @@ function Get-RuleReadHits($Changes, $AddedLines, $Table = $null) {
     }
   }
   return $out
-}
-
-function Get-RuleReadPrefixHits([string]$Side, [string[]]$Prefixes, [string[]]$Tracked, $Out = $null, $Table = $null) {
-  # 事前口径(消费方 = 槽位领取「开工前读」)。$Prefixes = 调用方给的该仓改动范围前缀,读法同领取重叠比对:目录边界、
-  # 不分大小写、\ 与 / 等价、尾斜杠不计;$Tracked = 该仓已跟踪文件(git ls-files,仓根相对)。一条前缀命中某条判据 =
-  # 前缀本身或其下任一已跟踪文件命中 PathRe,或前缀落在 DirRe 面内;不看内容(事前没有 diff)。命中项记调用方给的前缀原文。
-  # 结果并进 $Out(缺省新建),形态同 Get-RuleReadHits;两仓各调一次、共用一个 $Out 即得双仓合并结果(篇按调用先后,
-  # 同一次调用内按判据表次序)。
-  if ($null -eq $Out) { $Out = [ordered]@{} }
-  $items = New-Object System.Collections.Generic.List[object]
-  foreach ($p in @($Prefixes)) {
-    $raw = ([string]$p).Trim()
-    $pn = $raw.Replace('\', '/').TrimEnd('/')
-    if (-not $pn) { continue }
-    $under = New-Object System.Collections.Generic.List[string]
-    foreach ($f in @($Tracked)) {
-      $fs = [string]$f
-      if ($fs -and ([string]::Equals($fs, $pn, [System.StringComparison]::OrdinalIgnoreCase) -or $fs.StartsWith($pn + "/", [System.StringComparison]::OrdinalIgnoreCase))) { $under.Add($fs) }
-    }
-    $items.Add(@{ Raw = $raw; Norm = $pn; Under = $under })
-  }
-  if ($items.Count -eq 0) { return $Out }
-  foreach ($m in (Get-RuleReadMatchers $Table)) {
-    if ([string]$m.Rule.Side -ne $Side) { continue }
-    foreach ($it in $items) {
-      $hit = ($null -ne $m.Dir -and $m.Dir.IsMatch($it.Norm))
-      if (-not $hit -and $null -ne $m.Path) {
-        $hit = $m.Path.IsMatch($it.Norm)
-        if (-not $hit) { foreach ($f in $it.Under) { if ($m.Path.IsMatch($f)) { $hit = $true; break } } }
-      }
-      if ($hit) { Add-RuleReadHit $Out ([string]$m.Rule.Doc) $it.Raw }
-    }
-  }
-  return $Out
 }
 
 function Get-RepoTrackedPaths([string]$Root) {

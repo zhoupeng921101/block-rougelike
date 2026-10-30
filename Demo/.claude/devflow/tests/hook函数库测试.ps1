@@ -1,13 +1,10 @@
 ﻿# hook函数库测试.ps1 — devflow 共享函数库(hooks\hook函数库.ps1)单元测试。
-# 覆盖:Resolve-FlowRoots(缺省推导 / 显式值优先 / 槽位归一)、Get-FlowConfig、
+# 覆盖:Resolve-FlowRoots(缺省推导 / 显式值优先)、Get-FlowConfig、
 #   Get-GitLines(0/1/N 行恒为数组、单元素不解包——该保证曾是 hook 失败放行 事故的拦截)、
 #   Get-GitLinesRaw(保留空行)、Get-GitOne、Invoke-GitMerged(合并 stderr + 退出码)、
-#   Get-PorcelainPaths(rename 两端 / 去引号)、Get-MergeOverlap(合并重叠判据:大小写折叠、
-#   porcelain 目录折叠展开、计数字段)、Invoke-MergeAbort(abort 成败按现场核实,未生效不报已中止)、
-#   Add-ClaimSessionTrailer + Split-ClaimBody
-#   (claim 会话 trailer 的写入与剥离:剥离承重,两个简报显示点靠它不把 trailer 打给人看)、
+#   Get-PorcelainPaths(rename 两端 / 去引号)、Invoke-MergeAbort(abort 成败按现场核实,未生效不报已中止)、
 #   Write-Telemetry(隔离 LOCALAPPDATA,不触真 claude-wf-3b)、
-#   Resolve-WfStatePath + Get-ClaudePackageDirs + Get-BoardPath(MSIX 包目录优先、首次写直落包内、多包取舍)、
+#   Resolve-WfStatePath + Get-ClaudePackageDirs(MSIX 包目录优先、首次写直落包内、多包取舍)、
 #   Get-VerdictNext + Format-VerdictLine(VERDICT 续接档位派生与幂等拼装;承重点 = DENIED- 不通配)、
 #   Invoke-FlowChild(子进程 stderr 不抛、参数原样)、Get-ContentDirtyPaths(行尾幻影不算脏)、
 #   Get-WorkTreeHash(种子路与空索引路逐例相等、真实索引不动、racy 改动照样识别、种子不可用时退回),
@@ -18,8 +15,8 @@
 #   Get-UnityAsmdefExpectSet / Get-UnityPredefinedEditorSet:忽略目录、asmref 接管、Plugins/Editor 归 firstpass、
 #   按 name 精确定位、Assets 根 asmdef;Get-UnityEmbeddedPackageScan:只收含 package.json 的包目录、前缀 Packages/)、
 #   Read-HookStdin + Read-HookInput -Raw(剥 BOM;新进程载入本库并读 stdin 不自动加载模块——命令面 hook 快速路径的耗时前提)、
-#   遥测共用构件(Get-VerdictTelemetryFields / New-PhaseClock 分段计时 / Write-EntryVerdictTelemetry / Write-Degraded /
-#   Write-GuardOk / Get-ClaimSha / Write-GateRunTelemetry 拼装出错不外抛)、Publish-GateTicket 判 STALE 时的 DRIFT 行与 driftPaths。
+#   遥测共用构件(Get-VerdictTelemetryFields / New-PhaseClock 分段计时 / Write-Degraded /
+#   Write-GuardOk / Write-GateRunTelemetry 拼装出错不外抛)、Publish-GateTicket 判 STALE 时的 DRIFT 行与 driftPaths。
 # 夹具落 %TEMP%,不触真仓。
 [CmdletBinding(PositionalBinding=$false)]
 param()
@@ -44,22 +41,18 @@ $env:LOCALAPPDATA = Join-Path $fx "AppData"
 Write-Host "== hook函数库 单元测试 =="
 try {
   # ---- Resolve-FlowRoots ----
-  $cfg = Resolve-FlowRoots @{ SlotRootRe = '-dev[1-3]$' } "C:\w\block-client\Demo\.claude\devflow\hooks"
+  $cfg = Resolve-FlowRoots @{} "C:\w\block-client\Demo\.claude\devflow\hooks"
   Assert-True ($cfg.RepoRoot -eq "C:\w\block-client") "R1 缺省按位置推导仓根(上溯四级)"
-  Assert-True ($cfg.SlotBaseDir -eq "C:\w") "R2 SlotBaseDir = 仓根父目录"
 
-  $cfg2 = Resolve-FlowRoots @{ SlotRootRe = '-dev[1-3]$' } "C:\w\block-client-dev2\Demo\.claude\devflow\hooks"
-  Assert-True ($cfg2.RepoRoot -eq "C:\w\block-client") "R3 槽位归一:从槽位副本调用回落主仓"
-
-  $cfg3 = Resolve-FlowRoots @{ RepoRoot = "D:\explicit"; SlotBaseDir = "D:\base"; SlotRootRe = '-dev[1-3]$' } "C:\w\block-client\Demo\.claude\devflow\hooks"
-  Assert-True ($cfg3.RepoRoot -eq "D:\explicit" -and $cfg3.SlotBaseDir -eq "D:\base") "R4 配置显式值优先(测试注入靠此)"
+  $cfg3 = Resolve-FlowRoots @{ RepoRoot = "D:\explicit" } "C:\w\block-client\Demo\.claude\devflow\hooks"
+  Assert-True ($cfg3.RepoRoot -eq "D:\explicit") "R4 配置显式值优先(测试注入靠此)"
 
   $cfg4 = Resolve-FlowRoots @{ RepoRoot = "D:\r"; ServerDirName = "srv" } "C:\w\x\y\z\hooks"
   Assert-True ($cfg4.FantasyRoot -eq "D:\r\srv") "R5 FantasyRoot = RepoRoot\ServerDirName"
 
   $real = Get-FlowConfig
   # ServerDirName 留空是合法配置(服务端通道关闭),不算关键键;它与 Test-ServerEnabled 同口径。
-  Assert-True ([bool]$real.RepoRoot -and [bool]$real.BoardRelPath -and ((Test-ServerEnabled) -eq [bool]$real.ServerDirName)) "R6 Get-FlowConfig 读到真配置关键键,服务端开关与 ServerDirName 同口径"
+  Assert-True ([bool]$real.RepoRoot -and [bool]$real.ClientBaseline -and ((Test-ServerEnabled) -eq [bool]$real.ServerDirName)) "R6 Get-FlowConfig 读到真配置关键键,服务端开关与 ServerDirName 同口径"
   $cfg5 = Resolve-FlowRoots @{ RepoRoot = "D:\r"; ServerDirName = "" } "C:\w\x\y\z\hooks"
   Assert-True (-not $cfg5.FantasyRoot) "R5b ServerDirName 留空 -> 不推导 FantasyRoot(服务端通道关闭)"
 
@@ -101,31 +94,7 @@ try {
   Assert-True ($paths -contains "带空格 的.cs") "P3 去引号"
   Assert-True (-not ($paths -contains "")) "P4 丢弃过短/空行"
 
-  # ---- Get-MergeOverlap(合并重叠判据单源;消费方 = 合并预检 D 段 + 集成交付 执行点复核) ----
-  $slotR = Join-Path $fx "slotrepo"
-  New-GitRepo $slotR
-  G $slotR "checkout -q -b agent/devX" | Out-Null
-  Write-F $slotR "Assets/Overlap.cs" "x`n"
-  Write-F $slotR "Assets/Free.cs" "y`n"
-  Write-F $slotR "Assets2/New/Foo.cs" "z`n"
-  G $slotR "add -A" | Out-Null
-  G $slotR "commit -q -m work" | Out-Null
-  $mainR = Join-Path $fx "mainrepo"
-  New-GitRepo $mainR
-  Write-F $mainR "Assets/OVERLAP.cs" "v1`n"      # 大小写不同,验折叠比对
-  Write-F $mainR "Assets/Other.cs" "v1`n"
-  G $mainR "add -A" | Out-Null
-  G $mainR "commit -q -m seed2" | Out-Null
-  Write-F $mainR "Assets/OVERLAP.cs" "dirty`n"
-  Write-F $mainR "Assets/Other.cs" "dirty`n"
-  Write-F $mainR "Assets2/New/Foo.cs" "dirty`n"  # 整目录未跟踪 -> porcelain 折叠成 `?? Assets2/`
-  $mo = Get-MergeOverlap $mainR $slotR "main"
-  Assert-True ($mo.overlap.Count -eq 2) "M1 重叠命中 2 处(精确命中 + 折叠目录展开)"
-  Assert-True ($mo.overlap -contains "Assets/OVERLAP.cs") "M2 大小写折叠命中且返回主仓侧原路径"
-  Assert-True ($mo.overlap -contains "Assets2/") "M3 porcelain 折叠的未跟踪目录按前缀展开命中"
-  Assert-True ($mo.mainDirty -eq 3 -and $mo.touch -eq 3) "M4 计数字段(主仓脏 3 / 触碰集 3)"
-
-  # ---- Invoke-MergeAbort(冲突停机前撤销合并态;槽位交付 基线同步 / 集成交付 二进制冲突共用) ----
+  # ---- Invoke-MergeAbort(冲突停机前撤销合并态) ----
   # 承重点:note 与现场一致。abort 失败时不得报「已 merge --abort」(2026-09-23 dev3 实发:VERDICT 称
   # 已 abort,槽位 Fantasy 仍在合并态)。失败用 index.lock 占位制造——git 此时拒绝改索引、合并态保留。
   $abR = Join-Path $fx "abortrepo"
@@ -150,29 +119,6 @@ try {
   Assert-True ($abBad.note -match '^merge --abort 未生效' -and $abBad.note -match 'MERGE_HEAD 仍在' -and $abBad.note -match 'index\.lock' -and $abBad.note -notmatch '已 merge --abort') "A2 note 如实报未中止并带 git 原文,不写「已 merge --abort」"
   $abOk = Invoke-MergeAbort $abR
   Assert-True ($abOk.ok -and $abOk.note -eq "已 merge --abort" -and (Invoke-GitMerged $abR "rev-parse -q --verify MERGE_HEAD").code -ne 0 -and (Get-GitLines $abR "status --porcelain").Count -eq 0) "A3 abort 生效 -> ok=true、MERGE_HEAD 清、树回到干净"
-
-  # ---- claim 会话 trailer(Add-ClaimSessionTrailer / Split-ClaimBody) ----
-  # 契约:会话身份随 claim 提交落 git,使看板行丢失时占用面板仍能显示会话名。
-  # 承重点是「剥离」——两个简报显示点原样打 body 给人看,trailer 漏进去就是噪音。
-  $c1 = Split-ClaimBody "目的:测试`n## 方案`n正文`n`nSession-Id: local_abc123"
-  Assert-True ($c1.sessionId -eq "local_abc123" -and $c1.brief -eq "目的:测试`n## 方案`n正文") "C1 取 trailer 并从简报剥除"
-  $c2 = Split-ClaimBody "目的:测试`n## 方案"
-  Assert-True ($c2.sessionId -eq "" -and $c2.brief -eq "目的:测试`n## 方案") "C2 无 trailer -> id 空、简报原样(改造前的旧 body 仍可读)"
-  $c3 = Split-ClaimBody "Session-Id: local_only"
-  Assert-True ($c3.sessionId -eq "local_only" -and $c3.brief -eq "") "C3 仅 trailer(领取未传 -BriefFile) -> 简报空"
-  $c4 = Split-ClaimBody ""
-  Assert-True ($c4.sessionId -eq "" -and $c4.brief -eq "") "C4 空 body"
-  # 同形行只在末尾才算身份:简报正文若引用本规约(如粘了段文档),不能被误读成会话 id
-  $c5 = Split-ClaimBody "Session-Id: 假的`n真正文"
-  Assert-True ($c5.sessionId -eq "" -and $c5.brief -eq "Session-Id: 假的`n真正文") "C5 同形行不在末尾 -> 不误读、不剥除"
-  # git --format=%b 的输出带 CRLF 与尾随空行,两者都不能挡住 trailer 识别
-  $c6 = Split-ClaimBody "正文`r`n`r`nSession-Id: local_crlf`r`n`r`n"
-  Assert-True ($c6.sessionId -eq "local_crlf" -and $c6.brief -eq "正文") "C6 CRLF + 尾随空行仍识别"
-
-  Assert-True ((Add-ClaimSessionTrailer "claim: T`n`n简报" "local_x") -eq "claim: T`n`n简报`n`nSession-Id: local_x") "C7 追加到 message 末尾、空行隔开"
-  Assert-True ((Add-ClaimSessionTrailer "claim: T`n`n简报" "") -eq "claim: T`n`n简报") "C8 无会话身份(CLI 直调/无 harness 注入) -> 不写空 trailer"
-  $rt = Split-ClaimBody (Add-ClaimSessionTrailer "简报正文`n## 节" "local_rt")
-  Assert-True ($rt.sessionId -eq "local_rt" -and $rt.brief -eq "简报正文`n## 节") "C9 写读往返无损(含 markdown # 行)"
 
   # ---- Unity 程序集实扫(消费方 = 重建csproj + Editor程序集编译;两处曾各写一份并分叉) ----
   $ua = Join-Path $fx "unity\Assets"
@@ -290,28 +236,13 @@ try {
   $p2 = Get-PhaseSecs $clk2
   Assert-True ($p2.Contains("run") -and $clk2.Cur -eq "run" -and $clk2.Ms.Count -eq 0 -and -not (Get-PhaseSecs $null).Count) "TP2 正在走的段计到此刻;读不改时钟;空时钟回空表"
 
-  $env:FLOW_DELIVER_RUN = "unitrun0001"
-  try {
-    Write-EntryVerdictTelemetry "unit-entry" "BLOCKED-BASELINE-CONFLICT | conflict: a, b" 3 @{ Clock = $clk; Slot = "2"; Topic = "主题第一行`n第二行"; Claim = "abc123"; Files = @(1..12 | ForEach-Object { "f" + $_ }) }
-  } finally { Remove-Item Env:\FLOW_DELIVER_RUN -ErrorAction SilentlyContinue }
-  $ev = Read-TelEvent "entry-verdict" "entry" "unit-entry"
-  Assert-True ($ev -and $ev.verdict -eq "BLOCKED-BASELINE-CONFLICT" -and $ev.next -eq "halt" -and $ev.exit -eq 3 -and $ev.detail -eq "conflict: a, b") "TE1 entry-verdict 行:抬头首词 / next / exit / detail"
-  Assert-True ($ev -and $ev.slot -eq "2" -and $ev.topic -eq "主题第一行" -and $ev.claim -eq "abc123" -and @($ev.files).Count -eq 10 -and $ev.run -eq "unitrun0001" -and $ev.phases.lockwait -eq 1.5 -and $ev.secs -ge 0) "TE2 关联字段:slot / 主题首行 / claim / files 至多 10 条 / run / phases / secs"
-  Write-EntryVerdictTelemetry "unit-entry-bare" "INFRA | x" 2 @{}
-  $ev = Read-TelEvent "entry-verdict" "entry" "unit-entry-bare"
-  $names = if ($ev) { @($ev.PSObject.Properties | ForEach-Object { $_.Name }) } else { @() }
-  Assert-True ($ev -and $ev.verdict -eq "INFRA" -and (@($names | Where-Object { $_ -in @("slot", "topic", "claim", "files", "phases", "run", "secs") })).Count -eq 0) ("TE3 上下文缺的字段不写(不写空值):" + ($names -join ","))
-  $threwE = $false
-  try { Write-EntryVerdictTelemetry "unit-entry-null" "PASS" 0 $null } catch { $threwE = $true }
-  Assert-True (-not $threwE) "TE4 上下文为 null 也不抛"
-
   $wd = @(Write-Degraded "unit-degrade" "slot=1 | refused:x" 6>&1 | ForEach-Object { [string]$_ })
   $dg = Read-TelEvent "degraded" "key" "unit-degrade"
   Assert-True ($wd.Count -eq 1 -and $wd[0] -eq "WARN unit-degrade | slot=1 | refused:x") ("TD1 WARN 行 = WARN <键> | <现场>:" + ($wd -join " / "))
   Assert-True ($dg -and $dg.src -eq "hook函数库测试" -and $dg.detail -eq "slot=1 | refused:x") ("TD2 同时写 event=degraded,来源缺省取调用点所在脚本名:" + $(if ($dg) { $dg.src } else { "无" }))
-  $wd = @(Write-Degraded "unit-degrade-msg" "why" "原样文案(保留既有措辞)" "槽位领取" 6>&1 | ForEach-Object { [string]$_ })
+  $wd = @(Write-Degraded "unit-degrade-msg" "why" "原样文案(保留既有措辞)" "单仓提交" 6>&1 | ForEach-Object { [string]$_ })
   $dg = Read-TelEvent "degraded" "key" "unit-degrade-msg"
-  Assert-True ($wd.Count -eq 1 -and $wd[0] -eq "WARN 原样文案(保留既有措辞)" -and $dg -and $dg.src -eq "槽位领取" -and $dg.detail -eq "why") "TD3 给了文案就原样打;显式来源照写"
+  Assert-True ($wd.Count -eq 1 -and $wd[0] -eq "WARN 原样文案(保留既有措辞)" -and $dg -and $dg.src -eq "单仓提交" -and $dg.detail -eq "why") "TD3 给了文案就原样打;显式来源照写"
   $wd = @(Write-Degraded "unit-degrade-guard" "g" -Guard "unit-guard" 6>&1 | ForEach-Object { [string]$_ })
   $dg = Read-TelEvent "degraded" "key" "unit-degrade-guard"
   $dgNo = Read-TelEvent "degraded" "key" "unit-degrade"
@@ -345,18 +276,7 @@ try {
   try { Write-GateRunTelemetry $badRun "FAIL-x" $false } catch { $threwG = $true }
   Assert-True (-not $threwG) "TW1 gate-run 遥测拼装出错整体吞掉,不影响自检出口"
 
-  $cRepo = Join-Path $fx "claimrepo"
-  New-GitRepo $cRepo
-  G $cRepo "checkout -q -b agent/dev9" | Out-Null
-  G $cRepo "commit -q --allow-empty -m `"claim: unit claim`"" | Out-Null
-  $claimSha = (G $cRepo "rev-parse HEAD")[0].Trim()
-  G $cRepo "commit -q --allow-empty -m work" | Out-Null
-  Assert-True ((Get-ClaimSha $cRepo "main") -eq $claimSha) "TC1 claim sha = 本分支一父链最早那条 claim 占位"
-  G $cRepo "checkout -q -b agent/dev8 main" | Out-Null
-  G $cRepo "commit -q --allow-empty -m notclaim" | Out-Null
-  Assert-True ((Get-ClaimSha $cRepo "main") -eq "" -and (Get-ClaimSha (Join-Path $fx "no-such-repo") "main") -eq "") "TC2 最早一条不是 claim / 不是仓 -> 空串"
-
-  # ---- Resolve-WfStatePath + Get-ClaudePackageDirs + Get-BoardPath(MSIX 容器内外落同一物理文件) ----
+  # ---- Resolve-WfStatePath + Get-ClaudePackageDirs(MSIX 容器内外落同一物理文件) ----
   # 每例一个独立的假 LOCALAPPDATA(经 $Lad 显式传),模拟 Packages\Claude_*\LocalCache\Local 与普通路径并存。
   function New-PkgLocal([string]$Lad, [string]$Pkg) {
     $p = Join-Path $Lad ("Packages\" + $Pkg + "\LocalCache\Local")
@@ -408,10 +328,9 @@ try {
   [System.IO.File]::WriteAllText((Join-Path $pa $bRel), '{"dev1":{}}')
   Assert-True ((Resolve-WfStatePath $bRel $l5) -eq (Join-Path $pa $bRel)) "W9 活动看直接子项 mtime(board.json 刚写即翻转)"
 
-  Assert-True ((Get-BoardPath) -eq (Join-Path $env:LOCALAPPDATA (Get-FlowConfig).BoardRelPath) -and
-               $script:WfStateRoot -eq (Join-Path $env:LOCALAPPDATA "claude-wf-3b")) "W10 缺省由 `$env:LOCALAPPDATA 派生(隔离夹具无 Packages -> 落夹具内)"
+  Assert-True ($script:WfStateRoot -eq (Join-Path $env:LOCALAPPDATA "claude-wf-3b")) "W10 缺省由 `$env:LOCALAPPDATA 派生(隔离夹具无 Packages -> 落夹具内)"
 
-  # ---- Invoke-FlowChild(拉起子脚本收输出;槽位交付 / 工作流通路检查 共用) ----
+  # ---- Invoke-FlowChild(拉起子脚本收输出) ----
   # 承重点:调用方 EAP=Stop(本套件即是)下子进程写 stderr 不抛,退出码与 VERDICT 行照常取回;
   # 参数含空格与 % 原样到达子进程(不经 cmd 解析)。
   $childPs = Join-Path $fx "child.ps1"
@@ -424,7 +343,7 @@ try {
   $rcE = Invoke-FlowChild $childPs @("-A", "e") -Echo
   Assert-True ($rcE.code -eq 3 -and @($rcE.lines) -contains 'out-e') "X3 -Echo 边回显边收,返回形态不变"
 
-  # ---- Get-ContentDirtyPaths(内容视角判脏;合并预检 B/C 与 集成交付 主 Fantasy 合并前置共用) ----
+  # ---- Get-ContentDirtyPaths(内容视角判脏) ----
   # 幻影脏:入库 blob 为 CRLF、.gitattributes 要求 eol=lf,工作树内容未动 —— status 判 M,内容零差异
   # (实发:协议重导后主 Fantasy 的 OuterMessage.cs,见合并预检 B 段注释)。
   $eolRepo = Join-Path $fx "eolrepo"

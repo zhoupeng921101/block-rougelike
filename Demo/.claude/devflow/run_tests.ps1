@@ -1,25 +1,21 @@
 ﻿# run_tests.ps1 — devflow 测试入口(全部套件均为 .ps1;假仓 + 隔离 LOCALAPPDATA 落 %TEMP%,
 # 不触真仓 / 真 claude-wf-3b)。
 #   无参        : 静态前置(静态扫描.ps1)+ 全量回归矩阵(下方 $Suites)
-#   -Suite <名> : 单套件,传中文短名,如 -Suite 看板CLI  ->  tests\看板CLI测试.ps1
-#   -Canary     : 真环境 canary 通路检查(工作流通路检查.ps1,需活 Unity 编辑器;透传其余参数)
+#   -Suite <名> : 单套件,传中文短名,如 -Suite 单仓提交  ->  tests\单仓提交测试.ps1
 #
 # 「不触真 claude-wf-3b」由本脚本兜底并验证,不靠各套件自觉:每个套件(及静态前置)都在一次性哨兵
 # LOCALAPPDATA(%TEMP%\flowtest-lad-<GUID>)下启动,漏隔离的套件只写得进哨兵、写不到真目录;跑完
 # 哨兵里出现 claude-wf-3b 即打 LEAK 行点名该套件并使退出码非零(New-SentinelLad / Test-SentinelClean)。
 # 干净的哨兵跑完即删,LEAK 的留盘供排查(路径见 LEAK 行,查完可删)。各套件的隔离是各自手写的,
-# 漏一个就静默污染,而静态检查抓不到——实发过:矩阵运行的数分钟窗口内真看板出现假占用行。
+# 漏一个就静默污染,而静态检查抓不到——实发过:矩阵运行的数分钟窗口内真运行态出现假记录。
 #
 # 内存见底的未通过单独点名(见下方「环境取证」段):开跑前打一行 MEM(可用提交内存,低了加 WARN
 # low-commit,只提示不拦);套件未通过时,套件进程是崩溃退出的打 CRASH,运行期间系统记了内存耗尽的
 # 打 ENV-SUSPECT(矩阵末尾另有 ENV-SUMMARY)。只点名:未通过照计未通过、退出码不变、不重试。
-# 退出码:0 全通过;1 有失败或有泄漏;2 参数/套件不存在;单套件模式下套件进程崩溃时原样透传其退出码;
-# -Canary 原样透传 工作流通路检查.ps1 的退出码(各码含义见其头注)。
+# 退出码:0 全通过;1 有失败或有泄漏;2 参数/套件不存在;单套件模式下套件进程崩溃时原样透传其退出码。
 [CmdletBinding(PositionalBinding=$false)]
 param(
-  [string]$Suite = "",
-  [switch]$Canary,
-  [Parameter(ValueFromRemainingArguments=$true)][string[]]$Rest = @()
+  [string]$Suite = ""
 )
 $ErrorActionPreference = "Stop"
 $here = $PSScriptRoot
@@ -40,10 +36,6 @@ $Suites = @(
   "命令通路检查测试",       # 命令面 Bash 嵌 powershell / cmd 裸名调 bat / 前台调交付入口 拦截演练
   "写入补BOM测试",          # PostToolUse:Write/Edit 后补 UTF-8 BOM
   "单仓提交测试",
-  "集成交付测试",
-  "槽位交付测试",
-  "槽位领取测试",            # -Release 事务回滚 / -Abandon 显式放弃
-  "槽位领取就绪检查测试",
   "简报校验测试",
   "自审触发判定测试",
   "客户端自检测试",          # 自检编排:子道异常/未知退出码/Editor 编译出口分类
@@ -64,25 +56,19 @@ $Suites = @(
   "合并丢失核对测试",        # 工具类:合并提交静默吃行核对
   "漂移取证测试",            # 工具类:UnityMCP 实例漂移取证 -Report
   "检查命中面板测试",        # 工具类:自检各道零命中复核候选(Reviewed 抑制 / 复列)
-  "看板CLI测试",
-  "合并预检CLI测试",
-  "交付历史CLI测试",
-  "占用面板CLI测试",
-  "测试入口环境取证测试",    # run_tests 自身:开跑前水位提示 / 未通过时的崩溃与内存耗尽点名
-  "槽位领取内核CLI测试",     # acquire 主路径
-  "工作流端到端CLI测试"      # 领取->实现->交付 跨段串联,置末(最慢、最高层)
+  "测试入口环境取证测试"     # run_tests 自身:开跑前水位提示 / 未通过时的崩溃与内存耗尽点名
 )
 
 # ---- 泄漏守卫:一次性哨兵 LOCALAPPDATA ----
-# 不比对真 claude-wf-3b 的前后指纹:真目录由并发的 devflow 会话持续合法写入(看板行、遥测),一有别的
+# 不比对真 claude-wf-3b 的前后指纹:真目录由并发的 devflow 会话持续合法写入(遥测),一有别的
 # 会话活跃就报假 LEAK。哨兵只有被测进程树写得到,判定与并发无关;每个套件一个哨兵,迟到的写入
 # 也落在自己的哨兵里,不会算到下一个套件头上。
-# 前提:仓外运行态路径一律经 hook函数库 Resolve-WfStatePath 由 $env:LOCALAPPDATA 派生(WfStateRoot /
-# Get-BoardPath;静态扫描 R18 拦绕过者)。哨兵下没有 Packages\Claude_*,解析即落哨兵内普通路径;
+# 前提:仓外运行态路径一律经 hook函数库 Resolve-WfStatePath 由 $env:LOCALAPPDATA 派生(WfStateRoot;
+# 静态扫描 R18 拦绕过者)。哨兵下没有 Packages\Claude_*,解析即落哨兵内普通路径;
 # 绕开环境变量取路径的写入(如 [Environment]::GetFolderPath)不在视野内。
 $realLad = $env:LOCALAPPDATA
-# 目录名从 BoardRelPath 的父段推导,与 flow-config 单源(运行态根正本 = hook函数库 $script:WfStateRoot)
-$wfRel = Split-Path (Get-FlowConfig).BoardRelPath -Parent
+# 目录名取运行态根的末段(正本 = hook函数库 $script:WfStateRoot)
+$wfRel = Split-Path $script:WfStateRoot -Leaf
 
 function New-SentinelLad {
   $p = Join-Path $env:TEMP ("flowtest-lad-" + [Guid]::NewGuid().ToString("N"))
@@ -196,15 +182,10 @@ function Write-SuiteOutcome([string]$Label, [int]$Code, [DateTime]$From) {
   return $true
 }
 
-if ($Canary) {
-  & $engine -NoProfile -File (Join-Path $here "工作流通路检查.ps1") @Rest
-  exit $LASTEXITCODE
-}
-
 if ($Suite) {
   $path = Join-Path $testsDir ($Suite + "测试.ps1")
   if (-not (Test-Path $path)) {
-    Write-Host "ABORT: 找不到套件 $path(单套件传中文短名,如 -Suite 看板CLI)"
+    Write-Host "ABORT: 找不到套件 $path(单套件传中文短名,如 -Suite 单仓提交)"
     exit 2
   }
   Write-MemPreflight

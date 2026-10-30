@@ -5,16 +5,13 @@ REM read pointer and makes later lines execute from the middle (chcp does NOT pr
 REM test.bat - devflow test launcher. Suite names are Chinese and live in run_tests.ps1;
 REM this shell only forwards. Double-click = full run.
 REM   double-click / no arg : full regression matrix (every suite under tests\)
-REM   test canary           : real-env canary smoke (needs a live Unity editor); pass -Slot N / -NoRelease
 REM   test SUITE            : single suite; run_tests.ps1 maps the Chinese-stem SUITE to its
 REM                           tests\ script (see README, test launcher section)
 REM Engine fixed to powershell.exe (Windows PowerShell 5.1; see .claude/rules/shell-conventions.md, engine section).
 setlocal
 set "DBLCLK="
 echo %cmdcmdline% | find /i "%~nx0" >nul && set "DBLCLK=1"
-if /I "%~1"=="canary" (
-  powershell.exe -NoProfile -File "%~dp0run_tests.ps1" -Canary %2 %3 %4 %5
-) else if "%~1"=="" (
+if "%~1"=="" (
   powershell.exe -NoProfile -File "%~dp0run_tests.ps1"
 ) else (
   powershell.exe -NoProfile -File "%~dp0run_tests.ps1" -Suite %1

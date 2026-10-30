@@ -2,10 +2,10 @@
 # 判的是「本轮要不要做 X」,不是「X 做得对不对」——后者归各 gate 道次。故本脚本恒 exit 0
 # (INFRA 与 -CheckRuleTable 模式除外):它是判定器不是拦截器,拦截误判会把流程堵死,而漏一次触发只是回到没有它的状态。
 # 五项里只有 FIX-QUALIFY 另有拦截点:它的产物就是提交正文,判据(校验库 Get-FixQualifyGap)由
-# 槽位交付.ps1 在入口同源前置校验,缺则 DENIED-qualify;本脚本这一行仍只报不拦。
+# 单仓提交.ps1 在提交前同源校验,缺则 DENIED-qualify;本脚本这一行仍只报不拦。
 # 第五项 RULES 点名本轮改动面命中的按需篇:每篇一行 `RULES : required <篇路径> <- <命中文件>`(同篇多个命中只列
 # 第一个并注明另有几个),一篇没中则一行 `RULES : not-required`。判据表正本 = 校验库 `$script:RuleReadTable`(路径判据
-# 看改动面,内容判据看改动到的 .cs / .prefab 的新增行),与 槽位领取 的「开工前读」共用;表外的面仍按 CLAUDE.md 路由表自认。
+# 看改动面,内容判据看改动到的 .cs / .prefab 的新增行);表外的面仍按 CLAUDE.md 路由表自认。
 # 处置正本 = devflow 卡第三步「自审」。
 # -CheckRuleTable(只读自检,与其余参数中只认 -ProjectDir / -FantasyRoot):核判据表没有随改名漂移——每篇存在、路径 /
 # 目录 / 内容判据的每个元素(一支)在仓内已跟踪文件里至少命中一个(内容判据在 .cs 只认代码)、没有元素含顶层 `|`
@@ -20,7 +20,7 @@
 # 已经是 diff,机器判得比人稳,且顺带把命中的具体文件列出来,省掉「审哪里」的二次判断。
 #
 # 事前触发(要不要调 devflow-ui、传不传 -NoUnity、是不是修已合并缺陷)判不了:那些在需求层
-# 决定,diff 尚不存在。本脚本只覆盖事后触发;按需篇的事前点名由 槽位领取「开工前读」按同一张判据表做。
+# 决定,diff 尚不存在。本脚本只覆盖事后触发。
 #
 # 改动面 = 相对基线**分叉点**的全部差异(已提交 + 工作区未提交 + untracked),因为自审发生在提交之前。
 # 分叉点(merge-base)而不是基线分支的 tip:两者只要不同步,tip 差集就会混进不属于本轮的改动 ——
@@ -38,9 +38,8 @@
 #   (key self-review-diffbase-fallback)。-CheckRuleTable、参数 / 配置 INFRA、该端路径不在而跳过的,两样都不记。
 [CmdletBinding(PositionalBinding=$false)]
 param(
-  [string]$Slot,                             # 槽位通道:1..flow-config SlotCount,双仓路径按 flow-config 推导
-  [string]$ProjectDir,                       # 主工程通道:显式客户端 Demo
-  [string]$FantasyRoot,                      # 主工程通道:显式服务端仓根(可省)
+  [string]$ProjectDir,                       # 客户端 Demo
+  [string]$FantasyRoot,                      # 服务端仓根(可省;本作无服务端)
   [string]$MessageFile,                      # 提交信息文件(可省;省则跳过 FIX-QUALIFY 判定)
   [switch]$CheckRuleTable                    # 只读自检按需篇判据表(见头注),不判本轮改动
 )
@@ -67,8 +66,8 @@ $SecurityContentRe = 'PlayerPrefs\.|\bFile\.(WriteAll|AppendAll|ReadAll|Open|Cre
 $NewAssetExtRe = '\.(prefab|png|jpg|jpeg|tga|psd|asset|mat|anim|controller|bytes|cs|ttf|otf|shader|spriteatlas)$'
 # UI 目视证据:prefab 动过就要目视,不分新增与修改。
 $UiEvidenceExtRe = '\.prefab$'
-# 修复类定性(FIX-QUALIFY)的判据不在本表:正本 = hooks/校验库.ps1 Get-FixQualifyGap,与 槽位交付 共用。
-# 按需篇点名(RULES)的判据也不在本表:正本 = hooks/校验库.ps1 $script:RuleReadTable,与 槽位领取「开工前读」共用。
+# 修复类定性(FIX-QUALIFY)的判据不在本表:正本 = hooks/校验库.ps1 Get-FixQualifyGap,与 单仓提交 共用。
+# 按需篇点名(RULES)的判据也不在本表:正本 = hooks/校验库.ps1 $script:RuleReadTable。
 
 # ---- 改动面采集 ----
 
@@ -83,7 +82,7 @@ $QuoteOff = "-c core.quotepath=false"
 $PorcelainArgs = "$QuoteOff status --porcelain --untracked-files=all"
 
 # 两个采集函数的拼装与规整(diff 行去引号 + porcelain 解析 + Ordinal 去重排序)都交给共享库
-# Get-RepoFootprint,与 槽位领取内核 同口径,不在本脚本另留一份副本。
+# Get-RepoFootprint,不在本脚本另留一份副本。
 function Get-ChangedPaths([string]$Root, [string]$Baseline) {
   # 相对基线的全部改动面:已提交 + 工作区已跟踪(`diff <baseline>` 比的是工作区 vs baseline,
   # 两者一次覆盖)+ porcelain 全部行(含 untracked)。
@@ -161,7 +160,7 @@ $cfg = Get-FlowConfig
 
 # ---- -CheckRuleTable:只读自检按需篇判据表(语义见头注),不判本轮改动 ----
 if ($CheckRuleTable) {
-  if ($Slot -or $MessageFile) { Write-Host "SELF-REVIEW TRIGGERS : INFRA - -CheckRuleTable 只认 -ProjectDir / -FantasyRoot"; exit 2 }
+  if ($MessageFile) { Write-Host "SELF-REVIEW TRIGGERS : INFRA - -CheckRuleTable 只认 -ProjectDir / -FantasyRoot"; exit 2 }
   $docRoot = if ($ProjectDir) { $ProjectDir } else { Join-Path $cfg.RepoRoot "Demo" }
   $clientRepo = $docRoot
   if (-not (Test-Path (Join-Path $clientRepo ".git"))) { $clientRepo = Split-Path $docRoot -Parent }
@@ -178,7 +177,7 @@ if ($CheckRuleTable) {
 }
 # 基线双端分列(正本 = flow-config ClientBaseline / FantasyBaseline),不合成一个值:
 # 两端各自的基线是独立配置项,合并会在两者取值分叉时静默按错的一端比 diff。
-# 缺键判 INFRA(同 槽位交付 / 提交检查),不回落成写死的分支名:回落会在配置缺键时静默按错的基线比 diff。
+# 缺键判 INFRA(同 提交检查),不回落成写死的分支名:回落会在配置缺键时静默按错的基线比 diff。
 foreach ($key in @("ClientBaseline", "FantasyBaseline")) {
   if (-not $cfg[$key]) { Write-Host ("SELF-REVIEW TRIGGERS : INFRA - missing flow-config key " + $key); exit 2 }
 }
@@ -186,22 +185,9 @@ $clientBaseline  = $cfg.ClientBaseline
 $fantasyBaseline = $cfg.FantasyBaseline
 
 $roots = @()   # @{ Name; Path; Baseline }
-if ($Slot) {
-  # 槽位号的合法区间来自 flow-config,param 块的 ValidateSet 拿不到它——写死过一次,槽位池扩到 5
-  # 之后 dev4/dev5 上本脚本直接参数验证失败,而自审是交付前必经一步。校验形态同 槽位交付 / 槽位置备。
-  if ($Slot -notmatch '^\d+$' -or [int]$Slot -lt 1 -or [int]$Slot -gt [int]$cfg.SlotCount) {
-    Write-Host "SELF-REVIEW TRIGGERS : INFRA - slot must be in 1..$($cfg.SlotCount)"; exit 2
-  }
-  $slotRoot = Join-Path $cfg.SlotBaseDir ("$($cfg.SlotDirPrefix)$Slot")
-  if (-not (Test-Path $slotRoot)) { Write-Host "SELF-REVIEW TRIGGERS : INFRA - slot root '$slotRoot' not found"; exit 2 }
-  $roots += @{ Name = "client"; Path = (Join-Path $slotRoot "Demo"); Baseline = $clientBaseline }
-  if ($cfg.ServerDirName) { $roots += @{ Name = "server"; Path = (Join-Path $slotRoot $cfg.ServerDirName); Baseline = $fantasyBaseline } }
-}
-else {
-  if (-not $ProjectDir) { Write-Host "SELF-REVIEW TRIGGERS : INFRA - pass -Slot <N>, or -ProjectDir (and optionally -FantasyRoot)"; exit 2 }
-  $roots += @{ Name = "client"; Path = $ProjectDir; Baseline = $clientBaseline }
-  if ($FantasyRoot) { $roots += @{ Name = "server"; Path = $FantasyRoot; Baseline = $fantasyBaseline } }
-}
+if (-not $ProjectDir) { Write-Host "SELF-REVIEW TRIGGERS : INFRA - pass -ProjectDir (and optionally -FantasyRoot)"; exit 2 }
+$roots += @{ Name = "client"; Path = $ProjectDir; Baseline = $clientBaseline }
+if ($FantasyRoot) { $roots += @{ Name = "server"; Path = $FantasyRoot; Baseline = $fantasyBaseline } }
 
 $allChanged = New-Object System.Collections.Generic.List[object]
 $allAdded   = New-Object System.Collections.Generic.List[object]
@@ -264,21 +250,21 @@ if ($secHits.Count -gt 12) { Write-Host "    ... and $($secHits.Count - 12) more
 # ② ASSET-SETTLE
 $newAssets = @($allAdded | Where-Object { $_.Side -eq 'client' -and $_.Path -match $NewAssetExtRe } | ForEach-Object { $_.Path })
 Format-Verdict "ASSET-SETTLE" ($newAssets.Count -gt 0) $(
-  if ($newAssets.Count -gt 0) { "($($newAssets.Count) new asset(s); let the editor finish importing before 槽位交付)" } else { "" })
+  if ($newAssets.Count -gt 0) { "($($newAssets.Count) new asset(s); let the editor finish importing before 单仓提交)" } else { "" })
 foreach ($a in ($newAssets | Select-Object -First 8)) { Write-Host "    - $a" }
 if ($newAssets.Count -gt 8) { Write-Host "    ... and $($newAssets.Count - 8) more" }
 
 # ③ UI-EVIDENCE
 $prefabs = @($allChanged | Where-Object { $_.Path -match $UiEvidenceExtRe } | ForEach-Object { $_.Path })
 Format-Verdict "UI-EVIDENCE" ($prefabs.Count -gt 0) $(
-  if ($prefabs.Count -gt 0) { "($($prefabs.Count) prefab(s) touched; 交付前在槽位编辑器目视位置与遮挡,呈报附证据)" } else { "" })
+  if ($prefabs.Count -gt 0) { "($($prefabs.Count) prefab(s) touched; 提交前在编辑器目视位置与遮挡,呈报附证据)" } else { "" })
 
 # ④ FIX-QUALIFY
 if ($MessageFile -and (Test-Path $MessageFile)) {
   $qual    = Get-FixQualifyGap ([System.IO.File]::ReadAllText($MessageFile))
   $subject = $qual.Subject
   $detail = if (-not $qual.IsFix) { "(subject verb is not a fix verb)" }
-            elseif ($qual.Gap -eq "no-qual") { "(subject '$subject' is a fix, but body carries NO 根治/补丁 结论 - add it before 槽位交付)" }
+            elseif ($qual.Gap -eq "no-qual") { "(subject '$subject' is a fix, but body carries NO 根治/补丁 结论 - add it before 单仓提交)" }
             elseif ($qual.Gap -eq "root-no-invariant") { "(subject '$subject' concludes 根治 but names no 不变量 - 写明本修复立住的不变量,及按「换个地方再发生」排查过的反例时序 / 路径)" }
             else { "(subject '$subject' is a fix; body already carries 根治/补丁 结论)" }
   Format-Verdict "FIX-QUALIFY" ($qual.Gap -ne "") $detail

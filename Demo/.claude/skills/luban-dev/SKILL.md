@@ -7,7 +7,7 @@ description: Luban 游戏配置全栈：枚举/Bean/数据表的增删改查、�
 
 ## 本作接入状态（先读）
 
-**Luban 还没有接入本作**。工程里没有表源（`Configs/GameConfig/` 不存在）、没有配置程序集、没有生成物，`Assets/AssetRaw/Configs/` 是空目录；`flow-config.psd1` 的 `LubanGenClientBat` 留空，槽位交付的 Luban 基线自动同步重导步因此跳过。按 `新游戏/工程计划.md`，配置程序集等第一张配置表再建（阶段 5「数值进 Luban 表」）。
+**Luban 还没有接入本作**。工程里没有表源（`Configs/GameConfig/` 不存在）、没有配置程序集、没有生成物，`Assets/AssetRaw/Configs/` 是空目录；`flow-config.psd1` 的 `LubanGenClientBat` 留空。按 `新游戏/工程计划.md`，配置程序集等第一张配置表再建（阶段 5「数值进 Luban 表」）。
 
 - **菜单 `TEngine/Luban/转表` 接入前不要点**：`Assets/TEngine/Editor/LubanTools/LubanTools.cs` 的产物清单还写着 block-client 的 `UnityProject/…` 路径与 Fantasy 服务端路径。
 - **下文多数路径与流程是 block-client 的形态**：它的导表流程带数据镜像（`build_data_mirror`）、自定义模板、服务端与 editor 两个额外目标和服务端前置校验，本作单机买断、没有服务端，接入时按单端裁过。下文标「block-client」的条目接入时改写或删掉；没标的（Luban 语法、`luban_helper.py`、各 reference 篇的 Luban 本体知识、`examples/`）是通用件。
@@ -110,7 +110,7 @@ python scripts/luban_helper.py --data-dir Configs/GameConfig/Datas <command>
 ### 操作规范
 
 - **只读操作**（list/get/query/search）：直接执行
-- **写入操作**（add/update/delete）：槽位内写表属任务授权范围，不逐次确认；在主工作树直接写表先经用户确认（通道判据见 CLAUDE.md「devflow 适用面」）。表源若放仓根 `Configs/`，注意槽位只稀疏检出 `Demo/` 与 `新游戏/`（`flow-config.psd1` `SlotSparseDirs`），接入时要把表源目录加进去
+- **写入操作**（add/update/delete）：devflow 任务内写表属任务授权范围，不逐次确认；任务外直接写表先经用户确认（通道判据见 CLAUDE.md「devflow 适用面」）
 - **删除操作**：先 `ref` 检查引用；连数据文件一起删（`--delete-data`）先经用户确认
   - `table delete NAME`：NAME 为全名精确匹配，或不带模块的短名精确匹配；短名命中多张表时报错列出候选，改用全名。
   - 连数据文件一起删须 `table delete NAME --delete-data --yes`；只给 `--delete-data` 不删任何东西，打印将删除的表定义行与数据文件后以非零退出，可当预演用。

@@ -17,7 +17,7 @@ description: 文档与代码的事实一致性核验:把 `.claude/references/`�
 
 | | 路径 |
 |---|---|
-| 核验目标 | 描述工程 API 与设施的篇目——主体是 `.claude/references/tengine/`(14 篇 TEngine 框架参考),另含 `.claude/skills/*/references/` 里的 `devflow-ui/references/` 的 `ui-tools.md`(工具与自有组件索引)与 `ugui-widgets.md`(控件库手册)。现役清单以目录现场为准;纯流程/判据类 reference(如 `devflow/references/slot-protocol.md`)不描述代码实体,不在核验面 |
+| 核验目标 | 描述工程 API 与设施的篇目——主体是 `.claude/references/tengine/`(14 篇 TEngine 框架参考),另含 `.claude/skills/*/references/` 里的 `devflow-ui/references/` 的 `ui-tools.md`(工具与自有组件索引)与 `ugui-widgets.md`(控件库手册)。现役清单以目录现场为准;纯流程/判据类 reference(如 `devflow/references/security-review.md`)不描述代码实体,不在核验面 |
 | 核验目标(卡内代码断言) | devflow 族 SKILL.md(`devflow-ui` / `devflow-client`)里**只有对产品代码行为的断言**入核验面:生成器 API 与其产物形态、绑定链行为、Editor 菜单入口、前缀表、基类与特性名。**流程条款一律不碰**(停机呈报、范围承载、呈报形状、通道分流…),它们没有代码事实可比对,归 `/rules-audit` 与 `/devflow-check` |
 | 核验目标(工程计划) | `新游戏/工程计划.md` 里描述工程现状的段落(「落地时定的细节」各条:程序集分层、UI 框架落点、出包入口、资源运行模式等)。CLAUDE.md 把它当本作工程形态的正本,TEngine 篇目与它冲突时以它为准,故它过期的代价最高。立项裁定、阶段计划与 `新游戏/设计/` 下的规则文档是设计决策、不是代码事实,不在核验面 |
 | 核验目标(产品代码注释) | `Demo/Assets/` 下注释里**对别处代码的引用**:`<see cref>` / `<c>` 标记的符号、以及纯文本形态的 `类名.成员名`。按模块点名核(如 `/refs-check UIModule 注释`),不全仓扫 |
@@ -97,6 +97,6 @@ Read 目标篇正文,抽出可证伪的事实断言,分以下几类:
 
 ## 禁止事项
 
-- 不改 `Assets/` 下任何文件——**注释也算**。核出的注释问题进报告的「待走 devflow 修正」栏,由用户按 devflow 立项修。本 skill 的写入面全在人工入库通道内(清单式提交、不推送),而产品代码改动属 devflow 通道,两者的提交与检查路径完全不同,混在一轮里做会让槽位交付的主工作树预检直接拒。
+- 不改 `Assets/` 下任何文件——**注释也算**。核出的注释问题进报告的「待走 devflow 修正」栏,由用户按 devflow 立项修。本 skill 的写入面全在人工入库通道内(清单式提交、不推送),而产品代码改动属 devflow 通道,两者的提交与检查路径完全不同,混在一轮里做会让两类改动进同一个提交。
 - 不写 `.claude/rules/`;devflow 族卡**只改其代码断言处**(判据见阶段一「核 SKILL.md 时的取舍判据」),流程条款分属 `/rules-audit` 与 `/devflow-check`。越界发现只在报告里建议跑对应 skill。
 - git:修复经呈报后按人工入库通道处置(义务正本 = CLAUDE.md「devflow 适用面」人工入库通道条);本卡写入面都不在客户端自检读取面内(登记见 `校验库.ps1` `ClientGateScanSurface`),提交前不必先跑自检。

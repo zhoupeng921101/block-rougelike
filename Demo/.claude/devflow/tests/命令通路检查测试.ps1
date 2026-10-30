@@ -2,13 +2,8 @@
 # 经 hook演练.ps1 按 harness 方式(stdin JSON、同引擎)喂伪造输入,断言 allow/deny。无需 git 夹具。
 # 覆盖:Bash 侧拉起 powershell/pwsh 的各种启动位 -> deny;把命令名当数据读(grep/echo/heredoc 正文)
 #   与 PowerShell 工具侧的正规 -File 形态 -> allow;cmd 裸名调 bat 的四种写法 -> deny;带路径、%~dp0、
-#   变量、非启动位 -> allow;NoDefaultCurrentDirectoryInExePath 未置时不判 bat;PowerShell 工具前台调
-#   槽位交付 / 集成交付(-File、&、.\、点源、-Command、裸路径、powershell 后的 -f / -c 缩写)-> deny,
-#   run_in_background=true -> allow,显式 false 同前台,只提及文件名(Get-Content / git log -- /
-#   git diff -- . / 注释 / here-string / 格式化运算符 -f)-> allow;拒绝写遥测 reason=foreground-deliver,
-#   后台与只提文件名两组不写;快速路径(三类字样都不沾即放行)不漏判:大小写不敏感、载荷以 \u00XX 转义
-#   ASCII 或把「交付」写成 \u 转义时走全量(转义串在运行期拼出,源码里不写字面 \u 序列:编辑工具会把它
-#   就地解码成原字,测试随之空转)。
+#   变量、非启动位 -> allow;NoDefaultCurrentDirectoryInExePath 未置时不判 bat;快速路径(两类字样都不沾即放行)不漏判:
+#   大小写不敏感、载荷以 \u00XX 转义 ASCII 时走全量(转义串在运行期拼出,源码里不写字面 \u 序列)。
 #   S 段读 .claude\settings.json:按 harness `if` 的模型核对上面每个 deny 样例(及 提交检查 的 git /
 #   run_tests 代表形态)都会拉起对应 hook,预筛在场时普通命令不拉起。
 # 隔离:$env:LOCALAPPDATA 指到夹具内,遥测落夹具;末尾核遥测 error 行为零(失败放行未触发)。
@@ -44,15 +39,6 @@ function Invoke-PathPayloadDrill([string]$Payload) {
 function Invoke-PathDrill([string]$Tool, [string]$Command, $Bg = $null) {
   return (Invoke-PathPayloadDrill (New-PathPayload $Tool $Command $Bg))
 }
-function Get-ForegroundDeliverRows {
-  # 夹具遥测里 reason=foreground-deliver 的行(逐行解析 JSON,不按原文匹配:中文字段可能被转义)。
-  $telDir = Join-Path $env:LOCALAPPDATA "claude-wf-3b\telemetry"
-  if (-not (Test-Path $telDir)) { return , @() }
-  $rows = @(Get-ChildItem $telDir -Filter *.jsonl | ForEach-Object { Get-Content $_.FullName -Encoding UTF8 } |
-    Where-Object { $_ } | ForEach-Object { $_ | ConvertFrom-Json } | Where-Object { $_.reason -eq 'foreground-deliver' })
-  return , $rows
-}
-
 # settings.json 的 if 预筛模型(S 段用):harness 对每个 handler 的 `if` 做「工具名 + 命令文本通配」匹配,
 # 不带 if 的 handler 只看 matcher。大小写口径从严(Bash 区分、PowerShell 不区分),`*` 匹配任意文本(含换行),
 # 判某条命令会不会让指定 hook 被 harness 拉起。harness 的子命令切分、剥前导 VAR=、heredoc 处理不建模:模型对
@@ -147,61 +133,6 @@ try {
   Assert-True (-not $esc.Contains('powershell')) "F-esc 夹具自检:载荷里 powershell 已改写成转义形态"
   Assert-True (Test-Denied (Invoke-PathPayloadDrill $esc)) "F-deny 载荷以 \u00XX 转义 ASCII 字母 -> 走全量路径,照判 deny"
 
-  # ---------- D:PowerShell 工具前台调交付入口 ----------
-  $dfReal = 'E:\block-rougelike\Demo\.claude\devflow'
-  $deny = @(
-    ('powershell.exe -NoProfile -ExecutionPolicy Bypass -File ' + $dfReal + '\槽位交付.ps1 -Slot 1 -MessageFile C:\t\msg.txt'),
-    ('& "' + $dfReal + '\槽位交付.ps1" -Slot 2 -MessageFile C:\t\msg.txt'),
-    ('Set-Location ' + $dfReal + '; .\槽位交付.ps1 -Slot 1 -MessageFile C:\t\msg.txt'),
-    ('powershell.exe -NoProfile -File "' + $dfReal + '\集成交付.ps1" -Slot 3'),
-    '. .\集成交付.ps1 -Slot 1',
-    ('powershell.exe -NoProfile -Command "& ''' + $dfReal + '\槽位交付.ps1'' -Slot 1"'),
-    ($dfReal + '\槽位交付.ps1 -Slot 1 -MessageFile C:\t\msg.txt | Select-Object -Last 20'),
-    ('powershell.exe -NoProfile -ExecutionPolicy Bypass -f ' + $dfReal + '\槽位交付.ps1 -Slot 1'),
-    'pwsh -NoProfile -c ".\集成交付.ps1 -Slot 2"'
-  )
-  $i = 0
-  foreach ($c in $deny) { $i++; Assert-True (Test-Denied (Invoke-PathDrill "PowerShell" $c)) ("D-deny$i 前台调交付入口 -> deny: " + $c) }
-  $dDeny = $deny
-  Assert-True (Test-Denied (Invoke-PathDrill "PowerShell" $deny[0] $false)) "D-deny-explicit run_in_background=false 显式值 -> deny"
-  Assert-True (Test-Denied (Invoke-PathDrill "pwsh" $deny[1])) "D-deny-pwsh 工具名 pwsh 同判 -> deny"
-  $o = Invoke-PathDrill "PowerShell" $deny[0]
-  Assert-True (($o -match 'run_in_background:true') -and ($o -match '600')) "D-msg 拒绝理由给出 run_in_background 改法与 600 秒上限"
-  # 遥测:上面每次拒绝各记一行 reason=foreground-deliver(deny 样例 + explicit + pwsh + msg),hit 为脚本名。
-  $fgRows = Get-ForegroundDeliverRows
-  Assert-True ($fgRows.Count -eq ($deny.Count + 3)) ("D-tel 每次拒绝各记一行 foreground-deliver 遥测: " + $fgRows.Count + " / 期望 " + ($deny.Count + 3))
-  foreach ($nm in @('槽位交付.ps1', '集成交付.ps1')) {
-    $hitRows = @($fgRows | Where-Object { $_.event -eq '命令通路检查' -and $_.decision -eq 'deny' -and $_.hit -eq $nm })
-    Assert-True ($hitRows.Count -gt 0) ("D-tel-hit 遥测行 decision=deny、hit=" + $nm)
-  }
-  $i = 0
-  foreach ($c in $deny) { $i++; Assert-True (-not (Test-Denied (Invoke-PathDrill "PowerShell" $c $true))) ("D-bg$i run_in_background=true -> allow: " + $c) }
-  $allow = @(
-    ('Get-Content ' + $dfReal + '\槽位交付.ps1 -TotalCount 40'),
-    'git -C E:\block-rougelike log --oneline -5 -- Demo/.claude/devflow/槽位交付.ps1',
-    ('Select-String -Path ' + $dfReal + '\集成交付.ps1 -Pattern VERDICT | Select-Object -First 3'),
-    '# 稍后调 .\槽位交付.ps1 交付',
-    ('$t = @''' + "`n" + '.\槽位交付.ps1 -Slot 1 -MessageFile m.txt' + "`n" + '''@; Set-Content -Path C:\t\note.md -Value $t'),
-    'Write-Output "delivery = 槽位交付.ps1"',
-    ('powershell.exe -NoProfile -File ' + $dfReal + '\合并预检.ps1 -Slot 1'),
-    ('Copy-Item ' + $dfReal + '\槽位交付.ps1 C:\t\槽位交付.ps1.bak'),
-    'git -C E:\block-rougelike diff -- . Demo/.claude/devflow/槽位交付.ps1',
-    'git log -- . .claude\devflow\槽位交付.ps1',
-    ('Write-Output (''{0}'' -f ''' + $dfReal + '\槽位交付.ps1'')')
-  )
-  $i = 0
-  foreach ($c in $allow) { $i++; Assert-True (-not (Test-Denied (Invoke-PathDrill "PowerShell" $c))) ("D-allow$i 只提及文件名 -> allow: " + $c.Split("`n")[0]) }
-  Assert-True (-not (Test-Denied (Invoke-PathDrill "Bash" 'grep -n VERDICT .claude/devflow/槽位交付.ps1'))) "D-allow-bash Bash 工具不判第 3 类 -> allow"
-  $fgAfter = (Get-ForegroundDeliverRows).Count
-  Assert-True ($fgAfter -eq $fgRows.Count) ("D-tel-quiet 后台放行与只提文件名两组不新增 foreground-deliver 行: " + $fgRows.Count + " -> " + $fgAfter)
-  # 快速路径两种原文形态:「交付」以 UTF-8 原字出现、或被序列化成 \u4ea4\u4ed8 转义,都须进全量路径。
-  $base = New-PathPayload "PowerShell" $deny[0]
-  $lit = [regex]::Replace($base, '(?i)\\u4ea4\\u4ed8', '交付')
-  $esc = $lit.Replace('交付', ($u + '4ea4' + $u + '4ed8'))
-  Assert-True ($lit.Contains('交付') -and -not $esc.Contains('交付')) "F-deliver 夹具自检:两种载荷形态构造成立"
-  Assert-True (Test-Denied (Invoke-PathPayloadDrill $lit)) "F-deliver-lit 载荷含「交付」原字 -> 走全量路径,照判 deny"
-  Assert-True (Test-Denied (Invoke-PathPayloadDrill $esc)) "F-deliver-esc 载荷把「交付」转义成 \u4ea4\u4ed8 -> 走全量路径,照判 deny"
-
   # ---------- S:settings.json 的 if 预筛不漏本 hook 与 提交检查 的拒绝样例 ----------
   # 预筛只许比两 hook 的判据宽:上面每个 deny 样例在 harness 侧都必须拉起本 hook;不碰任何字样的普通命令不拉起。
   $regs = Get-HookRegistrations "命令通路检查.ps1"
@@ -210,8 +141,6 @@ try {
   foreach ($c in $bDeny) { $i++; Assert-True (Test-HookPrefilterCovers $regs "Bash" $c) ("S-cover-B$i if 预筛覆盖: " + $c.Split("`n")[0]) }
   $i = 0
   foreach ($c in $tDeny) { $i++; Assert-True (Test-HookPrefilterCovers $regs $c[0] $c[1]) ("S-cover-T$i if 预筛覆盖: " + $c[1]) }
-  $i = 0
-  foreach ($c in $dDeny) { $i++; Assert-True (Test-HookPrefilterCovers $regs "PowerShell" $c) ("S-cover-D$i if 预筛覆盖: " + $c) }
   $extra = @(
     @("Bash", 'PowerShell.exe -File x.ps1'), @("Bash", 'Powershell -Command x'), @("Bash", 'PWSH -c x'), @("Bash", 'Pwsh -c x'),
     @("Bash", 'cmd //c GEN.BAT'), @("Bash", 'cmd //c Gen.Cmd'), @("PowerShell", 'cmd /c GEN.CMD')

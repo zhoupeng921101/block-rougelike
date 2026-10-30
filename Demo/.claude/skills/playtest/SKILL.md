@@ -17,14 +17,14 @@ description: AI 验收跑测:在 Play 模式真实操作游戏、核对功能是
 
 ## 目标实例:恒主工程
 
-**只在主工程跑**,不领槽位、不占固定池任一槽、无交付动作(本卡不写产品代码,不属 devflow 适用面)。槽位编辑器一律不作验收目标,**尚未交付的改动不切到槽位去验**——见下方第 1 项核对。
+**只在主工程跑**,无提交动作(本卡不写产品代码,不属 devflow 适用面)。
 
 固定在主工程使守卫判别串恒为 `block-rougelike/Demo`。本作单机、无登录,进 Play 即从启动器走到主界面,没有账号或服务端要核。
 
 ## 开跑前(四项核对,缺一不跑)
 
-1. **被验改动已交付到主工程** — 验收目标涉及的代码 / 资产须在主工程定位得到(grep 关键符号或文件)。定位不到 → **停下提醒用户「该改动尚未交付,现在验会跑在旧代码上」,等指示,不自行切槽位**。在旧代码上验收会得出「功能不存在 / 没生效」的假结论,比跑不起来更有害——后者一眼可见,前者会被当成真实缺陷上报。需要佐证时跑 `.claude/devflow/占用面板.ps1` 看是否有槽位正做相关任务,一并告知。
-2. **编辑器已编译到最新** — 源码定位得到不等于编辑器在跑它:编辑器未 refresh 时程序集停在旧版本,同样得出假结论。比对 `Library/ScriptAssemblies/GameLogic.dll` 与 `Assets/GameScripts/HotFix` 下最新 `.cs` 的修改时间,dll 较旧 → 非 Play 时在带守卫的 `execute_code` 内 refresh + 请求编译(做法与落点纪律见 `unity-check`「槽位分工与占用」),等 dll 时间更新、再用反射确认被验改动的符号在程序集里,才进 Play。
+1. **被验改动已交付到主工程** — 验收目标涉及的代码 / 资产须在主工程定位得到(grep 关键符号或文件)。定位不到 → **停下提醒用户「该改动不在主工程里,现在验会跑在旧代码上」,等指示**。在旧代码上验收会得出「功能不存在 / 没生效」的假结论,比跑不起来更有害——后者一眼可见,前者会被当成真实缺陷上报。
+2. **编辑器已编译到最新** — 源码定位得到不等于编辑器在跑它:编辑器未 refresh 时程序集停在旧版本,同样得出假结论。比对 `Library/ScriptAssemblies/GameLogic.dll` 与 `Assets/GameScripts/HotFix` 下最新 `.cs` 的修改时间,dll 较旧 → 非 Play 时在带守卫的 `execute_code` 内 refresh + 请求编译(做法与落点纪律见 `unity-check`「实例路由与落点」),等 dll 时间更新、再用反射确认被验改动的符号在程序集里,才进 Play。
 3. **落点与代理可用性** — 见下节守卫探针。
 4. **Play 与走帧** — 代理各接口在非 Play 模式返回 `ok:false, reason:"不在 Play 模式"`。进 Play 后读 `EditorApplication.isPaused` 与间隔两次的 `Time.frameCount`:暂停(Error Pause 或手动暂停)时接口照常返回、游戏却不走帧,表现为「操作了没反应」;处于暂停则置 `isPaused = false` 再继续。之后「连续无进展」时先复查这两项,再判卡在业务上。没到目标界面时先报告现状、请示是否代为操作。
 
@@ -32,9 +32,9 @@ description: AI 验收跑测:在 Play 模式真实操作游戏、核对功能是
 
 多个编辑器并存时 MCP 落点会失配,机制与守卫纪律正本见 `unity-check` 卡,本卡不复述。两条本场景要点:
 
-**判别串恒为 `block-rougelike/Demo`,斜杠不可省**:各工程根互为前缀,`Contains("block-rougelike")` 对 `block-rougelike-dev2` 同样为真、守卫形同虚设,验收会静默跑在某个槽位上。
+**判别串恒为 `block-rougelike/Demo`,斜杠不可省**:各工程根互为前缀,`Contains("block-rougelike")` 对旧槽位 worktree `block-rougelike-dev2` 同样为真、守卫形同虚设,验收会静默跑在别的副本上。
 
-**首次调用**用纯反射探针,确认落点与代理都就位。不可直接 `using` 该类型——目标槽位之外编译期即失败,守卫来不及执行(理由见 unity-check「调用只在目标槽位存在的类型须走反射」):
+**首次调用**用纯反射探针,确认落点与代理都就位。不可直接 `using` 该类型——目标工程之外编译期即失败,守卫来不及执行(理由见 unity-check「调用只在目标槽位存在的类型须走反射」):
 
 ```csharp
 if(!Application.dataPath.Contains("block-rougelike/Demo")) return "WRONG_INSTANCE:"+Application.dataPath;

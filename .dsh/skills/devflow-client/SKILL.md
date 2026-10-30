@@ -13,4 +13,4 @@ description: devflow 客户端实现段(DSH 适配卡)。只由 devflow 主流�
 - 跑脚本用 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File`,不直接在 `pwsh` 里跑 5.1 脚本。
 - Unity MCP 工具同名(`manage_*` / `execute_code` / `read_console` 等);`execute_code` 首行落点守卫照正本要求写。
 - 编译、自检这类长命令后台跑;实现期不另跑 `dotnet build` 的约束不变。
-- 交付:槽位通道调 `.claude/devflow/槽位交付.ps1`;主工程通道提交走 `.dsh/scripts/提交.ps1`(DSH 没有 hook,不要裸敲 git 写命令)。
+- 提交走 `.dsh/scripts/提交.ps1`(DSH 没有 hook,不要裸敲 git 写命令),由主流程第三步执行。

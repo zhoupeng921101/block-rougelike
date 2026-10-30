@@ -3,14 +3,14 @@
 # 不另开脚本——静态检查散成多个入口后,漏挂哪个都不会有人发现。
 #
 # 规则:
-#   R1 影子定义 — 非库文件定义了共享库已有的函数名。副本必与正本漂移(实发:槽位交付 内联
+#   R1 影子定义 — 非库文件定义了共享库已有的函数名。副本必与正本漂移(实发:交付入口 内联
 #                 复制 Get-FlowEngine 时丢了引擎取不到时的回退分支)。
 #   R2 同体副本 — 同一段函数体出现在两个及以上文件。
 #   R3 区域敏感比较 — 字符串定位/大小写转换未固定为 Ordinal / Invariant。
 #   R4 悬空变量   — 引用了全树从未赋值的 $script: 变量(重构删了赋值、漏改引用点)。
 #   R5 孤儿脚本   — 脚本无任何调用点。写好却没接上调用点的脚本永不执行,它承载的义务静默落空,
 #                 而台账与头注仍宣称它在生效(实发:临时测试清理 功能完整、退出码齐备、提交检查
-#                 甚至为它留了树漂移容忍度,但交付流程从未调用它,临时测试逐批累积在槽位里)。
+#                 甚至为它留了树漂移容忍度,但交付流程从未调用它,临时测试逐批累积在工作树里)。
 #                 「调用点」只认:另一脚本的代码(非注释)里出现其文件名、.bat / settings*.json 引用、
 #                 在 $EntryAllow(会话 / 人工直接调用的入口,附理由)里;测试套件只认 run_tests 的
 #                 $Suites 登记。文档、台账、注释里的提及不算——那正是上面实发的形态(台账写着、头注
@@ -23,12 +23,10 @@
 #                 绑到首个参数(交付脚本上就是推错仓 / 交付错槽)。
 #   R9 CheckOnly 覆盖 — 写入口既不在 $CheckOnlyRequired 也不在 $CheckOnlyExempt 里 = 新增入口
 #                 未就「要不要 -CheckOnly」做决定;登记为 Required 却没有该参数同样违规。
-#   R10 非 .ps1 脚本 — devflow 下新增 .bat/.sh/.py/.cmd(既有两个 .bat 在 $NonPs1Allow 里豁免)。
+#   R10 非 .ps1 脚本 — devflow 下新增 .bat/.sh/.py/.cmd(既有的 .bat 在 $NonPs1Allow 里豁免)。
 #   R11 清单参数无文件形态 — 会话直接调用的写入口有 [string[]] 参数却无配对的 -XxxFile。
-#                 数组传给原生进程时在 argv 层展平、结构不可恢复(先例:槽位领取 -PathsFile)。
-#   R12 槽位上界失配 — flow-config 的 SlotCount 与 SlotRootRe 字符类上界不同值。两者是同一事实
-#                 的两份表达(前者定槽位数,后者定哪些 -devN 目录按受管槽位处理),漏改一处的症状是
-#                 高号槽位被当成主仓:提交检查与单仓提交按主仓通道判,槽位归一也失效。
+#                 数组传给原生进程时在 argv 层展平、结构不可恢复(先例:单仓提交 -PathListFile)。
+#   R12 (已退役:槽位上界失配,随槽位池一并拆除;编号不复用)
 #   R13 绕过唯一出口 — 登记表($SoleExitRules)里声明的模块中,除唯一出口函数外还有别处直接调
 #                 那个被封装的底层写调用。收敛出口是为了让保护自动生效,绕过它不报错、静默
 #                 损坏照旧(实发:luban_helper 的 openpyxl 存盘会清空公式单元格的缓存值,而
@@ -51,7 +49,7 @@
 #                 容器内外是两份文件,看板 / 遥测无声分裂(实发 2026-09-27:Unity 槽位面板恒读旧看板)。
 #
 # R6-R11 的规约正本 = .claude/rules-ondemand/script-authoring.md;此处只承载判据。
-# R12 判的是 flow-config 内部一致性,R13 判的是登记模块的出口收敛,判据与规约均同在此处。
+# R13 判的是登记模块的出口收敛,判据与规约均同在此处。
 # R8/R9/R11 的「写入口」= devflow 根目录下、代码里有写动作($GitWriteRe 等,见 Get-WriteEvidence)
 # 或文件名不含只读类字样($ReadOnlyNameRe)的脚本。内容判定为主:名字带「检查」的写脚本不再躲得过
 # (实发:工作流通路检查 有写动作,PositionalBinding 靠手工补上)。文件名字典只作辅助,
@@ -130,35 +128,28 @@ $LadReadAllow = @{
 # 仍要过 Get-WriteEvidence 的内容判定,有写动作即进视野。词典收的是只读语义的动词。「判定」与「核对/检查/校验」同类(读现状、出结论、不落写),
 # 2026-08-21 补入——在此之前 自审触发判定.ps1 被判成写入口、要求登记 R9 CheckOnly,而登记
 # 到那张表会把一个纯只读脚本错标成有写动作。词典漏词的修法是补词,不是给只读脚本挂豁免。
-# 词典同收英文同义词(panel):被纯 ASCII 的 .bat 调用的脚本,文件名也得是 ASCII(判据见
-# bat编码核对.ps1),用不上中文词——先例 slots-panel.ps1。
+# 词典同收英文同义词(panel):被纯 ASCII 的 .bat 调用的脚本,文件名也得是 ASCII(判据见 bat编码核对.ps1)。
 # 「测试」只认后缀:测试套件名以它结尾,而 临时测试清理.ps1 名中含它却是有删除动作的写入口,
 # 按子串匹配会把它滤出 R8/R9/R11 的视野。「单测」同理只认后缀(自检道 dotnet单测.ps1:跑测试、出结论,产物只落忽略路径)。
 $ReadOnlyNameRe = '(自检|扫描|核对|预检|面板|panel|历史|演练|检查|校验|测试$|单测$|判定|^run_tests$)'
 # 须提供 -CheckOnly 的写入口(会话直接调用的入口 + 认可交付脚本)。
-$CheckOnlyRequired = @("单仓提交.ps1", "集成交付.ps1", "槽位置备.ps1", "服务端重启.ps1", "临时测试清理.ps1", "提交钩子安装.ps1")
+$CheckOnlyRequired = @("单仓提交.ps1", "服务端重启.ps1", "临时测试清理.ps1", "提交钩子安装.ps1")
 # 豁免 -CheckOnly 的写入口,值 = 理由(script-authoring「脚本接口设计」的两类不加)。
 # 新增写入口必须进这两张表之一,否则 R9 报未登记——这是让「加不加 CheckOnly」成为显式决定。
 $CheckOnlyExempt = @{
   "协议导出.ps1"     = "入口内部构件,兼会话直调(devflow-server 实现期先导协议);写的是可重跑覆盖的生成物,无不可逆动作可供 -CheckOnly 预演"
   "归因留痕.ps1"     = "唯一写动作是追加一条遥测,无不可逆动作可供 -CheckOnly 预演"
-  "看板.ps1"         = "入口内部构件,兼会话直调(记阻塞);写的是可丢的仓外看板,无不可逆动作可供 -CheckOnly 预演"
-  "槽位领取内核.ps1" = "入口内部构件(槽位领取 的实现体,子进程调用)"
-  "槽位领取.ps1"     = "探查面由 占用面板.ps1 覆盖,不造第二份"
-  "槽位交付.ps1"     = "合并面探查由 合并预检.ps1 覆盖"
   "漂移取证.ps1"     = "只读诊断:唯一写动作是追加自己的仓外日志,无不可逆动作可供 -CheckOnly 预演"
   "重建csproj.ps1"   = "缺省即只判零写入;唯一写动作是 -InPlace 显式重写过期 csproj(gitignore 的 Unity 生成物),不碰源码与 git"
-  "工作流通路检查.ps1" = "真环境 canary:写动作(真领取 / 释放槽位、落临时简报)即被测通路本身,-CheckOnly 无可预演"
   "投放可达性核对.ps1" = "只读核对,唯一写动作是按调用方显式传的 -Json 落报告文件"
   "Editor程序集编译.ps1" = "客户端自检的一道(只读检查),唯一写动作是编译产物落 gitignore 的 Temp/obj;无不可逆动作可供 -CheckOnly 预演,加了反而稀释「带 -CheckOnly = 有副作用」这一信号"
 }
 # R11 只管会话直接调用的入口:内部构件由父脚本按自己的约定传参,不经会话侧 argv,不要求 File 形态。
-# (曾以「槽位领取 把清单以逗号连成单实参喂 槽位领取内核」作先例,该走法已废——经 -File 起子进程时
-# [string[]] 绑定不按逗号拆分,多条路径会退化成一条长串使重叠比对恒不命中;清单现走 -PathsFile。)
-$EntryInternal = @("槽位领取内核.ps1")
+# 经 -File 起子进程时 [string[]] 绑定不按逗号拆分,多条路径会退化成一条长串;清单一律走 -XxxFile。
+$EntryInternal = @()
 
-# R10:devflow 下既有的两个 .bat(人工双击入口),规则只拦新增。
-$NonPs1Allow = @("test.bat", "槽位.bat")
+# R10:devflow 下既有的 .bat(人工双击入口),规则只拦新增。
+$NonPs1Allow = @("test.bat")
 $NonPs1ScriptExt = @(".bat", ".cmd", ".sh", ".py", ".js")
 
 # R8/R9/R11 内容判据:写动作三类——git 写子命令、文件系统写、调用已知写入口。
@@ -176,8 +167,8 @@ $TempMarkerRe = '(?i)(\$env:(TEMP|TMP)\b|GetTempPath|GetTempFileName|New-Tempora
 $MessageCmdlets = @("Write-Host", "Write-Output", "Write-Warning", "Write-Error", "Write-Verbose", "Write-Information")
 $IoWriteMembers = @("WriteAllText", "WriteAllLines", "WriteAllBytes", "AppendAllText", "AppendAllLines", "AppendText",
                     "Delete", "Move", "Copy", "Replace", "CreateDirectory", "Create", "CreateText")
-# 已知写入口:调用它们的脚本本身即有写动作。成员 = 有 -CheckOnly 的入口 + 交付 / 领取两入口与其内核。
-$KnownWriteEntries = @($CheckOnlyRequired) + @("槽位交付.ps1", "槽位领取.ps1", "槽位领取内核.ps1", "协议导出.ps1")
+# 已知写入口:调用它们的脚本本身即有写动作。成员 = 有 -CheckOnly 的入口 + 协议导出。
+$KnownWriteEntries = @($CheckOnlyRequired) + @("协议导出.ps1")
 # 内容判定的已知假阳性:写目标确属临时区、但经函数参数传递,临时来源追踪(单函数内赋值链)追不到。
 # 登记后该脚本回落到文件名判据;值 = 为什么它的写动作不算。只收经核实的,不作为绕过口。
 $WriteEvidenceIgnore = @{
@@ -187,10 +178,9 @@ $WriteEvidenceIgnore = @{
 # R5 显式入口白名单:由会话 / 人工 / skill 卡直接调用、没有脚本调用点的入口。值 = 调用方。
 # 新增入口须在此登记——让「这个脚本由谁调」成为显式决定,文档提及不再能冒充调用点。
 $EntryAllow = @{
-  "槽位领取.ps1"       = "devflow 通道 Agent 入口"
-  "槽位交付.ps1"       = "devflow 通道 Agent 入口"
-  "单仓提交.ps1"       = "主工程 / 人工入库通道 Agent 入口"
-  "客户端自检.ps1"     = "主工程通道 Agent 入口(槽位交付 亦调用)"
+  "单仓提交.ps1"       = "devflow / 人工入库通道 Agent 入口"
+  "客户端自检.ps1"     = "devflow 通道 Agent 入口"
+  "临时测试清理.ps1"   = "devflow 卡收尾(客户端自检 PASS 后、单仓提交前)"
   "服务端自检.ps1"     = "主工程通道 Agent 入口"
   "语法自检.ps1"       = "script-authoring 收尾必跑"
   "静态扫描.ps1"       = "run_tests 静态前置 / 人工"
@@ -202,12 +192,8 @@ $EntryAllow = @{
   "记忆索引核对.ps1"   = "rules-audit 卡 M1"
   "重建csproj.ps1"     = "devflow-client 卡自检节(单独判定)"
   "漂移取证.ps1"       = "unity-check 卡诊断 / 人工"
-  "交付历史.ps1"       = "人工 / 会话查询"
   "检查命中面板.ps1"   = "devflow-check 卡检查项 5(零命中与护栏恒降级复核)/ 人工"
-  "占用面板.ps1"       = "会话查询(slots-panel 亦调用)"
-  "合并预检.ps1"       = "会话查询"
-  "服务端重启.ps1"     = "人工(集成交付 亦调用)"
-  "槽位置备.ps1"       = "人工一次性置备"
+  "服务端重启.ps1"     = "人工"
   "提交钩子安装.ps1"   = "人工一次性安装(新克隆 / 换机器后装 git 提交前钩子)"
   "hook演练.ps1"       = "script-authoring 验收:hook 回归演练"
   "崩溃栈符号化.ps1"   = "人工排障工具(troubleshooting.md)"
@@ -719,30 +705,6 @@ if ($arrGaps.Count -gt 0) {
   Write-Host ("R11 清单参数无文件形态:" + $arrGaps.Count + " 处")
   foreach ($g in $arrGaps) { Write-Host ("  " + $g) }
   $violations += $arrGaps.Count
-}
-
-# --- R12 槽位上界失配 ---
-# 唯一一条判配置而非判脚本的规则。psd1 是数据文件,Import-PowerShellDataFile 只解析不执行,
-# 不违背本脚本「不跑被测逻辑」的前提。-Root 指向别处(测试夹具)时配置不存在,整条跳过。
-# SlotRootRe 换成非 [1-N] 形态时报出来而不是静默放过:解析不出上界 = 本条失去机判能力,
-# 那正是需要人知道的时刻。
-$flowCfgPath = Join-Path $Root "devflow\flow-config.psd1"
-if (Test-Path $flowCfgPath) {
-  $flowCfgData = Import-PowerShellDataFile $flowCfgPath
-  if ($flowCfgData.SlotCount -and $flowCfgData.SlotRootRe) {
-    $reText = [string]$flowCfgData.SlotRootRe
-    $upperM = [regex]::Match($reText, '\[1-(\d+)\]')
-    if (-not $upperM.Success) {
-      Write-Host ("R12 槽位上界:SlotRootRe = '" + $reText + "' 不是 [1-N] 字符类,解析不出上界")
-      Write-Host ("  devflow\flow-config.psd1  -> 改回 [1-N] 形态,或同步改本条判据")
-      $violations += 1
-    }
-    elseif ([int]$upperM.Groups[1].Value -ne [int]$flowCfgData.SlotCount) {
-      Write-Host ("R12 槽位上界:SlotRootRe 上界 " + $upperM.Groups[1].Value + " != SlotCount " + $flowCfgData.SlotCount)
-      Write-Host ("  devflow\flow-config.psd1  -> 两处须同值,否则高号槽位不按受管槽位处理")
-      $violations += 1
-    }
-  }
 }
 
 # --- R13 绕过唯一出口 ---

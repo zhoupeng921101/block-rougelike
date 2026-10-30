@@ -1,5 +1,5 @@
 ﻿# 自审触发判定测试.ps1 - 自审触发判定.ps1 假仓回归(五项触发各至少一正一反),连同按需篇判据表(校验库 RuleReadTable)
-# 的另一个消费方 槽位领取「开工前读」与判据表自检 -CheckRuleTable。改 自审触发判定、判据表或 槽位领取 的开工前读后跑。
+# 自检 -CheckRuleTable。改 自审触发判定或判据表后跑。
 # 夹具落 %TEMP%、写动作绝不触真仓;此处裸 git 是夹具搭建、非交付路径。唯一读真仓的是 CT1:对主仓跑 -CheckRuleTable
 # (只读 git ls-files 与文件原文),锁「判据表没有随产品代码改名漂移」——它红了,修判据表,不改用例。所在树没有服务端仓
 # (Claude Code worktree 不带 Fantasy)时 CT1 改为直调 Get-RuleReadTableGap 只核客户端侧,不把环境缺件报成红。
@@ -15,8 +15,6 @@
 # 服务端篇,服务端改动一篇不点名(N7 / R10);untracked 文件读不到只 WARN 不 INFRA(N9)。
 # 判据表自检(CT 段)另锁逐支核着落:同字段别的元素命中不抵一支落空、元素含顶层 | 单报(CT4c);.cs 只在注释 / 字面量里
 # 命中的元素报零命中、.prefab 按原文(CT4d);Ahead 预置支零命中放过、有着落报撤标(CT4e)。
-# 开工前读(PW 段)经 SLOT_ACQUIRE_NOEXEC=1 dot-source 槽位领取.ps1 调 Get-PreworkRuleLines:新目录靠 DirRe、
-# 已有目录按已跟踪文件展开、前缀不分大小写与 \ /、两端都给、一篇没中、没给前缀、判不成走 degraded;PW5 静态核两处 ACQUIRED 出口之前都打。
 # diff 基点护栏(DB 段,读隔离 LOCALAPPDATA 按 JSON 解析):两端算出分叉点各记 guard-ok、只给一端只记那一端、
 # 无共同祖先回落记 degraded 且原 WARN 照打、参数 INFRA 两样都不记。
 $ErrorActionPreference = "Stop"
@@ -260,8 +258,8 @@ try {
   $ct = Run-CT @("-ProjectDir", $nClient, "-FantasyRoot", $nServer)
   Assert-True ($ct.code -eq 1 -and $ct.text -match '(?m)^RULE-TABLE\s*:\s*FAIL' -and $ct.text -match '(?m)^RULE-TABLE GAP\s*:.*篇不存在' -and $ct.text -match '(?m)^RULE-TABLE GAP\s*:.*零命中') ("CT2 缺篇 / 零命中逐条报、exit 1 | code=" + $ct.code)
   $telBefore = @(Get-TelRows).Count
-  $ct = Run-CT @("-Slot", "1")
-  Assert-True ($ct.code -eq 2 -and $ct.text -match 'INFRA') "CT3 -CheckRuleTable 混入 -Slot 判 INFRA"
+  $ct = Run-CT @("-MessageFile", "x.txt")
+  Assert-True ($ct.code -eq 2 -and $ct.text -match 'INFRA') "CT3 -CheckRuleTable 混入 -MessageFile 判 INFRA"
   Assert-True (@(Get-TelRows | Select-Object -Skip $telBefore | Where-Object { $_.guard -like "self-review-diffbase/*" }).Count -eq 0) "CT3b 参数 INFRA(走不到 diff 基点)-> 护栏行两样都不记"
   # CT3c flow-config 缺基线键 -> INFRA 点名该键,不回落成写死的 main。被测脚本经 $PSScriptRoot 找配置,
   # 故把它连同 hooks 复制进夹具、换一份删掉 ClientBaseline 的配置再跑。
@@ -339,45 +337,6 @@ try {
   $aheadOk = ($ctRes.Ahead.Count -eq $aheadWant.Count -and $ht -notmatch 'Future')
   foreach ($w in $aheadWant) { if ($ht -notmatch $w) { $aheadOk = $false } }
   Assert-True $aheadOk ("CT4e Ahead 预置支零命中放过、有着落报撤标、列了表外的串单报 | " + $ht)
-
-  # ================= PW:槽位领取「开工前读」(同一张判据表的事前口径) =================
-  $acquireScript = Join-Path $dfDir "槽位领取.ps1"
-  $pw = & {
-    $oldNoExec = $env:SLOT_ACQUIRE_NOEXEC
-    try {
-      $env:SLOT_ACQUIRE_NOEXEC = '1'
-      . $acquireScript -Topic 'noexec-probe'
-      @{
-        # 同上,不套 @()
-        Both  = (Get-PreworkRuleLines $pClientRepo $pServer @("Demo/Assets/AssetRaw/UI/Atlas/NewThing/", "demo\assets\gamescripts\hotfix\gamelogic\module\shop") @("examples/Server/APP/Hotfix/Game Examples/Gate/Player"))
-        Miss  = (Get-PreworkRuleLines $pClientRepo "" @("Demo/说明.txt") @())
-        GBase = (Get-PreworkRuleLines $pClientRepo $pServer @() @("examples/Server/APP/GameBase/Gate/NewThing", "examples/Server/APP/GameBase/Gate/Quest/NewThing"))
-        Empty = (Get-PreworkRuleLines $pClientRepo $pServer @() @(" "))
-        Bad   = (Get-PreworkRuleLines (Join-Path $fx "no-such-repo") "" @("Demo/Assets/X") @())
-      }
-    } finally { $env:SLOT_ACQUIRE_NOEXEC = $oldNoExec }
-  }
-  # 本作判据表没有服务端篇:两端都给时服务端前缀不出行。
-  $want = @(
-    '^开工前读:\.claude/rules-ondemand/tengine-conventions\.md <- demo\\assets\\gamescripts\\hotfix\\gamelogic\\module\\shop$',
-    '^开工前读:\.claude/rules-ondemand/ui-image-assets\.md <- Demo/Assets/AssetRaw/UI/Atlas/NewThing/$')
-  $pwOk = ($pw.Both.Count -eq $want.Count)
-  for ($i = 0; $pwOk -and $i -lt $want.Count; $i++) { if ($pw.Both[$i] -notmatch $want[$i]) { $pwOk = $false } }
-  Assert-True $pwOk ("PW1 新目录靠 DirRe、已有目录按已跟踪文件展开(大小写与 \ 不计)、按判据表次序出行 | " + ($pw.Both -join " / "))
-  Assert-True ($pw.Miss.Count -eq 1 -and $pw.Miss[0] -match '^开工前读:无') ("PW2 所给前缀一篇没中:恰一行「开工前读:无」 | " + ($pw.Miss -join " / "))
-  Assert-True ($pw.Empty.Count -eq 0) "PW3 没给前缀(空白不算)不打任何行"
-  Assert-True ($pw.GBase.Count -eq 1 -and $pw.GBase[0] -match '^开工前读:无') ("PW6 只给服务端前缀:本作判据表没有服务端篇,恰一行「开工前读:无」 | " + ($pw.GBase -join " / "))
-  $pwTel = @(Get-ChildItem (Join-Path $env:LOCALAPPDATA "claude-wf-3b\telemetry") -Filter "wf-*.jsonl" -EA SilentlyContinue |
-             ForEach-Object { [System.IO.File]::ReadAllLines($_.FullName) } | Where-Object { $_ } | ForEach-Object { $_ | ConvertFrom-Json } |
-             Where-Object { $_.guard -eq "rules-prework" })
-  $pwDeg = @($pwTel | Where-Object { $_.event -eq "degraded" -and $_.key -eq "rules-prework-undetermined" })
-  $pwOkEv = @($pwTel | Where-Object { $_.event -eq "guard-ok" })
-  Assert-True ($pw.Bad.Count -eq 0 -and $pwDeg.Count -eq 1 -and $pwOkEv.Count -eq 3) ("PW4 判不成:不抛、不打开工前读行,记一次 degraded;判成的三次记 guard-ok、没给前缀的不记(degraded " + $pwDeg.Count + " / guard-ok " + $pwOkEv.Count + ")")
-  # PW5 静态:两处 ACQUIRED 出口之前都打开工前读,且行在 csproj 判定之后、免启分支之前算好(就绪失败的出口不打)
-  $acqSrc = [System.IO.File]::ReadAllText($acquireScript)
-  $printAt = [regex]::Matches($acqSrc, [regex]::Escape('foreach ($l in $prework) { Write-Host $l }') + '\s+' + [regex]::Escape('Write-Verdict ("ACQUIRED | slot="'))
-  $calcRe = [regex]::Escape('Write-CsprojRegenNotice $regen ([bool]$NoUnity)') + '[\s\S]{0,200}?' + [regex]::Escape('$prework = Get-PreworkRuleLines $slotRoot $fantasyRoot $Paths $FantasyPaths') + '\s+' + [regex]::Escape('if ($NoUnity -and -not $regen.Stale)')
-  Assert-True ($printAt.Count -eq 2 -and [regex]::IsMatch($acqSrc, $calcRe) -and [regex]::Matches($acqSrc, [regex]::Escape('= Get-PreworkRuleLines ')).Count -eq 1) ("PW5 两处 ACQUIRED 之前各打一次、计算恰一处且在 csproj 判定之后(打印处 " + $printAt.Count + ")")
 }
 finally {
   $env:LOCALAPPDATA = $oldLad

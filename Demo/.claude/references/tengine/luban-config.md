@@ -4,7 +4,7 @@
 
 ## 接入状态
 
-**本作尚未接入 Luban**：仓里没有 `Configs/GameConfig/` 配置工程，`Assets` 下没有 `GameConfig` 程序集、`ConfigSystem` 与导表产物，`flow-config.psd1` 的 `LubanGenClientBat` 留空（槽位交付的 Luban 重导步因此跳过）。按 `新游戏/工程计划.md`，配置程序集等第一张配置表时建，数值进表在阶段 5。
+**本作尚未接入 Luban**：仓里没有 `Configs/GameConfig/` 配置工程，`Assets` 下没有 `GameConfig` 程序集、`ConfigSystem` 与导表产物，`flow-config.psd1` 的 `LubanGenClientBat` 留空。按 `新游戏/工程计划.md`，配置程序集等第一张配置表时建，数值进表在阶段 5。
 
 下文写的是 block-client 的接法，作接入时的参照。接入时按单端裁过，裁完以本作实际重写本篇：
 

@@ -1,9 +1,9 @@
-﻿# 客户端自检.ps1 - devflow 客户端交付检查:十五道(十三道静态扫描 + 规则核心单测 + Editor 程序集真编译)(命名空间规约 +
+﻿# 客户端自检.ps1 - devflow 客户端提交前检查:十五道(十三道静态扫描 + 规则核心单测 + Editor 程序集真编译)(命名空间规约 +
 # 程序集归属 / 平台宏策略 / UGUI 文本截断 / UI 绑定完整性 / UI 安全区节点结构 / 图集子图须挂绑图集的 ExImage /
 # 仓内 bat 纯 ASCII / 热更程序集清单 / 入仓文件的机器绝对路径 / 工具 csproj 链接目标存在 / 编辑器工具起子进程走共用原语 /
 # 启动器源码用字被子集字体覆盖 / 占位素材目录与登记表一致 / 规则核心的 dotnet 单测 / Editor 程序集与各出包平台 define 下的运行时程序集能否编过),
-# 直跑槽位工作树的 Demo。
-# 不启动 Unity、不需要活编辑器、不经 UnityMCP,因而无 BLOCKED 出口:任何布局正确的槽位上都能立即出结论。
+# 直跑给定的 Demo(devflow 下即主工作树)。
+# 不启动 Unity、不需要活编辑器、不经 UnityMCP,因而无 BLOCKED 出口:任何布局正确的工作树上都能立即出结论。
 # **前十三道是静态扫描,后两道真跑 dotnet**:dotnet单测 编规则核心的镜像库并跑 DotNet\Tests;Editor程序集编译 真编
 # Editor 程序集(编辑器一遍 + 出包平台与工具宏并行一遍)。故本检查需要 dotnet SDK。
 # **耗时的道并行跑**(扫描数组里带 Async 的:单测道、编译道,与各要两秒以上的几道静态扫描,多为逐 prefab 解析):开跑即各起一个
@@ -21,7 +21,7 @@
 # 功能开关、登记表、引导锚点、投放可达性、跨端配置六道:前者等本作接入 Luban 时随表一起搬回,后者核的是本作没有的
 # 底座件与服务端。
 # bat编码核对 / 机器路径核对 / 工程链接核对 三道按入仓候选(已跟踪 + 未跟踪未忽略)枚举,范围限 Demo/ 下:
-# 仓里其余层(研究资料、复刻件)不归本工程的 devflow,槽位稀疏检出后也没有它们。机器路径核对的面是 Demo 下的
+# 仓里其余层(研究资料、复刻件)不归本工程的 devflow。机器路径核对的面是 Demo 下的
 # .sh / .bat / .cmd / .ps1 与 Assets/Editor 下的工具 .cs;工程链接核对核 Demo 下入仓 .csproj 的链接目标仍在。
 # 编译覆盖的边界:本检查编 Assembly-CSharp-Editor,而它经 ProjectReference 连热更程序集 GameLogic 一起编 ——
 # 故热更侧的编译错误本检查**拦得到**,不止拦「改了热更签名、漏改 Assets/Editor 下调用点」那一类。
@@ -33,17 +33,13 @@
 # 由实现期与出包实测承接(手段见 devflow-client 卡「自检」节)。
 # 测试只覆盖规则核心与文本表(dotnet单测 跑 DotNet\Tests);其余代码的测试不在覆盖内,正确性缺陷由每日审查(daily-code-review)承接。
 #
-# 各道读取面按道登记在 hooks\校验库.ps1 ClientGateScanSurface,拼出客户端验证面:槽位交付 跑不跑本检查、
-# 集成交付 push 点验不验票、凭据容忍哪些漂移,都按它判。加道须同批登记;启动时互核扫描数组与登记,
-# 缺一即 INFRA(不然新道读的路径改了,交付照样不跑本检查)。
+# 各道读取面按道登记在 hooks\校验库.ps1 ClientGateScanSurface,拼出客户端验证面:提交点验不验票、
+# 凭据容忍哪些漂移,都按它判。加道须同批登记;启动时互核扫描数组与登记,
+# 缺一即 INFRA(不然新道读的路径改了,提交照样不验本检查的票)。
 #
-# PASS 且工作树首尾哈希一致 → 签发 <slotRoot>\.gate\ticket.json,供 提交检查 hook 与
-# 单仓提交 / 集成交付 在 push 点验凭据(签发正本 = hooks\hook函数库.ps1 Publish-GateTicket)。
+# PASS 且工作树首尾哈希一致 → 签发 <仓根>\.gate\ticket.json,供 提交检查 hook 与
+# 单仓提交 在提交点验凭据(签发正本 = hooks\hook函数库.ps1 Publish-GateTicket)。
 # 首尾哈希不一致 = STALE,不发票。
-#
-# 槽位 = 客户端仓的 git worktree(<SlotBaseDir>\<SlotDirPrefix>N,如 ...\block-rougelike-dev1),
-# 内含 Demo、配对的 Fantasy worktree 与回主检出的 Tools\Luban junction。布局正本 =
-# devflow 卡 references/slot-protocol.md。
 #
 # 出口码: 0 PASS(十五道均无违规,已签发凭据)
 #         1 FAIL(扫描判违规)
@@ -51,10 +47,9 @@
 #                 子道抛未捕获异常、或返回 0/1/2 以外的退出码,都归此档:后续在本进程跑的道不再跑,已起的并行道等它们跑完再退出)
 #         3 STALE(各道均过,但工作树在检查期间变了:PASS 作废、无凭据;代码没有要改的,重跑即可。
 #                 VERDICT 行之前的 DRIFT 行点名首尾两棵树之间变了哪些路径,至多 10 条)
-# STALE 与 FAIL 分码同 服务端自检(曾同为 1,调用方分不出「有违规」与「树被并发改动」):
-# 槽位交付 只分零 / 非零,STALE 照旧落 GATE-FAIL(next=judge,会话重跑);工作流通路检查 按码分报。
+# STALE 与 FAIL 分码同 服务端自检(曾同为 1,调用方分不出「有违规」与「树被并发改动」);处置见 devflow 卡「停机呈报」。
 # 除「不是 Unity 工程」那一处(遥测库尚未加载)外,各出口都以本脚本自己的 VERDICT 行收尾并写遥测:
-# 槽位交付取输出里最后一行 VERDICT 当结论,子道自己打的 VERDICT 行不能成为末行。
+# 调用方取输出里最后一行 VERDICT 当结论,子道自己打的 VERDICT 行不能成为末行。
 #
 # 测试注入点:环境变量 DEVFLOW_TEST_GATE_SCAN_DIR 非空时,各道脚本改从该目录取(文件名与道次不变,
 # 读取面互核照常),供 tests\客户端自检测试.ps1 放假子道;未设 = 零动作。设了会打一行 NOTE 提示。

@@ -101,16 +101,24 @@ for ($i = 0; $i -lt $badSubjects.Count; $i++) {
 }
 # S2b 词表七词逐个放行(README.md 无差异 -> 过了格式校验就落到 NOTHING-TO-COMMIT,足以证明
 # 未被格式拒)。词表增删须同步改这一行,漏改则新词无回归覆盖。
+# 【修复】另须带定性结论(见 S2e),故正文统一附一句补丁定性。
 foreach ($v in @("新增", "修复", "变更", "重构", "删除", "配置", "文档")) {
-  $r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M ("m2v-" + $v + ".txt") ("【" + $v + "】订单: 词表内动词放行")), "-PathListFile", (L "l0c.txt" @("README.md")))
+  $r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M ("m2v-" + $v + ".txt") ("【" + $v + "】订单: 词表内动词放行`n`n定性:补丁,根源未知")), "-PathListFile", (L "l0c.txt" @("README.md")))
   Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: NOTHING-TO-COMMIT') ("S2b 词表内动词放行:" + $v)
 }
 # S2c 机器保留词【流程】(集成交付 的删测/协议收尾提交用)不在人写词表内,人写路径写不出它
 $r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M "m2r.txt" "【流程】保留词不给人写路径用"), "-PathListFile", (L "l0d.txt" @("README.md")))
 Assert-True ($r.code -eq 1 -and $r.verdict -match 'DENIED-subject') "S2c 保留词【流程】不被人写路径接受"
 # S2d 主题只校首个非空行,正文自由(白名单/表文档标注等仍按各自校验走)
-$r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M "m2m.txt" "【修复】订单: 多行信息`n`n正文里出现 feat(x): 这种旧形态不该影响判定"), "-PathListFile", (L "l0e.txt" @("README.md")))
+$r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M "m2m.txt" "【修复】订单: 多行信息`n`n正文里出现 feat(x): 这种旧形态不该影响判定`n定性:补丁,根源未知"), "-PathListFile", (L "l0e.txt" @("README.md")))
 Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: NOTHING-TO-COMMIT') "S2d 正文不参与主题格式判定"
+# S2e 【修复】缺定性 / 定根治而没写不变量 -> DENIED-qualify(零 git 写,next=fix-retry);判据正本 = 校验库 Get-FixQualifyGap
+$r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M "m2q1.txt" "【修复】订单: 没写定性"), "-PathListFile", (L "l0f.txt" @("README.md")))
+Assert-True ($r.code -eq 1 -and $r.verdict -match 'DENIED-qualify' -and $r.verdict -match 'next=fix-retry') "S2e 修复类缺根治/补丁结论被拒"
+$r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M "m2q2.txt" "【修复】订单: 只写根治`n`n定性:根治"), "-PathListFile", (L "l0g.txt" @("README.md")))
+Assert-True ($r.code -eq 1 -and $r.verdict -match 'DENIED-qualify') "S2f 定根治而没写不变量被拒"
+$r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M "m2q3.txt" "【修复】订单: 根治带不变量`n`n定性:根治。不变量:订单状态只经 X 写"), "-PathListFile", (L "l0h.txt" @("README.md")))
+Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: NOTHING-TO-COMMIT') "S2g 根治 + 不变量放行"
 
 # ---------- S3 doc commit + push + trailer(推送须显式 -Push) ----------
 W "docs/note.md" "note v1`n"

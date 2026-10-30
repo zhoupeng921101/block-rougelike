@@ -2,9 +2,9 @@
 
 ## 项目结构
 - 单仓 block-rougelike:Unity 工程在 `Demo/`(TEngine 框架,主工作目录,会话在这里开);本作是单机买断制,**没有服务端仓**(devflow 的服务端通道按 `.claude/devflow/flow-config.psd1` `ServerDirName` 留空关闭)。仓里另有研究层 `参考/`、`复刻/` 与设计层 `新游戏/`,三层分工与协作约定见仓根 `AGENTS.md`;devflow 只管 `Demo/`。
-- Unity 槽位分工:devflow 任务在固定槽位 `dev1..dev<SlotCount>`(数量取自 `flow-config.psd1`)的独立 worktree 中执行,槽位只稀疏检出 `Demo/` 与 `新游戏/`;UnityMCP 只绑领取结果里的槽位实例,主工程通道绑主工程实例(实例名形如 `Demo@<hash>`)。新资产先等编辑器导入与派生物落定,再调交付入口。布局与脚本行为见 `devflow` skill;绑定异常见 `unity-check` skill。
+- Unity 实例:单线开发,devflow 任务直接在主工作树 `Demo/` 上做(不开 worktree、不并行);UnityMCP 绑主工程编辑器实例(实例名形如 `Demo@<hash>`,按工程路径认)。新资产先等编辑器导入与派生物落定,再跑客户端自检。流程见 `devflow` skill;绑定异常见 `unity-check` skill。
   > 理由见 .claude/rules-archive/rules-rationale.md#no-isolated-unity-copy
-- 构建入口:`.claude/devflow/客户端自检.ps1`(道次清单正本 = `.claude/devflow/README.md`「检查」节,此处不枚举;静态扫描各道 + 末道真编译,需要 dotnet SDK、不启动 Unity;编译的覆盖面与其 define 边界、以及不在覆盖内的测试,见 `devflow-client` 卡「自检」节)。devflow 通道由 `槽位交付.ps1` 自动调用,主工程通道由 Agent 直接调用。出 Windows 包走菜单 `3B/出 Windows 包`(`WindowsBuild.Build`)。
+- 构建入口:`.claude/devflow/客户端自检.ps1`(道次清单正本 = `.claude/devflow/README.md`「检查」节,此处不枚举;静态扫描各道 + 末道真编译,需要 dotnet SDK、不启动 Unity;编译的覆盖面与其 define 边界、以及不在覆盖内的测试,见 `devflow-client` 卡「自检」节)。devflow 通道由 Agent 在提交前直接调用。出 Windows 包走菜单 `3B/出 Windows 包`(`WindowsBuild.Build`)。
 
 ## 产品设计基准
 
@@ -64,11 +64,10 @@
 - **呈报与阻塞**:轻量选择不逐项询问或播报;收尾只汇总影响用户理解或后续维护的代决策及依据,简报里与用户裁决区分标注。需要裁定时按「裁定项结构化」收齐问题;等待期间可继续不依赖该答案且不受停机契约约束的已授权工作,不默认用户沉默为同意。
 
 ## devflow 适用面
-- **产品代码与资产 → 默认 `/devflow`**(需求审计 → 槽位实现 → 槽位交付)。范围 = `Demo/Assets/` 下的代码与资产、prefab、(接入后的)Luban 表与生成物。需求明确时压缩的是审计深度,不是通道。
-- **主工程通道**:仅用户明确指向主工程或明确不走流程时启用。在主工作树实现,不领槽位。保留需求审计、实现前装载实现段卡、自审与安全审查。收尾:跑客户端自检并 PASS → `单仓提交.ps1` 自动提交;不推送、不合并。**一次只跑一个任务**。
-- **人工入库通道**:范围 = `Demo/.claude/` 下全部 + 本 CLAUDE.md、`新游戏/` 下的设计文档、工程文件(工程配置:`Demo/ProjectSettings/`、`Demo/Packages/`、asmdef / asmref;单独改动走本通道,作为产品功能一部分一并改的随该任务走 devflow)。在主工程直接改,改完 `单仓提交.ps1 -PathListFile <本次改过的文件清单> -MessageFile <提交信息>` 提交,不推送;**仓根是 block-rougelike,清单路径要带 `Demo/` 前缀**。改动落在客户端自检读取面(正本 = `.claude/devflow/hooks/校验库.ps1` `ClientGateScanSurface`)的先跑客户端自检并 PASS。**清单只列本次改过的文件,禁 `-All` 或全选提交**:主工作树常有并发会话的进行中改动。同一会话内还要交付槽位时,基建改动先提交完再调交付入口:主工作树索引不干净会让合并被拒,返回 `INFRA`。
+- **产品代码与资产 → 默认 `/devflow`**(需求审计 → 主工作树实现 → 自检提交)。范围 = `Demo/Assets/` 下的代码与资产、prefab、(接入后的)Luban 表与生成物。需求明确时压缩的是审计深度,不是通道。在主工作树实现;收尾跑客户端自检并 PASS → `单仓提交.ps1 -PathListFile` 清单式提交;不推送。**一次只跑一个任务**。
+- **人工入库通道**:范围 = `Demo/.claude/` 下全部 + 本 CLAUDE.md、`新游戏/` 下的设计文档、工程文件(工程配置:`Demo/ProjectSettings/`、`Demo/Packages/`、asmdef / asmref;单独改动走本通道,作为产品功能一部分一并改的随该任务走 devflow)。在主工程直接改,改完 `单仓提交.ps1 -PathListFile <本次改过的文件清单> -MessageFile <提交信息>` 提交,不推送;**仓根是 block-rougelike,清单路径要带 `Demo/` 前缀**。改动落在客户端自检读取面(正本 = `.claude/devflow/hooks/校验库.ps1` `ClientGateScanSurface`)的先跑客户端自检并 PASS。**清单只列本次改过的文件,禁 `-All` 或全选提交**:主工作树常有并发会话的进行中改动。
 - `参考/`、`复刻/` 与仓根 `AGENTS.md` / `README.md` 不归 devflow,按 `AGENTS.md` 的约定改。无仓内写入的工作(问答、只读调查、scratchpad 临时件)不涉本条。
   > 理由见 .claude/rules-archive/rules-rationale.md#main-repo-channel
-- Agent 只调 `槽位领取.ps1` 与 `槽位交付.ps1` 两个入口,按末行 `VERDICT:` 尾部 `next=` 字段处置,不自行归类:`halt` 立即停下,呈报原文与现场,等用户指示;`fix-retry` 修输入文件重跑一次;`serial` / `judge` 先做一次会话判断再定续走或转 `halt`(各档见 devflow 卡「停机呈报」)。合并类失败(`BLOCKED-OVERLAP` / `CONFLICT` / `BLOCKED-BINARY`)的呈报须点名根因归属——主工作树残留改动 / 真实代码冲突 / 基线漂移——并列出触发文件。
+- 检查与提交只经 `客户端自检.ps1` 与 `单仓提交.ps1`;`单仓提交` 按末行 `VERDICT:` 尾部 `next=` 字段处置,不自行归类:`halt` 立即停下,呈报原文与现场,等用户指示;`fix-retry` 修输入文件重跑一次;`judge` 先做一次会话判断再定续走或转 `halt`;自检按出口码处置(各档见 devflow 卡「停机呈报」)。
   > 理由见 .claude/rules-archive/rules-rationale.md#verdict-stop-await-user
-- 交付会把槽位分支与 `main` 推到 `origin`(GitHub);第一次交付前须经用户确认可以推送。
+- 推送由用户自己决定,Agent 不推。

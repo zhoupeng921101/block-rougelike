@@ -1,5 +1,4 @@
-﻿# 单仓提交.ps1 - 一键提交(+按通道推送):devflow 认可交付脚本之一(另一个是
-# 集成交付.ps1)。devflow 任务只由 槽位交付.ps1 内部调用,不属于 Agent 面入口;
+﻿# 单仓提交.ps1 - 一键提交(+按通道推送):devflow 与人工入库通道的 Agent 提交入口。
 # 它替代手打 git 序列(add -N / commit -F --pathspec-from-file /
 # show --stat 核对 / push);提交检查的全部校验经 hooks/校验库.ps1 在脚本内同源执行,
 # 脚本信道不绕过检查(单一校验正本,双触发信道:hook 拦命令面裸 git,本脚本内置校验)。
@@ -9,11 +8,8 @@
 # 通道(按仓形判定,与 提交检查 同源):
 #   主客户端(客户端仓根)            :清单式按路径提交;验凭据(客户端面容差)+ 表文档两项 +
 #                                       持久化探测
-#   槽位客户端(仓根命中 SlotRootRe) :自由 commit(验凭据/表文档/持久化绑在 push 点,由
-#                                       集成交付 承载)
-#   槽位服务端(槽位根下的 Fantasy)   :自由 commit(服务端验凭据绑在 push 点,由 集成交付 承载;
-#                                       槽位交付 须先提交、再合基线、再自检,提交点验票会把自检
-#                                       逼到同步之前)
+#   槽位客户端(仓根命中 SlotRootRe) :自由 commit(槽位池已拆,残留 worktree 清掉前保留此通道)
+#   槽位服务端(槽位根下的 Fantasy)   :自由 commit(同上,服务端通道关闭时不可达)
 #   主服务端(仓根 leaf = ServerDirName):含 .cs 须 服务端自检 检查凭据(严格树校验)
 # 推送:所有通道一律缺省不推,须显式 -Push。误推是不可回退的对外动作,缺省不承担它。
 # 用法:
@@ -25,13 +21,14 @@
 # add -A 与图集剔除,提交失败则回滚登记。清单不拼进命令行:写入的 git 调用一律经
 # --pathspec-from-file(NUL 分隔 UTF-8)传。提交信息一律走 -MessageFile(文本走文件:含中文/引号/
 # 多行的信息穿命令行必出编码与引号事故;格式规范要求主题含全角【】,已无 ASCII 形态可用)。
-# 主题行须为 `【动词】范围: 描述`,判定正本 = 校验库 Get-SubjectFormatGap;
+# 主题行须为 `【动词】范围: 描述`,判定正本 = 校验库 Get-SubjectFormatGap;【修复】类须在正文写
+# 根治 / 补丁结论(根治另写不变量),判定正本 = 校验库 Get-FixQualifyGap,缺则 DENIED-qualify。
 # 缺 Co-Authored-By trailer 时自动补。
 # 退出码:0 = 已提交(或 NOTHING-TO-COMMIT / CHECK-PASS);1 = 校验拒绝(零 git 写);
 #         2 = 参数/infra/git 执行错;3 = 已提交但 push 失败(提交已留在本地)。
 # 末行恒为 `VERDICT: <词> ...`,agent 只读末行,失败再读上文明细。
-# 遥测(event=单仓提交,结论行 / 验证面漂移 / 内部异常各一行)经 Write-CommitTelemetry 一处写:经 槽位交付 调用时
-# 带交付关联号 run(hook函数库 Get-DeliverRunId),直接调用时不写该字段。槽位图集还原(-All 形态剔除已跟踪图集)是护栏
+# 遥测(event=单仓提交,结论行 / 验证面漂移 / 内部异常各一行)经 Write-CommitTelemetry 一处写:环境里有
+# 交付关联号时带 run(hook函数库 Get-DeliverRunId),没有时不写该字段。槽位图集还原(-All 形态剔除已跟踪图集)是护栏
 # 步骤:还原成了记 guard-ok,没还原成(改动留在工作树)经 hook函数库 Write-Degraded 记 degraded,护栏名均为
 # slot-atlas-restore;没有要剔的图集时两样都不记。
 [CmdletBinding(PositionalBinding=$false)]
@@ -188,6 +185,13 @@ try {
   $badSubject = Get-SubjectFormatGap $msgText
   if ($badSubject) {
     Write-Verdict ("DENIED-subject | 提交主题不合格式:「" + $badSubject + "」。须写成 【动词】范围: 描述(无范围时 【动词】描述);动词只取七词之一:新增/修复/变更/重构/删除/配置/文档,括号是全角【】,范围后半角冒号加空格;【流程】是机器提交保留词,人写路径不可用") 1
+  }
+  $qual = Get-FixQualifyGap $msgText
+  if ($qual.Gap -eq "no-qual") {
+    Write-Verdict "DENIED-qualify | 【修复】类提交正文须写根治 / 补丁结论(判据见 CLAUDE.md「修复前先定性」;补丁另写根源)" 1
+  }
+  if ($qual.Gap -eq "root-no-invariant") {
+    Write-Verdict "DENIED-qualify | 定性为根治须同时写出它立住的不变量(正文含「不变量」)" 1
   }
   if ($msgText -notmatch 'Co-Authored-By:') {
     # 署名单源 = 校验库 $script:FlowCoAuthorTrailer。
