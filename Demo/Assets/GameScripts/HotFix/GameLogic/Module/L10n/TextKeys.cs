@@ -16,6 +16,7 @@ public static class TextKeys
         public const string Start = "ui.main_menu.start";
         public const string Continue = "ui.main_menu.continue";
         public const string Language = "ui.main_menu.language";
+        public const string LanguageName = "ui.main_menu.language_name";
         public const string Difficulty = "ui.main_menu.difficulty";
         public const string SoundOn = "ui.main_menu.sound_on";
         public const string SoundOff = "ui.main_menu.sound_off";

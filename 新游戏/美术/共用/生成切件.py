@@ -42,16 +42,10 @@ def 圆角框(w, h, r, fill, border=None, bw=0, top=None, dash=None):
             d.rounded_rectangle((BW, BW, W - 1 - BW, H - 1 - BW), max(0, R - BW), fill=hx(fill) + (255,))
     elif fill:
         d.rounded_rectangle((0, 0, W - 1, H - 1), R, fill=hx(fill) + (255,))
-    if top:                                                   # 按钮：上亮下暗的竖直渐变，戴夫式塑料钮
+    if top:                                                   # 按钮：平色底 + 顶上一条亮边（九宫拉伸时不会拉出渐变断层）
         d.rounded_rectangle((0, 0, W - 1, H - 1), R, fill=hx(fill) + (255,))
-        mask = Image.new("L", (W, H), 0)
-        ImageDraw.Draw(mask).rounded_rectangle((0, 0, W - 1, H - 1), R, fill=255)
-        grad = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        gd = ImageDraw.Draw(grad)
-        for y in range(H):
-            t = y / max(1, H - 1)
-            gd.line((0, y, W, y), fill=mix(hx(top), hx(fill), min(1.0, t * 2.4)) + (255,))
-        im.paste(grad, (0, 0), mask)
+        d.rounded_rectangle((SS, SS, W - 1 - SS, H // 3), max(0, R - SS), fill=hx(top) + (255,))
+        d.rounded_rectangle((2 * SS, 2 * SS, W - 1 - 2 * SS, H // 3), max(0, R - 2 * SS), fill=hx(fill) + (255,))
     if dash:
         seg, gap = dash[0] * SS, dash[1] * SS
         ring = Image.new("L", (W, H), 0)
@@ -91,6 +85,8 @@ def 存平滑(im, name, sub, border=None, use=""):
       "空槽（虚线框）：补给包/券的空格、背包空格")
 存平滑(圆角框(48, 48, 12, "#3e8fe0", top="#5aa9f2"), "按钮_蓝", "", 16,
       "主按钮：进入商店、刷新、购买、挑战")
+存平滑(圆角框(48, 48, 10, "#ffc83d", top="#ffd96b"), "按钮_金", "", 16,
+      "主界面「继续」那颗金钮；金底配深色字")
 存平滑(圆角框(48, 48, 12, C["内格"], C["面板边"], 3), "按钮_灰", "", 16,
       "次按钮：跳过、返回主界面、离开商店")
 存平滑(圆角框(20, 20, 6, C["内格"], C["面板边"], 2), "键帽", "", 8, "Esc 键帽")
@@ -440,6 +436,20 @@ def 方块包(px):
 存图标(像素图标(硬币), "道具_硬币", "图标：经济类")
 存图标(像素图标(星), "道具_星", "图标：稀有 / 传说标记")
 存图标(像素图标(方块包), "道具_方块包", "补给包图标：方块包")
+
+# 地球仪：主界面「语言」那颗小图标（蓝色球 + 经纬线）
+def 地球(px):
+    sea, land, edge = hx("#3e8fe0"), hx("#4cd06a"), hx("#173a5e")
+    圆(px, 10, 10, 8, edge)
+    圆(px, 10, 10, 7, sea)
+    for (x, y) in ((6, 6), (7, 6), (8, 6), (9, 7), (9, 8), (6, 12), (7, 12), (8, 13), (12, 7), (13, 8), (13, 9)):
+        px[x, y] = land + (255,)
+    for y in range(3, 18):                                   # 经线
+        px[10, y] = edge + (255,) if y % 4 else px[10, y]
+    for x in range(3, 18):                                   # 纬线
+        px[x, 10] = edge + (255,) if x % 4 else px[x, 10]
+
+存图标(像素图标(地球), "道具_地球", "主界面「语言」按钮上的地球仪图标")
 
 
 # ---------- 方块库：4 格拼成的迷你骨牌（1 格 = 14 设计像素） ----------

@@ -475,6 +475,7 @@
   {"key": "ui.main_menu.continue", "zh": "继续", "en": "Continue"},
   {"key": "ui.main_menu.difficulty", "zh": "难度：{0}", "en": "Difficulty: {0}"},
   {"key": "ui.main_menu.language", "zh": "语言", "en": "Language"},
+  {"key": "ui.main_menu.language_name", "zh": "简体中文", "en": "English"},
   {"key": "ui.main_menu.options", "zh": "选项", "en": "Options"},
   {"key": "ui.main_menu.sound_off", "zh": "声音：关", "en": "Sound: Off"},
   {"key": "ui.main_menu.sound_on", "zh": "声音：开", "en": "Sound: On"},
