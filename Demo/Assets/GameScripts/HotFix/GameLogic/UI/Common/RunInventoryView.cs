@@ -28,13 +28,18 @@ public sealed class RunInventoryView
     {
         List,
         PickBlock,
+        PickBoardBlock,
         PickGene,
+        PickSecondBlock,
     }
 
     private Mode _mode;
 
     /// <summary>挑目标时,等着用的是道具栏第几件。</summary>
     private int _pendingItem = -1;
+
+    /// <summary>双块改造已经选好的来源块。</summary>
+    private int _firstTarget;
 
     /// <summary>上一次操作被拒的提示;下一次操作清掉。</summary>
     private string _message;
@@ -74,7 +79,9 @@ public sealed class RunInventoryView
         if (_run == null) return;
         switch (_mode)
         {
-            case Mode.PickBlock: BuildBlockPicker(); break;
+            case Mode.PickBlock: BuildBlockPicker(false); break;
+            case Mode.PickBoardBlock: BuildBlockPicker(true); break;
+            case Mode.PickSecondBlock: BuildBlockPicker(false); break;
             case Mode.PickGene: BuildGenePicker(); break;
             default: BuildList(); break;
         }
@@ -100,7 +107,7 @@ public sealed class RunInventoryView
             RuntimeUI.Button(_root, _font, table.Get(TextKeys.Inventory.MoveRight), new Vector2(x, y), new Vector2(SmallButton, RowHeight),
                 () => Act(_run.MoveGene(slot, slot + 1), "基因换位"), slot < _run.Genes.Count - 1, 20);
             x += SmallButton + Gap;
-            int price = _run.SellPriceOf(ItemKind.Gene, gene.GeneId, gene.Edition);
+            int price = _run.SellPriceOf(gene);
             RuntimeUI.Button(_root, _font, table.Format(TextKeys.Inventory.Sell, price), new Vector2(x, y), new Vector2(WideButton, RowHeight),
                 () => Act(_run.SellGene(slot) >= 0, "卖基因"), true, 20, RuntimeUI.ButtonAccent);
             y -= RowHeight + Gap;
@@ -140,16 +147,28 @@ public sealed class RunInventoryView
         }
     }
 
-    private void BuildBlockPicker()
+    private void BuildBlockPicker(bool boardOnly)
     {
         TextTable table = TextTable.Instance;
         float y = -Gap;
-        PickerHeader(table.Get(TextKeys.Inventory.PickBlock), ref y);
+        PickerHeader(table.Get(boardOnly ? TextKeys.Inventory.PickBoardBlock
+            : _mode == Mode.PickSecondBlock ? TextKeys.Inventory.PickSecondBlock : TextKeys.Inventory.PickBlock), ref y);
         const int columns = 2;
         float cellWidth = (Width - (columns - 1) * Gap) / columns;
-        for (int i = 0; i < _run.Library.Count; i++)
+        var ids = new List<int>();
+        if (boardOnly)
         {
-            BlockInstance block = _run.Library[i];
+            ids.AddRange(_run.Blind.Board.InstancesOnBoard());
+        }
+        else
+        {
+            foreach (BlockInstance block in _run.Library) ids.Add(block.Id);
+        }
+        ids.Sort();
+        for (int i = 0; i < ids.Count; i++)
+        {
+            BlockInstance block = _run.FindInstance(ids[i]);
+            if (block == null) continue;
             int id = block.Id;
             float x = Gap + i % columns * (cellWidth + Gap);
             float rowY = y - i / columns * (36f + Gap);
@@ -196,22 +215,53 @@ public sealed class RunInventoryView
     {
         ConsumableItem item = _run.Consumables[index];
         ModTarget target = item.Kind == ItemKind.Mod ? ModCatalog.TargetOf(item.Id) : ModTarget.None;
-        if (target == ModTarget.None)
-        {
-            Apply(_run.UseConsumable(index));
-            return;
-        }
         _pendingItem = index;
-        _mode = target == ModTarget.Block ? Mode.PickBlock : Mode.PickGene;
+        switch (target)
+        {
+            case ModTarget.None:
+                Apply(_run.UseConsumable(index));
+                return;
+            case ModTarget.Block:
+                _mode = Mode.PickBlock;
+                break;
+            case ModTarget.BoardBlock:
+                _mode = Mode.PickBoardBlock;
+                break;
+            case ModTarget.Gene:
+                _mode = Mode.PickGene;
+                break;
+            case ModTarget.TwoBlocks:
+                _mode = Mode.PickBlock;
+                break;
+        }
         Rebuild();
     }
 
     private void UseOn(int target)
     {
-        int index = _pendingItem;
+        if (_mode == Mode.PickSecondBlock)
+        {
+            int second = target;
+            ApplyThenReset(_run.UseConsumable(_pendingItem, _firstTarget, second));
+            return;
+        }
+        if (_mode == Mode.PickBlock && _run.Consumables[_pendingItem].Kind == ItemKind.Mod &&
+            ModCatalog.TargetOf(_run.Consumables[_pendingItem].Id) == ModTarget.TwoBlocks)
+        {
+            _firstTarget = target;
+            _mode = Mode.PickSecondBlock;
+            Rebuild();
+            return;
+        }
+        ApplyThenReset(_run.UseConsumable(_pendingItem, target));
+    }
+
+    private void ApplyThenReset(UseResult result)
+    {
         _mode = Mode.List;
         _pendingItem = -1;
-        Apply(_run.UseConsumable(index, target));
+        _firstTarget = 0;
+        Apply(result);
     }
 
     private void Apply(UseResult result)

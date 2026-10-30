@@ -39,6 +39,12 @@ namespace GameRules
         /// <summary>使用改造时的随机(镀金成没成、御铸给哪张科技)。不带段层:只由使用的先后决定。</summary>
         public const string Mod = "mod";
 
+        /// <summary>基因在盲注开始时随机指定的形状、类型(古形、塑形、指令、弃金)。按段层与基因号分,一张基因一条流。</summary>
+        public static string GenePick(int segment, int layer, int geneId) => At("gene_pick." + geneId, segment, layer);
+
+        /// <summary>基因自己的随机(乱码掷 0–20、镀版给哪块与哪个版本、吞噬吞哪张)。按段层与基因号分。</summary>
+        public static string GeneRoll(int segment, int layer, int geneId) => At("gene_roll." + geneId, segment, layer);
+
         private static string At(string purpose, int segment, int layer)
         {
             if (segment < 1) throw new ArgumentOutOfRangeException(nameof(segment), segment, "段从 1 数");

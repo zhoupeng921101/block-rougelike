@@ -51,10 +51,21 @@ namespace GameRules
             blind.PlacedKinds |= 1 << (int)block.Kind;
             var events = new List<RuleEvent> { new PiecePlaced(instanceId, block.Kind, rot, row, col, cells) };
 
-            var ctx = new EffectContext(run, StepKind.Place, events) { Placed = block, PlacedCells = SortedCopy(cells) };
+            var ctx = new EffectContext(run, StepKind.Place, events)
+            {
+                Placed = block,
+                PlacedCells = SortedCopy(cells),
+                PlacedRow = row,
+                PlacedCol = col,
+                LastPlacedRow = run.LastPlaceRow,
+                LastPlacedCol = run.LastPlaceCol,
+            };
+            run.RecordPlacement(row, col);
             if (!clear.HasClear)
             {
-                blind.Combo = 0;
+                // 保连(基因清单 §2.5):每个盲注 1 次,一次放置没消除时连击不清零
+                if (blind.Combo > 0 && run.ComboShield && !blind.ComboShieldUsed) blind.ComboShieldUsed = true;
+                else blind.Combo = 0;
             }
             else
             {
@@ -76,8 +87,9 @@ namespace GameRules
             blind.TraySlots[slot] = default;
             blind.DiscardedList.Add(instanceId);
             blind.DiscardsLeft--;
+            run.RecordDiscard();
             var events = new List<RuleEvent> { new PieceDiscarded(instanceId, blind.DiscardsLeft) };
-            return Finish(run, new EffectContext(run, StepKind.Discard, events), events);
+            return Finish(run, new EffectContext(run, StepKind.Discard, events) { Discarded = instanceId }, events);
         }
 
         // #5–#12
@@ -108,6 +120,7 @@ namespace GameRules
 
             // #8 逐格段:每格先问齐重触发次数,再把这一格的整段连走 1 + n 遍,走完才到下一格(07 §2)
             var sources = new List<(EffectSource Source, int Index, RuleEffect Effect)>();
+            int convertedPoints = 0;
             for (int i = 0; i < clear.Cells.Count; i++)
             {
                 int cell = clear.Cells[i];
@@ -133,7 +146,9 @@ namespace GameRules
                 for (int pass = 0; pass <= extra; pass++)
                 {
                     ctx.Repetition = pass;
-                    ctx.Chips = ScoreMath.Add(ctx.Chips, owner.Points);
+                    int points = owner.Points * run.PointsMultiplier;
+                    if (run.PointsToMult) convertedPoints += points;
+                    else ctx.Chips = ScoreMath.Add(ctx.Chips, points);
                     events.Add(new CellScored(cell, owner.Id, owner.Kind, owner.Points, pass, ctx.Chips));
                     foreach ((EffectSource source, int index, RuleEffect effect) in sources)
                     {
@@ -142,6 +157,8 @@ namespace GameRules
                     }
                 }
             }
+            // 转码(基因清单 §2.2):整次消除的点数不加进底分,合计每 2 点 +0.5 倍率
+            if (run.PointsToMult) ctx.MultPermille = ScoreMath.Add(ctx.MultPermille, (long)(convertedPoints / 2) * 500);
             ctx.Cell = -1;
             ctx.Block = null;
             ctx.Repetition = 0;
@@ -149,6 +166,14 @@ namespace GameRules
             // #9 基因段:带版本的基因,加算的版本在本体之前,×倍率的版本在本体之后(规则 §3.1)
             ctx.Hook = EffectHook.Gene;
             ScoreGenes(run, ctx, events);
+
+            // 均衡(G108):基因段结束时把底分与倍率取平均,两者都变成 (底分 + 倍率) / 2
+            if (run.BalancesAccumulators)
+            {
+                long average = (ctx.Chips + ctx.MultPermille / ScoreMath.PermilleOne) / 2;
+                ctx.Chips = average;
+                ctx.MultPermille = average * ScoreMath.PermilleOne;
+            }
 
             // #10 入账
             long gain = ScoreMath.Gain(ctx.Chips, ctx.MultPermille);
@@ -182,6 +207,53 @@ namespace GameRules
             var ctx = new EffectContext(run, StepKind.Place, events) { Hook = EffectHook.BlindEnd };
             VisitGenes(run, ctx, (e, c) => e.OnBlindEnd(c));
             return events;
+        }
+
+        /// <summary>用掉一件消耗品之后:基因从左到右问「使用消耗品」挂点(基因清单 §2.12)。</summary>
+        internal static void AfterConsumableUsed(RunState run, ConsumableItem item, List<RuleEvent> events)
+        {
+            var ctx = new EffectContext(run, StepKind.Place, events)
+            {
+                Hook = EffectHook.ConsumableUsed,
+                ItemKind = item.Kind,
+                ItemId = item.Id,
+            };
+            VisitGenes(run, ctx, (e, c) => e.OnConsumableUsed(c));
+        }
+
+        /// <summary>开一个补给包之后:基因从左到右问「开包」挂点。</summary>
+        internal static void AfterBoosterOpened(RunState run, int boosterId, List<RuleEvent> events)
+        {
+            var ctx = new EffectContext(run, StepKind.Place, events) { Hook = EffectHook.BoosterOpened, BoosterId = boosterId };
+            VisitGenes(run, ctx, (e, c) => e.OnBoosterOpened(c));
+        }
+
+        /// <summary>商店刷新之后:基因从左到右问「商店刷新」挂点。</summary>
+        internal static void AfterShopRerolled(RunState run) =>
+            VisitOutside(run, EffectHook.ShopReroll, (e, c) => e.OnShopRerolled(c));
+
+        /// <summary>卖掉一件东西之后:基因从左到右问「卖出」挂点;卖自己那格也算在里面(摔跤)。</summary>
+        internal static void AfterSold(RunState run, ItemKind kind, int id, int slot, bool self) =>
+            VisitOutside(run, EffectHook.Sold, (e, c) => e.OnSold(c), kind, id, slot, self);
+
+        /// <summary>跳过节点之后:基因从左到右问「跳过」挂点。</summary>
+        internal static void AfterSkipped(RunState run, int nodeId) =>
+            VisitOutside(run, EffectHook.Skipped, (e, c) => e.OnSkipped(c), skippedNode: nodeId);
+
+        private static void VisitOutside(RunState run, EffectHook hook, Action<RuleEffect, EffectContext> visit,
+            ItemKind kind = ItemKind.Gene, int id = 0, int slot = -1, bool self = false, int skippedNode = 0)
+        {
+            var events = new List<RuleEvent>();
+            var ctx = new EffectContext(run, StepKind.Place, events)
+            {
+                Hook = hook,
+                ItemKind = kind,
+                ItemId = id,
+                SoldSlot = slot,
+                SoldSelf = self,
+                SkippedNode = skippedNode,
+            };
+            VisitGenes(run, ctx, visit);
         }
 
         /// <summary>湮灭一块并吐事件(琉璃碎裂、删块改造)。不在方块库与临时块里的 id 什么也不做。</summary>
@@ -227,7 +299,7 @@ namespace GameRules
             VisitGenes(run, ctx, (e, c) => e.OnStepEnd(c));
 
             // #14 判胜在发组前:达标就不发下一组,同一步也不再判负(规则 §2.4)
-            if (blind.Score >= blind.Spec.Target) End(blind, BlindOutcome.Won, FailReason.None, events);
+            if (blind.Score >= blind.Spec.Target) End(run, blind, BlindOutcome.Won, FailReason.None, events);
             else DealAndJudge(run, events);
 
             // #17 收尾
@@ -249,11 +321,29 @@ namespace GameRules
                 run.ApplyBossOnDeal();
             }
             FailReason failure = run.PendingFailure();
-            if (failure != FailReason.None) End(blind, BlindOutcome.Lost, failure, events);
+            if (failure != FailReason.None) End(run, blind, BlindOutcome.Lost, failure, events);
         }
 
-        private static void End(BlindState blind, BlindOutcome outcome, FailReason reason, List<RuleEvent> events)
+        private static void End(RunState run, BlindState blind, BlindOutcome outcome, FailReason reason, List<RuleEvent> events)
         {
+            // 盲注失败挂点:判负之后、整局结束之前。免死在这里把结局改判通关(规则 §4.1.1 G145)
+            if (outcome == BlindOutcome.Lost)
+            {
+                var ctx = new EffectContext(run, StepKind.Place, events) { Hook = EffectHook.BlindFailed };
+                VisitGenes(run, ctx, (e, c) => e.OnBlindFailed(c));
+                if (ctx.Rescued)
+                {
+                    outcome = BlindOutcome.Won;
+                    reason = FailReason.None;
+                }
+                int geneId = run.TryRescueBlind();
+                if (geneId > 0)
+                {
+                    outcome = BlindOutcome.Won;
+                    reason = FailReason.None;
+                    events.Add(new BlindRescued(geneId));
+                }
+            }
             blind.Outcome = outcome;
             blind.FailReason = reason;
             events.Add(new BlindEnded(outcome, reason));

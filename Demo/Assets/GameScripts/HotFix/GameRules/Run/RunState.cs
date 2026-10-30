@@ -16,7 +16,65 @@ namespace GameRules
         private readonly List<ConsumableItem> _consumables;
         private readonly int[] _typeCounts;
         private readonly List<int> _vouchers;
+        private readonly HashSet<int> _unlockedGenes;
         private int _money;
+        private int _modsUsed;
+        private int _techsUsedMask;
+        private int _soldCount;
+        private int _skipCount;
+        private int _boostersOpened;
+        private int _bossesBeaten;
+        private int _sellBonus;
+        private int _discardedCount;
+        private int _lastPlaceRow = -1;
+        private int _lastPlaceCol = -1;
+        private int _destroyedCount;
+        private ConsumableItem? _lastConsumable;
+
+        /// <summary>赊账基因能让钱低到多少(规则 §4.1.1 G092 的 −$20)。</summary>
+        public const int DebtLimit = 20;
+
+        /// <summary>本局用过的改造张数(卜算基因读)。</summary>
+        public int ModsUsed => _modsUsed;
+
+        /// <summary>本局用过的科技:按科技号 − 1 的位掩码(星金读种数)。</summary>
+        public int TechsUsedMask => _techsUsedMask;
+
+        /// <summary>本局卖掉过几张东西(基因与消耗品都算)。</summary>
+        public int SoldCount => _soldCount;
+
+        /// <summary>本局跳过过几个节点(跳关基因读)。</summary>
+        public int SkipCount => _skipCount;
+
+        /// <summary>本局开过几个补给包(开包基因读)。</summary>
+        public int BoostersOpened => _boostersOpened;
+
+        /// <summary>本局已打过的首领数(升空基因读)。</summary>
+        public int BossesBeaten => _bossesBeaten;
+
+        /// <summary>全局卖价加成(增值基因每盲注结束给所有基因与道具栏 +$1)。</summary>
+        public int SellBonus => _sellBonus;
+
+        /// <summary>本局累计弃掉的块数(斋戒、回响读)。</summary>
+        public int DiscardedCount => _discardedCount;
+
+        /// <summary>上一次落子的包围盒左上角;还没落过为 -1(远投基因读)。</summary>
+        public int LastPlaceRow => _lastPlaceRow;
+
+        public int LastPlaceCol => _lastPlaceCol;
+
+        /// <summary>本局湮灭掉的方块数(永续基因读)。</summary>
+        public int DestroyedCount => _destroyedCount;
+
+        /// <summary>记下这次落点(远投基因读上一次)。</summary>
+        internal void RecordPlacement(int row, int col)
+        {
+            _lastPlaceRow = row;
+            _lastPlaceCol = col;
+        }
+
+        /// <summary>上一次用掉的消耗品(摹写改造读);没用了为 null。</summary>
+        public ConsumableItem? LastConsumable => _lastConsumable;
 
         public RuleConfig Config { get; }
 
@@ -67,6 +125,109 @@ namespace GameRules
 
         /// <summary>券带来的参数修正;每次都从券列表现算。</summary>
         public RunModifiers Modifiers => RunModifiers.From(_vouchers);
+
+        // ── 基因的 C 类开关与 B 类参数(效果系统 §3.2、§3.3):每次用到时从持有的基因现算,不进存档 ──
+
+        /// <summary>任一持有基因满足这个开关。</summary>
+        private bool AnyGene(Func<RuleEffect, bool> pred)
+        {
+            foreach (GeneSlot g in _genes)
+            {
+                RuleEffect e = Config.Effects.Find(EffectSource.Gene, g.GeneId);
+                if (e != null && pred(e)) return true;
+            }
+            return false;
+        }
+
+        private int SumGene(Func<RuleEffect, int> value)
+        {
+            int sum = 0;
+            foreach (GeneSlot g in _genes)
+            {
+                RuleEffect e = Config.Effects.Find(EffectSource.Gene, g.GeneId);
+                if (e != null) sum += value(e);
+            }
+            return sum;
+        }
+
+        private int MaxGene(Func<RuleEffect, int> value)
+        {
+            int max = 0;
+            foreach (GeneSlot g in _genes)
+            {
+                RuleEffect e = Config.Effects.Find(EffectSource.Gene, g.GeneId);
+                if (e != null) max = Math.Max(max, value(e));
+            }
+            return max;
+        }
+
+        /// <summary>镜合:同形态判定里 S/Z、J/L 各算一种。</summary>
+        public bool MirrorSameShape => AnyGene(e => e.MirrorSameShape);
+
+        /// <summary>转码:被消格的点数改成倍率。</summary>
+        public bool PointsToMult => AnyGene(e => e.PointsToMult);
+
+        /// <summary>保连:每个盲注一次,没消除时连击不清零。</summary>
+        public bool ComboShield => AnyGene(e => e.ComboShield);
+
+        /// <summary>赊账:钱可以花到 −<see cref="DebtLimit"/>。</summary>
+        public bool AllowDebt => AnyGene(e => e.AllowDebt);
+
+        /// <summary>重现:商店与补给包里可以出现已持有的基因。</summary>
+        public bool ShopOffersOwned => AnyGene(e => e.ShopOffersOwned);
+
+        /// <summary>赦免:首领盲注的负面效果失效。</summary>
+        public bool BossDisabled => AnyGene(e => e.DisablesBoss);
+
+        /// <summary>利息门槛:复利基因改成每 $5 给 $1。</summary>
+        public int InterestPer
+        {
+            get
+            {
+                int per = MaxGene(e => e.InterestPer);
+                return per > 0 ? per : Config.InterestPer;
+            }
+        }
+
+        /// <summary>利息封顶的千分比(囤金 = 2000)。</summary>
+        public int InterestCapPermille
+        {
+            get
+            {
+                int cap = MaxGene(e => e.InterestCapPermille);
+                return cap > 0 ? cap : 1000;
+            }
+        }
+
+        /// <summary>方块货的价格增量(选块 = −1,不低于 0)。</summary>
+        public int BlockPriceDelta => SumGene(e => e.BlockPriceDelta);
+
+        /// <summary>商店里的科技与科技补给包免费。</summary>
+        public bool TechFree => AnyGene(e => e.FreeTechs);
+
+        /// <summary>琉璃碎裂概率的分母(坚璃翻倍)。</summary>
+        public int GlassShatterDen => CoreEffects.GlassShatterDen * Math.Max(1, MaxGene(e => e.GlassShatterDenMultiplier));
+
+        /// <summary>被消格的计点倍率(倍点 = 2)。</summary>
+        public int PointsMultiplier => Math.Max(1, MaxGene(e => e.PointsMultiplier));
+
+        /// <summary>基因段结束后要不要把两个累加器取平均(均衡)。</summary>
+        public bool BalancesAccumulators => AnyGene(e => e.BalancesAccumulators);
+
+        /// <summary>免死:得分 ≥ 目标分 1/4 时把这次判负改判通关,湮灭那张基因;没有可救的返回 -1,否则返回被湮灭的基因号。</summary>
+        internal int TryRescueBlind()
+        {
+            if (Blind == null || Blind.Score * 4 < Blind.Spec.Target) return -1;
+            for (int slot = 0; slot < _genes.Count; slot++)
+            {
+                RuleEffect e = Config.Effects.Find(EffectSource.Gene, _genes[slot].GeneId);
+                if (e == null || !e.RescuesBlind) continue;
+                int geneId = _genes[slot].GeneId;
+                _genes.RemoveAt(slot);
+                return geneId;
+            }
+            return -1;
+        }
 
         /// <summary>跳过节点换来的「下一次」效果(折扣、扩货、急售、补给、轻敌、弃权);用掉即清。</summary>
         public RunPending Pending { get; }
@@ -123,12 +284,28 @@ namespace GameRules
         private RunState(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map, MapProgress progress,
             ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels, int[] typeCounts, List<GeneSlot> genes,
             List<ConsumableItem> consumables, List<int> vouchers, BlindState blind, RunPending pending, bool bossIntel,
-            int interestBonus, int interestBonusSegment)
+            int interestBonus, int interestBonusSegment, int modsUsed = 0, int techsUsedMask = 0, int soldCount = 0,
+            int skipCount = 0, int boostersOpened = 0, int bossesBeaten = 0, int sellBonus = 0, ConsumableItem? lastConsumable = null,
+            int discardedCount = 0, int lastPlaceRow = -1, int lastPlaceCol = -1, int destroyedCount = 0,
+            IReadOnlyCollection<int> unlockedGenes = null)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
+            _unlockedGenes = unlockedGenes == null ? null : new HashSet<int>(unlockedGenes);
             Rng = rng;
             Difficulty = difficulty;
             _money = money;
+            _modsUsed = modsUsed;
+            _techsUsedMask = techsUsedMask;
+            _soldCount = soldCount;
+            _skipCount = skipCount;
+            _boostersOpened = boostersOpened;
+            _bossesBeaten = bossesBeaten;
+            _sellBonus = sellBonus;
+            _discardedCount = discardedCount;
+            _lastPlaceRow = lastPlaceRow;
+            _lastPlaceCol = lastPlaceCol;
+            _destroyedCount = destroyedCount;
+            _lastConsumable = lastConsumable;
             Map = map ?? throw new ArgumentNullException(nameof(map));
             Progress = progress ?? throw new ArgumentNullException(nameof(progress));
             Shop = shop;
@@ -156,7 +333,8 @@ namespace GameRules
         /// 开新局:先生成地图(只消费 <c>map</c> 一条流一次),再按配置里默认方块库清单的顺序逐块取号建库。
         /// 种子文本须已规范(<see cref="SeedText"/>)。难度默认标准档,选难度的那一屏由表现层传入。
         /// </summary>
-        public static RunState NewRun(string seed, RuleConfig config, RunDifficulty difficulty = RunDifficulty.Standard)
+        public static RunState NewRun(string seed, RuleConfig config, RunDifficulty difficulty = RunDifficulty.Standard,
+            IReadOnlyCollection<int> unlockedGenes = null)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
             var levels = new int[ClearTypes.Count];
@@ -165,7 +343,7 @@ namespace GameRules
             RunMap map = RunMap.Generate(rng.Get(RngKeys.Map), config.MapSegments);
             var run = new RunState(config, rng, difficulty, config.StartingMoney, map, new MapProgress(), null,
                 1, new List<BlockInstance>(), levels, new int[ClearTypes.Count], new List<GeneSlot>(), new List<ConsumableItem>(),
-                new List<int>(), null, new RunPending(), false, 0, 0);
+                new List<int>(), null, new RunPending(), false, 0, 0, unlockedGenes: unlockedGenes);
             foreach (LibraryEntry e in config.DefaultLibrary)
             {
                 run._library.Add(new BlockInstance(run.IssueId(), e.Kind, e.Points, e.Enhancement, e.Edition));
@@ -177,9 +355,14 @@ namespace GameRules
         internal static RunState Restore(RuleConfig config, RngStreams rng, RunDifficulty difficulty, int money, RunMap map,
             MapProgress progress, ShopState shop, int nextInstanceId, List<BlockInstance> library, int[] typeLevels, int[] typeCounts,
             List<GeneSlot> genes, List<ConsumableItem> consumables, List<int> vouchers, BlindState blind, RunPending pending,
-            bool bossIntel, int interestBonus, int interestBonusSegment) =>
+            bool bossIntel, int interestBonus, int interestBonusSegment, int modsUsed = 0, int techsUsedMask = 0,
+            int soldCount = 0, int skipCount = 0, int boostersOpened = 0, int bossesBeaten = 0, int sellBonus = 0,
+            ConsumableItem? lastConsumable = null, int discardedCount = 0, int lastPlaceRow = -1, int lastPlaceCol = -1,
+            int destroyedCount = 0, IReadOnlyCollection<int> unlockedGenes = null) =>
             new RunState(config, rng, difficulty, money, map, progress, shop, nextInstanceId, library, typeLevels, typeCounts, genes,
-                consumables, vouchers, blind, pending, bossIntel, interestBonus, interestBonusSegment);
+                consumables, vouchers, blind, pending, bossIntel, interestBonus, interestBonusSegment, modsUsed, techsUsedMask,
+                soldCount, skipCount, boostersOpened, bossesBeaten, sellBonus, lastConsumable, discardedCount, lastPlaceRow, lastPlaceCol,
+                destroyedCount, unlockedGenes);
 
         /// <summary>
         /// 唯一的取号口。方块库的块、首领预置块、将来「生成一块」的效果都从这里取,所以不能假设 id 都在方块库里。
@@ -199,11 +382,12 @@ namespace GameRules
             _money += amount;
         }
 
-        /// <summary>扣钱。钱不够返回 false 且不改状态;金额为负抛异常。</summary>
+        /// <summary>扣钱。钱不够(赊账基因允许低到 −<see cref="DebtLimit"/>)返回 false 且不改状态;金额为负抛异常。</summary>
         public bool TrySpend(int amount)
         {
             if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount), amount, "扣款金额不能为负");
-            if (amount > _money) return false;
+            int floor = AllowDebt ? -DebtLimit : 0;
+            if (_money - amount < floor) return false;
             _money -= amount;
             return true;
         }
@@ -228,10 +412,17 @@ namespace GameRules
             _genes.Add(new GeneSlot(geneId, edition, 0, effect != null && effect.CostTargetPermille > 0));
         }
 
+        /// <summary>这张基因这一局进不进池:元进程没解锁的不进商店、不进补给包(<see cref="MetaUnlocks"/>)。</summary>
+        public bool IsGeneUnlocked(int geneId) => _unlockedGenes == null || _unlockedGenes.Contains(geneId);
+
+        /// <summary>已解锁的基因位;全解锁或旧档为 null。<see cref="RunSnapshot"/> 不存它,读档由外部重新给。</summary>
+        public IReadOnlyCollection<int> UnlockedGenes => _unlockedGenes;
+
         /// <summary>这张基因现在放得进基因栏吗:注册表里有,且槽没满(负片不占槽)。</summary>
         public bool CanTakeGene(int geneId, Edition edition = Edition.None)
         {
             if (Config.Effects.Find(EffectSource.Gene, geneId) == null) return false;
+            if (!IsGeneUnlocked(geneId)) return false;
             return edition == Edition.Negative || GeneSlotsUsed < GeneSlots;
         }
 
@@ -257,14 +448,16 @@ namespace GameRules
             return true;
         }
 
-        /// <summary>卖掉基因栏第 slot 格,按 <see cref="SellPriceOf"/> 入账,返回卖得的钱;越界返回 -1。</summary>
+        /// <summary>卖掉基因栏第 slot 格,按 <see cref="SellPriceOf(GeneSlot)"/> 入账,返回卖得的钱;越界返回 -1。</summary>
         public int SellGene(int slot)
         {
             if (slot < 0 || slot >= _genes.Count) return -1;
             GeneSlot g = _genes[slot];
-            int price = SellPriceOf(ItemKind.Gene, g.GeneId, g.Edition);
+            int price = SellPriceOf(g);
             _genes.RemoveAt(slot);
             AddMoney(price);
+            _soldCount++;
+            StepPipeline.AfterSold(this, ItemKind.Gene, g.GeneId, slot, true);
             return price;
         }
 
@@ -276,7 +469,16 @@ namespace GameRules
             int price = SellPriceOf(item.Kind, item.Id, Edition.None);
             _consumables.RemoveAt(index);
             AddMoney(price);
+            _soldCount++;
+            StepPipeline.AfterSold(this, item.Kind, item.Id, -1, false);
             return price;
+        }
+
+        /// <summary>卖一张基因的实价:目录价折半(回收券 75%)再加这张基因自己的与全局的卖价加成,至少 $1。</summary>
+        public int SellPriceOf(GeneSlot gene)
+        {
+            if (gene == null) throw new ArgumentNullException(nameof(gene));
+            return SellPriceOf(ItemKind.Gene, gene.GeneId, gene.Edition) + Math.Max(0, gene.SellBonus + _sellBonus);
         }
 
         /// <summary>
@@ -309,7 +511,15 @@ namespace GameRules
         /// 盲注里用:改块只改块本身;删块后待放置区空了就补发一组、再判一次负(不算一步,不走步收尾)。
         /// 盲注已分出胜负时不能用。被拒时状态一点不改。
         /// </summary>
-        public UseResult UseConsumable(int index, int target = 0)
+        public UseResult UseConsumable(int index, int target = 0) => UseConsumable(index, target, 0);
+
+        /// <summary>
+        /// 用道具栏第 index 件(规则 §4.2、§4.3)。科技随时可用;改造要目标的,target 是块的实例 id 或基因槽位
+        /// (<see cref="ModCatalog.TargetOf"/>),双块改造的 secondTarget 是目标块(先来源后目标)。
+        /// 盲注里用:改块只改块本身;删块后待放置区空了就补发一组、再判一次负(不算一步,不走步收尾)。
+        /// 盲注已分出胜负时不能用。被拒时状态一点不改。
+        /// </summary>
+        public UseResult UseConsumable(int index, int target, int secondTarget)
         {
             if (index < 0 || index >= _consumables.Count) return UseResult.Rejected(UseReject.NoSuchItem);
             if (Blind != null && Blind.Outcome != BlindOutcome.InProgress) return UseResult.Rejected(UseReject.NotUsable);
@@ -321,15 +531,23 @@ namespace GameRules
                 if (_typeLevels[(int)type] >= Config.ClearTypes.MaxLevel(type)) return UseResult.Rejected(UseReject.NotUsable);
                 _consumables.RemoveAt(index);
                 UpgradeType(type);
+                _techsUsedMask |= 1 << (item.Id - 1);
+                _lastConsumable = item;
                 events.Add(new ConsumableUsed(item.Kind, item.Id, 0, true));
+                StepPipeline.AfterConsumableUsed(this, item, events);
                 return UseResult.Done(events);
             }
 
             int mod = item.Id;
-            switch (ModCatalog.TargetOf(mod))
+            ModTarget need = ModCatalog.TargetOf(mod);
+            BlockInstance source = null, destination = null;
+            switch (need)
             {
                 case ModTarget.Block:
                     if (FindUsableBlock(target) == null) return UseResult.Rejected(UseReject.BadTarget);
+                    break;
+                case ModTarget.BoardBlock:
+                    if (FindBoardBlock(target) == null) return UseResult.Rejected(UseReject.BadTarget);
                     break;
                 case ModTarget.Gene:
                     if (target < 0 || target >= _genes.Count || _genes[target].Edition != Edition.None)
@@ -337,8 +555,19 @@ namespace GameRules
                         return UseResult.Rejected(UseReject.BadTarget);
                     }
                     break;
+                case ModTarget.TwoBlocks:
+                    source = FindUsableBlock(target);
+                    destination = FindUsableBlock(secondTarget);
+                    if (source == null || destination == null || source.Id == destination.Id) return UseResult.Rejected(UseReject.BadTarget);
+                    break;
             }
             if (mod == ModCatalog.MakeTech && UnlockedTechs().Count == 0) return UseResult.Rejected(UseReject.NotUsable);
+            if (mod == ModCatalog.MakeLast && (_lastConsumable == null || _lastConsumable.Value.Id == ModCatalog.MakeLast && _lastConsumable.Value.Kind == ItemKind.Mod))
+            {
+                return UseResult.Rejected(UseReject.NotUsable);
+            }
+            if (mod == ModCatalog.MakeGene && !HasFreeGeneSlot()) return UseResult.Rejected(UseReject.NotUsable);
+            if (mod == ModCatalog.MakeAllPoints && (Blind == null || Blind.IsTrayEmpty)) return UseResult.Rejected(UseReject.NotUsable);
 
             _consumables.RemoveAt(index);
             bool succeeded = true;
@@ -353,18 +582,99 @@ namespace GameRules
                 case ModCatalog.Points:
                     FindUsableBlock(target).Points += ModCatalog.PointsBonus;
                     break;
+                case ModCatalog.MakeAllPoints:
+                    foreach (TraySlot slot in Blind.TraySlots)
+                    {
+                        if (!slot.IsEmpty) FindInstance(slot.Id).Points++;
+                    }
+                    break;
+                case ModCatalog.ToO:
+                case ModCatalog.ToI:
+                case ModCatalog.ToT:
+                    FindUsableBlock(target).Kind = ModCatalog.ShapeOf(mod).Value;
+                    break;
+                case ModCatalog.Mirror:
+                    {
+                        BlockInstance block = FindUsableBlock(target);
+                        block.Kind = block.Kind == TetrominoKind.S ? TetrominoKind.Z
+                            : block.Kind == TetrominoKind.Z ? TetrominoKind.S
+                            : block.Kind == TetrominoKind.J ? TetrominoKind.L
+                            : block.Kind == TetrominoKind.L ? TetrominoKind.J
+                            : block.Kind;
+                        break;
+                    }
+                case ModCatalog.Twin:
+                    destination.Kind = source.Kind;
+                    destination.Points = source.Points;
+                    destination.Enhancement = source.Enhancement;
+                    destination.Edition = source.Edition;
+                    break;
+                case ModCatalog.Devour:
+                    destination.Points += source.Points;
+                    events.Add(new ConsumableUsed(item.Kind, mod, target, true));
+                    StepPipeline.Destroy(this, source.Id, events);
+                    _modsUsed++;
+                    _lastConsumable = item;
+                    StepPipeline.AfterConsumableUsed(this, item, events);
+                    StepPipeline.AfterConsumable(this, events);
+                    return UseResult.Done(events);
+                case ModCatalog.Dismantle:
+                    {
+                        BlockInstance block = FindBoardBlock(target);
+                        int[] cells = new int[BoardCells.Count];
+                        int n = 0;
+                        for (int cell = 0; cell < BoardCells.Count; cell++)
+                        {
+                            if (Blind.Board.OwnerAt(cell) != block.Id) continue;
+                            Blind.Board.ClearCell(cell);
+                            cells[n++] = cell;
+                        }
+                        var cleared = new int[n];
+                        Array.Copy(cells, cleared, n);
+                        Blind.DepartedList.Add(block.Id);
+                        Blind.DepartedList.Sort();
+                        events.Add(new BlockDestroyed(block.Id, cleared));
+                        break;
+                    }
                 case ModCatalog.Destroy:
+                case ModCatalog.Tilt:
                     events.Add(new ConsumableUsed(item.Kind, mod, target, true));
                     StepPipeline.Destroy(this, target, events);
+                    if (mod == ModCatalog.Tilt) GrantRandomMods(1);
+                    _modsUsed++;
+                    _lastConsumable = item;
+                    StepPipeline.AfterConsumableUsed(this, item, events);
                     StepPipeline.AfterConsumable(this, events);
                     return UseResult.Done(events);
                 case ModCatalog.DoubleMoney:
-                    AddMoney(Math.Min(_money, ModCatalog.DoubleMoneyCap));
+                    AddMoney(Math.Min(Math.Max(0, _money), ModCatalog.DoubleMoneyCap));
                     break;
+                case ModCatalog.Tribute:
+                    {
+                        int total = 0;
+                        foreach (GeneSlot g in _genes) total += SellPriceOf(g);
+                        AddMoney(Math.Min(total, ModCatalog.TributeCap));
+                        break;
+                    }
                 case ModCatalog.MakeTech:
-                    List<int> techs = UnlockedTechs();
-                    _consumables.Add(ConsumableItem.Tech(techs[Rng.Get(RngKeys.Mod).Index(techs.Count)]));
+                    GrantRandomTechs(2);
                     break;
+                case ModCatalog.MakeMods:
+                    GrantRandomMods(2);
+                    break;
+                case ModCatalog.MakeLast:
+                    if (_lastConsumable != null) _consumables.Add(_lastConsumable.Value);
+                    break;
+                case ModCatalog.MakeGene:
+                    {
+                        var pool = new List<CatalogEntry>();
+                        foreach (CatalogEntry e in Config.Catalog.Genes)
+                        {
+                            if (e.Rarity != Rarity.Legendary) pool.Add(e);
+                        }
+                        if (pool.Count > 0) TryAddGene(pool[Rng.Get(RngKeys.Mod).Index(pool.Count)].Id);
+                        break;
+                    }
                 case ModCatalog.GeneEdition:
                     IRandomSource rng = Rng.Get(RngKeys.Mod);
                     succeeded = rng.Chance(1, ModCatalog.EditionChanceDen);
@@ -372,7 +682,57 @@ namespace GameRules
                     break;
             }
             events.Add(new ConsumableUsed(item.Kind, mod, ModCatalog.TargetOf(mod) == ModTarget.None ? 0 : target, succeeded));
+            _modsUsed++;
+            _lastConsumable = item;
+            StepPipeline.AfterConsumableUsed(this, item, events);
             return UseResult.Done(events);
+        }
+
+        /// <summary>还有不占槽的基因位吗(负片不算占槽)。</summary>
+        public bool HasFreeGeneSlot() => GeneSlotsUsed < GeneSlots;
+
+        /// <summary>给 n 张随机改造,放得下几张给几张。</summary>
+        private void GrantRandomMods(int n)
+        {
+            if (Config.Catalog.Mods.Count == 0) return;
+            IRandomSource rng = Rng.Get(RngKeys.Mod);
+            for (int i = 0; i < n; i++)
+            {
+                int id = Config.Catalog.Mods[rng.Index(Config.Catalog.Mods.Count)].Id;
+                if (!TryAddConsumable(ConsumableItem.Mod(id))) return;
+            }
+        }
+
+        /// <summary>给 n 张已解锁的随机科技,放得下几张给几张;尽量不重复。</summary>
+        private void GrantRandomTechs(int n)
+        {
+            List<int> techs = UnlockedTechs();
+            if (techs.Count == 0) return;
+            IRandomSource rng = Rng.Get(RngKeys.Mod);
+            var picked = new List<int>();
+            for (int i = 0; i < n && picked.Count < techs.Count; i++)
+            {
+                int at = rng.Index(techs.Count);
+                for (int guard = 0; guard < techs.Count && picked.Contains(techs[at]); guard++)
+                {
+                    at = (at + 1) % techs.Count;
+                }
+                if (picked.Contains(techs[at])) break;
+                picked.Add(techs[at]);
+                if (!TryAddConsumable(ConsumableItem.Tech(techs[at]))) return;
+            }
+        }
+
+        /// <summary>盘上的块;不在盘上返回 null(拆解只认盘上)。</summary>
+        private BlockInstance FindBoardBlock(int instanceId)
+        {
+            if (instanceId <= 0 || Blind == null) return null;
+            for (int cell = 0; cell < BoardCells.Count; cell++)
+            {
+                if (Blind.Board.OwnerAt(cell) != instanceId) continue;
+                return FindInstance(instanceId);
+            }
+            return null;
         }
 
         /// <summary>改造能作用的块:盲注进行中是方块库与本盲注临时块里的,不在盲注里只认方块库里的。</summary>
@@ -445,6 +805,7 @@ namespace GameRules
                 if (temp >= 0) Blind.TempList.RemoveAt(temp);
             }
             if (at >= 0) _library.RemoveAt(at);
+            _destroyedCount++;
             return cells.ToArray();
         }
 
@@ -562,7 +923,7 @@ namespace GameRules
         /// <summary>发一组之后的首领效果:增殖盲在随机空格补一块。由步管线调用,不在规则核心外直接调。</summary>
         internal void ApplyBossOnDeal()
         {
-            if (Blind == null || Blind.Outcome != BlindOutcome.InProgress) return;
+            if (Blind == null || Blind.Outcome != BlindOutcome.InProgress || Blind.BossSuppressed) return;
             if (Blind.Spec.BossId != Bosses.Spawn) return;
             Bosses.SpawnBlocks(Blind, Rng.Get(RngKeys.Boss(Blind.Spec.Segment, Blind.Spec.Layer)), this, Config.Tuning.SpawnPerDeal);
         }
@@ -570,7 +931,7 @@ namespace GameRules
         /// <summary>一步收尾后的首领效果:偏航盲每 4 步把盘面整体转 90°。由步管线调用。</summary>
         internal void ApplyBossOnStepEnd()
         {
-            if (Blind == null || Blind.Outcome != BlindOutcome.InProgress) return;
+            if (Blind == null || Blind.Outcome != BlindOutcome.InProgress || Blind.BossSuppressed) return;
             if (Blind.Spec.BossId != Bosses.Yaw) return;
             if (Blind.Step <= 0 || Blind.Step % Config.Tuning.YawEverySteps != 0) return;
             Blind.Board.Rotate();
@@ -596,7 +957,8 @@ namespace GameRules
             if (Progress.CurrentNodeId == 0) throw new InvalidOperationException("还没进节点");
             if (Progress.CurrentResolved) throw new InvalidOperationException("当前节点已结算");
             MapNode node = Map.Get(Progress.CurrentNodeId);
-            int boss = node.BossId;
+            // 赦免(L2):首领盲注的负面效果整个失效,连目标分与弃置的修正也不进
+            int boss = BossDisabled ? Bosses.None : node.BossId;
             // 基因的 B 类修正(效果系统 §3.2):每次开盲注从持有的基因重算,不记增量
             int geneDiscards = 0, geneGroupSize = 0;
             foreach (GeneSlot g in _genes)
@@ -650,8 +1012,30 @@ namespace GameRules
             return Shop;
         }
 
-        /// <summary>
-        /// 跳过当前可选的节点:不打、不拿通关奖励、不开店,换一个标签(设计稿 §2.3)。
+        /// <summary>记录一次弃置(斋戒、回响读本局的累计)。</summary>
+        internal void RecordDiscard() => _discardedCount++;
+
+        /// <summary>全局卖价加成(增值基因每盲注结束给所有基因与道具栏 +$1)。</summary>
+        internal void AddSellBonus(int amount)
+        {
+            if (amount < 0) throw new System.ArgumentOutOfRangeException(nameof(amount), amount, "卖价加成不能为负");
+            _sellBonus += amount;
+        }
+
+        /// <summary>吃掉/移走基因栏的一格(吞噬、出售的底层口)。越界什么也不做。</summary>
+        internal void RemoveGeneAt(int slot)
+        {
+            if (slot >= 0 && slot < _genes.Count) _genes.RemoveAt(slot);
+        }
+
+        /// <summary>开过一个补给包之后记账并问基因的「开包」挂点(基因清单 §2.12)。</summary>
+        internal void RecordBoosterOpened(int boosterId)
+        {
+            _boostersOpened++;
+            StepPipeline.AfterBoosterOpened(this, boosterId, new List<RuleEvent>());
+        }
+
+        /// <summary>跳过当前可选的节点:不打、不拿通关奖励、不开店,换一个标签(设计稿 §2.3)。</summary>
         /// 节点不可跳(首领、第一段)或不在可选范围时返回 false,状态不动。
         /// </summary>
         public bool SkipNode(int nodeId)
@@ -662,6 +1046,8 @@ namespace GameRules
             if (!Progress.Skip(Map, nodeId)) return false;
             Shop = null;
             ApplyTag(node.TagId);
+            _skipCount++;
+            StepPipeline.AfterSkipped(this, nodeId);
             return true;
         }
 
@@ -752,9 +1138,11 @@ namespace GameRules
                 throw new InvalidOperationException("盲注与当前节点不是同一关");
             }
             int interestCap = Config.Tuning.DifficultyOf(Difficulty).InterestCap + Modifiers.InterestCapBonus + SegmentInterestCapBonus;
-            Settlement settlement = RunEconomy.Settle(node, Config.Tuning.NodeReward(node), _money, Config.InterestPer, interestCap);
+            interestCap = interestCap * InterestCapPermille / 1000;
+            Settlement settlement = RunEconomy.Settle(node, Config.Tuning.NodeReward(node), _money, InterestPer, interestCap);
             AddMoney(settlement.Total);
             int before = _money;
+            if (node.IsBoss) _bossesBeaten++;
             StepPipeline.AfterBlindWon(this);
             Progress.Resolve();
             return new Settlement(node.Id, settlement.Reward, settlement.Interest, _money, _money - before);
@@ -836,13 +1224,20 @@ namespace GameRules
         /// </summary>
         private bool IsSameShape(int[] owners)
         {
-            TetrominoKind? kind = null;
+            int? kind = null;
             foreach (int owner in owners)
             {
                 BlockInstance b = FindInstance(owner);
                 if (b.Enhancement == Enhancement.Wild) continue;
-                if (kind == null) kind = b.Kind;
-                else if (b.Kind != kind) return false;
+                int key = (int)b.Kind;
+                if (MirrorSameShape)
+                {
+                    // 镜合:把镜像对折成同一个键(S/Z、J/L),I、O、T 不动
+                    if (b.Kind == TetrominoKind.S || b.Kind == TetrominoKind.Z) key = (int)TetrominoKind.S;
+                    else if (b.Kind == TetrominoKind.J || b.Kind == TetrominoKind.L) key = (int)TetrominoKind.J;
+                }
+                if (kind == null) kind = key;
+                else if (key != kind) return false;
             }
             return true;
         }
@@ -903,7 +1298,9 @@ namespace GameRules
             foreach (GeneSlot g in _genes) genes.Add(g.Clone());
             return new RunState(Config, Rng.Clone(), Difficulty, _money, Map, Progress.Clone(), Shop?.Clone(), NextInstanceId,
                 library, (int[])_typeLevels.Clone(), (int[])_typeCounts.Clone(), genes, new List<ConsumableItem>(_consumables),
-                new List<int>(_vouchers), Blind?.Clone(), Pending.Clone(), BossIntel, _interestBonus, _interestBonusSegment);
+                new List<int>(_vouchers), Blind?.Clone(), Pending.Clone(), BossIntel, _interestBonus, _interestBonusSegment,
+                _modsUsed, _techsUsedMask, _soldCount, _skipCount, _boostersOpened, _bossesBeaten, _sellBonus, _lastConsumable,
+                _discardedCount, _lastPlaceRow, _lastPlaceCol, _destroyedCount, _unlockedGenes);
         }
 
         /// <summary>
@@ -919,7 +1316,18 @@ namespace GameRules
         public string Validate()
         {
             if (!Enum.IsDefined(typeof(RunDifficulty), Difficulty)) return Invariant($"difficulty: 未定义的值 {(int)Difficulty}");
-            if (_money < 0) return Invariant($"money: {_money} 为负");
+            if (_money < (AllowDebt ? -DebtLimit : 0)) return Invariant($"money: {_money} 低于下限 {(AllowDebt ? -DebtLimit : 0)}");
+            if (_modsUsed < 0) return Invariant($"modsUsed: {_modsUsed} 为负");
+            if (_techsUsedMask < 0) return Invariant($"techsUsed: {_techsUsedMask} 为负");
+            if (_soldCount < 0) return Invariant($"soldCount: {_soldCount} 为负");
+            if (_skipCount < 0) return Invariant($"skipCount: {_skipCount} 为负");
+            if (_boostersOpened < 0) return Invariant($"boostersOpened: {_boostersOpened} 为负");
+            if (_bossesBeaten < 0) return Invariant($"bossesBeaten: {_bossesBeaten} 为负");
+            if (_sellBonus < 0) return Invariant($"sellBonus: {_sellBonus} 为负");
+            if (_discardedCount < 0) return Invariant($"discardedCount: {_discardedCount} 为负");
+            if (_lastPlaceRow < -1 || _lastPlaceRow >= BoardCells.Rows) return Invariant($"lastPlaceRow: {_lastPlaceRow} 越界");
+            if (_lastPlaceCol < -1 || _lastPlaceCol >= BoardCells.Cols) return Invariant($"lastPlaceCol: {_lastPlaceCol} 越界");
+            if (_destroyedCount < 0) return Invariant($"destroyedCount: {_destroyedCount} 为负");
             string pendingError = Pending.Validate();
             if (pendingError != null) return pendingError;
             if (_interestBonus < 0) return Invariant($"interestBonus: {_interestBonus} 为负");
@@ -973,6 +1381,8 @@ namespace GameRules
                 if (Config.Effects.Find(EffectSource.Gene, g.GeneId) == null) return Invariant($"genes[{i}].id: 基因 {g.GeneId} 没在效果注册表里登记");
                 if (!Enum.IsDefined(typeof(Edition), g.Edition)) return Invariant($"genes[{i}].edition: 未定义的值 {(int)g.Edition}");
                 if (g.Counter < 0) return Invariant($"genes[{i}].counter: {g.Counter} 为负");
+                if (g.State < 0) return Invariant($"genes[{i}].state: {g.State} 为负");
+                if (g.SellBonus < 0) return Invariant($"genes[{i}].sellBonus: {g.SellBonus} 为负");
             }
             if (GeneSlotsUsed > GeneSlots) return Invariant($"genes: 占槽的有 {GeneSlotsUsed} 张,基因槽只有 {GeneSlots} 格");
             if (_consumables.Count > ConsumableSlots)

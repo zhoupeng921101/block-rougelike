@@ -35,6 +35,12 @@ namespace GameRules
 
         /// <summary>基因栏的一格。</summary>
         Gene = 2,
+
+        /// <summary>先选来源块、再选目标块(双生、堕噬)。</summary>
+        TwoBlocks = 3,
+
+        /// <summary>只能是盘上的块(拆解)。</summary>
+        BoardBlock = 4,
     }
 
     /// <summary>用一件消耗品被拒的原因;被拒时状态一点不改。</summary>
@@ -75,48 +81,58 @@ namespace GameRules
     }
 
     /// <summary>
-    /// 最小内容集里的改造(规则 §4.3)。§4.3.1 的清单待重新长,这里只放能验证「改块、删块、改基因、给钱、生成消耗品」
-    /// 这几类钩子的九张;号写死,进存档。效果在 <see cref="RunState.UseConsumable"/>。数值待定标。
+    /// 改造 22 张(科技与改造清单 §2,2026-10-30 拍板)。做强化 4、改块 7、删块 3、生成 5、给钱 2、救场 1。
+    /// 效果在 <see cref="RunState.UseConsumable"/>。数值全是候选,待定标。
     /// </summary>
     public static class ModCatalog
     {
-        /// <summary>琉璃改造:一块变成琉璃方块。</summary>
+        // 2.1 做强化
         public const int Glass = 1;
-
-        /// <summary>铁芯改造:一块变成铁芯方块。</summary>
         public const int Steel = 2;
-
-        /// <summary>金箔改造:一块变成金箔方块。</summary>
         public const int Gold = 3;
-
-        /// <summary>万态改造:一块变成万态方块。</summary>
         public const int Wild = 4;
 
-        /// <summary>崇基改造:一块点数永久 +<see cref="PointsBonus"/>。</summary>
+        // 2.2 改块
         public const int Points = 5;
+        public const int MakeAllPoints = 12;
+        public const int Twin = 13;
+        public const int ToO = 16;
+        public const int ToI = 17;
+        public const int ToT = 18;
+        public const int Mirror = 19;
 
-        /// <summary>垂湮改造:湮灭一块(牌库瘦身,规则 §5.3)。</summary>
+        // 2.3 删块
         public const int Destroy = 6;
+        public const int Tilt = 15;
+        public const int Devour = 21;
 
-        /// <summary>敛金改造:持有金钱翻倍,这次最多加 <see cref="DoubleMoneyCap"/>。</summary>
-        public const int DoubleMoney = 7;
-
-        /// <summary>御铸改造:生成一张已解锁的随机科技进道具栏。</summary>
+        // 2.4 生成
         public const int MakeTech = 8;
-
-        /// <summary>镀金改造:给一格基因附随机版本(闪箔 / 镭射 / 多彩),<see cref="EditionChanceDen"/> 分之一成功。</summary>
         public const int GeneEdition = 9;
+        public const int MakeLast = 10;
+        public const int MakeMods = 11;
+        public const int MakeGene = 20;
 
-        public const int Count = 9;
+        // 2.5 给钱
+        public const int DoubleMoney = 7;
+        public const int Tribute = 14;
+
+        // 2.6 救场
+        public const int Dismantle = 22;
+
+        public const int Count = 22;
 
         /// <summary>崇基改造加的点数(待定标)。</summary>
         public const int PointsBonus = 2;
 
-        /// <summary>敛金改造一次最多加的钱(规则 §4.3.1 #10 的上限 20)。</summary>
+        /// <summary>敛金改造一次最多加的钱(规则 §4.3.1 #7 的上限 20)。</summary>
         public const int DoubleMoneyCap = 20;
 
-        /// <summary>镀金改造的成功率分母(规则 §4.3.1 #11 的 1/4)。</summary>
+        /// <summary>镀金改造的成功率分母(规则 §4.3.1 #9 的 1/4)。</summary>
         public const int EditionChanceDen = 4;
+
+        /// <summary>调流改造一次最多给的钱(科技与改造清单 §2.5)。</summary>
+        public const int TributeCap = 50;
 
         public static bool IsKnown(int id) => id >= 1 && id <= Count;
 
@@ -130,9 +146,19 @@ namespace GameRules
                 case Wild:
                 case Points:
                 case Destroy:
+                case ToO:
+                case ToI:
+                case ToT:
+                case Mirror:
+                case Tilt:
                     return ModTarget.Block;
                 case GeneEdition:
                     return ModTarget.Gene;
+                case Twin:
+                case Devour:
+                    return ModTarget.TwoBlocks;
+                case Dismantle:
+                    return ModTarget.BoardBlock;
                 default:
                     return ModTarget.None;
             }
@@ -148,6 +174,18 @@ namespace GameRules
                 case Gold: return Enhancement.Gold;
                 case Wild: return Enhancement.Wild;
                 default: return Enhancement.None;
+            }
+        }
+
+        /// <summary>改形状的改造给的目标形状;不改形状返回 null。</summary>
+        public static TetrominoKind? ShapeOf(int id)
+        {
+            switch (id)
+            {
+                case ToO: return TetrominoKind.O;
+                case ToI: return TetrominoKind.I;
+                case ToT: return TetrominoKind.T;
+                default: return null;
             }
         }
     }

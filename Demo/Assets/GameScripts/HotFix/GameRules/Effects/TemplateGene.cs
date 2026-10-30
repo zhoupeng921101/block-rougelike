@@ -127,6 +127,15 @@ namespace GameRules
 
         /// <summary>方块库里带强化的块 ≥ Arg。</summary>
         LibraryEnhancedAtLeast,
+
+        /// <summary>这次被消格所属块的点数全部相同。</summary>
+        PointsAllEqual,
+
+        /// <summary>本盲注放下过的形状包含 Arg 位掩码里的全部形状(七形 = 127)。</summary>
+        PlacedKindsAll,
+
+        /// <summary>这一场是首领盲注。</summary>
+        BossBlind,
     }
 
     /// <summary>模板规则的产出按什么计数放大;计数为 0 时不产出。</summary>
@@ -188,6 +197,18 @@ namespace GameRules
 
         /// <summary>这次被消格里的金箔块数。</summary>
         GoldBlocksCleared,
+
+        /// <summary>本局用过的改造张数。</summary>
+        ModsUsed,
+
+        /// <summary>本局跳过的节点数。</summary>
+        SkippedCount,
+
+        /// <summary>本局弃掉的块数。</summary>
+        DiscardedCount,
+
+        /// <summary>本局打过的首领数。</summary>
+        BossesBeaten,
     }
 
     /// <summary>模板规则的产出。</summary>
@@ -429,6 +450,18 @@ namespace GameRules
                         }
                         return n >= r.Arg;
                     }
+                case GeneCond.PointsAllEqual:
+                    {
+                        if (ctx.Owners.Count == 0) return false;
+                        int first = ctx.Run.FindInstance(ctx.Owners[0]).Points;
+                        foreach (int id in ctx.Owners)
+                        {
+                            if (ctx.Run.FindInstance(id).Points != first) return false;
+                        }
+                        return true;
+                    }
+                case GeneCond.PlacedKindsAll: return (blind.PlacedKinds & r.Arg) == r.Arg;
+                case GeneCond.BossBlind: return blind.Spec.BossId != Bosses.None;
                 default: throw new ArgumentOutOfRangeException(nameof(r), r.Cond, "未处理的模板条件");
             }
         }
@@ -541,6 +574,10 @@ namespace GameRules
                         }
                         return n;
                     }
+                case GeneScale.ModsUsed: return ctx.State.ModsUsed;
+                case GeneScale.SkippedCount: return ctx.State.SkipCount;
+                case GeneScale.DiscardedCount: return ctx.State.DiscardedCount;
+                case GeneScale.BossesBeaten: return ctx.State.BossesBeaten;
                 default: throw new ArgumentOutOfRangeException(nameof(scale), scale, "未处理的模板计数");
             }
         }

@@ -65,8 +65,8 @@ namespace GameRules.Tests
 
             string text = RunSnapshot.Write(run);
             StringAssert.Contains("\"dead\": [56, 63]", text);
-            StringAssert.Contains("\"genes\": [\n    { \"id\": 9, \"edition\": \"None\", \"counter\": 0, \"costPending\": false },\n"
-                + "    { \"id\": 7, \"edition\": \"None\", \"counter\": 0, \"costPending\": false }\n  ]", text);
+            StringAssert.Contains("\"genes\": [\n    { \"id\": 9, \"edition\": \"None\", \"counter\": 0, \"costPending\": false, \"state\": 0, \"sellBonus\": 0 },\n"
+                + "    { \"id\": 7, \"edition\": \"None\", \"counter\": 0, \"costPending\": false, \"state\": 0, \"sellBonus\": 0 }\n  ]", text);
             StringAssert.Contains("\"enhancement\": \"Wild\", \"edition\": \"Polychrome\"", text);
         }
 
@@ -256,7 +256,7 @@ namespace GameRules.Tests
             yield return Bad("计数器不大于最大 id", "\"nextInstanceId\": 29,", "\"nextInstanceId\": 28,", SnapshotError.Invalid, "library[27].id");
             yield return Bad("类型等级为 0", "\"SingleLine\": 1", "\"SingleLine\": 0", SnapshotError.Invalid, "typeLevels.SingleLine");
             yield return Bad("类型等级超出类型表", "\"AllClear\": 1,", "\"AllClear\": 2,", SnapshotError.Invalid, "typeLevels.AllClear");
-            yield return Bad("基因没登记", "\"genes\": [],", "\"genes\": [\n    { \"id\": 5, \"edition\": \"None\", \"counter\": 0, \"costPending\": false }\n  ],", SnapshotError.Invalid, "genes[0].id");
+            yield return Bad("基因没登记", "\"genes\": [],", "\"genes\": [\n    { \"id\": 5, \"edition\": \"None\", \"counter\": 0, \"costPending\": false, \"state\": 0, \"sellBonus\": 0 }\n  ],", SnapshotError.Invalid, "genes[0].id");
             yield return Bad("步数为负", "\"step\": 0,", "\"step\": -1,", SnapshotError.Invalid, "blind.step");
             yield return Bad("弃置次数超出规格", "\"discardsLeft\": 3,", "\"discardsLeft\": 4,", SnapshotError.Invalid, "blind.discardsLeft");
             yield return Bad("输了却没有原因", "\"outcome\": \"InProgress\",", "\"outcome\": \"Lost\",", SnapshotError.Invalid, "blind.failReason");

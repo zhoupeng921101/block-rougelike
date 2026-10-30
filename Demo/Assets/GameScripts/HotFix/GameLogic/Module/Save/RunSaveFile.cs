@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -76,13 +77,16 @@ public sealed class RunSaveFile
     /// 正档不在就当无档,不回退到 <c>.bak</c>。
     /// 从 <c>.bak</c> 读成时把它抄回正档:不抄的话,玩家这次不点「继续」就退出,下次启动正档不在、档就没了。
     /// </summary>
-    public RunState Load(RuleConfig config)
+    public RunState Load(RuleConfig config) => Load(config, null);
+
+    /// <summary>读档;元进程解锁的基因由调用方给(存档里不存)。</summary>
+    public RunState Load(RuleConfig config, IReadOnlyCollection<int> unlockedGenes)
     {
         if (config == null) throw new ArgumentNullException(nameof(config));
         DeleteQuiet(TmpPath);
         if (!File.Exists(MainPath)) return null;
 
-        switch (TryRead(MainPath, config, out RunState state))
+        switch (TryRead(MainPath, config, unlockedGenes, out RunState state))
         {
             case Verdict.InProgress:
                 return state;
@@ -93,7 +97,7 @@ public sealed class RunSaveFile
         Quarantine(MainPath);
         if (!File.Exists(BakPath)) return null;
 
-        switch (TryRead(BakPath, config, out state))
+        switch (TryRead(BakPath, config, unlockedGenes, out state))
         {
             case Verdict.InProgress:
                 _warn($"正档读不了,改用 {Path.GetFileName(BakPath)}(退回上一份)");
@@ -122,7 +126,7 @@ public sealed class RunSaveFile
         InProgress,
     }
 
-    private Verdict TryRead(string path, RuleConfig config, out RunState state)
+    private Verdict TryRead(string path, RuleConfig config, IReadOnlyCollection<int> unlockedGenes, out RunState state)
     {
         state = null;
         string name = Path.GetFileName(path);
@@ -146,7 +150,7 @@ public sealed class RunSaveFile
         SnapshotReadResult result;
         try
         {
-            result = RunSnapshot.Read(text, config);
+            result = RunSnapshot.Read(text, config, unlockedGenes);
         }
         catch (Exception e)
         {

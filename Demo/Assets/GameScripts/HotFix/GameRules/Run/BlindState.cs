@@ -45,6 +45,12 @@ namespace GameRules
         /// <summary>上一次消除的类型(<see cref="ClearType"/> 的值);本盲注还没消过为 -1。这一次的结算里读到的仍是上一次。</summary>
         public int LastClearType { get; internal set; } = -1;
 
+        /// <summary>保连基因给的这一次抵消失败已经用掉(每个盲注 1 次)。</summary>
+        public bool ComboShieldUsed { get; internal set; }
+
+        /// <summary>摔跤卖在了这一场:首领的后续效果不再生效(已经折进规格的目标分不回溯)。</summary>
+        public bool BossSuppressed { get; internal set; }
+
         /// <summary>抽牌堆,下标 0 先抽。</summary>
         public IReadOnlyList<int> Draw { get; }
 
@@ -98,11 +104,14 @@ namespace GameRules
         /// <summary>读档的还原口(<see cref="RunSnapshot"/>):各区原样接上,不查约束,读档随后调 <see cref="RunState.Validate"/>。</summary>
         internal static BlindState Restore(BlindSpec spec, BlindOutcome outcome, FailReason failReason, int step, int group, long score,
             int combo, int discardsLeft, int placedKinds, int[] typeCounts, int lastClearType, List<int> draw, TraySlot[] tray,
-            BoardState board, List<int> discarded, List<int> departed, List<int> removed, List<BlockInstance> temp) =>
+            BoardState board, List<int> discarded, List<int> departed, List<int> removed, List<BlockInstance> temp,
+            bool comboShieldUsed = false, bool bossSuppressed = false) =>
             new BlindState(spec, draw, tray, board, discarded, departed, removed, temp, typeCounts)
             {
                 PlacedKinds = placedKinds,
                 LastClearType = lastClearType,
+                ComboShieldUsed = comboShieldUsed,
+                BossSuppressed = bossSuppressed,
                 Outcome = outcome,
                 FailReason = failReason,
                 Step = step,
@@ -121,6 +130,8 @@ namespace GameRules
             {
                 PlacedKinds = PlacedKinds,
                 LastClearType = LastClearType,
+                ComboShieldUsed = ComboShieldUsed,
+                BossSuppressed = BossSuppressed,
                 Outcome = Outcome,
                 FailReason = FailReason,
                 Step = Step,

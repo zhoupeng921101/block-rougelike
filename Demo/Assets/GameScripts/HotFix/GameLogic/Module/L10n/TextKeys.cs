@@ -98,6 +98,7 @@ public static class TextKeys
         public const string CollectionLooks = "ui.collection.looks";
         public const string DifficultyTitle = "ui.difficulty.title";
         public const string DifficultyStart = "ui.difficulty.start";
+        public const string DifficultyLocked = "ui.difficulty.locked";
     }
 
     /// <summary>背包栏(基因、道具、券、方块库),战斗、选关、商店三屏共用。</summary>
@@ -111,6 +112,8 @@ public static class TextKeys
         public const string Use = "ui.inventory.use";
         public const string DragHint = "ui.inventory.drag_hint";
         public const string PickBlock = "ui.inventory.pick_block";
+        public const string PickBoardBlock = "ui.inventory.pick_board_block";
+        public const string PickSecondBlock = "ui.inventory.pick_second_block";
         public const string PickGene = "ui.inventory.pick_gene";
         public const string Cancel = "ui.inventory.cancel";
         public const string Block = "ui.inventory.block";

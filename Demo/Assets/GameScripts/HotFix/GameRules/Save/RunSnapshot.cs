@@ -23,6 +23,8 @@ namespace GameRules
             "format", "schema", "seed", "rng", "difficulty", "money", "map", "shop",
             "nextInstanceId", "library", "typeLevels", "typeCounts", "consumables", "vouchers", "genes", "blind",
             "pending", "bossIntel", "interestBonus", "interestBonusSegment",
+            "modsUsed", "techsUsed", "soldCount", "skipCount", "boostersOpened", "bossesBeaten", "sellBonus", "lastConsumable",
+            "discardedCount", "lastPlaceRow", "lastPlaceCol", "destroyedCount",
         };
         private static readonly string[] RngMembers = { "scheme", "streams" };
         private static readonly string[] StreamMembers = { "key", "s0", "s1" };
@@ -34,12 +36,12 @@ namespace GameRules
         private static readonly string[] ConsumableMembers = { "kind", "id" };
         private static readonly string[] PackMembers = { "boosterId", "picksLeft", "options" };
         private static readonly string[] BlockMembers = { "id", "kind", "points", "enhancement", "edition" };
-        private static readonly string[] GeneMembers = { "id", "edition", "counter", "costPending" };
+        private static readonly string[] GeneMembers = { "id", "edition", "counter", "costPending", "state", "sellBonus" };
         private static readonly string[] BlindMembers =
         {
             "spec", "outcome", "failReason", "step", "group", "score", "combo", "discardsLeft",
             "draw", "tray", "owner", "dead", "discarded", "departed", "removed", "tempBlocks",
-            "placedKinds", "typeCounts", "lastClear",
+            "placedKinds", "typeCounts", "lastClear", "comboShield", "bossSuppressed",
         };
         private static readonly string[] SpecMembers = { "segment", "layer", "target", "discards", "groupSize", "boss" };
         private static readonly string[] PendingMembers =
@@ -103,6 +105,8 @@ namespace GameRules
                     .Name("edition").String(NameOf(g.Edition))
                     .Name("counter").Int(g.Counter)
                     .Name("costPending").Bool(g.CostPending)
+                    .Name("state").Int(g.State)
+                    .Name("sellBonus").Int(g.SellBonus)
                     .End();
             }
             w.End();
@@ -121,6 +125,23 @@ namespace GameRules
             w.Name("bossIntel").Bool(run.BossIntel);
             w.Name("interestBonus").Int(run.PendingInterestBonus);
             w.Name("interestBonusSegment").Int(run.PendingInterestBonusSegment);
+            w.Name("modsUsed").Int(run.ModsUsed);
+            w.Name("techsUsed").Int(run.TechsUsedMask);
+            w.Name("soldCount").Int(run.SoldCount);
+            w.Name("skipCount").Int(run.SkipCount);
+            w.Name("boostersOpened").Int(run.BoostersOpened);
+            w.Name("bossesBeaten").Int(run.BossesBeaten);
+            w.Name("sellBonus").Int(run.SellBonus);
+            if (run.LastConsumable == null) w.Name("lastConsumable").Null();
+            else
+            {
+                ConsumableItem last = run.LastConsumable.Value;
+                w.Name("lastConsumable").BeginObject(JsonLayout.Inline).Name("kind").String(NameOf(last.Kind)).Name("id").Int(last.Id).End();
+            }
+            w.Name("discardedCount").Int(run.DiscardedCount);
+            w.Name("lastPlaceRow").Int(run.LastPlaceRow);
+            w.Name("lastPlaceCol").Int(run.LastPlaceCol);
+            w.Name("destroyedCount").Int(run.DestroyedCount);
 
             w.End();
             return w.Finish();
@@ -182,6 +203,8 @@ namespace GameRules
             w.Name("typeCounts");
             WriteIds(w, blind.TypeCounts);
             w.Name("lastClear").Int(blind.LastClearType);
+            w.Name("comboShield").Bool(blind.ComboShieldUsed);
+            w.Name("bossSuppressed").Bool(blind.BossSuppressed);
             w.End();
         }
 
@@ -269,13 +292,16 @@ namespace GameRules
         /// 规范文本 → 状态。任何文本都不抛异常:形状严格(多、少成员或次序不对都算坏档),枚举按名字精确匹配,
         /// 还原后再过 <see cref="RunState.Validate"/>;返回状态,或错误码加第一处出错的成员路径。
         /// </summary>
-        public static SnapshotReadResult Read(string text, RuleConfig config)
+        public static SnapshotReadResult Read(string text, RuleConfig config) => Read(text, config, null);
+
+        /// <summary>读档;元进程解锁的基因由调用方给,存档里不存(局外循环 §6)。null = 全解锁。</summary>
+        public static SnapshotReadResult Read(string text, RuleConfig config, IReadOnlyCollection<int> unlockedGenes)
         {
             if (config == null) throw new ArgumentNullException(nameof(config));
             SnapshotReadResult fault = JsonSubsetReader.Parse(text, out JsonNode root);
             if (fault != null) return fault;
             var p = new Parser();
-            RunState run = ReadRoot(p, root, config);
+            RunState run = ReadRoot(p, root, config, unlockedGenes);
             if (run == null) return p.Fault;
             string invalid = run.Validate();
             if (invalid == null) return SnapshotReadResult.Success(run);
@@ -289,7 +315,7 @@ namespace GameRules
         /// </summary>
         private static JsonNode Migrate(JsonNode root, long schema) => schema == Schema ? root : null;
 
-        private static RunState ReadRoot(Parser p, JsonNode root, RuleConfig config)
+        private static RunState ReadRoot(Parser p, JsonNode root, RuleConfig config, IReadOnlyCollection<int> unlockedGenes)
         {
             if (root.Kind != JsonKind.Object) return p.Fail(SnapshotError.Shape, "", "根应是对象");
             // format、schema 先于整体形状查:别的版本的档形状本来就不同,要先认出它是哪一版
@@ -315,7 +341,7 @@ namespace GameRules
             RunDifficulty difficulty = p.ReadEnum<RunDifficulty>(v[4], "difficulty");
             int money = p.ReadInt(v[5], "money");
             if (p.Failed) return null;
-            if (money < 0) return p.Fail(SnapshotError.BadValue, "money", "金钱不能为负");
+            if (money < -RunState.DebtLimit) return p.Fail(SnapshotError.BadValue, "money", "金钱低于赊账下限");
             if (!ReadMap(p, v[6], out RunMap map, out MapProgress progress)) return null;
             if (!ReadShop(p, v[7], config.Catalog, difficulty, config.Tuning, out ShopState shop)) return null;
             int nextInstanceId = p.ReadInt(v[8], "nextInstanceId");
@@ -344,8 +370,10 @@ namespace GameRules
                 Edition edition = p.ReadEnum<Edition>(g[1], path + ".edition");
                 int counter = p.ReadInt(g[2], path + ".counter");
                 bool costPending = p.ReadBool(g[3], path + ".costPending");
+                int state = p.ReadInt(g[4], path + ".state");
+                int geneSellBonus = p.ReadInt(g[5], path + ".sellBonus");
                 if (p.Failed) return null;
-                genes.Add(new GeneSlot(geneId, edition, counter, costPending));
+                genes.Add(new GeneSlot(geneId, edition, counter, costPending, state, geneSellBonus));
             }
             List<JsonNode> consumableItems = p.ReadArray(v[12], "consumables");
             if (consumableItems == null) return null;
@@ -384,10 +412,35 @@ namespace GameRules
             bool bossIntel = p.ReadBool(v[17], "bossIntel");
             int interestBonus = p.ReadInt(v[18], "interestBonus");
             int interestBonusSegment = p.ReadInt(v[19], "interestBonusSegment");
+            int modsUsed = p.ReadInt(v[20], "modsUsed");
+            int techsUsed = p.ReadInt(v[21], "techsUsed");
+            int soldCount = p.ReadInt(v[22], "soldCount");
+            int skipCount = p.ReadInt(v[23], "skipCount");
+            int boostersOpened = p.ReadInt(v[24], "boostersOpened");
+            int bossesBeaten = p.ReadInt(v[25], "bossesBeaten");
+            int sellBonus = p.ReadInt(v[26], "sellBonus");
+            ConsumableItem? lastConsumable = null;
+            if (v[27].Kind != JsonKind.Null)
+            {
+                JsonNode[] lc = p.ReadObject(v[27], "lastConsumable", ConsumableMembers);
+                if (lc == null) return null;
+                ItemKind lk = p.ReadEnum<ItemKind>(lc[0], "lastConsumable.kind");
+                int li = p.ReadInt(lc[1], "lastConsumable.id");
+                if (p.Failed) return null;
+                lastConsumable = new ConsumableItem(lk, li);
+            }
+            if (p.Failed) return null;
+
+            int discardedCount = p.ReadInt(v[28], "discardedCount");
+            int lastPlaceRow = p.ReadInt(v[29], "lastPlaceRow");
+            int lastPlaceCol = p.ReadInt(v[30], "lastPlaceCol");
+            int destroyedCount = p.ReadInt(v[31], "destroyedCount");
             if (p.Failed) return null;
 
             return RunState.Restore(config, RngStreams.Restore(seed, streams), difficulty, money, map, progress, shop, nextInstanceId,
-                library, levels, counts, genes, consumables, vouchers, blind, pending, bossIntel, interestBonus, interestBonusSegment);
+                library, levels, counts, genes, consumables, vouchers, blind, pending, bossIntel, interestBonus, interestBonusSegment,
+                modsUsed, techsUsed, soldCount, skipCount, boostersOpened, bossesBeaten, sellBonus, lastConsumable, discardedCount,
+                lastPlaceRow, lastPlaceCol, destroyedCount, unlockedGenes);
         }
 
         /// <summary>货架。null 是合法的(不在商店)。</summary>
@@ -623,6 +676,8 @@ namespace GameRules
             int placedKinds = p.ReadInt(b[16], "blind.placedKinds");
             List<int> typeCounts = p.ReadIntList(b[17], "blind.typeCounts");
             int lastClear = p.ReadInt(b[18], "blind.lastClear");
+            bool comboShield = p.ReadBool(b[19], "blind.comboShield");
+            bool bossSuppressed = p.ReadBool(b[20], "blind.bossSuppressed");
             if (p.Failed) return null;
             if (placedKinds < 0 || placedKinds >= 1 << Tetromino.KindCount)
             {
@@ -650,7 +705,7 @@ namespace GameRules
 
             return BlindState.Restore(new BlindSpec(segment, layer, target, discards, groupSize, boss), outcome, failReason, step, group, score,
                 combo, discardsLeft, placedKinds, typeCounts.ToArray(), lastClear, draw, tray, BoardState.Restore(owner, dead), discarded,
-                departed, removed, temp);
+                departed, removed, temp, comboShield, bossSuppressed);
         }
 
         private static int[] ReadOwner(Parser p, JsonNode node)

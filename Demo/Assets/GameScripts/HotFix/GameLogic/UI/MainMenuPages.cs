@@ -34,6 +34,7 @@ public sealed class MainMenuPages
     public void OpenDifficulty()
     {
         _difficulty = RunFlow.Difficulty;
+        if (!MetaProgress.IsDifficultyUnlocked(_difficulty)) _difficulty = RunDifficulty.Standard;
         BuildDifficulty();
     }
 
@@ -45,12 +46,15 @@ public sealed class MainMenuPages
         foreach (RunDifficulty d in (RunDifficulty[])Enum.GetValues(typeof(RunDifficulty)))
         {
             RunDifficulty pick = d;
+            bool unlocked = MetaProgress.IsDifficultyUnlocked(d);
             string text = table.Get(TextKeys.Of(d)) + "\n<size=20>" + table.Get(TextKeys.Desc(d)) + "</size>";
+            if (!unlocked) text += "\n<size=18>" + table.Get(TextKeys.Menu.DifficultyLocked) + "</size>";
             RuntimeUI.Button(page, _font, text, new Vector2(560f, y), new Vector2(800f, 110f), () =>
             {
+                if (!MetaProgress.IsDifficultyUnlocked(pick)) return;
                 _difficulty = pick;
                 BuildDifficulty();
-            }, true, 30, d == _difficulty ? RuntimeUI.ButtonAccent : RuntimeUI.ButtonColor);
+            }, unlocked, 30, d == _difficulty ? RuntimeUI.ButtonAccent : RuntimeUI.ButtonColor);
             y -= 130f;
         }
         RuntimeUI.Button(page, _font, table.Get(TextKeys.Menu.DifficultyStart), new Vector2(560f, y - 30f), new Vector2(380f, 84f), () =>

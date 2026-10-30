@@ -91,18 +91,18 @@ namespace GameRules
 
         private static ClearTypeTable BuildClearTypes()
         {
-            // 1 级底注 / 倍率是阶段 3 的占位;每级增量照规则 §4.2.1(湮域 → 清屏、折轨 → 平行线、矢列 → 拐角)
+            // 1 级底注 / 倍率是阶段 3 的占位;每级增量照科技与改造清单 §1(2026-10-30 拍板)
             var table = new (ClearType Type, long Chips, long Mult, long StepChips, long StepMult)[]
             {
                 (ClearType.AllClear, 60, 4, 40, 4),
                 (ClearType.FiveLine, 55, 4, 35, 3),
-                (ClearType.SameShapeCross, 50, 4, 40, 4),
+                (ClearType.SameShapeCross, 50, 4, 35, 3),
                 (ClearType.MultiLine, 45, 3, 30, 3),
-                (ClearType.SameShape, 40, 3, 15, 2),
-                (ClearType.TripleLine, 35, 3, 20, 2),
-                (ClearType.Corner, 30, 2, 20, 1),
-                (ClearType.Cross, 25, 2, 25, 2),
-                (ClearType.Parallel, 20, 2, 30, 3),
+                (ClearType.SameShape, 40, 3, 25, 2),
+                (ClearType.TripleLine, 35, 3, 25, 2),
+                (ClearType.Corner, 30, 2, 20, 2),
+                (ClearType.Cross, 25, 2, 20, 2),
+                (ClearType.Parallel, 20, 2, 20, 1),
                 (ClearType.DoubleLine, 15, 2, 15, 1),
                 (ClearType.SingleLine, 10, 1, 10, 1),
             };

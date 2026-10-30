@@ -294,6 +294,17 @@ namespace GameRules
         }
     }
 
+    /// <summary>免死把这次判负改判通关,并湮灭那张基因(规则 §4.1.1 G145)。紧接在 <see cref="BlindEnded"/> 之前。</summary>
+    public sealed class BlindRescued : RuleEvent
+    {
+        public int GeneId { get; }
+
+        internal BlindRescued(int geneId)
+        {
+            GeneId = geneId;
+        }
+    }
+
     /// <summary>每步最后一个事件,带这一步之后界面要刷的数。</summary>
     public sealed class StepEnded : RuleEvent
     {

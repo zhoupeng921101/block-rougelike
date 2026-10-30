@@ -145,10 +145,24 @@
     "tempBlocks": [],
     "placedKinds": 70,
     "typeCounts": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    "lastClear": 10
+    "lastClear": 10,
+    "comboShield": false,
+    "bossSuppressed": false
   },
   "pending": { "shopDiscount": 1000, "extraShopGoods": 0, "freeReroll": false, "freeBooster": false, "blindTarget": 1000, "blindDiscards": 0 },
   "bossIntel": false,
   "interestBonus": 0,
-  "interestBonusSegment": 0
+  "interestBonusSegment": 0,
+  "modsUsed": 0,
+  "techsUsed": 0,
+  "soldCount": 0,
+  "skipCount": 0,
+  "boostersOpened": 0,
+  "bossesBeaten": 0,
+  "sellBonus": 0,
+  "lastConsumable": null,
+  "discardedCount": 2,
+  "lastPlaceRow": 0,
+  "lastPlaceCol": 0,
+  "destroyedCount": 0
 }

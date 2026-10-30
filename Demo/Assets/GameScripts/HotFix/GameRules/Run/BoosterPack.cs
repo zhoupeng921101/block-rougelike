@@ -86,6 +86,7 @@ namespace GameRules
             var legendary = new List<CatalogEntry>();
             foreach (CatalogEntry e in run.Config.Catalog.Genes)
             {
+                if (!run.IsGeneUnlocked(e.Id)) continue;
                 if (e.Rarity == Rarity.Legendary) legendary.Add(e);
                 else normal.Add(e);
             }
@@ -149,7 +150,7 @@ namespace GameRules
             var pool = new List<ShopOffer>();
             foreach (CatalogEntry e in catalog.Genes)
             {
-                if (e.Rarity != Rarity.Legendary) pool.Add(new ShopOffer(e.Kind, e.Id, 0));
+                if (e.Rarity != Rarity.Legendary && run.IsGeneUnlocked(e.Id)) pool.Add(new ShopOffer(e.Kind, e.Id, 0));
             }
             foreach (CatalogEntry e in UnlockedTechEntries(run)) pool.Add(new ShopOffer(e.Kind, e.Id, 0));
             foreach (CatalogEntry e in catalog.Mods) pool.Add(new ShopOffer(e.Kind, e.Id, 0));

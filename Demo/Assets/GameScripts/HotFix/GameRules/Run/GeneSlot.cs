@@ -15,19 +15,31 @@ namespace GameRules
         public int Counter { get; internal set; }
 
         /// <summary>
+        /// 本盲注内的一次性状态(随机指定的形状/消除类型、要移走的临时块 id、本盲注已生效标记等)。
+        /// 基因打开盲注时自己重置;含义由各基因定义,不用的基因恒为 0(效果系统 §2:状态挂在载体上,效果对象无状态)。
+        /// </summary>
+        public int State { get; internal set; }
+
+        /// <summary>这张基因自己的卖价加成(孵化、增值这类「卖价 +N」的件写在上面),卖价公式读它。</summary>
+        public int SellBonus { get; internal set; }
+
+        /// <summary>
         /// 代价还没兑现:「本盲注目标分 +X%」只作用于拿到之后的第一个盲注(规则 §4.1),
         /// 开下一个盲注时读它、随即清掉(效果系统 §6)。
         /// </summary>
         public bool CostPending { get; internal set; }
 
-        public GeneSlot(int geneId, Edition edition = Edition.None, int counter = 0, bool costPending = false)
+        public GeneSlot(int geneId, Edition edition = Edition.None, int counter = 0, bool costPending = false, int state = 0,
+            int sellBonus = 0)
         {
             GeneId = geneId;
             Edition = edition;
             Counter = counter;
             CostPending = costPending;
+            State = state;
+            SellBonus = sellBonus;
         }
 
-        public GeneSlot Clone() => new GeneSlot(GeneId, Edition, Counter, CostPending);
+        public GeneSlot Clone() => new GeneSlot(GeneId, Edition, Counter, CostPending, State, SellBonus);
     }
 }

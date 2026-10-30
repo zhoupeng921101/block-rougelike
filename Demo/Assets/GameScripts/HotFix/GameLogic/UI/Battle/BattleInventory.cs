@@ -38,6 +38,7 @@ public sealed class BattleInventory
     private RunState _run;
     private int _selectedGene = -1;
     private int _selectedItem = -1;
+    private int _firstTarget;
     private RectTransform _actions;
     private TextMeshProUGUI _ghost;
 
@@ -65,6 +66,7 @@ public sealed class BattleInventory
     {
         _run = run;
         _selectedGene = _selectedItem = -1;
+        _firstTarget = 0;
         _hint.text = string.Empty;
         Refresh();
     }
@@ -142,7 +144,9 @@ public sealed class BattleInventory
     {
         if (_run == null || index >= _run.Consumables.Count) return;
         _selectedGene = -1;
+        if (_selectedItem != index) _firstTarget = 0;
         _selectedItem = _selectedItem == index ? -1 : index;
+        if (_selectedItem < 0) _firstTarget = 0;
         _hint.text = _selectedItem >= 0 && NeedsTarget(_run.Consumables[index]) ? TextTable.Instance.Get(TextKeys.Inventory.DragHint) : string.Empty;
         BuildActions();
     }
@@ -169,10 +173,25 @@ public sealed class BattleInventory
             case ModTarget.Block:
                 target = BlockUnder(e);
                 break;
+            case ModTarget.BoardBlock:
+                target = BoardBlockUnder(e);
+                break;
             case ModTarget.Gene:
                 target = FrameUnder(_geneFrames, e);
                 if (target >= _run.Genes.Count) target = -1;
                 break;
+            case ModTarget.TwoBlocks:
+                target = BlockUnder(e);
+                if (target < 0) return;
+                if (_firstTarget == 0 || _firstTarget == target)
+                {
+                    _firstTarget = target;
+                    _hint.text = TextTable.Instance.Get(TextKeys.Inventory.PickSecondBlock);
+                    return;
+                }
+                Use(index, _firstTarget, target);
+                _firstTarget = 0;
+                return;
             default:
                 // 不用目标的:拖出道具栏就算用
                 if (FrameUnder(_itemFrames, e) >= 0) return;
@@ -183,10 +202,12 @@ public sealed class BattleInventory
         Use(index, target);
     }
 
-    private void Use(int index, int target)
+    private void Use(int index, int target) => Use(index, target, 0);
+
+    private void Use(int index, int target, int secondTarget)
     {
         _selectedGene = _selectedItem = -1;
-        UseResult result = _run.UseConsumable(index, target);
+        UseResult result = _run.UseConsumable(index, target, secondTarget);
         _hint.text = result.Accepted ? string.Empty : ItemNames.Reject(result.Reject);
         _used(result);
     }
@@ -207,7 +228,7 @@ public sealed class BattleInventory
             frame = _geneFrames[_selectedGene];
             int slot = _selectedGene;
             GeneSlot g = _run.Genes[slot];
-            buttons.Add((table.Format(TextKeys.Inventory.Sell, _run.SellPriceOf(ItemKind.Gene, g.GeneId, g.Edition)), () => Sell(true, slot)));
+            buttons.Add((table.Format(TextKeys.Inventory.Sell, _run.SellPriceOf(g)), () => Sell(true, slot)));
         }
         else if (_selectedItem >= 0 && _selectedItem < _itemFrames.Count)
         {
@@ -248,6 +269,12 @@ public sealed class BattleInventory
             if (v?.Slot == null || v.InstanceId == 0) continue;
             if (RectTransformUtility.RectangleContainsScreenPoint(v.Slot.rectTransform, e.position, e.pressEventCamera)) return v.InstanceId;
         }
+        return BoardBlockUnder(e);
+    }
+
+    /// <summary>只认盘上的块(拆解)。</summary>
+    private int BoardBlockUnder(PointerEventData e)
+    {
         (int col, int row) = _board.ScreenToCell(e.position);
         if (col < 0 || row < 0 || col >= BoardCells.Cols || row >= BoardCells.Rows || _run.Blind == null) return -1;
         int owner = _run.Blind.Board.OwnerAt(BoardCells.Index(row, col));

@@ -174,6 +174,7 @@ namespace GameRules
             ShopOffer[] fresh = Roll(rng, run, _guaranteeGene, run.Modifiers.PricePermille, _goods.Length);
             for (int i = 0; i < _goods.Length; i++) _goods[i] = fresh[i];
             if (!_freeReroll) Rerolls++;
+            StepPipeline.AfterShopRerolled(run);
             return true;
         }
 
@@ -267,6 +268,7 @@ namespace GameRules
             if (!run.TrySpend(offer.Price)) return ShopBuyResult.NotEnoughMoney;
             _pack = BoosterPack.Open(rng, run, offer.Id);
             _booster = null;
+            run.RecordBoosterOpened(offer.Id);
             if (_pack.IsClosed) _pack = null;
             return ShopBuyResult.Ok;
         }
@@ -384,36 +386,56 @@ namespace GameRules
             run.Config.Tuning.GeneWeights(run.Modifiers.ShiftRarity, out int common, out int uncommon, out int rare);
             int roll = rng.Index(1000);
             int tier = roll < common ? Rarity.Common : roll < common + uncommon ? Rarity.Uncommon : Rarity.Rare;
-            CatalogEntry e = PickByRarity(rng, catalog, tier) ?? PickNonLegendary(rng, catalog);
+            CatalogEntry e = PickByRarity(rng, catalog, tier, run) ?? PickNonLegendary(rng, catalog, run);
             Edition edition = RollGeneEdition(looks);
             int price = PriceFor(e.Price + EditionSurcharge(edition), run.Difficulty, pricePermille, run.Config.Tuning);
             return new ShopOffer(ItemKind.Gene, e.Id, price, false, Enhancement.None, edition);
         }
 
+        /// <summary>这张基因现在能进商店吗:传说不进;已经持有的,只有重现基因在时才再出现。</summary>
+        private static bool GeneAvailable(CatalogEntry e, RunState run)
+        {
+            if (e.Rarity == Rarity.Legendary) return false;
+            if (!run.IsGeneUnlocked(e.Id)) return false;
+            if (run.ShopOffersOwned) return true;
+            foreach (GeneSlot g in run.Genes)
+            {
+                if (g.GeneId == e.Id) return false;
+            }
+            return true;
+        }
+
         /// <summary>在某个稀有度档里随机挑一个;这一档为空返回 null(调用方退回全池)。</summary>
-        private static CatalogEntry? PickByRarity(IRandomSource rng, ContentCatalog catalog, int rarity)
+        private static CatalogEntry? PickByRarity(IRandomSource rng, ContentCatalog catalog, int rarity, RunState run)
         {
             int count = 0;
             foreach (CatalogEntry e in catalog.Genes)
             {
-                if (e.Rarity == rarity) count++;
+                if (e.Rarity == rarity && GeneAvailable(e, run)) count++;
             }
             if (count == 0) return null;
             int index = rng.Index(count);
             foreach (CatalogEntry e in catalog.Genes)
             {
-                if (e.Rarity != rarity) continue;
+                if (e.Rarity != rarity || !GeneAvailable(e, run)) continue;
                 if (index-- == 0) return e;
             }
             return null;
         }
 
-        private static CatalogEntry PickNonLegendary(IRandomSource rng, ContentCatalog catalog)
+        private static CatalogEntry PickNonLegendary(IRandomSource rng, ContentCatalog catalog, RunState run)
         {
             var pool = new List<CatalogEntry>();
             foreach (CatalogEntry e in catalog.Genes)
             {
-                if (e.Rarity != Rarity.Legendary) pool.Add(e);
+                if (e.Rarity != Rarity.Legendary && GeneAvailable(e, run)) pool.Add(e);
+            }
+            if (pool.Count == 0)
+            {
+                foreach (CatalogEntry e in catalog.Genes)
+                {
+                    if (e.Rarity != Rarity.Legendary) pool.Add(e);
+                }
             }
             return pool[rng.Index(pool.Count)];
         }
@@ -423,7 +445,8 @@ namespace GameRules
             List<int> unlocked = run.UnlockedTechs();
             int id = unlocked[rng.Index(unlocked.Count)];
             CatalogEntry e = run.Config.Catalog.Find(ItemKind.Tech, id).Value;
-            return new ShopOffer(ItemKind.Tech, e.Id, PriceFor(e.Price, run.Difficulty, pricePermille, run.Config.Tuning));
+            int price = run.TechFree ? 0 : PriceFor(e.Price, run.Difficulty, pricePermille, run.Config.Tuning);
+            return new ShopOffer(ItemKind.Tech, e.Id, price);
         }
 
         private static ShopOffer ModOffer(IRandomSource rng, RunState run, int pricePermille)
@@ -444,8 +467,8 @@ namespace GameRules
                 : roll < BlockPolyPermille + HoloPermille + FoilPermille ? Edition.Foil
                 : Edition.None;
             int price = PriceFor(e.Price + EnhancementSurcharge(enhancement) + EditionSurcharge(edition), run.Difficulty, pricePermille,
-                run.Config.Tuning);
-            return new ShopOffer(ItemKind.Block, e.Id, price, false, enhancement, edition);
+                run.Config.Tuning) + run.BlockPriceDelta;
+            return new ShopOffer(ItemKind.Block, e.Id, Math.Max(0, price), false, enhancement, edition);
         }
 
         private static ShopOffer RollVoucher(IRandomSource rng, RunState run, int pricePermille)
@@ -470,7 +493,9 @@ namespace GameRules
                 if (other == null) return null;
                 e = other.Value;
             }
-            return new ShopOffer(ItemKind.Booster, e.Id, PriceFor(e.Price, run.Difficulty, pricePermille, run.Config.Tuning));
+            int price = (e.Id == BoosterPack.TechPack || e.Id == BoosterPack.MixedPack) && run.TechFree ? 0
+                : PriceFor(e.Price, run.Difficulty, pricePermille, run.Config.Tuning);
+            return new ShopOffer(ItemKind.Booster, e.Id, price);
         }
     }
 }

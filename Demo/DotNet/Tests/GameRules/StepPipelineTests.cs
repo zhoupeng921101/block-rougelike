@@ -587,7 +587,7 @@ namespace GameRules.Tests
         public void Events_HoldOnlyIntegersEnumsBoolsAndOrderedIntLists()
         {
             Type[] events = typeof(RuleEvent).Assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(RuleEvent))).ToArray();
-            Assert.AreEqual(16, events.Length, "07 号票第 4 节的 13 种事件,加效果系统 §3.4 的给钱、湮灭与用消耗品三种");
+            Assert.AreEqual(17, events.Length, "07 号票第 4 节的 13 种事件,加效果系统 §3.4 的给钱、湮灭、用消耗品与免死改判四种");
             var bad = new List<string>();
             foreach (Type t in events)
             {

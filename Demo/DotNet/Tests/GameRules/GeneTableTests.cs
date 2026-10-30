@@ -39,6 +39,8 @@ namespace GameRules.Tests
             {
                 Assert.IsNotNull(MinimalContent.Effects.Find(EffectSource.Gene, e.Id), "基因 " + e.Id);
                 (int lo, int hi) = e.Rarity == Rarity.Common ? (4, 5) : e.Rarity == Rarity.Uncommon ? (6, 7) : e.Rarity == Rarity.Rare ? (8, 10) : (20, 20);
+                // 赊账(G092)照原作定价 $2:它本身不出分,在价格带外是有意的(基因清单 §2.8)
+                if (e.Id == 92) (lo, hi) = (2, 2);
                 Assert.That(e.Price, Is.InRange(lo, hi), "基因 " + e.Id + " 的价不在价格带里(局外循环 §4.3)");
             }
         }

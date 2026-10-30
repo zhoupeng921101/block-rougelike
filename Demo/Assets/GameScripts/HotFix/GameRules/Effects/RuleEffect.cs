@@ -81,6 +81,52 @@ namespace GameRules
         /// <summary>代价「每个盲注开始时,网格随机 N 格变死格」的 N(效果系统 §6 的 C 类代价),在盲注开始挂点之前标。</summary>
         public virtual int DeadCellsPerBlind => 0;
 
+        // ── C 类规则改写:判定代码按名字读的开关(效果系统 §3.3) ──
+
+        /// <summary>镜合:同形态判定里 S 与 Z 算一种、J 与 L 算一种。</summary>
+        public virtual bool MirrorSameShape => false;
+
+        /// <summary>转码:被消格的点数不加进底分,改成每 2 点 +0.5 倍率。</summary>
+        public virtual bool PointsToMult => false;
+
+        /// <summary>保连:每个盲注 1 次,一次放置没消除时连击不清零。</summary>
+        public virtual bool ComboShield => false;
+
+        /// <summary>赊账:钱可以花到 -<see cref="RunState.DeptLimit"/>。</summary>
+        public virtual bool AllowDebt => false;
+
+        /// <summary>重现:商店与补给包里可以出现已持有的基因。</summary>
+        public virtual bool ShopOffersOwned => false;
+
+        /// <summary>赦免:首领盲注的负面效果失效(摔跤临时压制见 <see cref="BlindState.BossSuppressed"/>)。</summary>
+        public virtual bool DisablesBoss => false;
+
+        /// <summary>免死:盲注失败时,得分达到目标分 1/4 就改判通关,随后湮灭自己。</summary>
+        public virtual bool RescuesBlind => false;
+
+        /// <summary>被消格的计点倍率(倍点 = 2);1 = 不改。</summary>
+        public virtual int PointsMultiplier => 1;
+
+        /// <summary>基因段结束时把底分与倍率取平均(均衡)。</summary>
+        public virtual bool BalancesAccumulators => false;
+
+        // ── B 类参数修正:每次用到时从持有的基因重算(效果系统 §3.2) ──
+
+        /// <summary>琉璃碎裂概率的分母倍率(坚璃 = 2,即分母翻倍、概率减半);1 = 不改。</summary>
+        public virtual int GlassShatterDenMultiplier => 1;
+
+        /// <summary>利息门槛的覆盖值;0 = 用配置值(复利 = 5)。</summary>
+        public virtual int InterestPer => 0;
+
+        /// <summary>利息封顶的千分比(囤金 = 2000,即翻倍);1000 = 不改。</summary>
+        public virtual int InterestCapPermille => 1000;
+
+        /// <summary>方块货的价格增量(选块 = -1)。</summary>
+        public virtual int BlockPriceDelta => 0;
+
+        /// <summary>商店里的科技与科技补给包免费(星价)。</summary>
+        public virtual bool FreeTechs => false;
+
         /// <summary>盲注开始(效果系统 §4.2):首领生效、代价的死格标完之后,发第一组之前。不能加分。</summary>
         public virtual void OnBlindStart(EffectContext ctx)
         {
@@ -88,6 +134,36 @@ namespace GameRules
 
         /// <summary>盲注结束:只在打赢、通关奖励与利息入账之后走(打输整局就结束了)。不能加分。</summary>
         public virtual void OnBlindEnd(EffectContext ctx)
+        {
+        }
+
+        /// <summary>盲注失败:判负之后、整局结束之前走一次;能救场的在这里调 <see cref="EffectContext.RescueBlind"/>。</summary>
+        public virtual void OnBlindFailed(EffectContext ctx)
+        {
+        }
+
+        /// <summary>用掉一件消耗品之后走(科技与改造都算)。不能加分,可以给钱、生成消耗品。</summary>
+        public virtual void OnConsumableUsed(EffectContext ctx)
+        {
+        }
+
+        /// <summary>开一个补给包之后走(买下即开;包里选东西不算再开一次)。</summary>
+        public virtual void OnBoosterOpened(EffectContext ctx)
+        {
+        }
+
+        /// <summary>商店刷新一次之后走。</summary>
+        public virtual void OnShopRerolled(EffectContext ctx)
+        {
+        }
+
+        /// <summary>卖掉一件东西之后走(基因、消耗品都算);卖自己时 <see cref="EffectContext.SoldSelf"/> 为真。</summary>
+        public virtual void OnSold(EffectContext ctx)
+        {
+        }
+
+        /// <summary>跳过地图节点之后走(标签已经结清)。</summary>
+        public virtual void OnSkipped(EffectContext ctx)
         {
         }
 
