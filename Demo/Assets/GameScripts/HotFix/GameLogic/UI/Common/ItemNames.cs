@@ -51,9 +51,9 @@ public static class ItemNames
             case ItemKind.Tech:
                 return Tech(catalog, offer.Id);
             case ItemKind.Mod:
-                return table.Get(TextKeys.Mod(offer.Id)) + " · " + table.Get(TextKeys.ModDesc(offer.Id));
+                return table.Get(TextKeys.Mod(offer.Id));
             case ItemKind.Voucher:
-                return table.Get(TextKeys.Voucher(offer.Id)) + " · " + table.Get(TextKeys.VoucherDesc(offer.Id));
+                return table.Get(TextKeys.Voucher(offer.Id));
             case ItemKind.Booster:
                 return table.Get(TextKeys.Booster(offer.Id));
             case ItemKind.Block:
@@ -64,6 +64,21 @@ public static class ItemNames
                 return table.Get(TextKeys.Of(offer.Kind)) + " #" + offer.Id;
             default:
                 return table.Get(TextKeys.Of(offer.Kind)) + " #" + offer.Id;
+        }
+    }
+
+    public static string OfferDesc(ContentCatalog catalog, ShopOffer offer)
+    {
+        TextTable table = TextTable.Instance;
+        switch (offer.Kind)
+        {
+            case ItemKind.Gene: return table.Get(TextKeys.GeneDesc(offer.Id));
+            case ItemKind.Tech: return ConsumableDesc(catalog, ConsumableItem.Tech(offer.Id));
+            case ItemKind.Mod: return table.Get(TextKeys.ModDesc(offer.Id));
+            case ItemKind.Voucher: return table.Get(TextKeys.VoucherDesc(offer.Id));
+            case ItemKind.Booster: return table.Get(TextKeys.BoosterDesc(offer.Id));
+            case ItemKind.Block: return table.Get(TextKeys.Shop.BlockDesc);
+            default: return string.Empty;
         }
     }
 

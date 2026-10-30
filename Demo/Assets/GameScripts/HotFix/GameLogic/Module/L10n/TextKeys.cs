@@ -57,6 +57,9 @@ public static class TextKeys
         public const string BoosterLabel = "ui.shop.booster_label";
         public const string Reroll = "ui.shop.reroll";
         public const string Leave = "ui.shop.leave";
+        public const string BlockDesc = "ui.shop.block_desc";
+        public const string TechUpgrade = "ui.shop.tech_upgrade";
+        public const string TechMax = "ui.shop.tech_max";
     }
 
     /// <summary>战斗界面里由代码画的文案;静态标签走预制体上的 LocalizedText,不在这里。</summary>
@@ -189,6 +192,7 @@ public static class TextKeys
     public static string VoucherDesc(int voucherId) => "voucher." + voucherId + ".desc";
 
     public static string Booster(int boosterId) => "booster." + boosterId + ".name";
+    public static string BoosterDesc(int boosterId) => "booster." + boosterId + ".desc";
 
     /// <summary>基因的稀有度名(<see cref="Rarity"/> 的四档)。</summary>
     public static string Rarity(int rarity)

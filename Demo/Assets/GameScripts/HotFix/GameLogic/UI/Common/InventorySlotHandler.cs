@@ -6,7 +6,8 @@ using UnityEngine.EventSystems;
 /// 背包槽格上的指针件:点一下、拖起、拖动、松手各转给宿主一个回调,带上本槽的序号。
 /// 只转事件、不改状态;战斗窗的基因换位、道具拖到目标上用它(<see cref="BattleInventory"/>)。
 /// </summary>
-public sealed class InventorySlotHandler : MonoBehaviour, IPointerClickHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
+public sealed class InventorySlotHandler : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler,
+    IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public int Index;
 
@@ -14,6 +15,7 @@ public sealed class InventorySlotHandler : MonoBehaviour, IPointerClickHandler, 
     public Action<int, PointerEventData> DragBegan;
     public Action<int, PointerEventData> Dragged;
     public Action<int, PointerEventData> DragEnded;
+    public Action<int, bool> Hovered;
 
     private bool _dragging;
 
@@ -27,8 +29,13 @@ public sealed class InventorySlotHandler : MonoBehaviour, IPointerClickHandler, 
     {
         if (e.button != PointerEventData.InputButton.Left) return;
         _dragging = true;
+        Hovered?.Invoke(Index, false);
         DragBegan?.Invoke(Index, e);
     }
+
+    public void OnPointerEnter(PointerEventData e) => Hovered?.Invoke(Index, true);
+
+    public void OnPointerExit(PointerEventData e) => Hovered?.Invoke(Index, false);
 
     public void OnDrag(PointerEventData e)
     {

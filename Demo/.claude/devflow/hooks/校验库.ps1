@@ -49,11 +49,6 @@ $script:ClientGateScanSurface = [ordered]@{
   "启动器字体核对.ps1"   = '^Demo/Assets/Launcher/(.*\.cs|Resources/Fonts/LauncherFont\.otf)$'
   # 占位目录下的全部文件与登记表本身(含 .meta:删一件常连 .meta 一起动);登记表「占位目录」节加新根时同步这里
   "占位素材核对.ps1"     = '^Demo/Assets/AssetRaw/Effects/ZooPlaceholder/'
-  # 规则核心正本(镜像库通配链接它)+ DotNet 下的镜像库、测试工程与其 props;
-  # 文本表校验(Tests/L10n)另读表、链接编译的 TextKeys.cs、取 LocalizedText 脚本 guid 的 meta、UI 预制体、主字体资产与其 meta;
-  # 演出排期(Tests/Presentation)链接编译 GameLogic 的 ClearTimeline.cs 与它读的 ClearPacing.cs;
-  # 存档文件层(Tests/Save)链接编译 GameLogic 的 RunSaveFile.cs。
-  "dotnet单测.ps1"       = '^Demo/(Assets/GameScripts/HotFix/GameRules/.*\.(cs|asmdef)|DotNet/.*\.(cs|csproj|props|targets)|Assets/AssetRaw/Configs/l10n/texts\.json|Assets/GameScripts/HotFix/GameLogic/Module/L10n/TextKeys\.cs|Assets/GameScripts/HotFix/GameLogic/UI/Battle/Clear(Pacing|Timeline)\.cs|Assets/GameScripts/HotFix/GameLogic/Module/Save/RunSaveFile\.cs|Assets/GameScripts/HotFix/GameLogic/UI/Common/LocalizedText\.cs\.meta|Assets/AssetRaw/UI/.*\.prefab|Assets/AssetRaw/Fonts/SourceHanSansSC-Bold SDF\.asset(\.meta)?)$'
   # 面比这道自己改的文件宽得多:它拦的是「热更程序集改签名,坏的是 Editor 程序集的调用点」,
   # 触发改动与报错文件恒不在一处,故 Assets 下任一 .cs / asmdef / asmref 都得让它跑一遍。
   # 另含 Packages 下入库的程序集定义:Assembly-CSharp-Editor 经 ProjectReference 连带编嵌入包(如

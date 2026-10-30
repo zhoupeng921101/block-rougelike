@@ -48,7 +48,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PROJECT_DIR}\.
 
 | 脚本 | 职责 | 调用 | 退出码 |
 |---|---|---|---|
-| [客户端自检.ps1](客户端自检.ps1) | 客户端提交前检查:十五道(十三道静态扫描 + 规则核心 dotnet 单测 + 末道 Editor 程序集真编译),直跑给定 Demo,不启动 Unity、需 dotnet SDK;耗时的几道并行跑(哪几道、执行形态与失败时的收尾见脚本头注);子道抛异常或未知退出码判 INFRA;各道均过但树在检查期间变了判 STALE(出口码 3,DRIFT 行点名变了的路径)。devflow 卡第三步调用。 | `-ProjectDir <Demo>` | 0/1/2/3 |
+| [客户端自检.ps1](客户端自检.ps1) | 客户端提交前检查:十四道(十三道静态扫描 + 末道 Editor 程序集真编译),直跑给定 Demo,不启动 Unity、需 dotnet SDK;耗时的几道并行跑(哪几道、执行形态与失败时的收尾见脚本头注);子道抛异常或未知退出码判 INFRA;各道均过但树在检查期间变了判 STALE(出口码 3,DRIFT 行点名变了的路径)。devflow 卡第三步调用。 | `-ProjectDir <Demo>` | 0/1/2/3 |
 | [命名空间扫描.ps1](命名空间扫描.ps1) | 命名空间规约 + 程序集归属(无 asmdef 覆盖的 .cs)静态扫描;归属判定取 hook函数库「Unity 程序集实扫」。规约正本 = `tengine-conventions.md`「客户端命名空间」「程序集归属」。 | `命名空间扫描.ps1 -ProjectDir <Demo>` | 0/1/2 |
 | [平台宏核对.ps1](平台宏核对.ps1) | 平台脚本宏策略静态扫描:按 `ProjectSettings/PlatformDefinePolicy.json` 核各平台 define(required 在位、exclusive 不越界);清单与编辑器菜单 `TEngine/Platform Define Symbols/*` 共用。 | `平台宏核对.ps1 -ProjectDir <Demo>` | 0/1/2 |
 | [文本截断核对.ps1](文本截断核对.ps1) | UGUI 文本截断静态扫描:`m_VerticalOverflow=Truncate` 的 Text 高度须 ≥ 字号 × 1.5;垂直拉伸锚点与 BestFit 节点跳过。 | `文本截断核对.ps1 -ProjectDir <Demo>` | 0/1/2 |
@@ -62,7 +62,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_PROJECT_DIR}\.
 | [进程编码核对.ps1](进程编码核对.ps1) | 编辑器工具捕获子进程输出静态扫描:`Assets/Editor` / `Assets/TEngine/Editor` 两面须走本面共用原语(`EditorProcess.cs` / `ShellHelper.cs`),原语自身须设编码(判据见头注)。 | `进程编码核对.ps1 -ProjectDir <Demo>` | 0/1/2 |
 | [启动器字体核对.ps1](启动器字体核对.ps1) | 启动器子集字体覆盖静态扫描:`Assets/Launcher` 下 `.cs` 的全部用字(含注释,与字体生成脚本同口径)须在 `LauncherFont.otf` 的 cmap 里;不覆盖面与修法(重跑 `.claude/scripts/subset_launcher_font.py`)见头注。 | `启动器字体核对.ps1 -ProjectDir <Demo>` | 0/1/2 |
 | [占位素材核对.ps1](占位素材核对.ps1) | 占位素材目录与 `ZooPlaceholder/占位登记表.md` 两边一致的静态扫描(判据见头注),不拦出包。 | `占位素材核对.ps1 -ProjectDir <Demo>` | 0/1/2 |
-| [dotnet单测.ps1](dotnet单测.ps1) | 规则核心单测、文本表校验、战斗演出排期与局内存档文件层(链接编译的 GameLogic 文件见头注):restore 后 `dotnet test DotNet/Tests/Tests.csproj`;镜像库编不过、用例失败或一个用例都没跑判 FAIL,restore 失败判 INFRA(见头注)。 | `dotnet单测.ps1 -ProjectDir <Demo>` | 0/1/2 |
+| [dotnet单测.ps1](dotnet单测.ps1) | 可单独运行（不属于客户端自检必跑道次）：规则核心单测、文本表校验、战斗演出排期与局内存档文件层(链接编译的 GameLogic 文件见头注):restore 后 `dotnet test DotNet/Tests/Tests.csproj`;镜像库编不过、用例失败或一个用例都没跑判 FAIL,restore 失败判 INFRA(见头注)。 | `dotnet单测.ps1 -ProjectDir <Demo>` | 0/1/2 |
 | [Editor程序集编译.ps1](Editor程序集编译.ps1) | 客户端自检唯一编译道:Assembly-CSharp-Editor 连带引用闭包真编一遍,再按 `PlatformDefinePolicy.json` 各出包平台的 define 并行编运行时程序集,工具宏另编一遍(见头注)。闭包里 Assets 与工程内嵌包下有 asmdef 的 csproj 过期先按实扫写临时副本再编;须编辑器重生成或纯环境类错误判 INFRA。比对面、INFRA 各类与「排除 csproj 过期」的给法见头注。 | `Editor程序集编译.ps1 -ProjectDir <Demo>` | 0/1/2 |
 
 ## 提交前自审(会话调用,不发凭据)

@@ -41,6 +41,7 @@ public sealed class BattleInventory
     private int _firstTarget;
     private RectTransform _actions;
     private TextMeshProUGUI _ghost;
+    private RectTransform _detail;
 
     public BattleInventory(RectTransform window, RectTransform geneSlots, RectTransform itemSlots, List<TextMeshProUGUI> geneLabels,
         List<TextMeshProUGUI> itemLabels, TMP_FontAsset font, BoardAreaPart board, TrayAreaPart tray, Func<bool> canAct,
@@ -56,14 +57,15 @@ public sealed class BattleInventory
         _canAct = canAct;
         _used = used;
         _changed = changed;
-        Hook(geneSlots, _geneFrames, OnGeneClicked, OnGeneDragEnded);
-        Hook(itemSlots, _itemFrames, OnItemClicked, OnItemDragEnded);
+        Hook(geneSlots, _geneFrames, OnGeneClicked, OnGeneDragEnded, true);
+        Hook(itemSlots, _itemFrames, OnItemClicked, OnItemDragEnded, false);
         _hint = RuntimeUI.TmpLabel(itemSlots, font, string.Empty, new Vector2(0f, -itemSlots.rect.height - 4f), new Vector2(itemSlots.rect.width, 28f), 18f,
             TextAlignmentOptions.Left, RuntimeUI.Gold);
     }
 
     public void Bind(RunState run)
     {
+        HideDetail();
         _run = run;
         _selectedGene = _selectedItem = -1;
         _firstTarget = 0;
@@ -75,6 +77,7 @@ public sealed class BattleInventory
     public void Refresh()
     {
         if (_run == null) return;
+        HideDetail();
         if (_selectedGene >= _run.Genes.Count) _selectedGene = -1;
         if (_selectedItem >= _run.Consumables.Count) _selectedItem = -1;
         for (int i = 0; i < _geneLabels.Count; i++)
@@ -104,7 +107,7 @@ public sealed class BattleInventory
         BuildActions();
     }
 
-    private void Hook(RectTransform slots, List<RectTransform> frames, Action<int> clicked, Action<int, PointerEventData> ended)
+    private void Hook(RectTransform slots, List<RectTransform> frames, Action<int> clicked, Action<int, PointerEventData> ended, bool gene)
     {
         int index = 0;
         foreach (Transform child in slots)
@@ -127,8 +130,58 @@ public sealed class BattleInventory
                 EndGhost();
                 ended(i, e);
             };
+            handler.Hovered = (i, enter) => { if (enter) ShowDetail(gene, i); else HideDetail(); };
             frames.Add(frame);
         }
+    }
+
+    private void ShowDetail(bool gene, int index)
+    {
+        HideDetail();
+        if (_run == null) return;
+        string name;
+        string description;
+        RectTransform frame;
+        if (gene)
+        {
+            if (index >= _run.Genes.Count) return;
+            GeneSlot slot = _run.Genes[index];
+            name = ItemNames.Gene(slot);
+            description = TextTable.Instance.Get(TextKeys.GeneDesc(slot.GeneId));
+            frame = _geneFrames[index];
+        }
+        else
+        {
+            if (index >= _run.Consumables.Count) return;
+            ConsumableItem item = _run.Consumables[index];
+            name = ItemNames.Consumable(_run.Config.Catalog, item);
+            description = ItemNames.ConsumableDesc(_run.Config.Catalog, item);
+            frame = _itemFrames[index];
+        }
+        if (string.IsNullOrEmpty(description)) return;
+
+        const float width = 420f;
+        const float height = 200f;
+        Vector3[] corners = new Vector3[4];
+        frame.GetWorldCorners(corners);
+        Vector2 left = _window.InverseTransformPoint(corners[1]);
+        float x = left.x - _window.rect.xMin - width - 12f;
+        float y = Mathf.Clamp(left.y - _window.rect.yMax, -_window.rect.height + height + 12f, -12f);
+        _detail = RuntimeUI.Node("物品说明", _window, new Vector2(Mathf.Max(12f, x), y),
+            new Vector2(width, height), typeof(Image));
+        Image background = _detail.GetComponent<Image>();
+        background.color = RuntimeUI.PanelColor;
+        background.raycastTarget = false;
+        RuntimeUI.TmpLabel(_detail, _font, name, new Vector2(18f, -14f), new Vector2(width - 36f, 42f),
+            23f, TextAlignmentOptions.TopLeft, RuntimeUI.Gold);
+        RuntimeUI.TmpLabel(_detail, _font, description, new Vector2(18f, -62f), new Vector2(width - 36f, height - 76f),
+            19f, TextAlignmentOptions.TopLeft, RuntimeUI.TextColor);
+    }
+
+    private void HideDetail()
+    {
+        if (_detail != null) UnityEngine.Object.Destroy(_detail.gameObject);
+        _detail = null;
     }
 
     private void OnGeneClicked(int slot)

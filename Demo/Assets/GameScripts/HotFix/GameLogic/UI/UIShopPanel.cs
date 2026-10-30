@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.U2D;
+using UnityEngine.EventSystems;
 
 /// <summary>
 /// 商店屏(局外循环设计稿 §4):上排是玩家的基因槽与道具栏,中间货架 4 格,下面一张券与一个补给包,
@@ -43,6 +44,7 @@ public partial class UIShopPanel : UIPanelMono
     private RunState _run;
 
     private readonly List<GameObject> _cards = new List<GameObject>();
+    private GameObject _detail;
 
     protected override void OnCreate() => AddServiceEvent(
         () => TextTable.Instance.LanguageChanged += Rebuild,
@@ -65,6 +67,7 @@ public partial class UIShopPanel : UIPanelMono
     private void Rebuild()
     {
         if (_run == null || _run.Shop == null) return;
+        HideDetail();
         ShopState shop = _run.Shop;
         TextTable table = TextTable.Instance;
 
@@ -163,15 +166,18 @@ public partial class UIShopPanel : UIPanelMono
         button.interactable = canBuy;
         if (canBuy) button.onClick.AddListener(() => onClick());
         _cards.Add(card);
+        BindDetail(card, offer);
 
         // 价签
         PriceTag(card.transform, table.Format(TextKeys.Common.Money, offer.Price.ToString(CultureInfo.InvariantCulture)), 4f);
         // 图标
         IconImage(card.transform, IconOf(offer.Kind, offer.Id), new Vector2(24f, -60f), new Vector2(80f, 80f));
         // 名字
-        Label(card.transform, ItemNames.Offer(_run.Config.Catalog, offer), 16f, 146f, TextMain, 20f, CardWidth - 32f, 64f, true);
+        Label(card.transform, ItemNames.Offer(_run.Config.Catalog, offer), 16f, 146f, TextMain, 20f, CardWidth - 32f, 48f, true);
         // 种类 · 稀有度
-        Label(card.transform, table.Get(TextKeys.Of(offer.Kind)), 16f, 214f, TextMuted, 18f, CardWidth - 32f, 26f);
+        Label(card.transform, table.Get(TextKeys.Of(offer.Kind)), 16f, 198f, TextMuted, 16f, CardWidth - 32f, 22f);
+        Label(card.transform, DescriptionOf(offer), 16f, 224f, TextMain, 15f,
+            CardWidth - 32f, 48f, true);
         // 买
         if (offer.Sold)
         {
@@ -206,10 +212,13 @@ public partial class UIShopPanel : UIPanelMono
         button.interactable = _run.Money >= offer.Price;
         if (button.interactable) button.onClick.AddListener(() => onClick());
         _cards.Add(card);
+        BindDetail(card, offer);
 
         Label(card.transform, table.Get(labelKey), 12f, 8f, TextMuted, 18f, 300f, 26f);
         IconImage(card.transform, IconOf(offer.Kind, offer.Id), new Vector2(16f, -44f), new Vector2(72f, 72f));
         Label(card.transform, ItemNames.Offer(_run.Config.Catalog, offer), 100f, 40f, TextMain, 22f, rt.sizeDelta.x - 240f, 60f, true);
+        Label(card.transform, DescriptionOf(offer), 100f, 96f, TextMuted, 16f,
+            rt.sizeDelta.x - 116f, 56f, true);
         Label(card.transform, table.Format(TextKeys.Common.Money, offer.Price.ToString(CultureInfo.InvariantCulture)),
             rt.sizeDelta.x - 130f, 44f, GoldColor, 30f, 110f, 36f);
 
@@ -382,8 +391,76 @@ public partial class UIShopPanel : UIPanelMono
 
     private void ClearCards()
     {
+        HideDetail();
         foreach (GameObject go in _cards) Destroy(go);
         _cards.Clear();
+    }
+
+    private void BindDetail(GameObject card, ShopOffer offer)
+    {
+        var trigger = card.AddComponent<EventTrigger>();
+        var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        enter.callback.AddListener(_ => ShowDetail(card, offer));
+        trigger.triggers.Add(enter);
+        var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        exit.callback.AddListener(_ => HideDetail());
+        trigger.triggers.Add(exit);
+    }
+
+    private void ShowDetail(GameObject card, ShopOffer offer)
+    {
+        HideDetail();
+        string description = DescriptionOf(offer);
+        if (string.IsNullOrEmpty(description)) return;
+
+        var root = (RectTransform)transform;
+        var cardRect = (RectTransform)card.transform;
+        Vector3[] corners = new Vector3[4];
+        cardRect.GetWorldCorners(corners);
+        Vector2 topRight = root.InverseTransformPoint(corners[2]);
+        Vector2 topLeft = root.InverseTransformPoint(corners[1]);
+        const float width = 400f;
+        const float height = 220f;
+        float x = topRight.x + 12f;
+        if (x + width > root.rect.xMax - 12f) x = topLeft.x - width - 12f;
+        float y = Mathf.Min(topLeft.y, root.rect.yMax - 12f);
+        y = Mathf.Max(y, root.rect.yMin + height + 12f);
+
+        _detail = new GameObject("商品说明", typeof(RectTransform), typeof(ExImage));
+        _detail.layer = gameObject.layer;
+        _detail.transform.SetParent(root, false);
+        var rt = (RectTransform)_detail.transform;
+        rt.anchorMin = rt.anchorMax = new Vector2(0f, 0f);
+        rt.pivot = new Vector2(0f, 1f);
+        rt.anchoredPosition = new Vector2(x - root.rect.xMin, y - root.rect.yMin);
+        rt.sizeDelta = new Vector2(width, height);
+        var frame = _detail.GetComponent<ExImage>();
+        frame.spriteAtlas = _runAtlas;
+        frame.SpriteName = "run_panel";
+        frame.type = Image.Type.Sliced;
+        frame.raycastTarget = false;
+        Label(rt, ItemNames.Offer(_run.Config.Catalog, offer), 20f, 16f, TextMain, 23f, width - 40f, 54f, true);
+        Label(rt, description, 20f, 74f, TextMain, 19f, width - 40f, height - 90f, true);
+    }
+
+    private void HideDetail()
+    {
+        if (_detail != null) Destroy(_detail);
+        _detail = null;
+    }
+
+    private string DescriptionOf(ShopOffer offer)
+    {
+        if (offer.Kind != ItemKind.Tech) return ItemNames.OfferDesc(_run.Config.Catalog, offer);
+        ClearType type = _run.Config.Catalog.TechTypeOf(offer.Id);
+        int level = _run.LevelOf(type);
+        string name = TextTable.Instance.Get(TextKeys.Of(type));
+        if (level >= _run.Config.ClearTypes.MaxLevel(type))
+            return TextTable.Instance.Format(TextKeys.Shop.TechMax, name, level);
+        ClearTypeBase current = _run.Config.ClearTypes.Get(type, level);
+        ClearTypeBase next = _run.Config.ClearTypes.Get(type, level + 1);
+        return TextTable.Instance.Format(TextKeys.Shop.TechUpgrade, name, level, level + 1,
+            current.Chips, next.Chips, current.Mult, next.Mult);
     }
 
     /// <summary>TMP 主字体:静态字挂着主字体资产,运行期现搭的卡片借它。</summary>
