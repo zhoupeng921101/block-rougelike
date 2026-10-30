@@ -26,8 +26,8 @@ public sealed class BattleFxAssets
     [Tooltip("开盲注盘面点亮 db_boardOpen")]
     public GameObject BoardOpen;
 
-    [Tooltip("「继续」进战斗窗的扫描线 db_FHQPD")]
-    public GameObject BoardSweep;
+    [Tooltip("「继续」进战斗窗的扫描线横光带(已换成自绘图,见 BoardSweepFx)")]
+    public Sprite BoardSweepBand;
 
     [Tooltip("飞分落到累计分的星环 sp_landring(Spine)")]
     public GameObject LandRing;
@@ -90,9 +90,6 @@ public static class BattleFxNames
         if (i < 0) i += BoardOpenAnims.Length;
         return BoardOpenAnims[i];
     }
-
-    /// <summary>扫描线:光带整体淡出,约 0.75 秒。素材里没有位移轨道,扫过盘面那一段由调用方驱动;亮线在素材上方,自下而上扫。</summary>
-    public const string BoardSweepAnim = "fuhuod";
 
     /// <summary>星环唯一的动画(约 1.33 秒,前半程即成形)。</summary>
     public const string LandRingAnim = "idle";

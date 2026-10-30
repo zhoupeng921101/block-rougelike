@@ -144,7 +144,11 @@ def old_path(*parts):
 
 
 def size_of(path):
-    return Image.open(path).size
+    # 占位图可能已经被搬走(E 盘工程里换成了 Pixel/ 下的新图),这时读同名的替换件取尺寸
+    if os.path.exists(path):
+        return Image.open(path).size
+    rel = os.path.relpath(path, DEMO)
+    return Image.open(os.path.join(OUT, rel)).size
 
 
 def save(im, *parts):
@@ -222,12 +226,29 @@ for y in range(H):
 save(dot, "BurstFx", "fx_soft_dot.png")
 pairs.append((dot_src, os.path.join(OUT, "BurstFx", "fx_soft_dot.png")))
 
+# ---------- 续玩扫描线：横向光带（替掉 db_FHQPD 的骨骼动画） ----------
+# 512×96，中间一条亮线、上下柔和衰减、两头略淡；位移与淡出由代码驱动，素材只管长得像一条光。
+W, H = 512, 96
+band = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+bpx = band.load()
+for y in range(H):
+    t = abs((y - H / 2) / (H / 2))
+    a = int(230 * max(0.0, 1 - t) ** 2.6)
+    for x in range(W):
+        edge = min(1.0, min(x, W - 1 - x) / 48.0)
+        aa = int(a * (0.35 + 0.65 * edge))
+        if aa > 0:
+            bpx[x, y] = (206, 244, 255, aa)
+save(band, "sweep", "sweep_band.png")
+
 # ---------- 对照板：一对一对排 ----------
 show = pairs[:12]
 cell_w, cell_h = 420, 130
 sheet = Image.new("RGB", (cell_w * 2 + 30, cell_h * len(show) + 30), (24, 37, 48))
 d = ImageDraw.Draw(sheet)
 for i, (old, new) in enumerate(show):
+    if not os.path.exists(old):
+        continue
     y = 15 + i * cell_h
     o = Image.open(old).convert("RGBA")
     n = Image.open(new).convert("RGBA")

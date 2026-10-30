@@ -171,31 +171,10 @@ public sealed class BattleFxDirector
             BoardCenter(), N * _board.CellSize(), 0f, Speed);
     }
 
-    /// <summary>扫描线自盘底外扫到盘顶外,越出盘面的两段裁掉;素材只有淡出,位移在这里驱动(动物乐园 MergeBoardShowFx.SpawnBoardSweep 的做法)。</summary>
+    /// <summary>扫描线自盘底外扫到盘顶外,越出盘面的两段裁掉;光带图 + 补间,不再用 DragonBones(见 <see cref="BoardSweepFx"/>)。</summary>
     private void SpawnBoardSweep()
     {
-        float span = N * _board.CellSize();
-        // 裁剪容器另建一层:RectMask2D 挂在特效层自己身上会连别的特效一起裁
-        var clipGo = new GameObject("BoardSweepClip", typeof(RectTransform), typeof(RectMask2D));
-        var clip = (RectTransform)clipGo.transform;
-        clip.SetParent(FxLayer, false);
-        clip.anchorMin = clip.anchorMax = clip.pivot = new Vector2(0.5f, 0.5f);
-        clip.sizeDelta = new Vector2(span, span);
-        clip.anchoredPosition = BoardCenter();
-        clip.SetAsLastSibling();
-
-        var fx = DragonBoneFx.SpawnFitWidth(clip, _assets.BoardSweep, BattleFxNames.BoardSweepAnim, Vector2.zero, span, 0f, Speed);
-        if (fx == null)
-        {
-            Object.Destroy(clipGo);
-            return;
-        }
-        // 行程两端各多走半个光带高,光带从盘沿渐进进出
-        float half = (span + fx.FitHeight) * 0.5f;
-        fx.transform.localPosition = new Vector3(0f, -half, 0f);
-        fx.transform.DOLocalMoveY(half, fx.AnimLength).SetEase(Ease.OutCubic).SetUpdate(true).SetLink(fx.gameObject);
-        // 容器比光带多活一点:光带的回收余量本类看不到,容器先走会把还在淡出的光带一起带走
-        Object.Destroy(clipGo, fx.AnimLength + 0.3f);
+        BoardSweepFx.Spawn(FxLayer, _assets.BoardSweepBand, BoardCenter(), N * _board.CellSize(), Speed);
     }
 
     // ─── 加料 ────────────────────────────────────────────────────

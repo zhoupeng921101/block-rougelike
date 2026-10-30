@@ -7610,7 +7610,7 @@ MonoBehaviour:
     BoardClearA: {fileID: 3490472105201019977, guid: f72b273146b1444489d1417fb7ff48db, type: 3}
     BoardClearB: {fileID: 3477674498991530191, guid: 1bc401c95f28c0243817a94a8d8ac95f, type: 3}
     BoardOpen: {fileID: 7519413460619071365, guid: 70ab7922b095c11428e8d029aa921402, type: 3}
-    BoardSweep: {fileID: 2208152152185987193, guid: c87939f92cc9ad446baf5726c85e0cb5, type: 3}
+    BoardSweepBand: {fileID: 4302448841272011129, guid: 81a62de4599e4bc41a4172422d590520, type: 3}
     LandRing: {fileID: 3728435555976712368, guid: f5118841bad1ecd45b240f6340937580, type: 3}
     ClearBurst: {fileID: 4519818963187576972, guid: 612ef4aed360f8b438afcfcf8b757a70, type: 3}
     PlaceBurst: {fileID: 4519818963187576972, guid: 3df9cec81cb70b04d8fbb2d75e9aae1f, type: 3}
