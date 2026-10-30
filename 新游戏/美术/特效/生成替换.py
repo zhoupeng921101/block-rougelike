@@ -264,6 +264,33 @@ save(横光带(lambda x: (255, 255, 255)), "beam", "beam_line.png")
 彩虹 = [(255, 90, 90), (255, 170, 60), (255, 235, 90), (110, 235, 130), (90, 200, 255), (150, 120, 255), (240, 120, 220)]
 save(横光带(lambda x: 彩虹[min(len(彩虹) - 1, x * len(彩虹) // W)]), "beam", "beam_rainbow.png")
 
+# ---------- 飞分落点星环（替掉 sp_landring 这套 Spine） ----------
+# 128×128：一圈十六颗小星 + 一道很淡的环线；展开由代码补间做。
+import math
+
+W = H = 128
+ring = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+rpx = ring.load()
+cx = cy = W / 2
+for i in range(16):
+    ang = i * math.pi * 2 / 16
+    sx, sy = cx + math.cos(ang) * 48, cy + math.sin(ang) * 48
+    big = i % 4 == 0
+    arm = 9 if big else 5
+    color = (255, 220, 120) if big else (255, 246, 200)
+    for k in range(-arm, arm + 1):
+        a = int(255 * (1 - abs(k) / (arm + 1)) ** 1.2)
+        for (px_, py_) in ((round(sx + k), round(sy)), (round(sx), round(sy + k))):
+            if 0 <= px_ < W and 0 <= py_ < H:
+                rpx[px_, py_] = color + (max(a, rpx[px_, py_][3]),)
+for r in (46.5, 49.5, 52.5):
+    for i in range(720):
+        ang = i * math.pi * 2 / 720
+        px_, py_ = round(cx + math.cos(ang) * r), round(cy + math.sin(ang) * r)
+        if 0 <= px_ < W and 0 <= py_ < H:
+            rpx[px_, py_] = (255, 236, 170, 46)
+save(ring, "landring", "landring_stars.png")
+
 # ---------- 对照板：一对一对排 ----------
 show = pairs[:12]
 cell_w, cell_h = 420, 130

@@ -141,8 +141,7 @@ public sealed class BattleFxDirector
             layer.SetAsLastSibling();   // 盖过这之后才建的计数框等临时节点
             Vector3 world = total.transform.TransformPoint(total.textBounds.center);
             Vector2 local = (Vector2)layer.InverseTransformPoint(world) - layer.rect.center;
-            SpineFx.SpawnFitWidth(layer, _assets.LandRing, BattleFxNames.LandRingAnim, local,
-                BlockLayout.LandRingWidth, BattleFxNames.LandRingContentWidth, Speed);
+            LandRingFx.Spawn(layer, _assets.LandRing, local, BlockLayout.LandRingWidth, Speed);
         });
     }
 

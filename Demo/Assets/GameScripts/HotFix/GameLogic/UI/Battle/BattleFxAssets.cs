@@ -29,8 +29,8 @@ public sealed class BattleFxAssets
     [Tooltip("「继续」进战斗窗的扫描线横光带(已换成自绘图,见 BoardSweepFx)")]
     public Sprite BoardSweepBand;
 
-    [Tooltip("飞分落到累计分的星环 sp_landring(Spine)")]
-    public GameObject LandRing;
+    [Tooltip("飞分落到累计分的星环(自绘星环图 + 补间,见 LandRingFx)")]
+    public Sprite LandRing;
 
     [Header("粒子")]
     [Tooltip("逐格退场的碎块与清屏庆祝波 ClearBurstFx")]
@@ -62,10 +62,4 @@ public static class BattleFxNames
     public const string BoardClearAAnim = "qingchang";
 
     public const string BoardClearBAnim = "fuhuoqipan";
-
-    /// <summary>星环唯一的动画(约 1.33 秒,前半程即成形)。</summary>
-    public const string LandRingAnim = "idle";
-
-    /// <summary>星环扩到最大时的骨架像素外径。</summary>
-    public const float LandRingContentWidth = 256f;
 }
