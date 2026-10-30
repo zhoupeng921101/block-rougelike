@@ -51,6 +51,9 @@ public static class TextKeys
         public const string Pack = "ui.shop.pack";
         public const string PackTitle = "ui.shop.pack_title";
         public const string Sold = "ui.shop.sold";
+        public const string Buy = "ui.shop.buy";
+        public const string VoucherLabel = "ui.shop.voucher_label";
+        public const string BoosterLabel = "ui.shop.booster_label";
         public const string Reroll = "ui.shop.reroll";
         public const string Leave = "ui.shop.leave";
     }
