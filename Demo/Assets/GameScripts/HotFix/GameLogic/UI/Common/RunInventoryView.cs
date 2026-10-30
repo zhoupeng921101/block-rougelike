@@ -225,6 +225,12 @@ public sealed class RunInventoryView
                 _mode = Mode.PickBlock;
                 break;
             case ModTarget.BoardBlock:
+                if (_run.Blind == null)
+                {
+                    _message = ItemNames.Reject(UseReject.NotUsable);
+                    Rebuild();
+                    return;
+                }
                 _mode = Mode.PickBoardBlock;
                 break;
             case ModTarget.Gene:

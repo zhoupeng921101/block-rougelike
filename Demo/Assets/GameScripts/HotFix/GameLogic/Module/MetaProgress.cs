@@ -64,6 +64,7 @@ public static class MetaProgress
             case RunDifficulty.Advanced: data.winsAdvanced++; break;
             case RunDifficulty.Expert: data.winsExpert++; break;
         }
+        _unlockedGenes = null;
         Save();
     }
 

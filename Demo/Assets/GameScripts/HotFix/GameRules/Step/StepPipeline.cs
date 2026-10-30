@@ -232,16 +232,30 @@ namespace GameRules
         internal static void AfterShopRerolled(RunState run) =>
             VisitOutside(run, EffectHook.ShopReroll, (e, c) => e.OnShopRerolled(c));
 
-        /// <summary>卖掉一件东西之后:基因从左到右问「卖出」挂点;卖自己那格也算在里面(摔跤)。</summary>
-        internal static void AfterSold(RunState run, ItemKind kind, int id, int slot, bool self) =>
-            VisitOutside(run, EffectHook.Sold, (e, c) => e.OnSold(c), kind, id, slot, self);
+        /// <summary>卖掉一件东西之后:基因从左到右问「卖出」挂点;卖自己那一格把 <see cref="EffectContext.SoldSelf"/> 置真(摔跤)。</summary>
+        internal static void AfterSold(RunState run, ItemKind kind, int id, int slot)
+        {
+            var events = new List<RuleEvent>();
+            var ctx = new EffectContext(run, StepKind.Place, events)
+            {
+                Hook = EffectHook.Sold,
+                ItemKind = kind,
+                ItemId = id,
+                SoldSlot = slot,
+            };
+            VisitGenes(run, ctx, (e, c) =>
+            {
+                c.SoldSelf = slot >= 0 && c.SourceIndex == slot;
+                e.OnSold(c);
+            });
+        }
 
         /// <summary>跳过节点之后:基因从左到右问「跳过」挂点。</summary>
         internal static void AfterSkipped(RunState run, int nodeId) =>
             VisitOutside(run, EffectHook.Skipped, (e, c) => e.OnSkipped(c), skippedNode: nodeId);
 
         private static void VisitOutside(RunState run, EffectHook hook, Action<RuleEffect, EffectContext> visit,
-            ItemKind kind = ItemKind.Gene, int id = 0, int slot = -1, bool self = false, int skippedNode = 0)
+            ItemKind kind = ItemKind.Gene, int id = 0, int slot = -1, int skippedNode = 0)
         {
             var events = new List<RuleEvent>();
             var ctx = new EffectContext(run, StepKind.Place, events)
@@ -250,7 +264,6 @@ namespace GameRules
                 ItemKind = kind,
                 ItemId = id,
                 SoldSlot = slot,
-                SoldSelf = self,
                 SkippedNode = skippedNode,
             };
             VisitGenes(run, ctx, visit);

@@ -87,8 +87,17 @@ namespace GameRules
             foreach (CatalogEntry e in run.Config.Catalog.Genes)
             {
                 if (!run.IsGeneUnlocked(e.Id)) continue;
+                if (!run.ShopOffersOwned && Owned(run, e.Id)) continue;
                 if (e.Rarity == Rarity.Legendary) legendary.Add(e);
                 else normal.Add(e);
+            }
+            if (normal.Count == 0)
+            {
+                // 全持有且没有重现时,包里总得有点东西:退回全池(与原作允许重复一致)
+                foreach (CatalogEntry e in run.Config.Catalog.Genes)
+                {
+                    if (e.Rarity != Rarity.Legendary && run.IsGeneUnlocked(e.Id)) normal.Add(e);
+                }
             }
             List<ShopOffer> options = Distinct(rng, normal, count);
             IRandomSource looks = run.EditionRng();
@@ -104,6 +113,15 @@ namespace GameRules
                 options[i] = new ShopOffer(ItemKind.Gene, id, 0, false, Enhancement.None, ShopState.RollGeneEdition(looks));
             }
             return options;
+        }
+
+        private static bool Owned(RunState run, int geneId)
+        {
+            foreach (GeneSlot g in run.Genes)
+            {
+                if (g.GeneId == geneId) return true;
+            }
+            return false;
         }
 
         private static List<CatalogEntry> UnlockedTechEntries(RunState run)
@@ -150,7 +168,10 @@ namespace GameRules
             var pool = new List<ShopOffer>();
             foreach (CatalogEntry e in catalog.Genes)
             {
-                if (e.Rarity != Rarity.Legendary && run.IsGeneUnlocked(e.Id)) pool.Add(new ShopOffer(e.Kind, e.Id, 0));
+                if (e.Rarity != Rarity.Legendary && run.IsGeneUnlocked(e.Id) && (run.ShopOffersOwned || !Owned(run, e.Id)))
+                {
+                    pool.Add(new ShopOffer(e.Kind, e.Id, 0));
+                }
             }
             foreach (CatalogEntry e in UnlockedTechEntries(run)) pool.Add(new ShopOffer(e.Kind, e.Id, 0));
             foreach (CatalogEntry e in catalog.Mods) pool.Add(new ShopOffer(e.Kind, e.Id, 0));

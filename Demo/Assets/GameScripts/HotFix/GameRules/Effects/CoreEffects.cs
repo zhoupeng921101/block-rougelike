@@ -50,7 +50,9 @@ namespace GameRules
 
             public override void AfterScoring(EffectContext ctx)
             {
-                if (ctx.Chance(1, GlassShatterDen)) ctx.ShatterBlock();
+                // 坚璃基因把分母翻倍(概率减半);每局/每盲注都从持有基因现算
+                if (ctx.Acting) return;
+                if (ctx.Chance(1, ctx.State.GlassShatterDen)) ctx.ShatterBlock();
             }
         }
 

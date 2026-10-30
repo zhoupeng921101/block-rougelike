@@ -217,7 +217,7 @@ namespace GameRules
         /// <summary>免死:得分 ≥ 目标分 1/4 时把这次判负改判通关,湮灭那张基因;没有可救的返回 -1,否则返回被湮灭的基因号。</summary>
         internal int TryRescueBlind()
         {
-            if (Blind == null || Blind.Score * 4 < Blind.Spec.Target) return -1;
+            if (Blind == null || Blind.Score < (Blind.Spec.Target + 3) / 4) return -1;
             for (int slot = 0; slot < _genes.Count; slot++)
             {
                 RuleEffect e = Config.Effects.Find(EffectSource.Gene, _genes[slot].GeneId);
@@ -454,10 +454,11 @@ namespace GameRules
             if (slot < 0 || slot >= _genes.Count) return -1;
             GeneSlot g = _genes[slot];
             int price = SellPriceOf(g);
+            // 卖出挂点在这张基因还在栏里的时候走:摔跤要判断「卖的是自己」
+            StepPipeline.AfterSold(this, ItemKind.Gene, g.GeneId, slot);
             _genes.RemoveAt(slot);
             AddMoney(price);
             _soldCount++;
-            StepPipeline.AfterSold(this, ItemKind.Gene, g.GeneId, slot, true);
             return price;
         }
 
@@ -470,7 +471,7 @@ namespace GameRules
             _consumables.RemoveAt(index);
             AddMoney(price);
             _soldCount++;
-            StepPipeline.AfterSold(this, item.Kind, item.Id, -1, false);
+            StepPipeline.AfterSold(this, item.Kind, item.Id, -1);
             return price;
         }
 
@@ -478,8 +479,7 @@ namespace GameRules
         public int SellPriceOf(GeneSlot gene)
         {
             if (gene == null) throw new ArgumentNullException(nameof(gene));
-            return SellPriceOf(ItemKind.Gene, gene.GeneId, gene.Edition) + Math.Max(0, gene.SellBonus + _sellBonus);
-        }
+            return SellPriceOf(ItemKind.Gene, gene.GeneId, gene.Edition) + Math.Max(0, gene.SellBonus + _sellBonus);        }
 
         /// <summary>
         /// 卖价(局外循环设计稿 §3.1、§4.2):按难度折过的基础价加版本附加费,取 50%(回收券 75%),向下取整,至少 $1。
@@ -490,7 +490,9 @@ namespace GameRules
             CatalogEntry? entry = Config.Catalog.Find(kind, id);
             int basePrice = entry.HasValue ? entry.Value.Price : 0;
             int price = ShopState.PriceFor(basePrice + ShopState.EditionSurcharge(edition), Difficulty, RunPending.PermilleOne, Config.Tuning);
-            return Math.Max(1, price * Modifiers.SellPermille / 1000);
+            // 增值基因给所有东西 +$1;基因的另走 SellPriceOf(GeneSlot),在那边一并加
+            int bonus = kind == ItemKind.Gene ? 0 : _sellBonus;
+            return Math.Max(1, price * Modifiers.SellPermille / 1000) + bonus;
         }
 
         /// <summary>道具栏放一件消耗品(科技或改造)。栏满返回 false。</summary>
@@ -683,7 +685,8 @@ namespace GameRules
             }
             events.Add(new ConsumableUsed(item.Kind, mod, ModCatalog.TargetOf(mod) == ModTarget.None ? 0 : target, succeeded));
             _modsUsed++;
-            _lastConsumable = item;
+            // 摹写自己不改「上一次用过的消耗品」,否则下一次摹写就复制到自己了
+            if (mod != ModCatalog.MakeLast) _lastConsumable = item;
             StepPipeline.AfterConsumableUsed(this, item, events);
             return UseResult.Done(events);
         }

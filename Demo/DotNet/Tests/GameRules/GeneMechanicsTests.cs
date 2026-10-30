@@ -46,6 +46,26 @@ namespace GameRules.Tests
         }
 
         [Test]
+        public void Wrestler_SellingItselfSuppressesTheBoss()
+        {
+            RunState run = RunState.NewRun(TestRules.Seed, MinimalContent.Config);
+            run.StartBlind(new BlindSpec(1, 3, 100000, 3, 3, Bosses.Yaw));
+            run.AddGene(144);
+            Assert.IsFalse(run.Blind.BossSuppressed);
+            Assert.GreaterOrEqual(run.SellGene(0), 1);
+            Assert.IsTrue(run.Blind.BossSuppressed);
+        }
+
+        [Test]
+        public void SellFlame_CountsEverySale()
+        {
+            RunState run = Started(142);
+            run.AddGene(102);
+            Assert.GreaterOrEqual(run.SellGene(1), 1);
+            Assert.AreEqual(1, run.Genes[0].Counter);
+        }
+
+        [Test]
         public void Credit_Gene_AllowsSpendingDownToTheDebtLimit()
         {
             RunState run = Started(92);
