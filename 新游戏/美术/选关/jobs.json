@@ -1,0 +1,35 @@
+[
+ {
+  "prompt_file": "定稿词/选关_v1A.txt",
+  "final": true,
+  "family": "v1A",
+  "refs": [
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/3B/认可_战斗界面_v3A.png",
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/pixel/认可_太空_地球_v3.png",
+   "线框/3B选关_线框.png"
+  ],
+  "out": "出图/选关_v1A.png"
+ },
+ {
+  "prompt_file": "定稿词/选关_v1B.txt",
+  "final": true,
+  "family": "v1B",
+  "refs": [
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/3B/认可_战斗界面_v3A.png",
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/pixel/认可_太空_地球_v3.png",
+   "线框/3B选关_线框.png"
+  ],
+  "out": "出图/选关_v1B.png"
+ },
+ {
+  "prompt_file": "定稿词/选关_v1C.txt",
+  "final": true,
+  "family": "v1C",
+  "refs": [
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/3B/认可_战斗界面_v3A.png",
+   "C:/Users/Administrator/.claude/skills/chatgpt-image/anchors/pixel/认可_太空_地球_v3.png",
+   "线框/3B选关_线框.png"
+  ],
+  "out": "出图/选关_v1C.png"
+ }
+]

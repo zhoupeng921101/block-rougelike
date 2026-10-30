@@ -38,7 +38,6 @@ function Run-FC([string[]]$FcArgs) {
   $v = if ($verdict.Count -gt 0) { $verdict[0] } else { "" }
   return @{ code = $code; out = $out; verdict = $v; tel = @(Get-TelRows | Select-Object -Skip $n0) }
 }
-function Get-AtlasGuard($R) { return @($R.tel | Where-Object { $_.guard -eq "slot-atlas-restore" }) }
 # 交付关联号:本套件只在 R1 显式设,其余用例一律在无该变量的环境里跑(防外层环境带进来)。
 $script:OldRunId = $env:FLOW_DELIVER_RUN
 Remove-Item Env:\FLOW_DELIVER_RUN -ErrorAction SilentlyContinue
@@ -187,40 +186,14 @@ Assert-True ($r.code -eq 1 -and $r.verdict -match 'DENIED-persist') "S8c 未跟�
 [System.IO.File]::Delete((Join-Path $mainRepo "Demo\Assets\GameScripts\HotFix\GameLogic\N.cs"))
 }
 
-# ---------- S9 slot client free commit, no push ----------
-$slotRepo = Join-Path $fx "Fake-dev1"
-New-Item -ItemType Directory -Force -Path $slotRepo | Out-Null
-G $slotRepo "init -q -b agent/dev1" | Out-Null
-G $slotRepo "config user.email t@t.t" | Out-Null
-G $slotRepo "config user.name t" | Out-Null
-[System.IO.File]::WriteAllText((Join-Path $slotRepo ".gitignore"), ".gate/`n")
-G $slotRepo "add -A" | Out-Null
-G $slotRepo "commit -q -m init" | Out-Null
-New-Item -ItemType Directory -Force -Path (Join-Path $slotRepo "Demo\Assets\GameScripts\HotFix\GameLogic") | Out-Null
-[System.IO.File]::WriteAllText((Join-Path $slotRepo "Demo\Assets\GameScripts\HotFix\GameLogic\S.cs"), "public class S {}`n")
-$r = Run-FC @("-RepoDir", $slotRepo, "-MessageFile", (M "m9.txt" "【新增】槽位: wip free commit"), "-All")
-Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: COMMITTED .*pushed=no') "S9 slot free commit no ticket, no push"
-Assert-True (@(Get-AtlasGuard $r).Count -eq 0) "S9b 没有要剔的已跟踪图集 -> 图集还原护栏两样都不记"
+# ---------- S9 不给清单 -> DENIED-fileset(-All 随槽位通道删除,只剩按路径提交) ----------
+$r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M "m9.txt" "【新增】订单: no list"))
+Assert-True ($r.code -eq 1 -and $r.verdict -match 'DENIED-fileset') "S9 不给 -PathListFile -> 拒"
 
-# S10 / S10b / S15 / S15b 只在服务端通道开着时成立(ServerDirName 留空时没有服务端仓可建夹具),关闭时整段跳过。
+# S10b / S15 / S15b 只在服务端通道开着时成立(ServerDirName 留空时没有服务端仓可建夹具),关闭时整段跳过。
 if (-not $srvDir) {
-  Write-Host "SKIP S10~S15b 服务端仓用例:服务端通道关闭(flow-config ServerDirName 留空)"
+  Write-Host "SKIP S10b~S15b 服务端仓用例:服务端通道关闭(flow-config ServerDirName 留空)"
 } else {
-# ---------- S10 slot fantasy: free commit (server ticket binds at the push point, 集成交付) ----------
-# 槽位交付 先提交、再合基线、再自检;提交点验票会把自检逼到同步之前(实发 2026-09-29 dev1)。
-$slotFantasy = Join-Path $slotRepo $srvDir
-New-Item -ItemType Directory -Force -Path $slotFantasy | Out-Null
-G $slotFantasy "init -q -b agent/dev1" | Out-Null
-G $slotFantasy "config user.email t@t.t" | Out-Null
-G $slotFantasy "config user.name t" | Out-Null
-[System.IO.File]::WriteAllText((Join-Path $slotFantasy ".gitignore"), ".gate/`n")
-G $slotFantasy "add -A" | Out-Null
-G $slotFantasy "commit -q -m init" | Out-Null
-[System.IO.File]::WriteAllText((Join-Path $slotFantasy "B.cs"), "public class B {}`n")
-$m10 = M "m10.txt" "【新增】服务端: change"
-$r = Run-FC @("-RepoDir", $slotFantasy, "-MessageFile", $m10, "-All")
-Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: COMMITTED .*pushed=no') "S10 slot fantasy .cs no ticket -> free commit, no push"
-
 # ---------- S10b main fantasy: strict server ticket ----------
 $mainFantasy = Join-Path $fx $srvDir
 New-Item -ItemType Directory -Force -Path $mainFantasy | Out-Null
@@ -261,47 +234,6 @@ Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: COMMITTED') "S15b �
 Assert-True ((($r.out -join "`n")) -notmatch '验证面内存在') "S15b md 不算服务端验证面漂移"
 }
 
-# ---------- S13 slot commit strips tracked .spriteatlasv2 churn, keeps new atlas (连 .meta) ----------
-# 先造一个「已跟踪」图集并入库(模拟基线里已存在的图集)
-New-Item -ItemType Directory -Force -Path (Join-Path $slotRepo "Demo\Assets\AssetArt\Atlas") | Out-Null
-$trackedAtlasRel = "Demo/Assets/AssetArt/Atlas/Tracked.spriteatlasv2"
-$trackedAtlasAbs = Join-Path $slotRepo ($trackedAtlasRel -replace '/', '\')
-[System.IO.File]::WriteAllText($trackedAtlasAbs, "packables:`n- a`n")
-G $slotRepo "add -- $trackedAtlasRel" | Out-Null
-G $slotRepo "commit -q -m baseline-atlas" | Out-Null
-# 本轮:已跟踪图集追加一行(churn) + 全新图集文件 + 一段代码
-[System.IO.File]::WriteAllText($trackedAtlasAbs, "packables:`n- a`n- b`n")
-$newAtlasRel = "Demo/Assets/AssetArt/Atlas/New.spriteatlasv2"
-[System.IO.File]::WriteAllText((Join-Path $slotRepo ($newAtlasRel -replace '/', '\')), "packables:`n- c`n")
-[System.IO.File]::WriteAllText((Join-Path $slotRepo (($newAtlasRel + ".meta") -replace '/', '\')), "guid: 0f6d`n")
-[System.IO.File]::WriteAllText((Join-Path $slotRepo "Demo\Assets\GameScripts\HotFix\GameLogic\S13.cs"), "public class S13 {}`n")
-$r = Run-FC @("-RepoDir", $slotRepo, "-MessageFile", (M "m13.txt" "【新增】槽位: code plus atlas"), "-All")
-Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: COMMITTED') "S13 slot commit with code+atlas committed"
-$committed = (G $slotRepo "show --name-only --format= HEAD") -join "`n"
-Assert-True ($committed -notmatch 'Tracked\.spriteatlasv2') "S13 tracked atlas churn not in commit"
-Assert-True ($committed -match 'S13\.cs') "S13 code file in commit"
-# 已跟踪图集:还原到 HEAD -> 工作树干净(无该路径 dirty)
-$stTracked = (G $slotRepo "status --porcelain -- $trackedAtlasRel") -join ""
-Assert-True ($stTracked.Trim().Length -eq 0) "S13 tracked atlas restored (worktree clean)"
-# 全新图集:本体与 .meta 一并入提交,不留未跟踪残留(guid 创建时定下;留盘会在主树补提后挡槽位合基线)
-Assert-True (($committed -match 'New\.spriteatlasv2(\r?\n|$)') -and ($committed -match 'New\.spriteatlasv2\.meta')) "S13 new atlas committed together with its .meta"
-$stNew = (G $slotRepo "status --porcelain -- $newAtlasRel $newAtlasRel.meta") -join ""
-Assert-True ($stNew.Trim().Length -eq 0) "S13 new atlas leaves no untracked residue"
-$ag = @(Get-AtlasGuard $r)
-Assert-True ($ag.Count -eq 1 -and $ag[0].event -eq "guard-ok" -and $ag[0].src -eq "单仓提交") ("S13 图集还原成了 -> 记一行 guard-ok(guard slot-atlas-restore,来源 单仓提交),实得 " + $ag.Count + " 行")
-
-# ---------- S13b 图集还原没成(index.lock 占着)-> 原 WARN 照打、照常收尾,记 degraded ----------
-# 只有图集改动、没有别的可提交:走 NOTHING-TO-COMMIT 前的还原分支(不 add -A,只读查询不受 index.lock 影响)。
-[System.IO.File]::WriteAllText($trackedAtlasAbs, "packables:`n- a`n- lock`n")
-$lockS13 = Join-Path $slotRepo ".git\index.lock"
-[System.IO.File]::WriteAllText($lockS13, "")
-try { $r = Run-FC @("-RepoDir", $slotRepo, "-MessageFile", (M "m13b.txt" "【变更】槽位: atlas only"), "-All") }
-finally { [System.IO.File]::Delete($lockS13) }
-$ag = @(Get-AtlasGuard $r)
-Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: NOTHING-TO-COMMIT' -and (($r.out -join "`n") -match '(?m)^WARN 图集还原到 HEAD 失败\(改动留在工作树,未入提交\):')) ("S13b 还原失败:原 WARN 文案照打,结论不变(" + $r.verdict + ")")
-Assert-True ($ag.Count -eq 1 -and $ag[0].event -eq "degraded" -and $ag[0].key -eq "slot-atlas-restore-failed" -and $ag[0].detail -match 'index\.lock') ("S13b 记一行 degraded(key slot-atlas-restore-failed),不记 guard-ok | " + $(if ($ag.Count) { $ag[0].event + " " + $ag[0].detail } else { "无" }))
-G $slotRepo ("checkout -q -- " + $trackedAtlasRel) | Out-Null
-
 # ---------- S11 CheckOnly zero-write ----------
 W "docs/check.md" "check`n"
 $r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M "m11.txt" "【新增】docs: check"), "-PathListFile", (L "l11.txt" @("docs/check.md")), "-CheckOnly")
@@ -315,7 +247,7 @@ Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: NOTHING-TO-COMMIT')
 $v12 = @($r.tel | Where-Object { $_.event -eq "单仓提交" -and $_.verdict -eq "NOTHING-TO-COMMIT" })
 Assert-True ($v12.Count -eq 1 -and -not $v12[0].PSObject.Properties["run"]) "R0 无交付关联号(直接调用)-> 结论行遥测不带 run 字段"
 
-# ---------- R1 经 槽位交付 调用(环境里有交付关联号)-> 各遥测行带 run ----------
+# ---------- R1 环境里有交付关联号-> 各遥测行带 run ----------
 $env:FLOW_DELIVER_RUN = "commitrun0001"
 try { $r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M "m12r.txt" "【文档】docs: noop with run"), "-PathListFile", (L "l12r.txt" @("docs/note.md"))) }
 finally { Remove-Item Env:\FLOW_DELIVER_RUN -ErrorAction SilentlyContinue }
@@ -382,17 +314,6 @@ $before = Snap $mainRepo $rels17
 $r = Run-FC @("-RepoDir", $mainRepo, "-MessageFile", (M "m17.txt" "【变更】docs: check only"), "-PathListFile", (L "l17.txt" $rels17), "-CheckOnly")
 Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: CHECK-PASS .*3 项') "S17 主仓 CheckOnly 通过且文件集含新文件"
 Assert-True ((Snap $mainRepo $rels17) -eq $before) "S17 主仓 CheckOnly 前后索引与工作树逐字节不变"
-
-# S17b 槽位 -All 形态:未提交的已跟踪图集改动在 CheckOnly 下绝不被还原
-[System.IO.File]::WriteAllText($trackedAtlasAbs, "packables:`n- a`n- uncommitted`n")
-[System.IO.File]::WriteAllText((Join-Path $slotRepo "Demo\Assets\GameScripts\HotFix\GameLogic\S17.cs"), "public class S17 {}`n")
-$rels17b = @($trackedAtlasRel, $newAtlasRel, "Demo/Assets/GameScripts/HotFix/GameLogic/S17.cs")
-Settle $slotRepo
-$before = Snap $slotRepo $rels17b
-$r = Run-FC @("-RepoDir", $slotRepo, "-MessageFile", (M "m17b.txt" "【新增】槽位: check only"), "-All", "-CheckOnly")
-Assert-True ($r.code -eq 0 -and $r.verdict -match '^VERDICT: CHECK-PASS') "S17b 槽位 -All CheckOnly 通过"
-Assert-True ((Snap $slotRepo $rels17b) -eq $before) "S17b 槽位 CheckOnly 前后索引与工作树(含图集改动)逐字节不变"
-Assert-True (([System.IO.File]::ReadAllText($trackedAtlasAbs)) -match 'uncommitted') "S17b 未提交图集改动未被还原"
 
 # ---------- S18 git 查询失败不得静默当空 -> INFRA ----------
 # 未诞生 HEAD 的仓:rev-parse 能解析仓根,但 diff HEAD / ls-tree HEAD 非零退出。修前被当作空输出,

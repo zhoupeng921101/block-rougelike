@@ -40,7 +40,7 @@ description: devflow 工作流规则族的一致性检查(分钟级、无状态�
    | 自审触发判定(判据正本在脚本;卡内只写触发名与处置,不复述判据) | `自审触发判定.ps1` 头部判据表;FIX-QUALIFY = `校验库.ps1` `Get-FixQualifyGap`(`单仓提交.ps1` 同源拒绝);RULES = `校验库.ps1` `RuleReadTable` | devflow 第三步「自审」、devflow-client「含新增资产的提交先落定派生物」与「取篇」条、README「提交前自审」 |
    | 固定序列脚本化 | devflow `references/script-consolidation.md`(入站指针 = shell-conventions「引擎」节) | devflow「git 规则」、obligation-ledger 承载行 |
    | 提交检查与检查凭据(拦截面与校验单源 校验库.ps1;hook 挂载状态以台账卷首为准) | obligation-ledger.md | devflow「git 规则」与禁止事项、devflow-client「自检」、luban-dev「配置管理禁止事项」表文档条(台账↔卡双向;放行标注写法可详略不同) |
-   | 机器常量单源(仓根、基线、服务端开关、残留槽位通道键) | `flow-config.psd1` | 各 `.ps1` 消费者、`Assets/` 下指名 `.claude` 脚本的引用点(经检查项 2 反向段取样;本作现无此类引用点) |
+   | 机器常量单源(仓根、基线、服务端开关) | `flow-config.psd1` | 各 `.ps1` 消费者、`Assets/` 下指名 `.claude` 脚本的引用点(经检查项 2 反向段取样;本作现无此类引用点) |
    | 检查边界(本卡 / refs-check / rules-audit 分界;refs-check 带引号复述本卡检查项 2 原文须逐字一致) | 本卡「检查项」+ 卷首边界段 | refs-check 边界段、「禁止事项」、「输入与写入面」核验目标表 |
 
 2. **引用完整性**(范围 = 规则栈内部:`.claude/` 下、CLAUDE.md、`.gitignore`;规则栈文件里出现的 `Assets/` 等工程实体路径不验存在,代码现实由开发与自检覆盖):族内文件提到的规则栈路径、脚本、skill 名、节标题内链逐一验存在。未跟踪文件被引用 → 提示同批入库。另跑 `.claude/devflow/理由对齐核对.ps1`,非零即 finding。

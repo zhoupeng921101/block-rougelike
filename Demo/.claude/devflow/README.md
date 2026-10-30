@@ -5,7 +5,7 @@ devflow 工作流的机械层。Agent 面入口是 `客户端自检.ps1` 与 `�
 脚本从 block-client 整套搬来,双仓共用的服务端分支(Fantasy worktree、服务端凭据、协议导出、部署)留在脚本里,按 flow-config `ServerDirName` 留空整段关闭(判据单源 = `hooks/hook函数库.ps1` `Test-ServerEnabled`)。本 README 只写客户端单端形态。
 
 **正本分工**(本 README 不复述这三处的内容,只给指针):
-- 机器常量(仓根 / 基线 / 残留槽位通道键):[flow-config.psd1](flow-config.psd1)。路径类键(RepoRoot)留空即由加载器按脚本自身位置推导,故配置里不存本机绝对路径;显式值优先。`FantasyRoot` / `ServerDirName` / `FantasyBaseline` 与 `LubanGen*Bat` 是服务端通道与 Luban 的预留键,本作留空。
+- 机器常量(仓根 / 基线 / 服务端开关):[flow-config.psd1](flow-config.psd1)。路径类键(RepoRoot)留空即由加载器按脚本自身位置推导,故配置里不存本机绝对路径;显式值优先。`FantasyRoot` / `ServerDirName` / `FantasyBaseline` 与 `LubanGen*Bat` 是服务端通道与 Luban 的预留键,本作留空。
 - 义务 → 绑定事件 → 保证等级:[obligation-ledger.md](obligation-ledger.md)。
 - 各段流程与判断规则:`.claude/skills/devflow*` 各卡。
 
@@ -77,7 +77,7 @@ Agent 在跑客户端自检之前跑一次,判本轮触发了哪几项自审义�
 
 | 脚本 | 职责 | 调用 | 退出码 |
 |---|---|---|---|
-| [单仓提交.ps1](单仓提交.ps1) | 清单式按路径提交(devflow 与人工入库通道的 Agent 入口)。主题格式与【修复】定性的拒绝口径见头注(`DENIED-subject` / `DENIED-qualify`)。清单路径带 `Demo/` 前缀。 | `[-RepoDir <仓>] -MessageFile <文件> (-PathListFile <文件> \| -All) [-Push] [-CheckOnly]`(`-All` 仅槽位仓;缺省不推) | 0/1/2/3 |
+| [单仓提交.ps1](单仓提交.ps1) | 清单式按路径提交(devflow 与人工入库通道的 Agent 入口)。主题格式与【修复】定性的拒绝口径见头注(`DENIED-subject` / `DENIED-qualify`)。清单路径带 `Demo/` 前缀。 | `[-RepoDir <仓>] -MessageFile <文件> -PathListFile <文件> [-Push] [-CheckOnly]`(缺省不推) | 0/1/2/3 |
 | [简报校验.ps1](简报校验.ps1) | 简报结构机判(段齐全 / 验收点空话 / 占位探测;必填段由模板 `## ` 标题解析,模板正本 = [templates/简报模板.md](templates/简报模板.md));简报落文件交接时自跑。 | `简报校验.ps1 -BriefFile <文件> [-TemplateFile <模板>]` | 0/1/2 |
 | [提交钩子安装.ps1](提交钩子安装.ps1) | 把 git 提交前钩子(sh 垫片,调 `hooks/提交前绑定核对.ps1`)装进仓的钩子目录;钩子不入库,新克隆 / 换机器后跑一次。不覆盖别处写的钩子。 | `提交钩子安装.ps1 [-RepoDir <仓>] [-CheckOnly\|-Remove]` | 0/1/2 |
 
@@ -140,7 +140,7 @@ Agent 在跑客户端自检之前跑一次,判本轮触发了哪几项自审义�
 | [hooks/提交检查.ps1](hooks/提交检查.ps1) | PreToolUse:Bash/PowerShell | 命令面强制检查:拦 `git commit`/`push`/`merge`。force-push 无条件拒;逐项校验客户端凭据、表文档同步、表数据转述、本地持久化白名单标签、集成分支 merge(服务端凭据一项随服务端通道关闭);`run_tests.ps1` 全量矩阵升为 ask。校验函数在 校验库.ps1。 |
 | [hooks/命令通路检查.ps1](hooks/命令通路检查.ps1) | PreToolUse:Bash/PowerShell | 拦两类命令通路:Bash 里拉起 powershell/pwsh(吞 `$`/`\`、GBK 乱码)、`cmd` 裸名调 bat(`NoDefaultCurrentDirectoryInExePath` 下找不到)。拒绝理由即改写法,判据见头注。 |
 | [hooks/写入补BOM.ps1](hooks/写入补BOM.ps1) | PostToolUse:Write/Edit(`*.ps1`/`*.psd1`) | 写完含非 ASCII 且无 BOM 的 PowerShell 文件,原字节前补 UTF-8 BOM 并经 additionalContext 回报;非 UTF-8 字节不动只回报。 |
-| [hooks/提交前绑定核对.ps1](hooks/提交前绑定核对.ps1) | git pre-commit(非 harness;经 `提交钩子安装.ps1` 装的垫片) | 会话外手动提交碰到 UI 绑定面时,对本次提交的索引跑 `UI绑定核对.ps1`,违规拒绝提交。残留槽位仓与合并收尾不拦,自身出错放行;判据与绕过见头注。 |
+| [hooks/提交前绑定核对.ps1](hooks/提交前绑定核对.ps1) | git pre-commit(非 harness;经 `提交钩子安装.ps1` 装的垫片) | 会话外手动提交碰到 UI 绑定面时,对本次提交的索引跑 `UI绑定核对.ps1`,违规拒绝提交。合并收尾不拦,自身出错放行;判据与绕过见头注。 |
 | [hooks/校验库.ps1](hooks/校验库.ps1) | 被 dot-source | 提交检查校验函数库(单一校验正本):验证面正则(`ClientSurfaceRe` 由 `ClientGateScanSurface` 拼出)、生成域正则与生成域登记 `GenDomains`、验凭据与表文档判定、按需篇点名判据表 `RuleReadTable`(自审触发判定 / 槽位领取 共用)等。提交检查与 单仓提交 共用。自 dot-source hook函数库.ps1。 |
 | [hooks/hook函数库.ps1](hooks/hook函数库.ps1) | 被 dot-source | hooks 与检查脚本共享函数库:配置懒加载、服务端通道开关 `Test-ServerEnabled`、stdin 读取、遥测(含入口 VERDICT 遥测与降级留痕 `Write-Degraded` / `Write-GuardOk`)、工作树哈希、凭据签发、自检的编排出口、合并冲突机械分流、Luban junction 复核、C# 去噪等。加载时只钉一次进程编码,无其他副作用。 |
 | [hooks/hook演练.ps1](hooks/hook演练.ps1) | 手动 | 检查演练:按 harness 方式(stdin)把伪造的 hook 输入喂给 hook 脚本回归验证;须从 `powershell.exe` 调用才与 harness 同引擎。调用 `-Hook <名\|路径> -Json <输入文件>`。 |

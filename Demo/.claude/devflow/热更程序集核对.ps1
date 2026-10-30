@@ -28,7 +28,7 @@
 #         1 FAIL(任一不变量被破坏)
 #         2 INFRA(两个 asset 任一缺失,或某列表键缺失 / 重复 / 解析不出)
 param(
-  [Parameter(Mandatory=$true)][string]$ProjectDir  # 槽位的 Demo
+  [Parameter(Mandatory=$true)][string]$ProjectDir  # 受检的 Demo
 )
 $ErrorActionPreference = "Stop"
 

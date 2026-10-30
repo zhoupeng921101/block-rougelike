@@ -132,7 +132,7 @@
 # 关位置绑定:本道虽是检查,却有真写副作用(编译产物),按写入口口径办(R8)。
 [CmdletBinding(PositionalBinding=$false)]
 param(
-  [Parameter(Mandatory=$true)][string]$ProjectDir  # 槽位的 Demo
+  [Parameter(Mandatory=$true)][string]$ProjectDir  # 受检的 Demo
 )
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "hooks\hook函数库.ps1")
@@ -215,14 +215,14 @@ while ($queue.Count -gt 0) {
   $specs.Add([pscustomobject]@{ Name = $name; Csproj = $cp; Text = $text; Expect = $expect; Asmdef = $asmdefPath })
 }
 if ($orphans.Count -gt 0) {
-  Write-Host ("EDITOR ASM BUILD : INFRA - csproj 须编辑器重生成:" + (($orphans | ForEach-Object { $_ + ".csproj" }) -join " / ") + " 收录 Assets 下的 .cs,Assets 下却已无同名 asmdef(已删或改名),引用图随之过期,重建 Compile 列表补不了;在槽位编辑器重生成 csproj 后重跑(免启槽位先 槽位领取.ps1 -StartUnity -Slot <N>)")
+  Write-Host ("EDITOR ASM BUILD : INFRA - csproj 须编辑器重生成:" + (($orphans | ForEach-Object { $_ + ".csproj" }) -join " / ") + " 收录 Assets 下的 .cs,Assets 下却已无同名 asmdef(已删或改名),引用图随之过期,重建 Compile 列表补不了;在编辑器重生成 csproj 后重跑(编辑器没开先请用户打开)")
   exit 2
 }
 
 # 引用集 / 宏过期先判(见头注),只认 exit 3;其余出口(Compile 列表过期 / INFRA)由本道下文自己处理。
 $regenCheck = Invoke-FlowChild (Join-Path $PSScriptRoot "重建csproj.ps1") @("-ProjectRoot", $root, "-Assembly", $ASM)
 if ($regenCheck.code -eq 3) {
-  Write-Host "EDITOR ASM BUILD : INFRA - csproj 须编辑器重生成(引用集 / 宏过期),重建 Compile 列表也编不准;在槽位编辑器重生成 csproj 后重跑(免启槽位先 槽位领取.ps1 -StartUnity -Slot <N>)"
+  Write-Host "EDITOR ASM BUILD : INFRA - csproj 须编辑器重生成(引用集 / 宏过期),重建 Compile 列表也编不准;在编辑器重生成 csproj 后重跑(编辑器没开先请用户打开)"
   foreach ($l in @($regenCheck.lines | Where-Object { $_ -match '^(STALE-REFS|STALE-DEFINES|VERDICT:)' })) { Write-Host ("    " + $l) }
   exit 2
 }
@@ -488,7 +488,7 @@ if ($code -ne 0) {
     if ($outside.Count -gt 0) { $where += ("报错落在比对面外的 " + (($outside | ForEach-Object { $_ + ".csproj" }) -join " / ") + " 上(Assets 与内嵌包下都无同名 asmdef,本道不比对)") }
     if ($unowned -gt 0) { $where += ("{0} 行报错认不出所属 csproj" -f $unowned) }
     if ($errLines.Count -eq 0) { $where += "认不出任何错误行" }
-    Write-Host ("    (不排除 csproj 过期:" + ($where -join ";") + "。报错指向与本次改动无关的文件、尤其 CS2001 时,先在槽位编辑器重生成 csproj 再重跑)")
+    Write-Host ("    (不排除 csproj 过期:" + ($where -join ";") + "。报错指向与本次改动无关的文件、尤其 CS2001 时,先在位编辑器重生成 csproj 再重跑)")
   }
   # 全量回显,不摘录:漏掉哪一条都可能正是根因那条。
   foreach ($line in @($out)) { Write-Host ("    " + $line) }

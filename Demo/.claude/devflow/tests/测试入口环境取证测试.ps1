@@ -42,8 +42,6 @@ function New-Fixture {
   RepoRoot         = '$($tmp -replace "'","''")'
   FantasyRoot      = '$($tmp -replace "'","''")'
   ServerDirName    = 'block-server'
-  SlotBranchPrefix = 'agent/dev'
-  SlotRootRe       = '-dev[1-9]$'
   ClientBaseline   = 'main'
   FantasyBaseline  = 'main'
 }

@@ -21,7 +21,6 @@ param(
   [string]$RepoDir = "",
   [Parameter(Mandatory = $true)][string]$MessageFile,
   [string]$PathListFile = "",
-  [switch]$All,
   [switch]$Gate,
   [switch]$CheckOnly
 )
@@ -44,16 +43,7 @@ if (-not $root) { Write-Verdict ("DENIED-repo-unresolved | 无法解析 git 仓�
 
 # 本次提交的文件集:BOM 面据此枚举。给不出清单时交给 单仓提交 拒绝,本脚本不代判。
 $relPaths = @()
-if ($All) {
-  $status = @(& git -C $root -c core.quotepath=false status --porcelain --untracked-files=all 2>$null)
-  foreach ($line in $status) {
-    if ($line.Length -lt 4) { continue }
-    $p = $line.Substring(3).Trim()
-    if ($p -match ' -> ') { $p = ($p -split ' -> ')[-1].Trim() }
-    $p = $p.Trim('"')
-    if ($p) { $relPaths += $p }
-  }
-} elseif ($PathListFile) {
+if ($PathListFile) {
   if (-not (Test-Path -LiteralPath $PathListFile)) { Write-Verdict ("DENIED-fileset | 清单文件不存在:" + $PathListFile) 2 }
   $relPaths = @(Get-Content -LiteralPath $PathListFile -Encoding UTF8 | ForEach-Object { ([string]$_).Trim() } | Where-Object { $_ })
 }
@@ -98,7 +88,7 @@ if ($Gate) {
 # 提交:全部校验由 单仓提交.ps1 同源执行(脚本信道,失败即停)。
 $cli = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", (Join-Path $script:FlowDir "单仓提交.ps1"),
   "-RepoDir", $root, "-MessageFile", $MessageFile)
-if ($All) { $cli += "-All" } else { $cli += @("-PathListFile", $PathListFile) }
+if ($PathListFile) { $cli += @("-PathListFile", $PathListFile) }
 if ($CheckOnly) { $cli += "-CheckOnly" }
 & powershell.exe @cli
 exit $LASTEXITCODE

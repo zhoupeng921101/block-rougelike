@@ -10,7 +10,7 @@
 # 退出码:0 已清理 / 无可清 / -CheckOnly 报告完成;1 票缺失 / 不可读 / 非 PASS / 缺树哈希 / 票树不覆盖当前树;2 参数错。
 [CmdletBinding(PositionalBinding=$false)]
 param(
-  [Parameter(Mandatory = $true)][string]$ProjectDir,   # Demo 根(主工程或槽位)
+  [Parameter(Mandatory = $true)][string]$ProjectDir,   # Demo 根
   [switch]$CheckOnly
 )
 $ErrorActionPreference = "Stop"

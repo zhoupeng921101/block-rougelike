@@ -55,7 +55,7 @@
 #         1 FAIL(至少一处)
 #         2 INFRA(两个扫描根都不在,或某个面在而它的原语不见了)
 param(
-  [Parameter(Mandatory=$true)][string]$ProjectDir  # 槽位的 Demo
+  [Parameter(Mandatory=$true)][string]$ProjectDir  # 受检的 Demo
 )
 $ErrorActionPreference = "Stop"
 

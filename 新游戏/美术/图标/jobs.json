@@ -1,0 +1,11 @@
+[
+ {
+  "prompt_file": "定稿词/基因_激光炮_v1.txt",
+  "final": true,
+  "family": "激光炮v1",
+  "refs": [
+   "参考/v3A_基因槽_激光炮_x4.png"
+  ],
+  "out": "出图/基因_激光炮_v1.png"
+ }
+]

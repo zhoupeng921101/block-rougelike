@@ -18,11 +18,6 @@
   # (判据单源 = hook函数库 Test-ServerEnabled)。填上目录名才启用服务端通道。
   ServerDirName    = ''
 
-  # 槽位池已拆(2026-10-30,改为主工作树单线开发)。下面两键只留给 提交检查 / 单仓提交 / 提交前绑定核对
-  # 里残留的槽位通道判定:旧 worktree(-devN 目录、agent/devN 分支)清掉后连同那些分支一并删除。
-  SlotBranchPrefix = 'agent/dev'
-  SlotRootRe       = '-dev[1-2]$'
-
   # 基线(自审 diff 与提交检查的集成分支;FantasyBaseline 只在启用服务端通道时读)
   ClientBaseline   = 'main'
   FantasyBaseline  = 'main'

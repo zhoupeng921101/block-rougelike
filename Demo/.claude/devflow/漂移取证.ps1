@@ -26,7 +26,7 @@
 # 【调用后动作】-Watch 会一直占住当前进程,须放后台跑;-Mark 与 -Report 秒回。
 #   典型序列:先 -Watch 起后台 → 照常干活 → 撞见落点不对立刻 -Mark → 随后 -Report 出结论 → 停掉后台。
 #
-# 【配套入口】占用面板.ps1(看槽位与实例占用全景)、unity-check skill(连接自检与绑定诊断)。
+# 【配套入口】unity-check skill(连接自检与绑定诊断)。
 
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName = "Watch")]
 param(

@@ -54,7 +54,7 @@
 # 测试注入点:环境变量 DEVFLOW_TEST_GATE_SCAN_DIR 非空时,各道脚本改从该目录取(文件名与道次不变,
 # 读取面互核照常),供 tests\客户端自检测试.ps1 放假子道;未设 = 零动作。设了会打一行 NOTE 提示。
 param(
-  [Parameter(Mandatory=$true)][string]$ProjectDir  # 槽位的 Demo,如 ...\block-rougelike-dev1\Demo
+  [Parameter(Mandatory=$true)][string]$ProjectDir  # 受检的 Demo,如 ...\block-rougelike\Demo
 )
 $ErrorActionPreference = "Stop"
 

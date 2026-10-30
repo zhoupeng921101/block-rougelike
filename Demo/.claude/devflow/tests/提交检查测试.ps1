@@ -2,9 +2,8 @@
 # 的命令面演练矩阵。经 hook演练.ps1 按 harness 方式(stdin JSON、同引擎)喂伪造输入,断言
 # allow/deny。
 #
-# 本 hook 要跑 rev-parse / diff --cached / diff base...HEAD,所以必须有真 git 夹具仓。夹具仓按**仓形**
-# 被判通道,不必注入配置:目录名不匹配 flow-config SlotRootRe 即主客户端,以 `-dev1` 结尾
-# 即槽位,leaf 等于 ServerDirName 即服务端。
+# 本 hook 要跑 rev-parse / diff --cached / diff HEAD,所以必须有真 git 夹具仓。夹具仓按**仓形**
+# 被判通道,不必注入配置:leaf 等于 ServerDirName 即服务端,其余即客户端。
 #
 # 隔离:$env:LOCALAPPDATA 指到夹具内,故 hook 子进程的批准标记与遥测都落夹具、不碰真
 # claude-wf-3b(hook函数库 WfStateRoot 由该环境变量派生)。
@@ -50,17 +49,12 @@ function Invoke-GateDrill([string]$Name, [string]$Command, [string]$Cwd) {
   return (Invoke-PayloadDrill $Name (New-GatePayload $Command $Cwd))
 }
 # ---------- 夹具 ----------
-# 主客户端形态:目录名不含 -devN,leaf 非 Fantasy。
+# 客户端形态:leaf 非 Fantasy。
 $mainRepo = Join-Path $fx "MainRepo"
 New-GitRepo $mainRepo
 Write-F $mainRepo ".gitignore" ".gate/`n"
 G $mainRepo "add -A" | Out-Null
 G $mainRepo "commit -q -m ignore" | Out-Null
-
-# 槽位形态:目录名以 -dev1 结尾,匹配 flow-config SlotRootRe。
-$slotRepo = Join-Path $fx "proj-dev1"
-New-GitRepo $slotRepo
-G $slotRepo "checkout -q -b agent/dev1" | Out-Null
 
 # 服务端形态:leaf 等于 flow-config ServerDirName。
 $srvRepo = Join-Path $fx "Fantasy"
@@ -76,7 +70,6 @@ function Stage([string]$Root, [string]$Rel, [string]$Text) {
 function Unstage([string]$Root) { G $Root "reset -q" | Out-Null }
 
 $qm = '"' + $mainRepo + '"'
-$qs = '"' + $slotRepo + '"'
 $qv = '"' + $srvRepo + '"'
 
 Write-Host "== 提交检查 演练矩阵 =="
@@ -144,37 +137,21 @@ try {
 
   # ---------- P1 主仓 push -> allow(commit 才是咽喉) ----------
   $o = Invoke-GateDrill "p1" ("git -C " + $qm + " push origin main") $mainRepo
-  Assert-True (-not (Test-Denied $o)) "P1 非槽位 push -> allow"
-
-  # ---------- P2 槽位 push:分支改动含表源无文档 -> deny ----------
-  Write-F $slotRepo "Configs/GameConfig/Datas/tbslot.xlsx" "s"
-  G $slotRepo "add -A" | Out-Null
-  G $slotRepo "commit -q -m `"data: slot table`"" | Out-Null
-  $o = Invoke-GateDrill "p2" ("git -C " + $qs + " push origin agent/dev1") $slotRepo
-  Assert-True (Test-Denied $o) "P2 槽位 push 表源无文档 -> deny"
-  Assert-True ($o -match 'tbslot\.xlsx') "P2 拒因点名槽位分支上的 xlsx"
-
-  # ---------- P3 槽位 push:分支内说明文档转述表数据 -> deny ----------
-  Write-F $slotRepo "Configs/GameConfig/Datas/配置表说明.md" "notes`n`n| 40101 | 周一第一条 | 20 |`n"
-  G $slotRepo "add -A" | Out-Null
-  G $slotRepo "commit -q -m `"docs: 现行数据`"" | Out-Null
-  $o = Invoke-GateDrill "p3" ("git -C " + $qs + " push origin agent/dev1") $slotRepo
-  Assert-True (Test-Denied $o) "P3 槽位 push 说明文档数据行 -> deny"
-  Assert-True ($o -match '表数据转述探测') "P3 拒因是表数据转述"
+  Assert-True (-not (Test-Denied $o)) "P1 push(无 force)-> allow"
 
   # ---------- F1 force push -> 无条件 deny ----------
   $o = Invoke-GateDrill "f1" ("git -C " + $qm + " push --force origin main") $mainRepo
   Assert-True (Test-Denied $o) "F1 force push -> deny"
   Assert-True ($o -match 'force push') "F1 拒因是 force push"
 
-  # S1~S8 只在服务端通道开着时成立(leaf 等于 ServerDirName 才算服务端仓);关闭时名为 Fantasy 的仓就是普通主仓,
+  # S1~S4 只在服务端通道开着时成立(leaf 等于 ServerDirName 才算服务端仓);关闭时名为 Fantasy 的仓就是普通主仓,
   # 服务端验票分支整段不走,改核关闭态:提交不在客户端验证面的 .cs 照常放行。
   if (-not (Test-ServerEnabled)) {
     Stage $srvRepo "APP/Entity/Foo.cs" "class Foo {}`n"
     $o = Invoke-GateDrill "s0" ("git -C " + $qv + " commit -m `"feat: foo`"") $srvRepo
     Assert-True (-not (Test-Denied $o)) "S0 服务端通道关闭:名为 Fantasy 的仓按主客户端判,不在验证面的 .cs 提交 -> allow"
     Unstage $srvRepo
-    Write-Host "SKIP S1~S8 服务端验票用例:服务端通道关闭(flow-config ServerDirName 留空)"
+    Write-Host "SKIP S1~S4 服务端验票用例:服务端通道关闭(flow-config ServerDirName 留空)"
   } else {
   # ---------- S1 服务端 .cs 无票 -> deny ----------
   Stage $srvRepo "APP/Entity/Foo.cs" "class Foo {}`n"
@@ -206,53 +183,16 @@ try {
   Assert-True (-not (Test-Denied $o)) "S4 非验证面漂移 -> allow"
   Assert-True ($o -notmatch '验证面内存在') "S4 md 不算服务端验证面漂移"
 
-  # ---------- S5~S8 槽位 Fantasy:提交自由,push 点严格验服务端票 ----------
-  # 槽位交付 先提交、再合基线、再自检;提交点验票会把自检逼到同步之前(实发 2026-09-29 dev1)。
-  $slotSrv = Join-Path (Join-Path $fx "proj-dev2") "Fantasy"
-  New-GitRepo $slotSrv
-  Write-F $slotSrv ".gitignore" ".gate/`n"
-  G $slotSrv "add -A" | Out-Null
-  G $slotSrv "commit -q -m ignore" | Out-Null
-  G $slotSrv "checkout -q -b agent/dev2" | Out-Null
-  $qss = '"' + $slotSrv + '"'
-  Stage $slotSrv "APP/Entity/Baz.cs" "class Baz {}`n"
-  $o = Invoke-GateDrill "s5" ("git -C " + $qss + " commit -m `"feat: baz`"") $slotSrv
-  Assert-True (-not (Test-Denied $o)) "S5 槽位 Fantasy .cs 无票 -> 提交自由 allow"
-  G $slotSrv "commit -q -m baz" | Out-Null
-  $o = Invoke-GateDrill "s6" ("git -C " + $qss + " push origin agent/dev2") $slotSrv
-  Assert-True (Test-Denied $o) "S6 槽位 Fantasy push 分支含 .cs 而无票 -> deny"
-  Assert-True ($o -match '槽位服务端推送验凭据') "S6 拒因是槽位服务端推送验凭据"
-  New-Ticket $slotSrv
-  $o = Invoke-GateDrill "s7" ("git -C " + $qss + " push origin agent/dev2") $slotSrv
-  Assert-True (-not (Test-Denied $o)) "S7 槽位 Fantasy push 有票 -> allow"
-  Write-F $slotSrv "APP/Entity/Qux.cs" "class Qux {}`n"
-  $o = Invoke-GateDrill "s7b" ("git -C " + $qss + " push") $slotSrv
-  Assert-True ((Test-Denied $o) -and ($o -match 'tree-mismatch')) "S7b 检查后工作树再改 -> 票作废(严格树),无 refspec 推当前槽位分支同样验"
-  [System.IO.File]::Delete((Join-Path $slotSrv "APP/Entity/Qux.cs"))
-  $slotSrvDoc = Join-Path (Join-Path $fx "proj-dev3") "Fantasy"
-  New-GitRepo $slotSrvDoc
-  G $slotSrvDoc "checkout -q -b agent/dev3" | Out-Null
-  Write-F $slotSrvDoc "docs/readme.md" "notes`n"
-  G $slotSrvDoc "add -A" | Out-Null
-  G $slotSrvDoc "commit -q -m docs" | Out-Null
-  $o = Invoke-GateDrill "s8" ("git -C `"" + $slotSrvDoc + "`" push origin agent/dev3") $slotSrvDoc
-  Assert-True (-not (Test-Denied $o)) "S8 槽位 Fantasy 分支只动非验证面文件 -> push 不验票 allow"
   }
 
   # ================= 命令面复合形态:分段判定 =================
-  # 夹具:主客户端仓 GateMain(a.cs 已入库、工作树有未暂存改动、无凭据)+ 其 worktree 槽位
-  # GateMain-dev2(分支 agent/dev2,领先一个未推送提交,无凭据)。无 origin:合并验凭据读作「从未推送」。
+  # 夹具:客户端仓 GateMain(a.cs 已入库、工作树有未暂存改动、无凭据)。
   $gm = Join-Path $fx "GateMain"
   New-GitRepo $gm
   Write-F $gm ".gitignore" ".gate/`n"
   Write-F $gm "Demo/Assets/GameScripts/a.cs" "class A {}`n"
   G $gm "add -A" | Out-Null
   G $gm "commit -q -m base" | Out-Null
-  $gwt = Join-Path $fx "GateMain-dev2"
-  G $gm ("worktree add -q -b agent/dev2 `"" + $gwt + "`"") | Out-Null
-  Write-F $gwt "Demo/Assets/GameScripts/b.cs" "class B {}`n"
-  G $gwt "add -A" | Out-Null
-  G $gwt "commit -q -m slot" | Out-Null
   Write-F $gm "Demo/Assets/GameScripts/a.cs" "class A { int x; }`n"
   $qg = '"' + $gm + '"'
   $csRel = "Demo/Assets/GameScripts/a.cs"
@@ -260,10 +200,6 @@ try {
   # ---------- H1 merge 与 commit 同命令:commit 段照检 ----------
   $o = Invoke-GateDrill "h1" ("git -C " + $qg + " merge origin/main; git -C " + $qg + " commit -a -m x") $gm
   Assert-True ((Test-Denied $o) -and ($o -match '验凭据')) "H1 merge+commit 同命令 -> commit 段验凭据 deny"
-
-  # ---------- H2 槽位 commit 与 push 同命令 ----------
-  $o = Invoke-GateDrill "h2" ("git -C " + $qs + " commit -a -m x; git -C " + $qs + " push origin agent/dev1") $slotRepo
-  Assert-True (Test-Denied $o) "H2 槽位 commit+push 同命令 -> deny"
 
   # ---------- H3 路径提交不带 -- / -o / -i ----------
   $o = Invoke-GateDrill "h3a" ("git -C " + $qg + " commit -m x " + $csRel) $gm
@@ -279,16 +215,6 @@ try {
   $o = Invoke-GateDrill "h4b" ("git -C " + $qg + " commit -qam x") $gm
   Assert-True ((Test-Denied $o) -and ($o -match '验凭据')) "H4b commit -qam -> deny"
 
-  # ---------- H5 主仓根推槽位分支(worktree 共享分支)按 refspec 目标判 ----------
-  $o = Invoke-GateDrill "h5a" ("git -C " + $qg + " push origin agent/dev2") $gm
-  Assert-True (Test-Denied $o) "H5a 主仓根 push agent/dev2 -> 按槽位验凭据 deny"
-  $o = Invoke-GateDrill "h5b" ("git -C " + $qg + " push origin refs/heads/agent/dev2:refs/heads/agent/dev2") $gm
-  Assert-True (Test-Denied $o) "H5b 全名 refspec 推槽位分支 -> deny"
-  $o = Invoke-GateDrill "h5c" ("git -C " + $qg + " push origin agent/dev2:main") $gm
-  Assert-True (Test-Denied $o) "H5c 槽位分支作源推到 main -> deny"
-  $o = Invoke-GateDrill "h5d" ("git -C " + $qg + " push origin HEAD:agent/dev2") $gm
-  Assert-True (Test-Denied $o) "H5d 非槽位 HEAD 推到槽位分支 -> deny"
-
   # ---------- M1 引号内的 git(cmd /c、powershell -Command)----------
   $o = Invoke-GateDrill "m1a" ("cmd /c `"git -C " + $gm + " commit -a -m x`"") $gm
   Assert-True ((Test-Denied $o) -and ($o -match '验凭据')) "M1a cmd /c `"git commit`" -> deny"
@@ -302,20 +228,16 @@ try {
   Assert-True ((Test-Denied $o) -and ($o -match '验凭据')) "M2b Set-Location 后 commit -> deny"
 
   # ---------- M3 force push 的 +refspec 与合写 -uf ----------
-  $o = Invoke-GateDrill "m3a" ("git -C " + $qs + " push origin +agent/dev1") $slotRepo
+  $o = Invoke-GateDrill "m3a" ("git -C " + $qg + " push origin +main") $gm
   Assert-True ((Test-Denied $o) -and ($o -match 'force push')) "M3a +refspec -> force deny"
-  $o = Invoke-GateDrill "m3b" ("git -C " + $qs + " push -uf origin agent/dev1") $slotRepo
+  $o = Invoke-GateDrill "m3b" ("git -C " + $qg + " push -uf origin main") $gm
   Assert-True ((Test-Denied $o) -and ($o -match 'force push')) "M3b -uf -> force deny"
 
-  # ---------- M4 合并源的非孤立写法 ----------
+  # ---------- M4 合并类动词不再验凭据(槽位池已拆,没有未推送的槽位分支可引入) ----------
   $o = Invoke-GateDrill "m4a" ("git -C " + $qg + " merge refs/heads/agent/dev2") $gm
-  Assert-True ((Test-Denied $o) -and ($o -match '合并验凭据')) "M4a merge refs/heads/agent/dev2 -> deny"
-  $o = Invoke-GateDrill "m4b" ("git -C " + $qg + " merge agent/dev2~0") $gm
-  Assert-True ((Test-Denied $o) -and ($o -match '合并验凭据')) "M4b merge agent/dev2~0 -> deny"
+  Assert-True (-not (Test-Denied $o)) "M4a merge 本地分支 -> allow"
   $o = Invoke-GateDrill "m4c" ("git -C " + $qg + " pull . agent/dev2") $gm
-  Assert-True ((Test-Denied $o) -and ($o -match '合并验凭据')) "M4c pull . agent/dev2 -> deny"
-  $o = Invoke-GateDrill "m4d" ("git -C " + $qg + " merge origin/agent/dev2") $gm
-  Assert-True (-not (Test-Denied $o)) "M4d merge origin/agent/dev2(已验远端)-> allow"
+  Assert-True (-not (Test-Denied $o)) "M4c pull . <本地分支> -> allow"
 
   # ---------- M5 全量矩阵 ask:-Suite 须在同一段 ----------
   $o = Invoke-GateDrill "m5" ("git -C " + $qg + " status; & powershell.exe -NoProfile -File 'D:\x\run_tests.ps1'; Write-Host -Suite") $gm

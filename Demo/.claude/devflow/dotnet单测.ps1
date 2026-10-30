@@ -23,7 +23,7 @@
 #         2 INFRA(找不到 dotnet / 找不到测试工程 / restore 失败 / 只有文件锁类错误)
 [CmdletBinding(PositionalBinding=$false)]
 param(
-  [Parameter(Mandatory=$true)][string]$ProjectDir  # 槽位的 Demo
+  [Parameter(Mandatory=$true)][string]$ProjectDir  # 受检的 Demo
 )
 $ErrorActionPreference = "Stop"
 

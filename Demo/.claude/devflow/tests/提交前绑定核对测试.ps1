@@ -5,11 +5,11 @@
 # 承重用例:
 #   H4 / H5 — 判的是索引不是工作树。H4:_Gen 加了字段并进了提交,绑好的 prefab 只在工作树里 -> 仍拦;
 #             H5:工作树里的 prefab 是坏的但没进提交 -> 不拦。改成扫工作树,这两条同时翻。
-#   H6 / H7 — 槽位与合并收尾不拦。删掉任一条跳过,槽位交付 的提交或 main 上的合并收尾会被钩子打断。
+#   H6 / H7 — 仓根名形如 -devN 照核(槽位跳过已随槽位池拆除);合并收尾不拦,删掉这条跳过 main 上的合并收尾会被钩子打断。
 #   I5      — 不覆盖别处写的钩子。
 # 放行类用例一律同时断言输出里没有 WARN:钩子体出错也是退出码 0,只看退出码分不清「判了放行」与「没跑成」。
 # 护栏遥测(读隔离 LOCALAPPDATA,按 JSON 解析):扫描给出结论(H1 放行 / H2 拒)记 guard-ok,没跑成放行(H8)记
-#   degraded(guard precommit-uibind / key precommit-uibind-error),跳过的(H3 / H6 / H7)两样都不记。
+#   degraded(guard precommit-uibind / key precommit-uibind-error),跳过的(H3 / H7)两样都不记。
 #   入账函数缺失不改判决:载不进 校验库 照打 WARN 放行(H8c);库里缺 Write-GuardOk 时拒照拒、放行照放行(H8d / H8e)。
 # 跑法:提交前绑定核对测试.ps1 [-Target <钩子体路径>] [-Installer <安装脚本路径>]
 [CmdletBinding(PositionalBinding=$false)]
@@ -51,7 +51,7 @@ function Get-PrefabSource([hashtable]$Bound) {
   return $text
 }
 
-# 一个绑定完整的假仓:窗 UIFooPanel 一个字段 m_btn_A,已绑。$Leaf 决定仓根目录名(槽位判定看它)。
+# 一个绑定完整的假仓:窗 UIFooPanel 一个字段 m_btn_A,已绑。$Leaf 决定仓根目录名。
 function New-Fixture([string]$Leaf = "repo") {
   Remove-Fixture
   $script:fx = Join-Path $env:TEMP ("flowtest-precommit-" + [Guid]::NewGuid().ToString("N"))
@@ -154,8 +154,7 @@ try {
   Write-F $repo $script:PrefabRel (Get-PrefabSource @{ m_btn_A = "0" })
   G $repo "add -A" | Out-Null
   $r = Invoke-HookBody $repo
-  Assert-True ($r.code -eq 0 -and $r.out -notmatch 'WARN') "H6 槽位工作树(仓根名命中 SlotRootRe)-> 不拦"
-  Assert-True ($r.guard.Count -eq 0) "H6b 槽位跳过 -> 护栏行两样都不记"
+  Assert-True ($r.code -eq 1 -and $r.out -match 'UNBOUND') "H6 仓根名形如 -dev1 不再按槽位跳过 -> 照核、拦"
 
   $repo = New-Fixture
   Write-F $repo $script:PrefabRel (Get-PrefabSource @{ m_btn_A = "0" })

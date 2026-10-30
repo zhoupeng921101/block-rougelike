@@ -1,35 +1,15 @@
 ﻿# 提交检查.ps1 - PreToolUse hook on Bash/PowerShell: the single hard choke point.
 # Intercepts git commit / push / merge-like command strings:
 #   1. force-push: denied outright.
-#   2. client-code ticket check, split by repo shape to match each channel's real order:
-#      - MAIN repo (gate-then-commit): a commit touching Assets/GameScripts|Launcher
-#        **.cs/.asmdef requires .gate/ticket.json PASS whose tree equals the CURRENT
-#        working tree, tolerating temp-test deletions (Assets/Editor/Tests) and drift
-#        outside the client verification surface (校验库.ps1 ClientSurfaceRe)
-#        between gate and commit.
-#      - SLOT (commit-freely-then-gate-then-push): commits are free, PUSH requires ticket
-#        PASS with the same tolerance. A push is slot-bound when its repo root matches -devN
-#        OR any refspec source/destination names a slot branch agent/devN: slots are
-#        worktrees of the main repo and share its branches, so `git -C <main> push origin
-#        agent/devN` pushes exactly the slot's commits and is checked against the worktree
-#        that has agent/devN checked out (its ticket, its tree).
-#   3. SERVER repo (root basename Fantasy), split by repo shape like the client:
-#      - MAIN Fantasy (gate-then-commit): a commit touching any .cs requires a
-#        .gate/ticket.json PASS from 服务端自检.ps1 (dotnet build 0err 0warn), strict tree.
-#      - SLOT Fantasy (<slot root>/Fantasy; commit-freely-then-gate-then-push): commits are
-#        free; pushing the slot branch whose diff vs the Fantasy baseline hits the server
-#        verification surface requires that ticket, strict tree. 槽位交付 commits first,
-#        syncs the baseline, THEN gates - a commit-point ticket would force the gate onto
-#        the unsynced tree (baseline-added code / scan anchors missing).
+#   2. client-code ticket check (gate-then-commit): a commit touching Assets/GameScripts|Launcher
+#      **.cs/.asmdef requires .gate/ticket.json PASS whose tree equals the CURRENT working tree,
+#      tolerating temp-test deletions (Assets/Editor/Tests) and drift outside the client
+#      verification surface (校验库.ps1 ClientSurfaceRe) between gate and commit.
+#   3. SERVER repo (root basename = ServerDirName; channel off while that key is empty): a commit
+#      touching any .cs requires a .gate/ticket.json PASS from 服务端自检.ps1, strict tree.
 #   4. local-persistence probe: added lines in GameLogic / GameBase matching PlayerPrefs write / file
 #      write APIs require the commit message (or a pushed commit message) to carry a
 #      本地白名单 justification tag, per data-authority whitelist rule.
-#   5. merge-like verbs (merge / pull . / rebase / cherry-pick / reset) on an integration
-#      branch (client main / server Fantasy main) with a LOCAL slot branch agent/devN as
-#      source (any spelling: refs/heads/agent/devN, agent/devN~k, ...): allowed only when
-#      local agent/devN == origin/agent/devN, i.e. every slot commit was already pushed
-#      (=gate-verified at the slot push point). Closes the fast-forward loophole in the
-#      "main push adds no new code" premise.
 # COMMAND MODEL: the command is split into segments at shell separators (; && || | & and
 # newlines) and every git invocation is judged on its own - any invocation that should be
 # denied denies the whole command. (Before: the first recognised verb decided the whole
@@ -43,8 +23,9 @@
 # close-out form that bypasses the shared index) it is the pathspec-scoped HEAD-to-worktree
 # diff plus untracked files under the pathspec INSTEAD, and the staged set does not enter;
 # -i <paths> (staged + paths) over-collects.
-# Main-repo push validation (client main / main Fantasy) beyond force-deny is intentionally
-# absent: commit is the choke point and pushing adds no new code (ledger records this).
+# Push validation beyond force-deny is intentionally absent: commit is the choke point and
+# pushing adds no new code (ledger records this). Merge-like verbs are not gated either: the
+# slot pool whose un-pushed branches they could bring in was removed 2026-10-30.
 # Besides the git gate, this hook carries ONE non-git policy: a full run_tests.ps1 matrix
 # launch escalates to an "ask" decision (user veto; see the run_tests block below). If more
 # command-surface policy ever accrues, split it into its own hook instead of widening this one.
@@ -61,7 +42,7 @@
 # hitting only costs the full path); a payload spelling ASCII as \u00XX escapes also takes the
 # full path, so a command naming either word never skips a policy.
 # Check functions/constants live in 校验库.ps1 (single check source, shared with the
-# approved delivery scripts 单仓提交/集成交付 - same checks, script-internal git,
+# approved commit script 单仓提交 - same checks, script-internal git,
 # fail-closed there); this hook keeps command-surface lexing, deny policy and fail-open.
 # No script-name whitelist: waving through a whole command because it invokes an approved
 # delivery script would let `<script call>; git push --force` escape as a unit. The approved
@@ -73,11 +54,11 @@ $hookRaw = Read-HookStdin
 if ($hookRaw -notmatch '(?i)git|run_tests|\\u00[4-7]') { exit 0 }
 . (Join-Path $PSScriptRoot "校验库.ps1")
 
-# flow-config (baseline/slot detection) is loaded lazily, so non-git tool calls never pay
+# flow-config (baseline / server switch) is loaded lazily, so non-git tool calls never pay
 # the load. Config load failure is one of two fail-closed paths of this hook (deny +
 # telemetry + fix pointer): the config is the gate's rule source, and failing open here
-# silently drops the main-repo ticket and persistence checks (null config made `-match
-# $null` judge every repo a slot; live-verified). The other fail-closed path is an
+# silently drops the ticket and persistence checks (null config disarmed the repo-shape
+# matches; live-verified). The other fail-closed path is an
 # unresolvable repo root for a gated invocation (see Resolve-InvRoot). Other internal errors
 # keep the outer fail-open posture.
 
@@ -180,9 +161,6 @@ function Join-CmdPath([string]$Base, [string]$P) {
     if ([System.IO.Path]::IsPathRooted($q) -or -not $Base) { return $q }
     return [System.IO.Path]::GetFullPath((Join-Path $Base $q))
   } catch { return ([string]$Base + '\' + [string]$P) }
-}
-function Get-NormPath([string]$P) {
-  try { return [System.IO.Path]::GetFullPath($P.Replace('/', '\')).TrimEnd('\').ToLowerInvariant() } catch { return $P.ToLowerInvariant() }
 }
 function Test-GitToken([string]$Tok, [bool]$First) {
   if ($Tok -match '^<q\d+>$') {
@@ -356,24 +334,12 @@ function Get-GateConfig {
   $c = $null
   try { $c = Get-FlowConfig } catch {}
   # ServerDirName 留空 = 服务端通道关闭(合法配置,见 flow-config 该键注释),不算缺键。
-  if (-not $c -or -not $c.SlotRootRe -or -not $c.ClientBaseline -or -not $c.FantasyBaseline -or -not $c.SlotBranchPrefix) {
+  if (-not $c -or -not $c.ClientBaseline -or -not $c.FantasyBaseline) {
     Write-Telemetry @{ event = "提交检查"; decision = "error"; error = "flow-config load failed or keys missing"; sid = $script:Sid }
-    Deny-ToolUse "【提交检查】工作流配置 .claude/devflow/flow-config.psd1 加载失败或关键键缺失(SlotRootRe/ClientBaseline/FantasyBaseline/SlotBranchPrefix),检查无法判定通道与集成分支,本次 git 提交/推送/合并先行拒绝(失败即停)。请修复该配置文件(语法自检.ps1 覆盖 psd1 语法)后重试。"
+    Deny-ToolUse "【提交检查】工作流配置 .claude/devflow/flow-config.psd1 加载失败或关键键缺失(ClientBaseline/FantasyBaseline),检查无法判定通道,本次 git 提交/推送先行拒绝(失败即停)。请修复该配置文件(语法自检.ps1 覆盖 psd1 语法)后重试。"
   }
   $script:CfgWf = $c
-  $script:SlotRe = '^' + [regex]::Escape($c.SlotBranchPrefix) + '\d+$'
   return $c
-}
-
-function Get-SlotBranchName([string]$Ref) {
-  # Local slot branch named by a ref in any spelling (refs/heads/agent/dev1, heads/...,
-  # agent/dev1~0, agent/dev1^, agent/dev1@{0}); $null otherwise. origin/agent/devN
-  # (remote-tracking, already gated) never matches.
-  if (-not $Ref) { return $null }
-  $r = ($Ref -replace '^refs/heads/', '') -replace '^heads/', ''
-  $r = $r -replace '[~^@].*$', ''
-  if ($r -match $script:SlotRe) { return $r }
-  return $null
 }
 
 function Resolve-InvRoot($Inv, [string]$Action) {
@@ -388,15 +354,6 @@ function Resolve-InvRoot($Inv, [string]$Action) {
     Deny-ToolUse ("【提交检查】无法解析 git 仓根(-C/cd/cwd = " + $Inv.dir + "),提交检查无法定位受检仓,本次 git 提交/推送/合并先行拒绝(失败即停)。若经 Bash 工具发起、-C 用了 unix 风格路径(如 /d/work/...),请改用 Windows 盘符路径(D:\work\...),或改用 PowerShell 工具发起提交。")
   }
   return $lines[0].Trim()
-}
-
-function Find-SlotWorktree([string]$Root, [string]$Branch) {
-  $wt = $null
-  foreach ($l in (Get-GitLines $Root "worktree list --porcelain")) {
-    if ($l -match '^worktree (.+)$') { $wt = $Matches[1].Trim(); continue }
-    if ($l.Trim() -eq ('branch refs/heads/' + $Branch)) { return $wt }
-  }
-  return $null
 }
 
 function Test-PathspecToken([string]$Dir, [string]$Tok) {
@@ -423,171 +380,11 @@ function Get-UntrackedAddedLines([string]$Root, $Paths, [string]$HdrRe) {
   return , $out
 }
 
-# =============================== MERGE-LIKE ===============================
-# The gate binds commit/push, and a non-slot push is waved through on the premise "push adds
-# no new code". That premise breaks when a merge-like verb on the integration branch brings
-# in UN-PUSHED slot commits (coverage gap B). Bind: HEAD is the integration branch AND a
-# source names a LOCAL slot branch. Require local agent/devN == origin/agent/devN.
-function Test-MergeInv($Inv) {
-  $cands = @()
-  if ($Inv.verb -eq 'pull') {
-    # Only `pull . <ref>` sources a local branch; `pull origin agent/devN` fetches the gated remote.
-    $pos = @($Inv.args | Where-Object { -not ([string]$_).StartsWith('-', [StringComparison]::Ordinal) } | ForEach-Object { Resolve-QuotePlaceholder $_ })
-    if ($pos.Count -ge 2 -and ($pos[0] -eq '.' -or $pos[0] -eq './')) { $cands = @($pos[1..($pos.Count - 1)]) }
-  } else {
-    foreach ($t in $Inv.args) {
-      $t = [string]$t
-      if ($t -match '^-[^=]*=(.+)$') { $cands += (Resolve-QuotePlaceholder $Matches[1]) }
-      elseif (-not $t.StartsWith('-', [StringComparison]::Ordinal)) { $cands += (Resolve-QuotePlaceholder $t) }
-    }
-  }
-  if ($cands.Count -eq 0) { return }
-  $cfg = Get-GateConfig
-  $srcRefs = @($cands | ForEach-Object { Get-SlotBranchName $_ } | Where-Object { $_ } | Select-Object -Unique)
-  if ($srcRefs.Count -eq 0) { return }
-  $root = Resolve-InvRoot $Inv $Inv.verb
-  $isSlot = ($root -match $cfg.SlotRootRe)
-  $isServer = ([bool]$cfg.ServerDirName -and ($root -match ('[/\\]' + [regex]::Escape($cfg.ServerDirName) + '$')))
-  $integ = if ($isServer) { $cfg.FantasyBaseline } else { $cfg.ClientBaseline }
-  $curBranch = Get-GitOne $root "rev-parse --abbrev-ref HEAD"
-  if ($isSlot -or -not $integ -or $curBranch -ne $integ) {
-    Write-Telemetry @{ event = "提交检查"; action = "merge"; decision = "allow"; reason = "non-integration-target"; repo = $root; branch = $curBranch; sid = $script:Sid }
-    return
-  }
-  foreach ($src in $srcRefs) {
-    $localTip = Get-GitOne $root ("rev-parse --verify --quiet " + $src)
-    $originTip = Get-GitOne $root ("rev-parse --verify --quiet origin/" + $src)
-    if (-not $originTip -or $localTip -ne $originTip) {
-      $why = if (-not $originTip) { "slot-origin-absent" } else { "slot-local-ahead" }
-      Write-Telemetry @{ event = "提交检查"; action = "merge"; decision = "deny"; reason = $why; repo = $root; branch = $curBranch; src = $src; verb = $Inv.verb; sid = $script:Sid }
-      $detail = if (-not $originTip) { "在 origin 上不存在(从未推送=从未通过检查)" } else { "本地领先 origin/" + $src + "(有未推送、因而未通过检查的提交)" }
-      Deny-ToolUse ("【提交检查·合并验凭据】git " + $Inv.verb + " 把本地槽位分支 " + $src + " 引入集成分支 " + $integ + " 被拒:该槽位分支" + $detail + "。devflow 正规交付是先 push 槽位分支(在 push 点验检查凭据通过检查)再合并——请先在槽位内 push 该分支(git -C <槽位> push origin " + $src + "),验凭据通过后再合并。若确要合并已通过检查的远端分支,合并 origin/" + $src + " 而非本地分支。")
-    }
-  }
-  Write-Telemetry @{ event = "提交检查"; action = "merge"; decision = "allow"; reason = "slot-pushed-gated"; repo = $root; branch = $curBranch; src = ($srcRefs -join ","); sid = $script:Sid }
-}
-
-# =============================== PUSH ===============================
-function Test-SlotPush([string]$W) {
-  # Slot push carries the whole branch: table-doc + persistence probe run against the
-  # branch diff vs the client baseline (slot commits are free, so push is where these bind).
-  # A slot Fantasy worktree (same agent/devN branch name, in the server repo) takes the
-  # server check instead: strict 服务端自检 ticket when the branch touches the server surface.
-  if ([bool]$script:CfgWf.ServerDirName -and $W -match ('[/\\]' + [regex]::Escape($script:CfgWf.ServerDirName) + '$')) {
-    $srvPaths = Get-GitLines $W ("-c core.quotepath=false diff --name-only " + $script:CfgWf.FantasyBaseline + "...HEAD")
-    $srvHit = @($srvPaths | Where-Object { $_ -match $script:ServerSurfaceRe })
-    if ($srvHit.Count -eq 0) {
-      Write-Telemetry @{ event = "提交检查"; action = "push"; decision = "allow"; reason = "server-slot-no-surface"; repo = $W; sid = $script:Sid }
-      return
-    }
-    $why = Get-TicketVerdict $W
-    if (-not (Test-TicketVerdictPass $why)) {
-      Write-Telemetry @{ event = "提交检查"; action = "push"; decision = "deny"; reason = ("server-" + $why); repo = $W; files = $srvHit.Count; sid = $script:Sid }
-      Deny-ToolUse ("【提交检查·槽位服务端推送验凭据】(槽位 Fantasy 工作树 " + $W + ")分支含 " + $srvHit.Count + " 个服务端验证面文件,但无有效凭据(" + $why + ")。先跑 Demo/.claude/devflow/服务端自检.ps1 -FantasyRoot <槽位 Fantasy>(dotnet build 0 错 0 警,PASS 发票;检查后任何改动会使票失效)再 push。devflow 任务的推送由 槽位交付.ps1 承载。")
-    }
-    Write-Telemetry @{ event = "提交检查"; action = "push"; decision = "allow"; reason = ("server-" + $why); repo = $W; files = $srvHit.Count; sid = $script:Sid }
-    return
-  }
-  $baseC = $script:CfgWf.ClientBaseline
-  $branchPaths = @()
-  foreach ($e in (ConvertTo-Entries (Get-GitLines $W ("-c core.quotepath=false diff --name-status " + $baseC + "...HEAD")))) { $branchPaths += $e.paths }
-  $branchMsgs = (Get-GitLines $W ("log " + $baseC + "..HEAD --format=%B")) -join "`n"
-  $docGap = Get-TableDocGap $branchPaths
-  if ($docGap.Count -gt 0 -and $branchMsgs -notmatch '表文档无关') {
-    Deny-TableDoc $docGap $script:Sid "push" $W "在任一提交信息补「[表文档无关:理由]」(可另打一个说明性空提交)后重试。"
-  }
-  $docAdded = Get-AddedLinesInDomain $W ("-U0 " + $baseC + "...HEAD") $script:TableDocHdrRe
-  $docRows = @($docAdded | Where-Object { $_ -match $script:DocDataRowRe })
-  if ($docRows.Count -gt 0 -and $branchMsgs -notmatch '数据快照') {
-    Deny-DocDataRow $docRows $script:Sid "push" $W "在任一提交信息补「[数据快照:理由]」(可另打一个说明性空提交)后重试。"
-  }
-  $added = Get-AddedLines $W ("-U0 " + $baseC + "...HEAD -- " + $script:PersistScanSpec)
-  if (@($added | Where-Object { $_ -match $script:PersistRe }).Count -gt 0) {
-    if ($branchMsgs -notmatch '本地白名单') {
-      Write-Telemetry @{ event = "提交检查"; action = "push"; decision = "deny"; reason = "persist-no-whitelist"; repo = $W; sid = $script:Sid }
-      Deny-ToolUse "【提交检查·本地持久化探测】分支新增代码含本地持久化调用(PlayerPrefs 写 / File 写),但提交信息无白名单论证。按 data-authority 规约:该数据丢了能否从服务端重建?能(设备偏好/可丢缓存)→ 在任一提交信息补「[本地白名单:理由]」(可另打一个说明性空提交)后重试;不能 → 数据归属错误,改走服务端权威,撤回本地写。"
-    }
-  }
-  $why = Get-TicketVerdict $W $script:ClientSurfaceRe
-  if (-not (Test-TicketVerdictPass $why)) {
-    Write-Telemetry @{ event = "提交检查"; action = "push"; decision = "deny"; reason = $why; repo = $W; sid = $script:Sid }
-    $msg = "【提交检查·槽位推送验凭据】(槽位工作树 " + $W + ")"
-    if ($why -eq "tree-mismatch") { $msg += "检查凭据树与当前槽位树不符(检查后有非豁免改动)。重跑 客户端自检(PASS 后除删临时测试外不再改动)再 push。" }
-    elseif ($why -eq "ticket-not-pass") { $msg += "检查凭据结论不是 PASS。检查通过后再 push。" }
-    else { $msg += "槽位无有效凭据。先跑 客户端自检.ps1 -ProjectDir <槽位>\Demo,PASS 后再 push(豁免:检查后仅删临时测试)。" }
-    Deny-ToolUse $msg
-  }
-  Write-Telemetry @{ event = "提交检查"; action = "push"; decision = "allow"; reason = $why; repo = $W; sid = $script:Sid }
-}
-
-function Test-PushInv($Inv, [bool]$PriorCommit) {
-  $p = $Inv.push
-  $root = Resolve-InvRoot $Inv "push"
-  $cfg = Get-GateConfig
-  $cur = Get-GitOne $root "rev-parse --abbrev-ref HEAD"
-  $targets = [ordered]@{}
-  if ($root -match $cfg.SlotRootRe) { $targets[(Get-NormPath $root)] = $root }
-  if (-not $p.del) {
-    # Refspec binding (not repo shape): slots are worktrees sharing the main repo's branches,
-    # so the slot branch can be pushed from any of them. Each slot branch named as source or
-    # destination binds to the worktree that has it checked out, and the pushed source must
-    # BE that worktree's HEAD - the ticket certifies that tree and nothing else.
-    $pairs = @()
-    $specs = if ($p.pos.Count -gt 1) { @($p.pos[1..($p.pos.Count - 1)]) } else { @() }
-    foreach ($rs in $specs) {
-      $s = ([string]$rs).TrimStart('+')
-      $ci = $s.IndexOf(':', [StringComparison]::Ordinal)
-      if ($ci -ge 0) { $src = $s.Substring(0, $ci); $dst = $s.Substring($ci + 1) } else { $src = $s; $dst = $s }
-      if (-not $src) { continue }   # `:dst` = remote delete, adds no code
-      $srcName = if ($src -eq 'HEAD' -or $src -eq '@') { $cur } else { $src }
-      $dstName = if ($dst -eq 'HEAD' -or $dst -eq '@') { $cur } else { $dst }
-      $pairs += , @{ src = $src; names = @(@((Get-SlotBranchName $srcName), (Get-SlotBranchName $dstName)) | Where-Object { $_ } | Select-Object -Unique) }
-    }
-    if ($specs.Count -eq 0 -and -not $p.all) { $pairs += , @{ src = 'HEAD'; names = @(@(Get-SlotBranchName $cur) | Where-Object { $_ }) } }
-    if ($p.all) {
-      foreach ($b in (Get-GitLines $root ("branch --list `"" + $cfg.SlotBranchPrefix + "*`""))) {
-        $bn = ($b -replace '^[*+ ]+', '').Trim()
-        if (Get-SlotBranchName $bn) { $pairs += , @{ src = $bn; names = @($bn) } }
-      }
-    }
-    foreach ($pr in $pairs) {
-      foreach ($nm in $pr.names) {
-        $wt = Find-SlotWorktree $root $nm
-        if (-not $wt) {
-          Write-Telemetry @{ event = "提交检查"; action = "push"; decision = "deny"; reason = "slot-branch-no-worktree"; repo = $root; src = $nm; sid = $script:Sid }
-          Deny-ToolUse ("【提交检查·槽位推送验凭据】推送涉及槽位分支 " + $nm + ",但找不到检出该分支的工作树,凭据无从校验。请在槽位工作树内 push:git -C <槽位> push origin " + $nm + "。")
-        }
-        $srcSha = Get-GitOne $root ("rev-parse --verify --quiet `"" + $pr.src + "`"")
-        $headSha = Get-GitOne $wt "rev-parse HEAD"
-        if (-not $srcSha -or $srcSha -ne $headSha) {
-          Write-Telemetry @{ event = "提交检查"; action = "push"; decision = "deny"; reason = "push-src-not-slot-head"; repo = $root; src = $pr.src; sid = $script:Sid }
-          Deny-ToolUse ("【提交检查·槽位推送验凭据】推送源 " + $pr.src + " 不是槽位分支 " + $nm + " 在其工作树(" + $wt + ")当前检出的提交;凭据只认证该工作树的树。请在槽位工作树内直接 push 该分支:git -C <槽位> push origin " + $nm + "。")
-        }
-        $targets[(Get-NormPath $wt)] = $wt
-      }
-    }
-  }
-  if ($targets.Count -eq 0) {
-    # Main/server push: commit is the choke point; pushing adds no new code.
-    Write-Telemetry @{ event = "提交检查"; action = "push"; decision = "allow"; reason = "non-slot-push"; repo = $root; sid = $script:Sid }
-    return
-  }
-  if ($PriorCommit) {
-    # The branch-diff checks below read the branch BEFORE the command runs; a commit earlier
-    # in the same command is invisible to them (same shape as the add+commit rule).
-    Write-Telemetry @{ event = "提交检查"; action = "push"; decision = "deny"; reason = "commit-and-slot-push-same-command"; repo = $root; sid = $script:Sid }
-    Deny-ToolUse "【提交检查】git commit 与槽位分支的 git push 不允许写在同一条命令里——推送检查在命令执行前读取分支,同命令内的新提交对它不可见。请分两条命令:先 commit,再单独 push。"
-  }
-  foreach ($w in @($targets.Values)) { Test-SlotPush $w }
-}
-
 # ============================== COMMIT ==============================
 function Test-CommitInv($Inv) {
   $root = Resolve-InvRoot $Inv "commit"
   $cfg = Get-GateConfig
-  $isSlot = ($root -match $cfg.SlotRootRe)
   $isServer = ([bool]$cfg.ServerDirName -and ($root -match ('[/\\]' + [regex]::Escape($cfg.ServerDirName) + '$')))
-  $isSlotFantasy = ($isServer -and ((Split-Path $root -Parent) -match $cfg.SlotRootRe))
   # Pathspecs resolve against the command's -C/cd-aware dir, NOT the repo root: main-repo
   # commits run from Demo/, one level inside the repo.
   $repo = if ($Inv.dir) { $Inv.dir } else { $root }
@@ -689,28 +486,26 @@ function Test-CommitInv($Inv) {
   # Added-line probes follow the commit form: pathspec -> scoped HEAD diff (+ untracked
   # bodies); all/over -> whole HEAD-to-worktree diff (staged + unstaged tracked lines);
   # staged -> --cached.
-  if (-not $isSlot) {
-    $docGap = Get-TableDocGap $allPaths
-    if ($docGap.Count -gt 0 -and $tagScope -notmatch '表文档无关') {
-      Deny-TableDoc $docGap $sid "commit" $root "提交信息补「[表文档无关:理由]」后重试(消息经 -F 文件传递时,标注写在消息文件内即可)。"
-    }
-    if ($mode -eq 'pathspec') {
-      # 逐条 += 累加:两者都以 `, $arr` 返回,@(f) + @(f) 得「元素是数组的 2 元数组」(静态扫描 R15)
-      $docAdded = @()
-      $docAdded += Get-AddedLinesInDomain $repo ("-U0 HEAD -- " + $pathspecArgs) $script:TableDocHdrRe
-      $docAdded += Get-UntrackedAddedLines $root $psUntracked $script:TableDocHdrRe
-    } elseif ($mode -eq 'staged') {
-      $docAdded = Get-AddedLinesInDomain $root "--cached -U0" $script:TableDocHdrRe
-    } else {
-      $docAdded = Get-AddedLinesInDomain $root "-U0 HEAD" $script:TableDocHdrRe
-    }
-    $docRows = @($docAdded | Where-Object { $_ -match $script:DocDataRowRe })
-    if ($docRows.Count -gt 0 -and $tagScope -notmatch '数据快照') {
-      Deny-DocDataRow $docRows $sid "commit" $root "提交信息补「[数据快照:理由]」后重试(消息经 -F 文件传递时,标注写在消息文件内即可)。"
-    }
+  $docGap = Get-TableDocGap $allPaths
+  if ($docGap.Count -gt 0 -and $tagScope -notmatch '表文档无关') {
+    Deny-TableDoc $docGap $sid "commit" $root "提交信息补「[表文档无关:理由]」后重试(消息经 -F 文件传递时,标注写在消息文件内即可)。"
+  }
+  if ($mode -eq 'pathspec') {
+    # 逐条 += 累加:两者都以 `, $arr` 返回,@(f) + @(f) 得「元素是数组的 2 元数组」(静态扫描 R15)
+    $docAdded = @()
+    $docAdded += Get-AddedLinesInDomain $repo ("-U0 HEAD -- " + $pathspecArgs) $script:TableDocHdrRe
+    $docAdded += Get-UntrackedAddedLines $root $psUntracked $script:TableDocHdrRe
+  } elseif ($mode -eq 'staged') {
+    $docAdded = Get-AddedLinesInDomain $root "--cached -U0" $script:TableDocHdrRe
+  } else {
+    $docAdded = Get-AddedLinesInDomain $root "-U0 HEAD" $script:TableDocHdrRe
+  }
+  $docRows = @($docAdded | Where-Object { $_ -match $script:DocDataRowRe })
+  if ($docRows.Count -gt 0 -and $tagScope -notmatch '数据快照') {
+    Deny-DocDataRow $docRows $sid "commit" $root "提交信息补「[数据快照:理由]」后重试(消息经 -F 文件传递时,标注写在消息文件内即可)。"
   }
 
-  if (-not $isSlot -and -not $isServer) {
+  if (-not $isServer) {
     if ($mode -eq 'pathspec') {
       $added = @()
       $added += Get-AddedLinesInDomain $repo ("-U0 HEAD -- " + $pathspecArgs) $script:PersistScanHdrRe
@@ -729,11 +524,6 @@ function Test-CommitInv($Inv) {
   }
 
   # --- server-repo ticket check: any .cs requires a 服务端自检 ticket (gate-then-commit).
-  # Slot Fantasy commits are free like slot client commits; the ticket binds at push (Test-SlotPush).
-  if ($isSlotFantasy) {
-    Write-Telemetry @{ event = "提交检查"; action = "commit"; decision = "allow"; reason = "slot-fantasy-free-commit"; repo = $root; sid = $sid }
-    return
-  }
   if ($isServer) {
     $srvGated = @($allPaths | Where-Object { $_ -match '\.cs$' })
     if ($srvGated.Count -gt 0) {
@@ -755,11 +545,8 @@ function Test-CommitInv($Inv) {
     return
   }
 
-  # --- client-code ticket check (main repo only; slot commits are free by protocol,
-  # slots are ticket-checked at push instead).
-  if ($gatedHit.Count -gt 0 -and $isSlot) {
-    Write-Telemetry @{ event = "提交检查"; action = "commit"; decision = "allow"; reason = "slot-free-commit"; repo = $root; files = $gatedHit.Count; sid = $sid }
-  } elseif ($gatedHit.Count -gt 0) {
+  # --- client-code ticket check.
+  if ($gatedHit.Count -gt 0) {
     # Standalone temp-test cleanup commit (all entries = deletions under the scratch dir):
     # exempt without a ticket - verdicts stay anchored to the tested tree.
     if (Test-AllScratchDeletion $entries) {
@@ -771,10 +558,7 @@ function Test-CommitInv($Inv) {
         $msg = "【提交检查·验凭据】本次提交含客户端代码(" + $gatedHit.Count + " 个 .cs/.asmdef),"
         if ($why -eq "tree-mismatch") { $msg += "但检查凭据树与当前工作树不符(检查后有非豁免改动)——检查凭据已失效。重跑检查(PASS 后不再改动)再提交。" }
         elseif ($why -eq "ticket-not-pass") { $msg += "但检查凭据结论不是 PASS。检查通过后再提交。" }
-        # 本分支的进入条件是 -not $isSlot = 主工作树提交,命令面撞到它的实际是主工程通道
-        # (devflow 的主仓提交由 集成交付 在子进程内跑,不经 hook)。故正解先给主工程通道的
-        # 自检 + 单仓提交,槽位交付只作「改动落错工作树」的回退指引。
-        else { $msg += ("但无有效凭据。主工程通道:先跑 .claude\devflow\客户端自检.ps1 -ProjectDir " + (Join-Path $root "Demo") + ",PASS 后经 .claude\devflow\单仓提交.ps1 -MessageFile <信息文件> -PathListFile <清单文件> 提交(该脚本内置同源校验)。若本属 devflow 任务,改动不该落主工作树:移到槽位后调 .claude\devflow\槽位交付.ps1 -Slot <N> -MessageFile <提交信息文件>。检查后除删临时测试外任何改动会使票失效;唯一豁免:纯临时测试删除提交。") }
+        else { $msg += ("但无有效凭据。先跑 .claude\devflow\客户端自检.ps1 -ProjectDir " + (Join-Path $root "Demo") + ",PASS 后经 .claude\devflow\单仓提交.ps1 -MessageFile <信息文件> -PathListFile <清单文件> 提交(该脚本内置同源校验)。检查后除删临时测试外任何改动会使票失效;唯一豁免:纯临时测试删除提交。") }
         Deny-ToolUse $msg
       }
       Write-Telemetry @{ event = "提交检查"; action = "commit"; decision = "allow"; reason = ("ticket-" + $why); repo = $root; files = $gatedHit.Count; sid = $sid }
@@ -822,7 +606,7 @@ try {
   }
 
   if ($cmd -match '(?i)git') { Add-GitInvocations $cmd ([string]$in.cwd) 0 }
-  $gateVerbs = @('commit', 'push', 'merge', 'pull', 'rebase', 'cherry-pick', 'reset')
+  $gateVerbs = @('commit', 'push')
   $rel = @($script:Invs | Where-Object { $gateVerbs -contains $_.verb })
   $script:HasAdd = (@($script:Invs | Where-Object { @('add', 'stage') -contains $_.verb }).Count -gt 0)
   $script:HasRmMv = (@($script:Invs | Where-Object { @('rm', 'mv') -contains $_.verb }).Count -gt 0)
@@ -839,13 +623,8 @@ try {
     }
   }
 
-  $seenCommit = $false
   foreach ($inv in $rel) {
-    switch ($inv.verb) {
-      'commit' { Test-CommitInv $inv; $seenCommit = $true }
-      'push' { Test-PushInv $inv $seenCommit }
-      default { Test-MergeInv $inv }
-    }
+    if ($inv.verb -eq 'commit') { Test-CommitInv $inv }
   }
 
   $note = ($script:Notes -join "`n")

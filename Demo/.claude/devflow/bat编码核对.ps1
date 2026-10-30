@@ -18,7 +18,7 @@
 #         1 FAIL(至少一个 .bat 含非 ASCII 字节)
 #         2 INFRA(仓根推不出 / git 列文件报错)
 param(
-  [Parameter(Mandatory=$true)][string]$ProjectDir  # 槽位的 Demo,仓根 = 其父目录
+  [Parameter(Mandatory=$true)][string]$ProjectDir  # 受检的 Demo,仓根 = 其父目录
 )
 $ErrorActionPreference = "Stop"
 

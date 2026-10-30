@@ -1,17 +1,16 @@
 ﻿# 提交前绑定核对.ps1 - git pre-commit 钩子体:会话外的手动提交碰到 UI 绑定面时,对「本次提交之后的树」跑 UI绑定核对.ps1。
-# 为什么要有:UI 绑定核对原先只在客户端自检里跑(槽位交付必跑、主工作树的代码提交验票)。在 git 客户端或终端里直接
-#   提交一个 prefab 不经过其中任何一处,带绑定前缀的节点被删了组件 / 改了名就直接进 main;之后每个碰界面的槽位交付
-#   同步基线后都在这条不属于它的违规上 GATE-FAIL(实发 ece05559b:UIMealGiftPanel 的 m_img_PanelBg)。
+# 为什么要有:UI 绑定核对原先只在客户端自检里跑(devflow 提交前必跑、代码提交验票)。在 git 客户端或终端里直接
+#   提交一个 prefab 不经过其中任何一处,带绑定前缀的节点被删了组件 / 改了名就直接进 main;之后每个碰界面的任务
+#   都在这条不属于它的违规上自检 FAIL(实发 ece05559b:UIMealGiftPanel 的 m_img_PanelBg)。
 # 入口:git 经钩子目录下的 pre-commit(sh 垫片,由 提交钩子安装.ps1 生成)调用,无参数;cwd = 工作树根,
 #   GIT_INDEX_FILE 指向本次提交的索引(-a / 按路径提交时是 git 临时建的那份),本脚本起的 git 子进程继承它。
 # 触发:本次提交相对 HEAD 改动的路径命中 UI绑定核对 的读取面(登记正本 = 校验库.ps1 ClientGateScanSurface),否则直接放行。
 #   垫片里有同一判据的快路径(没命中就不起本脚本,省掉约 2 秒的 PowerShell 启动与载库),所以没碰读取面的提交
 #   通常到不了这里、也不留遥测;本脚本仍自己判一遍,垫片取不到正则或出错时走的就是这里。
 # 判的是索引,不是工作树:把索引里读取面内的文件(连同 .meta)导出到 %TEMP% 的临时目录再扫。
-#   - 改好了但没加进这次提交的 prefab 不算数:槽位同步基线拿到的是提交进去的树。
+#   - 改好了但没加进这次提交的 prefab 不算数:进 main 的是提交进去的树。
 #   - 工作树里别的会话没提交的半成品也不算数:不会因为它拦住这次提交。
-# 不拦的三种情形(直接放行):
-#   - 槽位工作树(仓根命中 flow-config 的 SlotRootRe):槽位是先提交、后同步基线、再自检,整套自检在 槽位交付 里跑。
+# 不拦的两种情形(直接放行):
 #   - 合并 / 拣选 / 回退的收尾提交(MERGE_HEAD / CHERRY_PICK_HEAD / REVERT_HEAD 在):内容来自别处已有的提交;
 #     交付脚本在 main 上收尾合并时被拦会把仓留在合并中途态。
 #   - 没碰读取面的提交。
@@ -48,9 +47,6 @@ try {
   if ($where.Count -lt 2) { Exit-Hook 0 "skip-no-repo" "" }
   $root = ([string]$where[0]).Trim()
   $gitDir = ([string]$where[1]).Trim()
-
-  $cfg = Get-FlowConfig
-  if ($cfg.SlotRootRe -and ($root -match $cfg.SlotRootRe)) { Exit-Hook 0 "skip-slot" $root }
 
   foreach ($head in @("MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD")) {
     if ($gitDir -and (Test-Path -LiteralPath (Join-Path $gitDir $head))) { Exit-Hook 0 "skip-sequencer" $root }

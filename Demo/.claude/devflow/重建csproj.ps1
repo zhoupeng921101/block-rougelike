@@ -1,6 +1,5 @@
 ﻿# 重建csproj.ps1 - 判定 Unity 生成的 csproj 是否过期(<Compile> 列表 vs 磁盘实扫),可就地修复。
-# 调用方:槽位领取.ps1(领取时判是否须编辑器重生成)、Editor程序集编译.ps1(编译前判 STALE-REGEN)、会话单独判定;
-# 免启编辑器的槽位(槽位领取.ps1 -NoUnity)与编辑器未刷新的工程同样适用。
+# 调用方:Editor程序集编译.ps1(编译前判 STALE-REGEN)、会话单独判定;编辑器未开或未刷新的工程同样适用。
 #
 # 判定面:-Assembly 指定的程序集,加上它经 <ProjectReference> 递归引用、且在 Assets 或工程内嵌包下有同名
 # asmdef 的程序集(引用方过期同样使编译崩在无关文件上)。内嵌包 = <工程根>\Packages 下直接含 package.json
@@ -57,7 +56,7 @@
 # 工程不在 git 仓内时已删掉的全局宏与 csc.rsp 宏(无历史可对照);versionDefines 里版本取不到、表达式解析不了
 # 或比较无从判定的条目(其宏缺也不判、在也不算残留);判定面内同平台组同类 csproj 不足两份时的残留宏,以及同平台组
 # 同类 csproj 人人都带着的残留宏(与内置宏无从区分)。
-# 消费方:槽位领取.ps1(判中则免启改启编辑器 + WARN)、Editor程序集编译.ps1(判中则 INFRA),两者都以
+# 消费方:Editor程序集编译.ps1(判中则 INFRA),以
 # Assembly-CSharp-Editor 为起点。
 #
 # 参数:
@@ -71,7 +70,7 @@
 #   VERDICT: FRESH | <判定的程序集>                 -> csproj 与磁盘一致,可编
 #   VERDICT: STALE | <过期的程序集> | ...           -> 重跑加 -InPlace,或回编辑器重生成
 #   VERDICT: FIXED | <已重写的程序集>              -> 已与磁盘一致,可编
-#   VERDICT: STALE-REGEN | <过期的程序集> | ...   -> 回槽位编辑器 AssetDatabase.Refresh + CodeEditor SyncAll
+#   VERDICT: STALE-REGEN | <过期的程序集> | ...   -> 回编辑器 AssetDatabase.Refresh + CodeEditor SyncAll
 #   VERDICT: INFRA | <原因>
 # 退出码:0 FRESH / FIXED;1 STALE(未加 -InPlace);2 INFRA(工程根 / csproj / asmdef 缺失或不唯一、
 #         csproj 无 <Compile> 条目);3 STALE-REGEN(给了 -InPlace 也零写入,重生成后 Compile 列表随之更新)。
@@ -617,7 +616,7 @@ foreach ($s in $specs) {
 }
 if ($regen.Count -gt 0) {
   $names = (@($regen) | Select-Object -Unique) -join ","
-  Write-Host ("VERDICT: STALE-REGEN | " + $names + " | 引用集 / 宏只能由编辑器重生成:槽位编辑器里 AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate) + Unity.CodeEditor.CodeEditor.CurrentEditor.SyncAll(),-InPlace 不修这一类")
+  Write-Host ("VERDICT: STALE-REGEN | " + $names + " | 引用集 / 宏只能由编辑器重生成:编辑器里 AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate) + Unity.CodeEditor.CodeEditor.CurrentEditor.SyncAll(),-InPlace 不修这一类")
   exit 3
 }
 
