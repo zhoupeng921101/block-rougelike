@@ -273,8 +273,8 @@ namespace GameRules
             }
         }
 
-        /// <summary>道具栏格数 = 配置默认 + 扩容券。</summary>
-        public int ConsumableSlots => Config.ConsumableSlots + Modifiers.ConsumableSlotBonus;
+        /// <summary>道具栏格数 = 配置默认 + 扩容券,最多 3(规则 §2.5)。</summary>
+        public int ConsumableSlots => Math.Min(3, Config.ConsumableSlots + Modifiers.ConsumableSlotBonus);
 
         /// <summary>当前盲注;开局后、开第一个盲注前为 null。</summary>
         public BlindState Blind { get; private set; }
@@ -1046,6 +1046,11 @@ namespace GameRules
             if (nodeId < 1 || nodeId > Map.Nodes.Count) return false;
             MapNode node = Map.Get(nodeId);
             if (!node.CanSkip) return false;
+            // 同段不能连跳(局外循环 §9):刚跳过一个节点,这一段的下一个节点不能接着跳
+            if (Progress.CurrentSkipped && Progress.CurrentNodeId != 0 && Map.Get(Progress.CurrentNodeId).Segment == node.Segment)
+            {
+                return false;
+            }
             if (!Progress.Skip(Map, nodeId)) return false;
             Shop = null;
             ApplyTag(node.TagId);

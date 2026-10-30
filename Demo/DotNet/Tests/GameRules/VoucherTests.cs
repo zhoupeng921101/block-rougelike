@@ -46,6 +46,25 @@ namespace GameRules.Tests
         }
 
         [Test]
+        public void WholesaleVoucher_DiscountsBlocksAndBoostersOnly()
+        {
+            RunState plain = WonAtStartNode();
+            plain.OpenShop();
+            RunState discounted = WonAtStartNode();
+            Assert.IsTrue(discounted.TryAddVoucher(VoucherCatalog.Wholesale));
+            discounted.OpenShop();
+            Assert.AreEqual(plain.Shop.Count, discounted.Shop.Count);
+            for (int i = 0; i < plain.Shop.Count; i++)
+            {
+                ShopOffer a = plain.Shop.Goods[i];
+                ShopOffer b = discounted.Shop.Goods[i];
+                Assert.AreEqual((a.Kind, a.Id), (b.Kind, b.Id), "同一店同一件");
+                if (a.Kind == ItemKind.Block) Assert.Less(b.Price, a.Price, "批发券只压方块");
+                else Assert.AreEqual(a.Price, b.Price, "批发券不压" + a.Kind);
+            }
+        }
+
+        [Test]
         public void StartMoneyVoucher_PaysImmediately()
         {
             RunState run = Started();

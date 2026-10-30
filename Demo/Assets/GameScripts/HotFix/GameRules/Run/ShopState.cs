@@ -153,10 +153,11 @@ namespace GameRules
             ContentCatalog catalog = run.Config.Catalog;
             RunTuning tuning = run.Config.Tuning;
             int count = Math.Min(tuning.GoodsCount + 2, tuning.GoodsCount + extraGoods + run.Modifiers.ShopSlotBonus);
-            int pricePermille = run.Modifiers.PricePermille * Math.Max(1, discountPermille) / 1000;
-            ShopOffer[] goods = Roll(rng, run, guaranteeGene, pricePermille, count);
+            int discount = Math.Max(1, discountPermille);
+            int pricePermille = run.Modifiers.PricePermille * discount / 1000;
+            ShopOffer[] goods = Roll(rng, run, guaranteeGene, pricePermille, discount, count);
             ShopOffer? voucher = offerVoucher && catalog.Vouchers.Count > 0
-                ? (ShopOffer?)RollVoucher(rng, run, pricePermille)
+                ? (ShopOffer?)RollVoucher(rng, run, discount)
                 : null;
             ShopOffer? booster = catalog.Boosters.Count > 0
                 ? RollBooster(rng, run, freeBooster ? 0 : pricePermille)
@@ -171,7 +172,7 @@ namespace GameRules
             if (run == null) throw new ArgumentNullException(nameof(run));
             int cost = RerollCostFor(run);
             if (!run.TrySpend(cost)) return false;
-            ShopOffer[] fresh = Roll(rng, run, _guaranteeGene, run.Modifiers.PricePermille, _goods.Length);
+            ShopOffer[] fresh = Roll(rng, run, _guaranteeGene, run.Modifiers.PricePermille, RunPending.PermilleOne, _goods.Length);
             for (int i = 0; i < _goods.Length; i++) _goods[i] = fresh[i];
             if (!_freeReroll) Rerolls++;
             StepPipeline.AfterShopRerolled(run);
@@ -330,7 +331,8 @@ namespace GameRules
             return Edition.None;
         }
 
-        private static ShopOffer[] Roll(IRandomSource rng, RunState run, bool guaranteeGene, int pricePermille, int count)
+        private static ShopOffer[] Roll(IRandomSource rng, RunState run, bool guaranteeGene, int pricePermille, int discountPermille,
+            int count)
         {
             ContentCatalog catalog = run.Config.Catalog;
             IRandomSource looks = run.EditionRng();
@@ -338,17 +340,17 @@ namespace GameRules
             bool hasGene = false;
             for (int i = 0; i < goods.Length; i++)
             {
-                goods[i] = RollOne(rng, looks, run, pricePermille);
+                goods[i] = RollOne(rng, looks, run, pricePermille, discountPermille);
                 if (goods[i].Kind == ItemKind.Gene) hasGene = true;
             }
             if (guaranteeGene && !hasGene && HasShopGenes(catalog))
             {
-                goods[0] = GeneOffer(rng, looks, run, pricePermille);
+                goods[0] = GeneOffer(rng, looks, run, discountPermille);
             }
             return goods;
         }
 
-        private static ShopOffer RollOne(IRandomSource rng, IRandomSource looks, RunState run, int pricePermille)
+        private static ShopOffer RollOne(IRandomSource rng, IRandomSource looks, RunState run, int pricePermille, int discountPermille)
         {
             ContentCatalog catalog = run.Config.Catalog;
             RunTuning tuning = run.Config.Tuning;
@@ -357,13 +359,13 @@ namespace GameRules
             bool hasGenes = HasShopGenes(catalog);
             bool hasTechs = run.UnlockedTechs().Count > 0;
             int roll = rng.Index(100);
-            if (roll < gene && hasGenes) return GeneOffer(rng, looks, run, pricePermille);
+            if (roll < gene && hasGenes) return GeneOffer(rng, looks, run, discountPermille);
             if (roll < gene + block && catalog.Blocks.Count > 0) return BlockOffer(rng, looks, run, pricePermille);
-            if (roll < gene + block + tech && hasTechs) return TechOffer(rng, run, pricePermille);
-            if (catalog.Mods.Count > 0) return ModOffer(rng, run, pricePermille);
-            if (hasGenes) return GeneOffer(rng, looks, run, pricePermille);
+            if (roll < gene + block + tech && hasTechs) return TechOffer(rng, run, discountPermille);
+            if (catalog.Mods.Count > 0) return ModOffer(rng, run, discountPermille);
+            if (hasGenes) return GeneOffer(rng, looks, run, discountPermille);
             if (catalog.Blocks.Count > 0) return BlockOffer(rng, looks, run, pricePermille);
-            if (hasTechs) return TechOffer(rng, run, pricePermille);
+            if (hasTechs) return TechOffer(rng, run, discountPermille);
             throw new InvalidOperationException("目录里没有任何可卖的东西");
         }
 

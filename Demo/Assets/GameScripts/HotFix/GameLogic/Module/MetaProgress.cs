@@ -95,16 +95,52 @@ public static class MetaProgress
     }
 
     /// <summary>
-    /// 池子按「稀有度从低到高、同档按号」切三批:普通全在第一批,罕见跨前两批,稀有与传说在最后一批。
-    /// 设计稿只给了 90 / +30 / +30 的张数,没给名单,这里取最稳的切法。
+    /// 池子按稀有度比例切三批(90 / 120 / 150),同档按号取前几张:设计稿只给了张数,不给名单;
+    /// 按比例切能保证每批都有普通、罕见与稀有,不会出现「前两批一张稀有都没有」。
     /// </summary>
     private static List<int> BuildPool(int count)
     {
-        var ordered = new List<CatalogEntry>();
-        foreach (CatalogEntry e in MinimalContent.Catalog.Genes) ordered.Add(e);
-        ordered.Sort((a, b) => a.Rarity != b.Rarity ? a.Rarity.CompareTo(b.Rarity) : a.Id.CompareTo(b.Id));
-        var ids = new List<int>(Math.Min(count, ordered.Count));
-        for (int i = 0; i < ordered.Count && i < count; i++) ids.Add(ordered[i].Id);
+        var byRarity = new List<int>[4];
+        for (int r = 0; r < byRarity.Length; r++) byRarity[r] = new List<int>();
+        foreach (CatalogEntry e in MinimalContent.Catalog.Genes)
+        {
+            if (e.Rarity >= 0 && e.Rarity < byRarity.Length) byRarity[e.Rarity].Add(e.Id);
+        }
+        foreach (List<int> list in byRarity) list.Sort();
+        int total = 0;
+        foreach (List<int> list in byRarity) total += list.Count;
+        int[] take = new int[byRarity.Length];
+        int assigned = 0;
+        for (int r = 0; r < take.Length; r++)
+        {
+            take[r] = total == 0 ? 0 : byRarity[r].Count * count / total;
+            assigned += take[r];
+        }
+        // 余数按「比例的小数部分」从大到小补,平局按稀有度从低到高
+        while (assigned < count && assigned < total)
+        {
+            int best = -1;
+            long bestRemainder = -1;
+            for (int r = 0; r < take.Length; r++)
+            {
+                if (take[r] >= byRarity[r].Count) continue;
+                long remainder = (long)byRarity[r].Count * count - (long)take[r] * total;
+                if (remainder > bestRemainder)
+                {
+                    bestRemainder = remainder;
+                    best = r;
+                }
+            }
+            if (best < 0) break;
+            take[best]++;
+            assigned++;
+        }
+        var ids = new List<int>(count);
+        for (int r = 0; r < take.Length; r++)
+        {
+            for (int i = 0; i < take[r] && i < byRarity[r].Count; i++) ids.Add(byRarity[r][i]);
+        }
+        ids.Sort();
         return ids;
     }
 
