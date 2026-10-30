@@ -26,11 +26,18 @@ public static class TextKeys
     {
         public const string Title = "ui.map.title";
         public const string Info = "ui.map.info";
+        public const string HeaderInfo = "ui.map.header_info";
+        public const string Skip = "ui.map.skip";
+        public const string NodeLabel = "ui.map.node_label";
         public const string Back = "ui.map.back";
         public const string Node = "ui.map.node";
         public const string NodeBoss = "ui.map.node_boss";
         public const string NodeSkip = "ui.map.node_skip";
         public const string Boss = "ui.map.boss";
+        public const string BossPlaceholder = "ui.map.boss_placeholder";
+        public const string LayerLight = "ui.map.layer_light";
+        public const string LayerHeavy = "ui.map.layer_heavy";
+        public const string LayerBoss = "ui.map.layer_boss";
     }
 
     /// <summary>商店屏里由代码画的文案。</summary>

@@ -113,8 +113,8 @@ public partial class UIBattleResultPanel
         m_tmp_Combo.text = table.Format(TextKeys.Battle.Mult, _data.MaxCombo.ToString(CultureInfo.InvariantCulture));
 
         BuildDistribution(table);
-        BuildTypeTable(table);
-        BuildInventory(table);
+        RunChromeView.BuildTypeTable(m_rect_TypeTable, MainFont, _data.Run);
+        RunChromeView.BuildInventory(m_rect_Inventory, MainFont, _data.Run);
         BuildMoney(table, won);
         BuildExit(table, won);
     }
@@ -152,69 +152,6 @@ public partial class UIBattleResultPanel
                 new Vector2(DistCellWidth - 72f, 0f), new Vector2(58f, DistCellHeight), 22f, TextAlignmentOptions.Right,
                 count > 0 ? (Color)ChipsColor : TextDark);
         }
-    }
-
-    /// <summary>左栏:11 种消除类型 · 本级底注 × 倍率。</summary>
-    private void BuildTypeTable(TextTable table)
-    {
-        RuntimeUI.Clear(m_rect_TypeTable);
-        RuntimeUI.TmpLabel(m_rect_TypeTable, MainFont, table.Get(TextKeys.Battle.TypeHeader), new Vector2(12f, -4f),
-            new Vector2(240f, 30f), 18f, TextAlignmentOptions.Left, TextMuted);
-        RuntimeUI.TmpLabel(m_rect_TypeTable, MainFont, table.Get(TextKeys.Battle.TypeValueHeader), new Vector2(44f, -4f),
-            new Vector2(240f, 30f), 18f, TextAlignmentOptions.Right, TextMuted);
-        if (_data.Run == null) return;
-
-        float y = -44f;
-        foreach (ClearType type in ClearRules.Priority)
-        {
-            ClearTypeBase basis = _data.Run.BaseOf(type);
-            RuntimeUI.TmpLabel(m_rect_TypeTable, MainFont, table.Get(TextKeys.Of(type)), new Vector2(12f, y),
-                new Vector2(240f, TypeRowPitch - 8f), 24f, TextAlignmentOptions.Left, TextMain);
-            RuntimeUI.TmpLabel(m_rect_TypeTable, MainFont, table.Format(TextKeys.Battle.Level, _data.Run.LevelOf(type)),
-                new Vector2(196f, y), new Vector2(48f, TypeRowPitch - 8f), 18f, TextAlignmentOptions.Center, TextMuted);
-            RuntimeUI.TmpLabel(m_rect_TypeTable, MainFont, basis.Chips.ToString(CultureInfo.InvariantCulture),
-                new Vector2(244f, y), new Vector2(64f, TypeRowPitch - 8f), 24f, TextAlignmentOptions.Center, ChipsColor);
-            RuntimeUI.TmpLabel(m_rect_TypeTable, MainFont,
-                table.Format(TextKeys.Battle.Mult, basis.Mult.ToString(CultureInfo.InvariantCulture)),
-                new Vector2(300f, y), new Vector2(90f, TypeRowPitch - 8f), 24f, TextAlignmentOptions.Center, MultColor);
-            y -= TypeRowPitch;
-        }
-    }
-
-    /// <summary>右栏:背包摘要(基因 / 道具 / 优惠券 / 方块库)。结算这一屏只报数,不提供买卖。</summary>
-    private void BuildInventory(TextTable table)
-    {
-        RuntimeUI.Clear(m_rect_Inventory);
-        if (_data.Run == null) return;
-
-        float y = -8f;
-        y = InventoryLine(table.Format(TextKeys.Inventory.Genes, _data.Run.GeneSlotsUsed, _data.Run.GeneSlots), y);
-        foreach (GeneSlot gene in _data.Run.Genes) y = InventoryText(ItemNames.Gene(gene), y);
-        y -= 10f;
-        y = InventoryLine(table.Format(TextKeys.Inventory.Items, _data.Run.Consumables.Count, _data.Run.ConsumableSlots), y);
-        foreach (ConsumableItem item in _data.Run.Consumables)
-        {
-            y = InventoryText(ItemNames.Consumable(_data.Run.Config.Catalog, item), y);
-        }
-        y -= 10f;
-        y = InventoryLine(table.Get(TextKeys.Inventory.Vouchers), y);
-        foreach (int voucher in _data.Run.Vouchers) y = InventoryText(table.Get(TextKeys.Voucher(voucher)), y);
-        y -= 10f;
-        InventoryLine(table.Format(TextKeys.Inventory.Library, _data.Run.Library.Count), y);
-    }
-
-    private float InventoryLine(string text, float y)
-    {
-        RuntimeUI.TmpLabel(m_rect_Inventory, MainFont, text, new Vector2(8f, y), new Vector2(340f, 30f), 20f,
-            TextAlignmentOptions.Left, GoldColor);
-        return y - 34f;
-    }
-
-    private float InventoryText(string text, float y)
-    {
-        RuntimeUI.TmpLabel(m_rect_Inventory, MainFont, text, new Vector2(16f, y), new Vector2(332f, 26f), 18f,
-            TextAlignmentOptions.Left, TextMain);
-        return y - 28f;
     }
 
     /// <summary>顶栏的钱与方块库、以及奖励 / 利息 / 入账 / 持有。输了只留「当前持有」与失败原因。</summary>

@@ -2,43 +2,56 @@ using System.Collections.Generic;
 using System.Globalization;
 using GameRules;
 using TEngine;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.U2D;
 
 /// <summary>
-/// 选关屏(局外循环设计稿 §2,规则 §8.3):6 段 × 3 层,可选的节点亮着,点一下进节点开打。
-/// 节点按钮是运行时按布局摆的(窗里只留空容器 <c>m_rect_Map</c>);首领场标出这一场的负面效果。
-/// 左栏是消除类型表(本级底注 × 倍率、本局打出过几次),右栏是背包栏(<see cref="RunInventoryView"/>)。
+/// 选关屏(局外循环设计稿 §2,规则 §8.3):6 段 × 3 层,每段一行;每个节点画成那颗要打的目标星球,
+/// 可打的亮着、打过的打勾、打不了的暗下去。点星球进节点开打,能跳的节点下方给「跳过」。
+/// 左栏消除类型表、右栏背包摘要走 <see cref="RunChromeView"/>;顶栏是持有 / 段与难度 / 方块库。
+/// 节点全部运行时按 <c>m_rect_Map</c> 的尺寸现摆,窗里只留空容器。
 /// </summary>
 [Window(UILayer.UI, fullScreen: true)]
 public partial class UIMapPanel : UIPanelMono
 {
-    private static readonly Color NodeNormal = new Color(0.22f, 0.25f, 0.38f, 1f);
-    private static readonly Color NodeLight = new Color(0.20f, 0.30f, 0.32f, 1f);
-    private static readonly Color NodeHeavy = new Color(0.32f, 0.22f, 0.28f, 1f);
-    private static readonly Color NodeBoss = new Color(0.42f, 0.16f, 0.20f, 1f);
-    private static readonly Color NodeDisabled = new Color(0.14f, 0.15f, 0.20f, 1f);
+    /// <summary>一行的行高按段数均分;星球画在行内的这个位置(0–1),下面留标签。</summary>
+    private const float RowNodeAnchor = 0.40f;
+
+    /// <summary>普通节点与首领节点的大小(设计像素)。</summary>
+    private const float NodeSize = 60f;
+    private const float BossSize = 76f;
+
+    /// <summary>状态环比星球大一圈。</summary>
+    private const float RingPadding = 12f;
+
+    /// <summary>星球下面的标签占的高度。</summary>
+    private const float LabelHeight = 30f;
+
+    private static readonly Color32 TextMain = new Color32(0xe8, 0xee, 0xf2, 0xFF);
+    private static readonly Color32 TextMuted = new Color32(0x8f, 0xa3, 0xb0, 0xFF);
+    private static readonly Color32 TextDim = new Color32(0x5c, 0x6f, 0x7a, 0xFF);
+    private static readonly Color32 GoldColor = new Color32(0xff, 0xc8, 0x3d, 0xFF);
+    private static readonly Color32 BossColor = new Color32(0xff, 0x8f, 0x9e, 0xFF);
+
+    /// <summary>八种星球底子,按节点 id 稳定地取一个(同一个节点每屏长得一样)。</summary>
+    private static readonly string[] Planets =
+    {
+        "run_planet_rock", "run_planet_rust", "run_planet_lava", "run_planet_crimson",
+        "run_planet_ice", "run_planet_amethyst", "run_planet_jade", "run_planet_shattered",
+    };
+
+    [Tooltip("局外三屏共用件的图集(Atlas_Run):星球、状态环、打勾都按名从这里取。")]
+    [SerializeField] private SpriteAtlas _runAtlas = null!;
 
     private RunState _run;
 
-    private readonly List<GameObject> _buttons = new List<GameObject>();
+    private readonly List<GameObject> _nodes = new List<GameObject>();
 
-    /// <summary>节点区左右各让出的宽度(m_rect_Map 坐标):左边是类型表,右边是背包栏。</summary>
-    private const float LeftReserve = 260f;
-    private const float RightReserve = 340f;
-
-    private RectTransform _typeTable;
-    private RunInventoryView _inventory;
-
-    protected override void OnCreate()
-    {
-        _typeTable = RuntimeUI.Node("类型表", rectTransform, new Vector2(24f, -220f), new Vector2(320f, 520f), typeof(Image));
-        _typeTable.GetComponent<Image>().color = RuntimeUI.PanelColor;
-        _inventory = new RunInventoryView(RunInventoryView.CreateDock(rectTransform, 400f, 120f, 820f), m_text_Title.font, Rebuild);
-        AddServiceEvent(
-            () => TextTable.Instance.LanguageChanged += Rebuild,
-            () => { if (TextTable.IsValid) TextTable.Instance.LanguageChanged -= Rebuild; });
-    }
+    protected override void OnCreate() => AddServiceEvent(
+        () => TextTable.Instance.LanguageChanged += Rebuild,
+        () => { if (TextTable.IsValid) TextTable.Instance.LanguageChanged -= Rebuild; });
 
     protected override void OnRefresh()
     {
@@ -52,100 +65,122 @@ public partial class UIMapPanel : UIPanelMono
         Rebuild();
     }
 
-    protected override void OnDestroyWindow() => ClearButtons();
+    protected override void OnDestroyWindow() => ClearNodes();
 
-    /// <summary>整屏重画:标题、信息行、每个节点一个按钮。语言切换与每次打开都走这里。</summary>
     private void Rebuild()
     {
         if (_run == null) return;
         TextTable table = TextTable.Instance;
-        m_text_Title.text = table.Get(TextKeys.Map.Title);
-        m_text_Info.text = table.Format(TextKeys.Map.Info,
-            _run.Progress.CurrentNodeId == 0 ? 1 : _run.Map.Get(_run.Progress.CurrentNodeId).Segment,
-            _run.Map.SegmentCount,
-            _run.Money.ToString(CultureInfo.InvariantCulture));
-        SetBackLabel(table.Get(TextKeys.Map.Back));
-        LayoutNodes(table);
-        BuildTypeTable(table);
-        if (_inventory.IsBoundTo(_run)) _inventory.Rebuild();
-        else _inventory.Bind(_run);
+        int segment = _run.Progress.CurrentNodeId == 0 ? 1 : _run.Map.Get(_run.Progress.CurrentNodeId).Segment;
+        m_tmp_Money.text = table.Format(TextKeys.Common.Money, _run.Money.ToString(CultureInfo.InvariantCulture));
+        m_tmp_HeaderTitle.text = table.Get(TextKeys.Map.Title);
+        m_tmp_HeaderInfo.text = table.Format(TextKeys.Map.HeaderInfo, segment, _run.Map.SegmentCount, table.Get(TextKeys.Of(_run.Difficulty)));
+        m_tmp_LibraryCount.text = _run.Library.Count.ToString(CultureInfo.InvariantCulture);
+        m_tmp_BackLabel.text = table.Get(TextKeys.Map.Back);
+
+        RunChromeView.BuildTypeTable(m_rect_TypeTable, MainFont, _run);
+        RunChromeView.BuildInventory(m_rect_Inventory, MainFont, _run);
+        BuildNodes(table);
     }
 
-    /// <summary>11 种消除类型按判定优先级排:名字、等级、本级底注 × 倍率、本局打出过几次。</summary>
-    private void BuildTypeTable(TextTable table)
+    /// <summary>每段一行,行内按层分三块(小盲 / 大盲 / 首领),同一层的几个节点在这一块里均分。</summary>
+    private void BuildNodes(TextTable table)
     {
-        RuntimeUI.Clear(_typeTable);
-        float y = -8f;
-        RuntimeUI.Label(_typeTable, m_text_Title.font, table.Get(TextKeys.Inventory.MapTypes), new Vector2(10f, y), new Vector2(300f, 36f), 24,
-            TextAnchor.MiddleLeft, RuntimeUI.Gold);
-        y -= 42f;
-        foreach (ClearType type in ClearRules.Priority)
-        {
-            ClearTypeBase b = _run.BaseOf(type);
-            string row = table.Format(TextKeys.Inventory.MapTypeRow, table.Get(TextKeys.Of(type)), _run.LevelOf(type), b.Chips, b.Mult,
-                _run.TypeCounts[(int)type]);
-            RuntimeUI.Label(_typeTable, m_text_Title.font, row, new Vector2(10f, y), new Vector2(300f, 38f), 19);
-            y -= 40f;
-        }
-    }
-
-    private void ClearButtons()
-    {
-        foreach (GameObject go in _buttons) Destroy(go);
-        _buttons.Clear();
-    }
-
-    /// <summary>6 段从上到下排成 6 行,3 层从左到右排成 3 列;一格里有几个节点就并排几个。</summary>
-    private void LayoutNodes(TextTable table)
-    {
-        ClearButtons();
+        ClearNodes();
         Rect rect = m_rect_Map.rect;
-        float width = (rect.width > 0f ? rect.width : 1600f) - LeftReserve - RightReserve;
-        float height = rect.height > 0f ? rect.height : 800f;
+        float width = rect.width > 0f ? rect.width : 936f;
+        float height = rect.height > 0f ? rect.height : 866f;
         int segments = _run.Map.SegmentCount;
-        float rowHeight = height / segments;
-        float cellWidth = width / RunMap.LayersPerSegment;
-        float buttonHeight = Mathf.Min(rowHeight * 0.72f, 96f);
+        const float headerReserve = 46f;
+        float rowHeight = (height - headerReserve) / segments;
+        float layerWidth = width / RunMap.LayersPerSegment;
 
-        IReadOnlyList<MapNode> choices = _run.Progress.Choices(_run.Map);
-        var choiceIds = new HashSet<int>();
-        foreach (MapNode node in choices) choiceIds.Add(node.Id);
+        var choices = new HashSet<int>();
+        foreach (MapNode node in _run.Progress.Choices(_run.Map)) choices.Add(node.Id);
+        var visited = new HashSet<int>();
+        foreach (int id in _run.Progress.Visited) visited.Add(id);
+
+        // 表头:小盲 / 大盲 / 首领,对着三层的列
+        string[] headers = { TextKeys.Map.LayerLight, TextKeys.Map.LayerHeavy, TextKeys.Map.LayerBoss };
+        for (int layer = 1; layer <= RunMap.LayersPerSegment && layer <= headers.Length; layer++)
+        {
+            float x = layerWidth * (layer - 0.5f);
+            var header = new GameObject("表头", typeof(RectTransform), typeof(TextMeshProUGUI));
+            header.layer = gameObject.layer;
+            header.transform.SetParent(m_rect_Map, false);
+            var hrt = header.GetComponent<RectTransform>();
+            hrt.anchorMin = hrt.anchorMax = new Vector2(0f, 1f);
+            hrt.pivot = new Vector2(0.5f, 0.5f);
+            hrt.anchoredPosition = new Vector2(x, -18f);
+            hrt.sizeDelta = new Vector2(layerWidth - 20f, 32f);
+            var tmp = header.GetComponent<TextMeshProUGUI>();
+            tmp.font = MainFont;
+            tmp.text = table.Get(headers[layer - 1]);
+            tmp.fontSize = 20f;
+            tmp.color = TextMuted;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.raycastTarget = false;
+            _nodes.Add(header);
+        }
 
         for (int segment = 1; segment <= segments; segment++)
         {
+            float rowCenter = -(headerReserve + rowHeight * (segment - 0.5f));
+            RuntimeUI.TmpLabel(m_rect_Map, MainFont, segment.ToString(CultureInfo.InvariantCulture),
+                new Vector2(10f, rowCenter - 18f), new Vector2(40f, 36f), 28f, TextAlignmentOptions.Center, TextMuted);
+            if (segment < segments)
+            {
+                var line = new GameObject("分隔线", typeof(RectTransform), typeof(Image));
+                line.layer = gameObject.layer;
+                line.transform.SetParent(m_rect_Map, false);
+                var lrt = line.GetComponent<RectTransform>();
+                lrt.anchorMin = lrt.anchorMax = new Vector2(0f, 1f);
+                lrt.pivot = new Vector2(0.5f, 0.5f);
+                lrt.anchoredPosition = new Vector2(width * 0.5f + 20f, -(headerReserve + rowHeight * segment));
+                lrt.sizeDelta = new Vector2(width - 80f, 2f);
+                line.GetComponent<Image>().color = new Color32(0x3a, 0x52, 0x62, 0xff);
+                _nodes.Add(line);
+            }
+
             for (int layer = 1; layer <= RunMap.LayersPerSegment; layer++)
             {
                 IReadOnlyList<MapNode> nodes = _run.Map.NodesAt(segment, layer);
-                float cellCenterX = LeftReserve + cellWidth * (layer - 0.5f);
-                float centerY = -rowHeight * (segment - 0.5f) - 20f;
-                float buttonWidth = Mathf.Min(cellWidth * 0.9f / nodes.Count, 280f);
+                if (nodes.Count == 0) continue;
+                float layerCenter = layerWidth * (layer - 0.5f);
+                float pitch = Mathf.Min(layerWidth / nodes.Count, 150f);
                 for (int i = 0; i < nodes.Count; i++)
                 {
                     MapNode node = nodes[i];
-                    float offset = (i - (nodes.Count - 1) * 0.5f) * buttonWidth;
-                    CreateNode(table, node, choiceIds.Contains(node.Id),
-                        new Vector2(cellCenterX + offset, centerY), new Vector2(buttonWidth * 0.92f, buttonHeight));
+                    float x = layerCenter + (i - (nodes.Count - 1) * 0.5f) * pitch;
+                    float y = rowCenter + rowHeight * (0.5f - RowNodeAnchor);
+                    CreateNode(table, node, choices.Contains(node.Id), visited.Contains(node.Id),
+                        new Vector2(x, y), nodes.Count);
                 }
             }
         }
     }
 
-    private void CreateNode(TextTable table, MapNode node, bool enabled, Vector2 position, Vector2 size)
+    private void CreateNode(TextTable table, MapNode node, bool enabled, bool done, Vector2 center, int siblings)
     {
-        var go = new GameObject("Node_" + node.Id, typeof(RectTransform), typeof(Image), typeof(Button));
+        float planet = node.IsBoss ? BossSize : NodeSize;
+        float ring = planet + RingPadding;
+        float rowHeight = ring + LabelHeight;
+
+        var go = new GameObject("Node_" + node.Id, typeof(RectTransform), typeof(Button));
         go.layer = gameObject.layer;
         go.transform.SetParent(m_rect_Map, false);
         var rt = go.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0f, 1f);
-        rt.anchorMax = new Vector2(0f, 1f);
+        rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
         rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition = position;
-        rt.sizeDelta = size;
+        rt.anchoredPosition = center;
+        rt.sizeDelta = new Vector2(Mathf.Max(ring, 130f), rowHeight);
 
-        Image image = go.GetComponent<Image>();
-        image.color = ColorOf(node, enabled);
-        Button button = go.GetComponent<Button>();
-        button.targetGraphic = image;
+        var hit = go.AddComponent<ExImage>();
+        hit.spriteAtlas = _runAtlas;
+        hit.color = new Color(1f, 1f, 1f, 0f);            // 透明热区:星球和环各是子节点
+        hit.raycastTarget = true;
+        var button = go.GetComponent<Button>();
+        button.targetGraphic = hit;
         button.interactable = enabled;
         if (enabled)
         {
@@ -153,55 +188,123 @@ public partial class UIMapPanel : UIPanelMono
             button.onClick.AddListener(() => RunFlow.EnterNode(_run, nodeId));
         }
 
-        var labelGo = new GameObject("文字", typeof(RectTransform), typeof(Text));
-        labelGo.layer = gameObject.layer;
-        labelGo.transform.SetParent(go.transform, false);
-        var labelRt = labelGo.GetComponent<RectTransform>();
-        labelRt.anchorMin = Vector2.zero;
-        labelRt.anchorMax = Vector2.one;
-        labelRt.offsetMin = Vector2.zero;
-        labelRt.offsetMax = Vector2.zero;
-        Text label = labelGo.GetComponent<Text>();
-        label.font = m_text_Title.font;
-        label.fontSize = 24;
-        label.alignment = TextAnchor.MiddleCenter;
-        label.color = enabled ? new Color(0.95f, 0.95f, 1f, 1f) : new Color(0.45f, 0.47f, 0.55f, 1f);
-        label.horizontalOverflow = HorizontalWrapMode.Wrap;
-        label.verticalOverflow = VerticalWrapMode.Truncate;
-        label.text = LabelOf(table, node);
-        _buttons.Add(go);
+        // 节点中心的竖向位置:上面是星球、下面一条标签
+        float planetY = LabelHeight * 0.5f;
+        float labelY = -ring * 0.5f;
+
+        // 状态环:可打亮青、打过绿、首领红;打不了的不画
+        if (enabled || done)
+        {
+            string ringSprite = done ? "run_node_ring_done" : node.IsBoss ? "run_node_ring_boss" : "run_node_ring_ready";
+            AddImage(go.transform, "环", ringSprite, new Vector2(0f, planetY), new Vector2(ring, ring), Color.white);
+        }
+
+        // 星球
+        string planetSprite = Planets[Mathf.Abs(node.Id * 7 + node.Segment * 3) % Planets.Length];
+        Color tint = enabled || done ? Color.white : new Color(0.42f, 0.45f, 0.52f, 1f);
+        AddImage(go.transform, "星球", planetSprite, new Vector2(0f, planetY), new Vector2(planet, planet), tint);
+
+        // 打过的打勾
+        if (done)
+        {
+            AddImage(go.transform, "勾", "run_check",
+                new Vector2(planet * 0.34f, planetY + planet * 0.34f), new Vector2(26f, 26f), Color.white);
+        }
+
+        // 标签:名字 + 奖励;首领写首领名
+        AddLabel(go.transform, LabelOf(table, node), new Vector2(0f, labelY), new Vector2(130f, LabelHeight - 6f),
+            enabled ? (node.IsBoss ? BossColor : TextMain) : done ? TextMuted : TextDim);
+
+        // 能跳的节点:标签下面一个「跳过」小钮
+        if (enabled && node.CanSkip)
+        {
+            int nodeId = node.Id;
+            var skipGo = new GameObject("跳过", typeof(RectTransform), typeof(ExImage), typeof(Button));
+            skipGo.layer = gameObject.layer;
+            skipGo.transform.SetParent(go.transform, false);
+            var srt = skipGo.GetComponent<RectTransform>();
+            srt.anchorMin = srt.anchorMax = new Vector2(0.5f, 0.5f);
+            srt.pivot = new Vector2(0.5f, 0.5f);
+            srt.anchoredPosition = new Vector2(0f, labelY - LabelHeight * 0.5f - 2f);
+            srt.sizeDelta = new Vector2(70f, 22f);
+            var sex = skipGo.GetComponent<ExImage>();
+            sex.spriteAtlas = _runAtlas;
+            sex.SpriteName = "run_btn_secondary";
+            sex.type = Image.Type.Sliced;
+            sex.color = Color.white;
+            var sbtn = skipGo.GetComponent<Button>();
+            sbtn.targetGraphic = sex;
+            sbtn.onClick.AddListener(() => Skip(nodeId));
+            AddLabel(skipGo.transform, table.Get(TextKeys.Map.Skip), Vector2.zero, new Vector2(70f, 22f), TextMuted, 16f);
+        }
+
+        _nodes.Add(go);
+    }
+
+    /// <summary>居中对齐的一行字(节点标签、跳过钮):锚点与 pivot 都取中,位置就是中心。</summary>
+    private void AddLabel(Transform parent, string text, Vector2 center, Vector2 size, Color color, float fontSize = 18f)
+    {
+        var go = new GameObject("文字", typeof(RectTransform), typeof(TextMeshProUGUI));
+        go.layer = gameObject.layer;
+        go.transform.SetParent(parent, false);
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = center;
+        rt.sizeDelta = size;
+        var tmp = go.GetComponent<TextMeshProUGUI>();
+        tmp.font = MainFont;
+        tmp.text = text;
+        tmp.fontSize = fontSize;
+        tmp.color = color;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.enableWordWrapping = false;
+        tmp.raycastTarget = false;
+    }
+
+    private void AddImage(Transform parent, string name, string spriteName, Vector2 position, Vector2 size, Color tint)
+    {
+        var go = new GameObject(name, typeof(RectTransform), typeof(ExImage));
+        go.layer = gameObject.layer;
+        go.transform.SetParent(parent, false);
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = position;
+        rt.sizeDelta = size;
+        var ex = go.GetComponent<ExImage>();
+        ex.spriteAtlas = _runAtlas;
+        ex.SpriteName = spriteName;
+        ex.color = tint;
+        ex.raycastTarget = false;
     }
 
     private string LabelOf(TextTable table, MapNode node)
     {
         if (node.IsBoss)
         {
-            string label = table.Format(TextKeys.Map.NodeBoss, node.Segment, node.Layer);
-            // 情报标签之前只看得见「首领」,拿到之后才显示这一场带什么负面效果
-            return _run.BossIntel ? label + "\n" + Bosses.Name(node.BossId) : label;
+            // 情报标签拿到之后才写首领名(13 号票:没情报时只写「首领」)
+            return _run.BossIntel ? Bosses.Name(node.BossId) : table.Get(TextKeys.Map.BossPlaceholder);
         }
-        string strength = table.Get(TextKeys.Of(node.Strength));
-        string key = node.CanSkip ? TextKeys.Map.NodeSkip : TextKeys.Map.Node;
-        return table.Format(key, node.Segment, node.Layer, strength);
+        return table.Format(TextKeys.Map.NodeLabel, table.Get(TextKeys.Of(node.Strength)), node.Reward);
     }
 
-    private static Color ColorOf(MapNode node, bool enabled)
+    private void Skip(int nodeId)
     {
-        if (!enabled) return NodeDisabled;
-        if (node.IsBoss) return NodeBoss;
-        switch (node.Strength)
-        {
-            case NodeStrength.Light: return NodeLight;
-            case NodeStrength.Heavy: return NodeHeavy;
-            default: return NodeNormal;
-        }
+        if (!_run.SkipNode(nodeId)) return;
+        RunSaveService.Instance.CommitRun(_run, "跳过");
+        Rebuild();
     }
 
-    /// <summary>返回按钮的文字(窗里是旧版 Text,没有 LocalizedText)。</summary>
-    private void SetBackLabel(string text)
+    private void ClearNodes()
     {
-        m_btn_Back.GetComponentInChildren<Text>(true).text = text;
+        foreach (GameObject go in _nodes) Destroy(go);
+        _nodes.Clear();
+        RuntimeUI.Clear(m_rect_Map);
     }
+
+    /// <summary>TMP 主字体:静态字挂着主字体资产,运行期现搭的节点借它。</summary>
+    private TMP_FontAsset MainFont => m_tmp_HeaderTitle.font;
 
     #region 事件
 
