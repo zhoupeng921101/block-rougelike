@@ -3,10 +3,9 @@ using System.Collections.Generic;
 namespace GameRules
 {
     /// <summary>
-    /// 最小内容集(工程计划:基因/科技/改造各做最小集,只为验证钩子与商店)。规则 §4 的三张清单待从方块原生维度重新长,
-    /// 这里不照搬,只放能把每一类机制走通的几张:
+    /// 内容集:基因按基因清单逐批落(<see cref="GeneTable"/>),科技、改造还是只为验证钩子与商店的最小集:
     /// <list type="bullet">
-    /// <item>基因 13 张:8 张平推的加 / 乘;重触发(连票)、成长计数(翠涨)、读连击(连环)、带目标分代价(蚀灭)、传说(星核)各一张。</item>
+    /// <item>基因:<see cref="GeneTable.All"/>,号 = 基因清单的号。</item>
     /// <item>科技 11 张:每种消除类型一张,等级 1–<see cref="TechMaxLevel"/>,每级增量照规则 §4.2.1 的表。</item>
     /// <item>改造 9 张(<see cref="ModCatalog"/>);方块按七种骨牌 × 点数 1–4 定价;补给包 5 种;优惠券 12 张。</item>
     /// <item>强化与版本的效果是规则本身定的,见 <see cref="CoreEffects"/>。</item>
@@ -15,17 +14,11 @@ namespace GameRules
     /// </summary>
     public static class MinimalContent
     {
-        public const int GeneCount = 13;
+        public static int GeneCount => GeneTable.All.Count;
         public const int TechCount = GameRules.ClearTypes.Count;
 
         /// <summary>科技能把一种类型升到第几级(待定标)。</summary>
         public const int TechMaxLevel = 10;
-
-        public const int RetriggerGeneId = 9;
-        public const int GrowthGeneId = 10;
-        public const int ComboGeneId = 11;
-        public const int CostGeneId = 12;
-        public const int LegendaryGeneId = 13;
 
         public static ContentCatalog Catalog { get; } = BuildCatalog();
         public static EffectRegistry Effects { get; } = BuildEffects();
@@ -48,40 +41,14 @@ namespace GameRules
         {
             var effects = new EffectRegistry();
             CoreEffects.RegisterInto(effects);
-            effects.Register(EffectSource.Gene, 1, new FlatGene(chips: 10));
-            effects.Register(EffectSource.Gene, 2, new FlatGene(chips: 20));
-            effects.Register(EffectSource.Gene, 3, new FlatGene(chips: 30));
-            effects.Register(EffectSource.Gene, 4, new FlatGene(mult: 2));
-            effects.Register(EffectSource.Gene, 5, new FlatGene(mult: 3));
-            effects.Register(EffectSource.Gene, 6, new FlatGene(mult: 4));
-            effects.Register(EffectSource.Gene, 7, new FlatGene(xMultPermille: 1500));
-            effects.Register(EffectSource.Gene, 8, new FlatGene(chips: 2, mult: 1));
-            effects.Register(EffectSource.Gene, RetriggerGeneId, new RetriggerFirstCell(2));
-            effects.Register(EffectSource.Gene, GrowthGeneId, new GrowthGene(1));
-            effects.Register(EffectSource.Gene, ComboGeneId, new ComboGene(2));
-            effects.Register(EffectSource.Gene, CostGeneId, new CostGene(3000, 250));
-            effects.Register(EffectSource.Gene, LegendaryGeneId, new FlatGene(xMultPermille: 2500));
+            GeneTable.RegisterInto(effects);
             return effects;
         }
 
         private static ContentCatalog BuildCatalog()
         {
-            var genes = new List<CatalogEntry>
-            {
-                new CatalogEntry(ItemKind.Gene, 1, 4),
-                new CatalogEntry(ItemKind.Gene, 2, 4),
-                new CatalogEntry(ItemKind.Gene, 3, 5),
-                new CatalogEntry(ItemKind.Gene, 4, 4),
-                new CatalogEntry(ItemKind.Gene, 5, 5),
-                new CatalogEntry(ItemKind.Gene, 6, 6),
-                new CatalogEntry(ItemKind.Gene, 7, 8, Rarity.Rare),
-                new CatalogEntry(ItemKind.Gene, 8, 3),
-                new CatalogEntry(ItemKind.Gene, RetriggerGeneId, 5),
-                new CatalogEntry(ItemKind.Gene, GrowthGeneId, 4),
-                new CatalogEntry(ItemKind.Gene, ComboGeneId, 6, Rarity.Uncommon),
-                new CatalogEntry(ItemKind.Gene, CostGeneId, 8, Rarity.Rare),
-                new CatalogEntry(ItemKind.Gene, LegendaryGeneId, 20, Rarity.Legendary),
-            };
+            var genes = new List<CatalogEntry>(GeneTable.All.Count);
+            foreach (GeneTable.Entry e in GeneTable.All) genes.Add(new CatalogEntry(ItemKind.Gene, e.Id, e.Price, e.Rarity));
             var techs = new List<CatalogEntry>();
             var techTypes = new Dictionary<int, ClearType>();
             for (int t = 0; t < GameRules.ClearTypes.Count; t++)
@@ -158,82 +125,6 @@ namespace GameRules
                 for (int points = 1; points <= 4; points++) list.Add(new LibraryEntry((TetrominoKind)kind, points));
             }
             return list.AsReadOnly();
-        }
-
-        /// <summary>平推基因:基因段固定返回一份加/乘,没有成长状态。</summary>
-        private sealed class FlatGene : RuleEffect
-        {
-            private readonly EffectDelta _delta;
-
-            public FlatGene(long chips = 0, long mult = 0, long xMultPermille = 1000)
-            {
-                _delta = new EffectDelta(chips, mult, xMultPermille);
-            }
-
-            public override EffectDelta OnGene(EffectContext ctx) => _delta;
-        }
-
-        /// <summary>连票:每次消除中首个被消的格多走 n 遍(规则 §3.1 的重触发)。</summary>
-        private sealed class RetriggerFirstCell : RuleEffect
-        {
-            private readonly int _times;
-
-            public RetriggerFirstCell(int times)
-            {
-                _times = times;
-            }
-
-            public override int Repetitions(EffectContext ctx) => ctx.Cells.Count > 0 && ctx.Cell == ctx.Cells[0] ? _times : 0;
-        }
-
-        /// <summary>翠涨:每次有消除的落子计数 +1、每次弃置 -1(不低于 0);基因段给 +计数×n 倍率。</summary>
-        private sealed class GrowthGene : RuleEffect
-        {
-            private readonly long _multPerCount;
-
-            public GrowthGene(long multPerCount)
-            {
-                _multPerCount = multPerCount;
-            }
-
-            public override EffectDelta OnGene(EffectContext ctx) => EffectDelta.Mult(ctx.Counter * _multPerCount);
-
-            public override void AfterScoring(EffectContext ctx) => ctx.AddCounter(1);
-
-            public override void OnStepEnd(EffectContext ctx)
-            {
-                if (ctx.Step == StepKind.Discard) ctx.AddCounter(-1);
-            }
-        }
-
-        /// <summary>连环:基因段给 +连击数×n 倍率(连击叠倍流,规则 §6)。</summary>
-        private sealed class ComboGene : RuleEffect
-        {
-            private readonly long _multPerCombo;
-
-            public ComboGene(long multPerCombo)
-            {
-                _multPerCombo = multPerCombo;
-            }
-
-            public override EffectDelta OnGene(EffectContext ctx) => EffectDelta.Mult(ctx.Run.Blind.Combo * _multPerCombo);
-        }
-
-        /// <summary>蚀灭:基因段 ×倍率;代价是拿到之后第一个盲注目标分 +X%(规则 §4.1)。</summary>
-        private sealed class CostGene : RuleEffect
-        {
-            private readonly long _xMultPermille;
-            private readonly int _costPermille;
-
-            public CostGene(long xMultPermille, int costPermille)
-            {
-                _xMultPermille = xMultPermille;
-                _costPermille = costPermille;
-            }
-
-            public override int CostTargetPermille => _costPermille;
-
-            public override EffectDelta OnGene(EffectContext ctx) => EffectDelta.XMult(_xMultPermille);
         }
     }
 }

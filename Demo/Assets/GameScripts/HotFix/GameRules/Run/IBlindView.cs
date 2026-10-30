@@ -21,6 +21,12 @@ namespace GameRules
 
         int DiscardsLeft { get; }
 
+        int PlacedKinds { get; }
+
+        IReadOnlyList<int> TypeCounts { get; }
+
+        int LastClearType { get; }
+
         IReadOnlyList<int> Draw { get; }
 
         IReadOnlyList<TraySlot> Tray { get; }

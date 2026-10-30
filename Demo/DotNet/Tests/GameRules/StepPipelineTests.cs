@@ -172,7 +172,7 @@ namespace GameRules.Tests
             StepResult step = ClearRowSevenWithTwoI(run, run.Blind.Tray[0].Id);
             List<EffectApplied> genes = step.Of<EffectApplied>();
             Assert.AreEqual(2, genes.Count);
-            Assert.AreEqual((EffectSource.Gene, 0, -1, 2L, 6000L), (genes[0].Source, genes[0].SourceIndex, genes[0].Cell, genes[0].AddMult, genes[0].MultPermille));
+            Assert.AreEqual((EffectSource.Gene, 0, -1, 2000L, 6000L), (genes[0].Source, genes[0].SourceIndex, genes[0].Cell, genes[0].AddMultPermille, genes[0].MultPermille));
             Assert.AreEqual((EffectSource.Gene, 1, -1, 1500L, 9000L), (genes[1].Source, genes[1].SourceIndex, genes[1].Cell, genes[1].XMultPermille, genes[1].MultPermille));
             Assert.Greater(IndexOf(step, genes[0]), IndexOf(step, step.Of<CellScored>().Last()));
             Assert.Less(IndexOf(step, genes[1]), IndexOf(step, step.Single<ScoreBooked>()));
@@ -266,10 +266,10 @@ namespace GameRules.Tests
         }
 
         [TestCase(-1000, 0)]
-        [TestCase(0, -10)]
-        public void Pipeline_NegativeChipsOrMult_ScoreZero(long addChips, long addMult)
+        [TestCase(0, -10000)]
+        public void Pipeline_NegativeChipsOrMult_ScoreZero(long addChips, long addMultPermille)
         {
-            var effects = new EffectRegistry().Register(EffectSource.Gene, 1, new GeneDelta(new EffectDelta(addChips, addMult, 1000)));
+            var effects = new EffectRegistry().Register(EffectSource.Gene, 1, new GeneDelta(new EffectDelta(addChips, addMultPermille, 1000)));
             RunState run = TestRules.Started(TestRules.Config(effects, TestRules.Repeat(2, TetrominoKind.I)), TestRules.Spec(Unreachable));
             run.AddGene(1);
 
@@ -312,9 +312,9 @@ namespace GameRules.Tests
         public void CombinedDelta_AddsBeforeMultiplying_AndNegativeMultClampsAtMultiply()
         {
             var effects = new EffectRegistry()
-                .Register(EffectSource.Gene, 1, new GeneDelta(new EffectDelta(0, -10, 1000)))
+                .Register(EffectSource.Gene, 1, new GeneDelta(new EffectDelta(0, -10000, 1000)))
                 .Register(EffectSource.Gene, 2, new GeneDelta(EffectDelta.XMult(2000)))
-                .Register(EffectSource.Gene, 3, new GeneDelta(new EffectDelta(1, 3, 1500)));
+                .Register(EffectSource.Gene, 3, new GeneDelta(new EffectDelta(1, 3000, 1500)));
             RunState run = TestRules.Started(TestRules.Config(effects, TestRules.Repeat(2, TetrominoKind.I)), TestRules.Spec(Unreachable));
             foreach (int gene in new[] { 1, 2, 3 }) run.AddGene(gene);
             StepResult step = ClearRowSevenWithTwoI(run, run.Blind.Tray[0].Id);

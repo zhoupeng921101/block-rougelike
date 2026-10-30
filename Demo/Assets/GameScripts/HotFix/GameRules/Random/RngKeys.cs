@@ -27,6 +27,9 @@ namespace GameRules
         /// <summary>盲注里效果的概率(琉璃碎裂等)。按段层分:一场里的碎裂只与这一场的操作有关。</summary>
         public static string Effect(int segment, int layer) => At("effect", segment, layer);
 
+        /// <summary>基因代价在盲注开始时的随机(死格落在哪)。按段层分,与首领那条流分开:带不带这类基因不挪动首领的随机。</summary>
+        public static string GeneCost(int segment, int layer) => At("gene_cost", segment, layer);
+
         /// <summary>
         /// 商店货与补给包候选的版本、强化,以及基因包里的传说(规则 §2.5)。按层分,且与 <see cref="Shop"/> 分开:
         /// 掷版本不挪动出货那条流,货架上出什么不因版本规则变动而变。

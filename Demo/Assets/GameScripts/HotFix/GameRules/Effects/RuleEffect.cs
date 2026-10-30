@@ -16,7 +16,8 @@ namespace GameRules
     }
 
     /// <summary>
-    /// 钩子返回的一项效果:+底分、+倍率、×倍率(千分值)。管线按这个字段序结算:先加底分、再加倍率、最后当场乘入倍率(规则 §3.1)。
+    /// 钩子返回的一项效果:+底分、+倍率、×倍率,倍率两项都是千分值(+0.5 倍率 = 500)。
+    /// 管线按这个字段序结算:先加底分、再加倍率、最后当场乘入倍率(规则 §3.1)。
     /// 乘项存的是相对 ×1 的偏移,所以 <c>default</c> 就是「无效果」,不会误乘 ×0。
     /// </summary>
     public readonly struct EffectDelta
@@ -27,24 +28,29 @@ namespace GameRules
 
         public long AddChips { get; }
 
-        public long AddMult { get; }
+        /// <summary>+倍率的千分值,1000 = +1。</summary>
+        public long AddMultPermille { get; }
 
         /// <summary>1000 = ×1。≥ 0。</summary>
         public long XMultPermille => _xMultOffset + ScoreMath.PermilleOne;
 
-        public EffectDelta(long addChips, long addMult, long xMultPermille)
+        public EffectDelta(long addChips, long addMultPermille, long xMultPermille)
         {
             if (xMultPermille < 0) throw new ArgumentOutOfRangeException(nameof(xMultPermille), xMultPermille, "倍率的乘项须 ≥ 0");
             AddChips = addChips;
-            AddMult = addMult;
+            AddMultPermille = addMultPermille;
             _xMultOffset = xMultPermille - ScoreMath.PermilleOne;
         }
 
-        public bool IsEmpty => AddChips == 0 && AddMult == 0 && _xMultOffset == 0;
+        public bool IsEmpty => AddChips == 0 && AddMultPermille == 0 && _xMultOffset == 0;
 
         public static EffectDelta Chips(long n) => new EffectDelta(n, 0, ScoreMath.PermilleOne);
 
-        public static EffectDelta Mult(long n) => new EffectDelta(0, n, ScoreMath.PermilleOne);
+        /// <summary>+n 倍率(整数)。</summary>
+        public static EffectDelta Mult(long n) => new EffectDelta(0, ScoreMath.ToPermille(n), ScoreMath.PermilleOne);
+
+        /// <summary>+倍率,千分值:500 = +0.5。</summary>
+        public static EffectDelta MultPermille(long permille) => new EffectDelta(0, permille, ScoreMath.PermilleOne);
 
         public static EffectDelta XMult(long permille) => new EffectDelta(0, 0, permille);
     }
@@ -62,6 +68,28 @@ namespace GameRules
         /// 拿到时记在 <see cref="GeneSlot.CostPending"/> 上(效果系统 §6)。不是基因、或没有这种代价的为 0。
         /// </summary>
         public virtual int CostTargetPermille => 0;
+
+        /// <summary>
+        /// 持有期间每个盲注弃置次数的修正(B 类,效果系统 §3.2):代价的「弃置 −1」是 -1,加弃置的效果是正数。
+        /// 开盲注时叠在难度、券、标签之上,结果不低于 0。
+        /// </summary>
+        public virtual int DiscardDelta => 0;
+
+        /// <summary>持有期间每组块数的修正(B 类),叠在默认与券之上,结果截在 1..<see cref="BlindSpec.MaxGroupSize"/>。</summary>
+        public virtual int GroupSizeDelta => 0;
+
+        /// <summary>代价「每个盲注开始时,网格随机 N 格变死格」的 N(效果系统 §6 的 C 类代价),在盲注开始挂点之前标。</summary>
+        public virtual int DeadCellsPerBlind => 0;
+
+        /// <summary>盲注开始(效果系统 §4.2):首领生效、代价的死格标完之后,发第一组之前。不能加分。</summary>
+        public virtual void OnBlindStart(EffectContext ctx)
+        {
+        }
+
+        /// <summary>盲注结束:只在打赢、通关奖励与利息入账之后走(打输整局就结束了)。不能加分。</summary>
+        public virtual void OnBlindEnd(EffectContext ctx)
+        {
+        }
 
         /// <summary>结算前(段 #6):定类型后、读底注前。</summary>
         public virtual void BeforeScoring(EffectContext ctx)

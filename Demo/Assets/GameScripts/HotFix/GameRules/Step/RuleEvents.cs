@@ -157,7 +157,8 @@ namespace GameRules
         public int Cell { get; }
 
         public long AddChips { get; }
-        public long AddMult { get; }
+        /// <summary>+倍率的千分值。</summary>
+        public long AddMultPermille { get; }
         public long XMultPermille { get; }
 
         /// <summary>结算到这里时两个累加器的值,表现层拿来跳数字。</summary>
@@ -171,7 +172,7 @@ namespace GameRules
             SourceIndex = sourceIndex;
             Cell = cell;
             AddChips = delta.AddChips;
-            AddMult = delta.AddMult;
+            AddMultPermille = delta.AddMultPermille;
             XMultPermille = delta.XMultPermille;
             Chips = chips;
             MultPermille = multPermille;

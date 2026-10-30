@@ -16,6 +16,7 @@ namespace GameRules
         internal readonly List<int> DepartedList;
         internal readonly List<int> RemovedList;
         internal readonly List<BlockInstance> TempList;
+        internal readonly int[] TypeCountsArr;
 
         public BlindSpec Spec { get; }
 
@@ -34,6 +35,15 @@ namespace GameRules
         public int Combo { get; internal set; }
 
         public int DiscardsLeft { get; internal set; }
+
+        /// <summary>本盲注放下过的形状,按 <see cref="TetrominoKind"/> 的位掩码(收集、七形基因读)。</summary>
+        public int PlacedKinds { get; internal set; }
+
+        /// <summary>本盲注各消除类型打出过的次数,按 <see cref="ClearType"/> 下标;结算前就已含这一次。</summary>
+        public IReadOnlyList<int> TypeCounts { get; }
+
+        /// <summary>上一次消除的类型(<see cref="ClearType"/> 的值);本盲注还没消过为 -1。这一次的结算里读到的仍是上一次。</summary>
+        public int LastClearType { get; internal set; } = -1;
 
         /// <summary>抽牌堆,下标 0 先抽。</summary>
         public IReadOnlyList<int> Draw { get; }
@@ -59,13 +69,13 @@ namespace GameRules
 
         internal BlindState(BlindSpec spec)
             : this(spec, new List<int>(), new TraySlot[spec.GroupSize], new BoardState(),
-                new List<int>(), new List<int>(), new List<int>(), new List<BlockInstance>())
+                new List<int>(), new List<int>(), new List<int>(), new List<BlockInstance>(), new int[ClearTypes.Count])
         {
             DiscardsLeft = spec.Discards;
         }
 
         private BlindState(BlindSpec spec, List<int> draw, TraySlot[] tray, BoardState board,
-            List<int> discarded, List<int> departed, List<int> removed, List<BlockInstance> temp)
+            List<int> discarded, List<int> departed, List<int> removed, List<BlockInstance> temp, int[] typeCounts)
         {
             Spec = spec ?? throw new ArgumentNullException(nameof(spec));
             DrawList = draw;
@@ -75,6 +85,8 @@ namespace GameRules
             DepartedList = departed;
             RemovedList = removed;
             TempList = temp;
+            TypeCountsArr = typeCounts;
+            TypeCounts = Array.AsReadOnly(typeCounts);
             Draw = draw.AsReadOnly();
             Tray = Array.AsReadOnly(tray);
             Discarded = discarded.AsReadOnly();
@@ -85,10 +97,12 @@ namespace GameRules
 
         /// <summary>读档的还原口(<see cref="RunSnapshot"/>):各区原样接上,不查约束,读档随后调 <see cref="RunState.Validate"/>。</summary>
         internal static BlindState Restore(BlindSpec spec, BlindOutcome outcome, FailReason failReason, int step, int group, long score,
-            int combo, int discardsLeft, List<int> draw, TraySlot[] tray, BoardState board, List<int> discarded, List<int> departed,
-            List<int> removed, List<BlockInstance> temp) =>
-            new BlindState(spec, draw, tray, board, discarded, departed, removed, temp)
+            int combo, int discardsLeft, int placedKinds, int[] typeCounts, int lastClearType, List<int> draw, TraySlot[] tray,
+            BoardState board, List<int> discarded, List<int> departed, List<int> removed, List<BlockInstance> temp) =>
+            new BlindState(spec, draw, tray, board, discarded, departed, removed, temp, typeCounts)
             {
+                PlacedKinds = placedKinds,
+                LastClearType = lastClearType,
                 Outcome = outcome,
                 FailReason = failReason,
                 Step = step,
@@ -103,8 +117,10 @@ namespace GameRules
             var temp = new List<BlockInstance>(TempList.Count);
             foreach (BlockInstance b in TempList) temp.Add(b.Clone());
             return new BlindState(Spec, new List<int>(DrawList), (TraySlot[])TraySlots.Clone(), Board.Clone(),
-                new List<int>(DiscardedList), new List<int>(DepartedList), new List<int>(RemovedList), temp)
+                new List<int>(DiscardedList), new List<int>(DepartedList), new List<int>(RemovedList), temp, (int[])TypeCountsArr.Clone())
             {
+                PlacedKinds = PlacedKinds,
+                LastClearType = LastClearType,
                 Outcome = Outcome,
                 FailReason = FailReason,
                 Step = Step,

@@ -17,6 +17,17 @@ namespace GameRules
             {
                 new BlindStarted(blind.Spec.Target, blind.Spec.Discards, blind.Spec.GroupSize, blind.DrawList.Count),
             };
+            // 盲注开始挂点:基因从左到右,先标这张基因代价的死格,再问它的钩子
+            // 随机流用到才取:没有这类代价的局,存档里不多出一条流
+            var ctx = new EffectContext(run, StepKind.Place, events) { Hook = EffectHook.BlindStart };
+            VisitGenes(run, ctx, (e, c) =>
+            {
+                if (e.DeadCellsPerBlind > 0)
+                {
+                    Bosses.MarkDeadCells(blind, run.Rng.Get(RngKeys.GeneCost(blind.Spec.Segment, blind.Spec.Layer)), e.DeadCellsPerBlind);
+                }
+                e.OnBlindStart(c);
+            });
             DealAndJudge(run, events);
             return new StepResult(blind.Step, events);
         }
@@ -37,9 +48,10 @@ namespace GameRules
             BlockInstance block = run.FindInstance(instanceId);
             int[] cells = blind.Board.Place(block, rot, row, col);
             blind.TraySlots[slot] = default;
+            blind.PlacedKinds |= 1 << (int)block.Kind;
             var events = new List<RuleEvent> { new PiecePlaced(instanceId, block.Kind, rot, row, col, cells) };
 
-            var ctx = new EffectContext(run, StepKind.Place, events);
+            var ctx = new EffectContext(run, StepKind.Place, events) { Placed = block, PlacedCells = SortedCopy(cells) };
             if (!clear.HasClear)
             {
                 blind.Combo = 0;
@@ -157,6 +169,19 @@ namespace GameRules
             VisitClearedBlocksThenGenes(run, ctx, (e, c) => e.AfterScoring(c));
             foreach (int id in ctx.Shattered) Destroy(run, id, events);
             ctx.Shattered.Clear();
+            blind.LastClearType = (int)type;
+        }
+
+        /// <summary>
+        /// 盲注结束挂点:打赢的盲注入账通关奖励与利息之后,基因从左到右。由 <see cref="RunState.SettleBlind"/> 调,
+        /// 返回这一段吐的事件(给钱等)。
+        /// </summary>
+        internal static List<RuleEvent> AfterBlindWon(RunState run)
+        {
+            var events = new List<RuleEvent>();
+            var ctx = new EffectContext(run, StepKind.Place, events) { Hook = EffectHook.BlindEnd };
+            VisitGenes(run, ctx, (e, c) => e.OnBlindEnd(c));
+            return events;
         }
 
         /// <summary>湮灭一块并吐事件(琉璃碎裂、删块改造)。不在方块库与临时块里的 id 什么也不做。</summary>
@@ -240,7 +265,7 @@ namespace GameRules
         {
             if (delta.IsEmpty) return;
             ctx.Chips = ScoreMath.Add(ctx.Chips, delta.AddChips);
-            ctx.MultPermille = ScoreMath.Add(ctx.MultPermille, ScoreMath.ToPermille(delta.AddMult));
+            ctx.MultPermille = ScoreMath.Add(ctx.MultPermille, delta.AddMultPermille);
             if (delta.XMultPermille != ScoreMath.PermilleOne)
                 ctx.MultPermille = ScoreMath.MulPermille(ctx.MultPermille, delta.XMultPermille);
             events.Add(new EffectApplied(ctx.Source, ctx.SourceIndex, ctx.Cell, delta, ctx.Chips, ctx.MultPermille));
@@ -305,6 +330,13 @@ namespace GameRules
         {
             ctx.Source = source;
             ctx.SourceIndex = index;
+        }
+
+        private static IReadOnlyList<int> SortedCopy(int[] cells)
+        {
+            var copy = (int[])cells.Clone();
+            Array.Sort(copy);
+            return Array.AsReadOnly(copy);
         }
 
         private static List<int> DistinctInOrder(IReadOnlyList<int> ids)

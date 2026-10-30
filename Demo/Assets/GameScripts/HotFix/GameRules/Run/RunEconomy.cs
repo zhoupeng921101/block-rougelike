@@ -48,8 +48,12 @@ namespace GameRules
         public readonly int Total;
         public readonly int MoneyAfter;
 
-        public Settlement(int nodeId, int reward, int interest, int moneyAfter)
+        /// <summary>盲注结束时基因给的钱(金脉等),不算在 <see cref="Total"/> 里,已含在 <see cref="MoneyAfter"/> 里。</summary>
+        public readonly int GeneMoney;
+
+        public Settlement(int nodeId, int reward, int interest, int moneyAfter, int geneMoney = 0)
         {
+            GeneMoney = geneMoney;
             NodeId = nodeId;
             Reward = reward;
             Interest = interest;

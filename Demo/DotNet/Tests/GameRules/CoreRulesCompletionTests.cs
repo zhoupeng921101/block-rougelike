@@ -10,6 +10,11 @@ namespace GameRules.Tests
     /// </summary>
     public class CoreRulesCompletionTests
     {
+        // 基因清单的号:纯形(×3,目标分 +25%)、首重(首格重触发 2 次)、叠层(成长计数)
+        private const int PurityGene = 15;
+        private const int FirstWeightGene = 103;
+        private const int LayerGene = 81;
+
         private static RuleConfig ConfigOf(params LibraryEntry[] library) =>
             new RuleConfig(library, MinimalContent.ClearTypes, MinimalContent.Effects, catalog: MinimalContent.Catalog);
 
@@ -36,7 +41,7 @@ namespace GameRules.Tests
             StepResult step = ClearBottomRow(run);
             var steel = step.Events.OfType<EffectApplied>().Where(e => e.Source == EffectSource.Enhancement).ToList();
             Assert.AreEqual(8, steel.Count, "每被消 1 格触发一次强化");
-            Assert.IsTrue(steel.All(e => e.AddMult == CoreEffects.SteelMult));
+            Assert.IsTrue(steel.All(e => e.AddMultPermille == CoreEffects.SteelMult * 1000));
         }
 
         [Test]
@@ -102,14 +107,14 @@ namespace GameRules.Tests
         public void GeneEdition_AdditiveBeforeBody_MultiplicativeAfter()
         {
             RunState run = Started(ConfigOf(Enumerable.Repeat(new LibraryEntry(TetrominoKind.I, 1), 6).ToArray()));
-            run.AddGene(4, Edition.Holo);       // +2 倍率的平推基因,带镭射
-            run.AddGene(5, Edition.Polychrome); // +3 倍率,带多彩
+            run.AddGene(102, Edition.Holo);       // 本源:+4 倍率,带镭射
+            run.AddGene(100, Edition.Polychrome); // 群聚:每带 1 个其他基因 +2 倍率,带多彩
             StepResult step = ClearBottomRow(run);
             var genes = step.Events.OfType<EffectApplied>().Where(e => e.Source == EffectSource.Gene).ToList();
             Assert.AreEqual(4, genes.Count);
-            Assert.AreEqual(CoreEffects.GeneHoloMult, genes[0].AddMult, "镭射在本体之前");
-            Assert.AreEqual(2, genes[1].AddMult);
-            Assert.AreEqual(3, genes[2].AddMult);
+            Assert.AreEqual(CoreEffects.GeneHoloMult * 1000, genes[0].AddMultPermille, "镭射在本体之前");
+            Assert.AreEqual(4000, genes[1].AddMultPermille);
+            Assert.AreEqual(2000, genes[2].AddMultPermille);
             Assert.AreEqual(CoreEffects.GenePolyXMultPermille, genes[3].XMultPermille, "多彩在本体之后");
             CollectionAssert.AreEqual(new[] { 0, 0, 1, 1 }, genes.Select(e => e.SourceIndex), "版本的加成记在它那一格基因上");
         }
@@ -132,11 +137,11 @@ namespace GameRules.Tests
             RunState b = Started(ConfigOf(Enumerable.Repeat(new LibraryEntry(TetrominoKind.I, 1), 6).ToArray()));
             foreach (RunState run in new[] { a, b })
             {
-                run.AddGene(7); // ×1.5
-                run.AddGene(6); // +4
+                run.AddGene(64);  // 极连:×(1 + 0.2 × 连击)
+                run.AddGene(102); // 本源:+4
             }
             Assert.IsTrue(b.MoveGene(1, 0));
-            CollectionAssert.AreEqual(new[] { 6, 7 }, b.Genes.Select(g => g.GeneId));
+            CollectionAssert.AreEqual(new[] { 102, 64 }, b.Genes.Select(g => g.GeneId));
             ClearBottomRow(a);
             ClearBottomRow(b);
             Assert.Greater(b.Blind.Score, a.Blind.Score, "+倍率放左边、×倍率放右边得分更高(规则 §3.1)");
@@ -146,7 +151,7 @@ namespace GameRules.Tests
         public void Sell_GivesHalfPrice_AndRecycleRaisesIt()
         {
             RunState run = RunState.NewRun(TestRules.Seed, MinimalContent.Config);
-            run.AddGene(6); // 基础价 6
+            run.AddGene(12); // 重影,基础价 6
             int money = run.Money;
             Assert.AreEqual(3, run.SellGene(0));
             Assert.AreEqual(money + 3, run.Money);
@@ -154,7 +159,7 @@ namespace GameRules.Tests
 
             run.AddMoney(20);
             Assert.IsTrue(run.TryAddVoucher(VoucherCatalog.Recycle));
-            run.AddGene(6);
+            run.AddGene(12);
             Assert.AreEqual(4, run.SellGene(0), "回收券:75% 向下取整");
             Assert.IsTrue(run.TryAddConsumable(ConsumableItem.Mod(ModCatalog.Glass)));
             Assert.AreEqual(2, run.SellConsumable(0));
@@ -165,7 +170,7 @@ namespace GameRules.Tests
         {
             RunState plain = RunState.NewRun(TestRules.Seed, MinimalContent.Config);
             RunState paid = RunState.NewRun(TestRules.Seed, MinimalContent.Config);
-            Assert.IsTrue(paid.TryAddGene(MinimalContent.CostGeneId));
+            Assert.IsTrue(paid.TryAddGene(PurityGene));
             Assert.IsTrue(paid.Genes[0].CostPending);
             foreach (RunState run in new[] { plain, paid }) Assert.IsTrue(run.EnterNode(run.Map.Start.Id));
             long baseTarget = plain.SpecForCurrentNode().Target;
@@ -178,7 +183,7 @@ namespace GameRules.Tests
         public void RetriggerGene_RepeatsTheFirstCell()
         {
             RunState run = Started(ConfigOf(Enumerable.Repeat(new LibraryEntry(TetrominoKind.I, 3), 6).ToArray()));
-            run.AddGene(MinimalContent.RetriggerGeneId);
+            run.AddGene(FirstWeightGene);
             StepResult step = ClearBottomRow(run);
             RepetitionGranted rep = step.Events.OfType<RepetitionGranted>().Single();
             int first = step.Events.OfType<ClearResolved>().Single().Cells[0];
@@ -191,7 +196,7 @@ namespace GameRules.Tests
         public void GrowthGene_CountsClearsAndDiscards()
         {
             RunState run = Started(ConfigOf(Enumerable.Repeat(new LibraryEntry(TetrominoKind.I, 1), 9).ToArray()));
-            run.AddGene(MinimalContent.GrowthGeneId);
+            run.AddGene(LayerGene);
             ClearBottomRow(run);
             Assert.AreEqual(1, run.Genes[0].Counter);
             TestRules.Discard(run, run.Blind.Tray.First(s => !s.IsEmpty).Id);
@@ -295,9 +300,9 @@ namespace GameRules.Tests
             {
                 RunState run = RunState.NewRun(SeedText.FromEntropy((ulong)i * 7919UL + 3UL), MinimalContent.Config);
                 ShopState shop = ShopState.Open(run.Rng.Get(RngKeys.Shop(1, 1)), run, true, false);
-                Assert.IsFalse(shop.Goods.Any(g => g.Kind == ItemKind.Gene && g.Id == MinimalContent.LegendaryGeneId), "传说不进商店");
+                Assert.IsFalse(shop.Goods.Any(g => g.Kind == ItemKind.Gene && g.Id == GeneTable.Legendary1), "传说不进商店");
                 BoosterPack pack = BoosterPack.Open(run.Rng.Get(RngKeys.Shop(1, 1)), run, BoosterPack.GenePack);
-                if (pack.Options.Any(o => o.Id == MinimalContent.LegendaryGeneId)) inPack = true;
+                if (pack.Options.Any(o => o.Id == GeneTable.Legendary1)) inPack = true;
             }
             Assert.IsTrue(inPack, "300 个基因包里一张传说都没有");
         }
@@ -306,8 +311,8 @@ namespace GameRules.Tests
         public void Snapshot_RoundTripsGeneStateConsumablesAndTypeCounts()
         {
             RunState run = Started(ConfigOf(Enumerable.Repeat(new LibraryEntry(TetrominoKind.I, 1), 9).ToArray()));
-            run.AddGene(MinimalContent.GrowthGeneId, Edition.Foil);
-            run.AddGene(MinimalContent.CostGeneId, Edition.Negative);
+            run.AddGene(LayerGene, Edition.Foil);
+            run.AddGene(PurityGene, Edition.Negative);
             ClearBottomRow(run);
             Assert.IsTrue(run.TryAddConsumable(ConsumableItem.Tech(1)));
             Assert.IsTrue(run.TryAddConsumable(ConsumableItem.Mod(ModCatalog.Wild)));

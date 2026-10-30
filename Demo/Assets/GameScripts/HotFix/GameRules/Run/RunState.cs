@@ -407,6 +407,8 @@ namespace GameRules
         {
             int t = (int)type;
             if (_typeCounts[t] < int.MaxValue) _typeCounts[t]++;
+            int[] blindCounts = Blind.TypeCountsArr;
+            if (blindCounts[t] < int.MaxValue) blindCounts[t]++;
         }
 
         /// <summary>
@@ -595,9 +597,17 @@ namespace GameRules
             if (Progress.CurrentResolved) throw new InvalidOperationException("当前节点已结算");
             MapNode node = Map.Get(Progress.CurrentNodeId);
             int boss = node.BossId;
+            // 基因的 B 类修正(效果系统 §3.2):每次开盲注从持有的基因重算,不记增量
+            int geneDiscards = 0, geneGroupSize = 0;
+            foreach (GeneSlot g in _genes)
+            {
+                RuleEffect e = Config.Effects.Find(EffectSource.Gene, g.GeneId);
+                geneDiscards += e.DiscardDelta;
+                geneGroupSize += e.GroupSizeDelta;
+            }
             int discards = Math.Max(0, Config.BaseDiscards + Config.Tuning.DifficultyOf(Difficulty).DiscardDelta + Modifiers.DiscardBonus
-                + Pending.BlindDiscards);
-            int groupSize = Math.Min(BlindSpec.MaxGroupSize, Config.DefaultGroupSize + Modifiers.GroupSizeBonus);
+                + Pending.BlindDiscards + geneDiscards);
+            int groupSize = Math.Max(1, Math.Min(BlindSpec.MaxGroupSize, Config.DefaultGroupSize + Modifiers.GroupSizeBonus + geneGroupSize));
             // 首领、券、轻敌、基因代价并进一个千分值,只做一次四舍五入
             int extra = Modifiers.TargetPermille * Bosses.BossPermilleOf(boss, Config.Tuning) / 1000 * Pending.BlindTargetPermille / 1000;
             foreach (GeneSlot g in _genes)
@@ -744,8 +754,10 @@ namespace GameRules
             int interestCap = Config.Tuning.DifficultyOf(Difficulty).InterestCap + Modifiers.InterestCapBonus + SegmentInterestCapBonus;
             Settlement settlement = RunEconomy.Settle(node, Config.Tuning.NodeReward(node), _money, Config.InterestPer, interestCap);
             AddMoney(settlement.Total);
+            int before = _money;
+            StepPipeline.AfterBlindWon(this);
             Progress.Resolve();
-            return new Settlement(node.Id, settlement.Reward, settlement.Interest, _money);
+            return new Settlement(node.Id, settlement.Reward, settlement.Interest, _money, _money - before);
         }
 
         /// <summary>

@@ -39,6 +39,7 @@ namespace GameRules
         {
             "spec", "outcome", "failReason", "step", "group", "score", "combo", "discardsLeft",
             "draw", "tray", "owner", "dead", "discarded", "departed", "removed", "tempBlocks",
+            "placedKinds", "typeCounts", "lastClear",
         };
         private static readonly string[] SpecMembers = { "segment", "layer", "target", "discards", "groupSize", "boss" };
         private static readonly string[] PendingMembers =
@@ -177,6 +178,10 @@ namespace GameRules
             WriteIds(w, blind.Removed);
             w.Name("tempBlocks");
             WriteBlocks(w, blind.TempBlocks);
+            w.Name("placedKinds").Int(blind.PlacedKinds);
+            w.Name("typeCounts");
+            WriteIds(w, blind.TypeCounts);
+            w.Name("lastClear").Int(blind.LastClearType);
             w.End();
         }
 
@@ -615,6 +620,27 @@ namespace GameRules
             List<BlockInstance> temp = ReadBlocks(p, b[15], "blind.tempBlocks");
             if (temp == null) return null;
 
+            int placedKinds = p.ReadInt(b[16], "blind.placedKinds");
+            List<int> typeCounts = p.ReadIntList(b[17], "blind.typeCounts");
+            int lastClear = p.ReadInt(b[18], "blind.lastClear");
+            if (p.Failed) return null;
+            if (placedKinds < 0 || placedKinds >= 1 << Tetromino.KindCount)
+            {
+                return p.Fail<BlindState>(SnapshotError.BadValue, "blind.placedKinds", Invariant($"形状位掩码在 0..{(1 << Tetromino.KindCount) - 1}"));
+            }
+            if (typeCounts.Count != ClearTypes.Count)
+            {
+                return p.Fail<BlindState>(SnapshotError.Shape, "blind.typeCounts", Invariant($"应有 {ClearTypes.Count} 项"));
+            }
+            for (int i = 0; i < typeCounts.Count; i++)
+            {
+                if (typeCounts[i] < 0) return p.Fail<BlindState>(SnapshotError.BadValue, Invariant($"blind.typeCounts[{i}]"), "次数不能为负");
+            }
+            if (lastClear < -1 || lastClear >= ClearTypes.Count)
+            {
+                return p.Fail<BlindState>(SnapshotError.BadValue, "blind.lastClear", Invariant($"在 -1..{ClearTypes.Count - 1}"));
+            }
+
             int boss = p.ReadInt(s[5], "blind.spec.boss");
             if (p.Failed) return null;
             if (boss != Bosses.None && !Bosses.IsKnown(boss))
@@ -623,7 +649,8 @@ namespace GameRules
             }
 
             return BlindState.Restore(new BlindSpec(segment, layer, target, discards, groupSize, boss), outcome, failReason, step, group, score,
-                combo, discardsLeft, draw, tray, BoardState.Restore(owner, dead), discarded, departed, removed, temp);
+                combo, discardsLeft, placedKinds, typeCounts.ToArray(), lastClear, draw, tray, BoardState.Restore(owner, dead), discarded,
+                departed, removed, temp);
         }
 
         private static int[] ReadOwner(Parser p, JsonNode node)
